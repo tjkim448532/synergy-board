@@ -4,6 +4,7 @@ import PieChart3D from './components/PieChart3D'
 import ValidationMaster from './components/ValidationMaster'
 import PresentationView from './components/PresentationView'
 import BigQueryConsole from './components/BigQueryConsole'
+import Settings from './components/Settings'
 import './App.css'
 
 function App() {
@@ -77,7 +78,11 @@ function App() {
           </div>
         )
       case 'settings':
-        return <div className="glass-panel" style={{height: '100%', padding: '32px'}}><h2>설정 (준비 중)</h2></div>
+        return (
+          <div className="glass-panel" style={{height: '100%', padding: '32px'}}>
+            <Settings />
+          </div>
+        )
       default:
         return null;
     }
