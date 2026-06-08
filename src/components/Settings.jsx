@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Save } from 'lucide-react';
+import { Save, Link as LinkIcon, RefreshCw } from 'lucide-react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+import Papa from 'papaparse';
 import './Settings.css';
 
 export default function Settings() {
@@ -11,8 +12,10 @@ export default function Settings() {
     connectingRooms51: 50
   });
 
+  const [sheetUrl, setSheetUrl] = useState('');
   const [isSaved, setIsSaved] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -51,6 +54,57 @@ export default function Settings() {
     }
   };
 
+  const handleSyncFromSheet = async () => {
+    if (!sheetUrl) return alert('구글 시트 링크를 입력해주세요.');
+    setIsSyncing(true);
+    try {
+      const match = sheetUrl.match(/\/d\/(.*?)(\/|$)/);
+      if (!match) {
+        throw new Error('유효한 구글 시트 링크가 아닙니다.');
+      }
+      const spreadsheetId = match[1];
+      const csvUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv`;
+      
+      Papa.parse(csvUrl, {
+        download: true,
+        header: true,
+        complete: async function(results) {
+          const data = results.data;
+          const totalRooms = data.filter(row => row['호수']).length;
+          const connectingPairs = data.filter(row => row['결합시평형'] === '51평' || row['결합시평형']?.includes('51')).length / 2;
+          
+          if (totalRooms === 0) {
+            alert('데이터를 추출할 수 없습니다. 시트의 첫 번째 행에 "호수", "결합시평형" 열이 있는지 확인해주세요.');
+            setIsSyncing(false);
+            return;
+          }
+          
+          const newSettings = {
+            ...settings,
+            totalRooms: totalRooms,
+            connectingRooms51: connectingPairs
+          };
+          
+          setSettings(newSettings);
+          const docRef = doc(db, 'config', 'mainSettings');
+          await setDoc(docRef, newSettings);
+          
+          alert(`연동 성공!\n- 총 객실 수: ${totalRooms}실\n- 51평 세트: ${connectingPairs}세트\n(DB에 자동 저장되었습니다)`);
+          setIsSyncing(false);
+          setSheetUrl('');
+        },
+        error: function(err) {
+          console.error(err);
+          alert('시트 데이터를 불러오는데 실패했습니다. 시트 접근 권한이 "링크가 있는 모든 사용자"로 공개되어 있는지 확인해 주세요.');
+          setIsSyncing(false);
+        }
+      });
+    } catch (e) {
+      alert(e.message);
+      setIsSyncing(false);
+    }
+  };
+
   if (isLoading) {
     return <div style={{padding: '32px', color: 'white'}}>설정 불러오는 중...</div>;
   }
@@ -62,16 +116,44 @@ export default function Settings() {
         <p className="settings-desc">콘도의 총 객실 수 등 변동성이 적은 기본 정보를 설정하고 DB 초기값으로 저장합니다.</p>
       </div>
 
-      <div className="settings-form">
+      <div className="settings-card glass-panel">
+        <h3 style={{marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px'}}>
+          마스터 객실 정보 구글 시트 연동
+        </h3>
+        <p style={{color: 'var(--text-muted)', fontSize: '14px', marginBottom: '16px'}}>
+          객실 정보가 담긴 구글 시트 링크를 넣으시면 총 객실 수와 51평형 세트 수를 자동으로 추출합니다.
+        </p>
+        <div style={{display: 'flex', gap: '10px', marginBottom: '30px'}}>
+          <input 
+            type="text" 
+            placeholder="구글 시트 URL 입력 (링크 공유 켜기 필수)" 
+            value={sheetUrl}
+            onChange={(e) => setSheetUrl(e.target.value)}
+            style={{flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid var(--border-glass)', background: 'rgba(255,255,255,0.05)', color: 'white'}}
+          />
+          <button 
+            className="btn-primary" 
+            onClick={handleSyncFromSheet}
+            disabled={isSyncing}
+            style={{display: 'flex', alignItems: 'center', gap: '6px', background: isSyncing ? 'var(--text-muted)' : 'var(--accent-emerald)'}}
+          >
+            {isSyncing ? <RefreshCw size={18} className="spin" /> : <LinkIcon size={18} />}
+            {isSyncing ? '연동 중...' : '시트 연동 및 계산'}
+          </button>
+        </div>
+
+        <h3 style={{marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px'}}>
+          기본 설정
+        </h3>
         <div className="form-group">
-          <label htmlFor="resortName">리조트명</label>
+          <label htmlFor="resortName">리조트 이름</label>
           <input 
             type="text" 
             id="resortName" 
             name="resortName" 
             value={settings.resortName} 
             onChange={handleChange} 
-            placeholder="예: 프리미엄 리조트"
+            placeholder="예: 벨포레 리조트"
           />
         </div>
 
