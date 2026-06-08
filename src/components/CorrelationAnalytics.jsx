@@ -4,20 +4,11 @@ import {
   ScatterChart, Scatter, ZAxis
 } from 'recharts';
 
-export default function CorrelationAnalytics({ calculationMode, onModeChange }) {
-  const [rawData, setRawData] = useState([]);
-  const [settings, setSettings] = useState({ totalRooms: 500, connectingRooms51: 50 });
+export default function CorrelationAnalytics({ calculationMode, onModeChange, monthlyData, settings }) {
 
-  useEffect(() => {
-    const savedData = localStorage.getItem('synergy_monthly_data');
-    if (savedData) setRawData(JSON.parse(savedData));
-    
-    const savedSettings = localStorage.getItem('synergy_settings');
-    if (savedSettings) setSettings(JSON.parse(savedSettings));
-  }, []);
 
   // Calculate dynamic occupancy
-  const data = rawData.map(d => {
+  const data = monthlyData.map(d => {
     let occupancy = 0;
     if (calculationMode === 'physical') {
       const inventory = Number(settings.totalRooms);

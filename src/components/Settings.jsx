@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Save } from 'lucide-react';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 import './Settings.css';
 
 export default function Settings() {
@@ -10,28 +12,48 @@ export default function Settings() {
   });
 
   const [isSaved, setIsSaved] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const saved = localStorage.getItem('synergy_settings');
-    if (saved) {
-      setSettings(JSON.parse(saved));
-    }
+    const fetchSettings = async () => {
+      try {
+        const docRef = doc(db, 'config', 'mainSettings');
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setSettings(docSnap.data());
+        }
+      } catch (error) {
+        console.error("Error fetching settings:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchSettings();
   }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setSettings(prev => ({
       ...prev,
-      [name]: value
+      [name]: name === 'resortName' ? value : Number(value)
     }));
-    setIsSaved(false);
   };
 
-  const handleSave = () => {
-    localStorage.setItem('synergy_settings', JSON.stringify(settings));
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 2000);
+  const handleSave = async () => {
+    try {
+      const docRef = doc(db, 'config', 'mainSettings');
+      await setDoc(docRef, settings);
+      setIsSaved(true);
+      setTimeout(() => setIsSaved(false), 2000);
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      alert("설정 저장에 실패했습니다.");
+    }
   };
+
+  if (isLoading) {
+    return <div style={{padding: '32px', color: 'white'}}>설정 불러오는 중...</div>;
+  }
 
   return (
     <div className="settings-container">

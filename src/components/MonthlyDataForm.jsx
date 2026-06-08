@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Save } from 'lucide-react';
+import { Save, Plus, Trash2 } from 'lucide-react';
+import { collection, onSnapshot, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 import './MonthlyDataForm.css';
 
 export default function MonthlyDataForm() {
@@ -12,32 +14,43 @@ export default function MonthlyDataForm() {
   });
 
   useEffect(() => {
-    const saved = localStorage.getItem('synergy_monthly_data');
-    if (saved) {
-      setRecords(JSON.parse(saved));
-    }
+    const unsub = onSnapshot(collection(db, 'monthly_records'), (snapshot) => {
+      const data = [];
+      snapshot.forEach(doc => {
+        data.push({ id: doc.id, ...doc.data() });
+      });
+      data.sort((a, b) => a.yearMonth.localeCompare(b.yearMonth));
+      setRecords(data);
+    });
+    return () => unsub();
   }, []);
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!newRecord.yearMonth || !newRecord.standardSold || !newRecord.connectingSold || !newRecord.leisureSales) return;
     
-    const updated = [...records, { 
-      ...newRecord, 
-      id: Date.now().toString(),
+    const id = Date.now().toString();
+    const docData = {
+      yearMonth: newRecord.yearMonth,
       standardSold: parseInt(newRecord.standardSold, 10),
       connectingSold: parseInt(newRecord.connectingSold, 10),
       leisureSales: parseInt(newRecord.leisureSales.replace(/,/g, ''), 10)
-    }].sort((a, b) => a.yearMonth.localeCompare(b.yearMonth)); // Sort chronologically
+    };
     
-    setRecords(updated);
-    localStorage.setItem('synergy_monthly_data', JSON.stringify(updated));
-    setNewRecord({ yearMonth: '', standardSold: '', connectingSold: '', leisureSales: '' });
+    try {
+      await setDoc(doc(db, 'monthly_records', id), docData);
+      setNewRecord({ yearMonth: '', standardSold: '', connectingSold: '', leisureSales: '' });
+    } catch (error) {
+      console.error("Error adding document: ", error);
+      alert("데이터 저장 실패");
+    }
   };
 
-  const handleDelete = (id) => {
-    const updated = records.filter(r => r.id !== id);
-    setRecords(updated);
-    localStorage.setItem('synergy_monthly_data', JSON.stringify(updated));
+  const handleDelete = async (id) => {
+    try {
+      await deleteDoc(doc(db, 'monthly_records', id));
+    } catch (error) {
+      console.error("Error deleting document: ", error);
+    }
   };
 
   const formatCurrency = (val) => {

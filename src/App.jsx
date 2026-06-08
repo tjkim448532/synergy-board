@@ -1,4 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { LayoutDashboard, TrendingUp, Upload, Settings as SettingsIcon, Play, FileSpreadsheet } from 'lucide-react'
+import { collection, onSnapshot, doc } from 'firebase/firestore';
+import { db } from './firebase';
 import DashboardLayout from './components/DashboardLayout'
 import PieChart3D from './components/PieChart3D'
 import ValidationMaster from './components/ValidationMaster'
@@ -14,16 +17,26 @@ function App() {
   const [presentationMode, setPresentationMode] = useState(false)
   const [calculationMode, setCalculationMode] = useState('physical') // 'physical' or 'sales'
   const [selectedMonth, setSelectedMonth] = useState('ALL')
-  
-  const getSettings = () => {
-    const saved = localStorage.getItem('synergy_settings');
-    return saved ? JSON.parse(saved) : { totalRooms: 500, connectingRooms51: 50 };
-  };
+  const [settings, setSettings] = useState({ totalRooms: 500, connectingRooms51: 50 });
+  const [allData, setAllData] = useState([]);
 
-  const getMonthlyData = () => {
-    const saved = localStorage.getItem('synergy_monthly_data');
-    return saved ? JSON.parse(saved) : [];
-  };
+  useEffect(() => {
+    const unsubSettings = onSnapshot(doc(db, 'config', 'mainSettings'), (docSnap) => {
+      if (docSnap.exists()) setSettings(docSnap.data());
+    });
+
+    const unsubData = onSnapshot(collection(db, 'monthly_records'), (snapshot) => {
+      const data = [];
+      snapshot.forEach(doc => data.push({ id: doc.id, ...doc.data() }));
+      data.sort((a, b) => a.yearMonth.localeCompare(b.yearMonth));
+      setAllData(data);
+    });
+
+    return () => {
+      unsubSettings();
+      unsubData();
+    };
+  }, []);
 
   const calculateCorrelation = (data, calcMode, settings) => {
     if (data.length < 2) return null;
@@ -85,9 +98,6 @@ function App() {
   const renderContent = () => {
     switch(activeTab) {
       case 'overview': {
-        const settings = getSettings();
-        const allData = getMonthlyData();
-        
         const availableMonths = Array.from(new Set(allData.map(d => d.yearMonth))).sort().reverse();
         const filteredData = selectedMonth === 'ALL' ? allData : allData.filter(d => d.yearMonth === selectedMonth);
         
@@ -165,7 +175,12 @@ function App() {
       case 'analytics':
         return (
           <div className="glass-panel" style={{height: '100%', padding: '32px'}}>
-            <CorrelationAnalytics calculationMode={calculationMode} onModeChange={setCalculationMode} />
+            <CorrelationAnalytics 
+              calculationMode={calculationMode} 
+              onModeChange={setCalculationMode} 
+              monthlyData={allData}
+              settings={settings}
+            />
           </div>
         )
       case 'upload':
