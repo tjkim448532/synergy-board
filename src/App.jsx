@@ -3,6 +3,7 @@ import DashboardLayout from './components/DashboardLayout'
 import Settings from './components/Settings'
 import MonthlyDataForm from './components/MonthlyDataForm'
 import AdvancedAnalytics from './components/AdvancedAnalytics'
+import RevenuePrediction from './components/RevenuePrediction'
 import { collection, onSnapshot, doc } from 'firebase/firestore';
 import { db } from './firebase';
 import './App.css'
@@ -31,6 +32,12 @@ function App() {
 
   const renderContent = () => {
     switch(activeTab) {
+      case 'prediction':
+        return (
+          <div className="glass-panel" style={{height: '100%', padding: '32px', overflowY: 'auto'}}>
+            <RevenuePrediction monthlyData={allData} settings={settings} />
+          </div>
+        )
       case 'analytics':
         return (
           <div className="glass-panel" style={{height: '100%', padding: '32px', overflowY: 'auto'}}>
