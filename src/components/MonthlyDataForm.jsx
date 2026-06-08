@@ -5,6 +5,8 @@ import { db } from '../firebase';
 import * as XLSX from 'xlsx';
 import './MonthlyDataForm.css';
 
+import { isHoliday } from 'korean-holidays';
+
 export default function MonthlyDataForm({ settings }) {
   const [records, setRecords] = useState([]);
   
@@ -88,17 +90,29 @@ export default function MonthlyDataForm({ settings }) {
               const parts = dateVal.split('-');
               monthStr = `${parts[0]}-${parts[1]}`;
             }
-            // 사용자 지정 특수 주말/공휴일 체크
+            
+            // 1. 날짜 파싱
+            const [yyyy, mm, dd] = dateVal.split('-');
+            // 다음날 계산 (공휴일 전날인지 확인하기 위해)
+            const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+            const day = d.getDay();
+            
+            const nextDay = new Date(d);
+            nextDay.setDate(d.getDate() + 1);
+            
+            // 2. 주말 및 공휴일 조건
+            const isFriOrSat = (day === 5 || day === 6);
+            // 한국의 공휴일인지 확인 (다음날이 공휴일이면 오늘은 주말 요금)
+            const isNextDayHoliday = isHoliday(nextDay);
+            
+            // 사용자 지정 특수 주말/공휴일 체크 (기존 기능 유지)
             const customWeekendsStr = settings?.customWeekends || '';
             const customWeekendsArray = customWeekendsStr.split(',').map(s => s.trim()).filter(s => s);
             
-            if (customWeekendsArray.includes(dateVal)) {
+            if (customWeekendsArray.includes(dateVal) || isFriOrSat || isNextDayHoliday) {
               isWeekend = true;
             } else {
-              // 요일 판별 (금요일: 5, 토요일: 6)
-              const d = new Date(dateVal);
-              const day = d.getDay();
-              isWeekend = (day === 5 || day === 6);
+              isWeekend = false;
             }
             
             if (isWeekend) {
