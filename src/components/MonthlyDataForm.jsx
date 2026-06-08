@@ -9,9 +9,14 @@ export default function MonthlyDataForm() {
   const [records, setRecords] = useState([]);
   const [stagedData, setStagedData] = useState({
     yearMonth: '',
+    daysCount: 0,
     sold16: 0,
     sold35: 0,
     sold51: 0,
+    revenue16: 0,
+    revenue35: 0,
+    revenue51: 0,
+    totalRoomRevenue: 0,
     leisureSales: 0,
     leisureSalesByLocation: {}
   });
@@ -60,41 +65,63 @@ export default function MonthlyDataForm() {
           }
         }
         
-        if (headerRowIdx === -1) return alert('객실 엑셀 양식을 인식할 수 없습니다. "일자", "객실타입", "객실수" 열이 포함된 파일을 올려주세요.');
+        if (headerRowIdx === -1) return alert('객실 엑셀 양식을 인식할 수 없습니다. "일자", "객실타입", "객실수", "합계" 열이 포함된 파일을 올려주세요.');
         
         const headers = data[headerRowIdx];
         const dateIdx = headers.findIndex(h => h === '일자');
         const typeIdx = headers.findIndex(h => h === '객실타입');
         const countIdx = headers.findIndex(h => h === '객실수');
+        const revIdx = headers.findIndex(h => h === '합계');
         
         let monthStr = '';
         let sold16 = 0;
         let sold35 = 0;
         let sold51 = 0;
+        let revenue16 = 0;
+        let revenue35 = 0;
+        let revenue51 = 0;
+        let totalRoomRevenue = 0;
+        const uniqueDates = new Set();
 
         for (let i = headerRowIdx + 1; i < data.length; i++) {
           const row = data[i];
-          if (!row || !row[dateIdx] || !row[typeIdx]) continue;
+          if (!row || !row[dateIdx]) continue;
           
-          let dateVal = row[dateIdx].toString();
-          if (!monthStr && dateVal.includes('-')) {
-            const parts = dateVal.split('-');
-            monthStr = `${parts[0]}-${parts[1].padStart(2, '0')}`;
+          let dateVal = row[dateIdx].toString().trim();
+          if (dateVal.includes('-')) {
+            uniqueDates.add(dateVal);
+            if (!monthStr) {
+              const parts = dateVal.split('-');
+              monthStr = `${parts[0]}-${parts[1].padStart(2, '0')}`;
+            }
           }
           
-          const roomType = row[typeIdx].toString();
+          const roomType = row[typeIdx] ? row[typeIdx].toString() : '';
           const count = parseInt(row[countIdx], 10) || 0;
+          const rev = parseInt(row[revIdx], 10) || 0;
+
+          totalRoomRevenue += rev;
           
           if (roomType.includes('16평')) {
             sold16 += count;
+            revenue16 += rev;
           } else if (roomType.includes('35평')) {
             sold35 += count;
+            revenue35 += rev;
           } else if (roomType.includes('51평')) {
             sold51 += count;
+            revenue51 += rev;
           }
         }
         
-        setStagedData(prev => ({ ...prev, yearMonth: monthStr || prev.yearMonth, sold16, sold35, sold51 }));
+        setStagedData(prev => ({ 
+          ...prev, 
+          yearMonth: monthStr || prev.yearMonth, 
+          daysCount: uniqueDates.size,
+          sold16, sold35, sold51, 
+          revenue16, revenue35, revenue51, 
+          totalRoomRevenue 
+        }));
         setRoomUploaded(true);
       } catch (err) {
         console.error(err);
@@ -178,7 +205,12 @@ export default function MonthlyDataForm() {
     
     try {
       await setDoc(doc(db, 'monthly_records', stagedData.yearMonth), stagedData);
-      setStagedData({ yearMonth: '', sold16: 0, sold35: 0, sold51: 0, leisureSales: 0, leisureSalesByLocation: {} });
+      setStagedData({ 
+        yearMonth: '', daysCount: 0, 
+        sold16: 0, sold35: 0, sold51: 0, 
+        revenue16: 0, revenue35: 0, revenue51: 0, totalRoomRevenue: 0, 
+        leisureSales: 0, leisureSalesByLocation: {} 
+      });
       setRoomUploaded(false);
       setLeisureUploaded(false);
       alert('데이터가 성공적으로 저장되었습니다!');
@@ -229,24 +261,40 @@ export default function MonthlyDataForm() {
               <Save size={18} /> 이대로 DB에 저장하기
             </button>
           </div>
-          <div style={{display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '15px'}}>
-            <div className="stat-card">
+          
+          <div style={{display: 'flex', flexWrap: 'wrap', gap: '15px'}}>
+            <div className="stat-card" style={{flex: '1 1 120px'}}>
               <div style={{color: 'var(--text-muted)', fontSize: '14px'}}>대상 연/월</div>
-              <div style={{fontSize: '24px', fontWeight: 'bold'}}>{stagedData.yearMonth || '미인식'}</div>
+              <div style={{fontSize: '24px', fontWeight: 'bold'}}>
+                {stagedData.yearMonth || '미인식'}
+                {stagedData.daysCount > 0 && <span style={{fontSize: '14px', marginLeft: '6px', color: 'var(--text-muted)', fontWeight: 'normal'}}>({stagedData.daysCount}일)</span>}
+              </div>
             </div>
-            <div className="stat-card">
-              <div style={{color: 'var(--text-muted)', fontSize: '14px'}}>16평 판매</div>
-              <div style={{fontSize: '24px', fontWeight: 'bold'}}>{formatCurrency(stagedData.sold16)}실</div>
+
+            <div className="stat-card" style={{flex: '1 1 150px'}}>
+              <div style={{color: 'var(--text-muted)', fontSize: '14px'}}>16평 실적</div>
+              <div style={{fontSize: '20px', fontWeight: 'bold'}}>{formatCurrency(stagedData.sold16)}실</div>
+              <div style={{fontSize: '14px', color: 'var(--accent-blue)', marginTop: '4px'}}>₩ {formatCurrency(stagedData.revenue16)}</div>
             </div>
-            <div className="stat-card">
-              <div style={{color: 'var(--text-muted)', fontSize: '14px'}}>35평 판매</div>
-              <div style={{fontSize: '24px', fontWeight: 'bold'}}>{formatCurrency(stagedData.sold35)}실</div>
+
+            <div className="stat-card" style={{flex: '1 1 150px'}}>
+              <div style={{color: 'var(--text-muted)', fontSize: '14px'}}>35평 실적</div>
+              <div style={{fontSize: '20px', fontWeight: 'bold'}}>{formatCurrency(stagedData.sold35)}실</div>
+              <div style={{fontSize: '14px', color: 'var(--accent-blue)', marginTop: '4px'}}>₩ {formatCurrency(stagedData.revenue35)}</div>
             </div>
-            <div className="stat-card">
-              <div style={{color: 'var(--text-muted)', fontSize: '14px'}}>51평 판매</div>
-              <div style={{fontSize: '24px', fontWeight: 'bold'}}>{formatCurrency(stagedData.sold51)}실</div>
+
+            <div className="stat-card" style={{flex: '1 1 150px'}}>
+              <div style={{color: 'var(--text-muted)', fontSize: '14px'}}>51평 실적</div>
+              <div style={{fontSize: '20px', fontWeight: 'bold'}}>{formatCurrency(stagedData.sold51)}실</div>
+              <div style={{fontSize: '14px', color: 'var(--accent-blue)', marginTop: '4px'}}>₩ {formatCurrency(stagedData.revenue51)}</div>
             </div>
-            <div className="stat-card" style={{gridColumn: 'span 2'}}>
+
+            <div className="stat-card" style={{flex: '1 1 200px'}}>
+              <div style={{color: 'var(--text-muted)', fontSize: '14px'}}>객실 총 매출</div>
+              <div style={{fontSize: '24px', fontWeight: 'bold', color: 'var(--accent-blue)'}}>₩ {formatCurrency(stagedData.totalRoomRevenue)}</div>
+            </div>
+
+            <div className="stat-card" style={{flex: '1 1 300px'}}>
               <div style={{color: 'var(--text-muted)', fontSize: '14px'}}>레저 총 매출</div>
               <div style={{fontSize: '24px', fontWeight: 'bold', color: 'var(--accent-gold)'}}>₩ {formatCurrency(stagedData.leisureSales)}</div>
               {Object.keys(stagedData.leisureSalesByLocation || {}).length > 0 && (
@@ -269,38 +317,51 @@ export default function MonthlyDataForm() {
         {records.length === 0 ? (
           <div className="empty-state">등록된 월별 실적이 없습니다. 위 폼을 통해 엑셀을 업로드해 주세요.</div>
         ) : (
-          <table className="records-table">
-            <thead>
-              <tr>
-                <th>연/월</th>
-                <th>16평</th>
-                <th>35평</th>
-                <th>51평</th>
-                <th>레저본부 총매출</th>
-                <th>영업장별 상세 내역</th>
-                <th>관리</th>
-              </tr>
-            </thead>
-            <tbody>
-              {records.map(r => (
-                <tr key={r.id}>
-                  <td>{r.yearMonth}</td>
-                  <td>{formatCurrency(r.sold16 || r.standardSold)}실</td>
-                  <td>{formatCurrency(r.sold35 || 0)}실</td>
-                  <td>{formatCurrency(r.sold51 || r.connectingSold)}실</td>
-                  <td>₩ {formatCurrency(r.leisureSales)}</td>
-                  <td style={{fontSize: '12px', color: 'var(--text-muted)', maxWidth: '250px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}} title={r.leisureSalesByLocation ? Object.entries(r.leisureSalesByLocation).map(([loc, amt]) => `${loc}(${formatCurrency(amt)})`).join(', ') : '-'}>
-                    {r.leisureSalesByLocation ? Object.entries(r.leisureSalesByLocation).map(([loc, amt]) => `${loc}: ${formatCurrency(amt)}`).join(', ') : '-'}
-                  </td>
-                  <td>
-                    <button className="btn-delete" onClick={() => handleDelete(r.id)}>
-                      <Trash2 size={16} />
-                    </button>
-                  </td>
+          <div style={{overflowX: 'auto'}}>
+            <table className="records-table" style={{minWidth: '800px'}}>
+              <thead>
+                <tr>
+                  <th>연/월 (영업일)</th>
+                  <th>16평 (실/매출)</th>
+                  <th>35평 (실/매출)</th>
+                  <th>51평 (실/매출)</th>
+                  <th>객실 총매출</th>
+                  <th>레저본부 총매출</th>
+                  <th>레저 상세 내역</th>
+                  <th>관리</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {records.map(r => (
+                  <tr key={r.id}>
+                    <td>{r.yearMonth} <span style={{fontSize: '12px', color: 'var(--text-muted)'}}>{r.daysCount ? `(${r.daysCount}일)` : ''}</span></td>
+                    <td>
+                      <div>{formatCurrency(r.sold16 || r.standardSold)}실</div>
+                      <div style={{fontSize: '12px', color: 'var(--accent-blue)'}}>₩{formatCurrency(r.revenue16 || 0)}</div>
+                    </td>
+                    <td>
+                      <div>{formatCurrency(r.sold35 || 0)}실</div>
+                      <div style={{fontSize: '12px', color: 'var(--accent-blue)'}}>₩{formatCurrency(r.revenue35 || 0)}</div>
+                    </td>
+                    <td>
+                      <div>{formatCurrency(r.sold51 || r.connectingSold)}실</div>
+                      <div style={{fontSize: '12px', color: 'var(--accent-blue)'}}>₩{formatCurrency(r.revenue51 || 0)}</div>
+                    </td>
+                    <td style={{color: 'var(--accent-blue)', fontWeight: 'bold'}}>₩ {formatCurrency(r.totalRoomRevenue || 0)}</td>
+                    <td style={{color: 'var(--accent-gold)', fontWeight: 'bold'}}>₩ {formatCurrency(r.leisureSales || 0)}</td>
+                    <td style={{fontSize: '12px', color: 'var(--text-muted)', maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}} title={r.leisureSalesByLocation ? Object.entries(r.leisureSalesByLocation).map(([loc, amt]) => `${loc}(${formatCurrency(amt)})`).join(', ') : '-'}>
+                      {r.leisureSalesByLocation ? Object.entries(r.leisureSalesByLocation).map(([loc, amt]) => `${loc}: ${formatCurrency(amt)}`).join(', ') : '-'}
+                    </td>
+                    <td>
+                      <button className="btn-delete" onClick={() => handleDelete(r.id)}>
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>
