@@ -88,11 +88,12 @@ export default function MonthlyDataForm() {
           if (!row || !row[dateIdx]) continue;
           
           let dateVal = row[dateIdx].toString().trim();
-          if (dateVal.includes('-')) {
+          const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+          if (dateRegex.test(dateVal)) {
             uniqueDates.add(dateVal);
             if (!monthStr) {
               const parts = dateVal.split('-');
-              monthStr = `${parts[0]}-${parts[1].padStart(2, '0')}`;
+              monthStr = `${parts[0]}-${parts[1]}`;
             }
           }
           
