@@ -185,6 +185,16 @@ export default function MonthlyDataForm({ settings }) {
         let totalLeisureSales = 0;
         let leisureSalesByLocation = {};
 
+        const mapLocationName = (name) => {
+          if (name.includes('미디어아트센터') || name.includes('미디어 기념품') || name.includes('미디어 카페')) {
+            return '미디어아트센터';
+          }
+          if (name.includes('목장 체험') || name === '목장' || name.includes('얼룩말카페')) {
+            return '목장';
+          }
+          return name;
+        };
+
         for (let i = headerRowIdx + 1; i < data.length; i++) {
           const row = data[i];
           if (!row) continue;
@@ -197,7 +207,8 @@ export default function MonthlyDataForm({ settings }) {
             if (locName.toUpperCase().includes('TOTAL') || locName.includes('합계') || locName.includes('소계')) {
               continue;
             }
-            leisureSalesByLocation[locName] = (leisureSalesByLocation[locName] || 0) + sumVal;
+            const groupedName = mapLocationName(locName);
+            leisureSalesByLocation[groupedName] = (leisureSalesByLocation[groupedName] || 0) + sumVal;
             totalLeisureSales += sumVal;
           } else if (locIdx === -1) {
             totalLeisureSales += sumVal;
@@ -276,8 +287,11 @@ export default function MonthlyDataForm({ settings }) {
               <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
                 <span>객실 총 매출</span> <strong style={{color: 'var(--accent-blue)'}}>₩ {formatCurrency(roomData.totalRoomRevenue)}</strong>
               </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '16px'}}>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
                 <span>16/35/51평 판매량</span> <strong>{roomData.sold16} / {roomData.sold35} / {roomData.sold51} 실</strong>
+              </div>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '16px'}}>
+                <span>예상 투숙객</span> <strong style={{color: 'var(--accent-emerald)'}}>{formatCurrency((roomData.sold16 * 2) + (roomData.sold35 * 4) + (roomData.sold51 * 6))} 명</strong>
               </div>
               <button className="btn-primary" onClick={handleSaveRoomData} style={{width: '100%', background: 'var(--accent-emerald)', display: 'flex', justifyContent: 'center', gap: '8px'}}>
                 <Save size={18} /> 객실 데이터만 DB에 저장
