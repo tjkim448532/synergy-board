@@ -82,20 +82,44 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     const occArr = processedData.map(d => d.occupancyRate);
     const locMap = {};
     
-    // 모든 영업장 수집
+    const mapLocationName = (name) => {
+      const n = name.replace(/\s+/g, '');
+      if (
+        n.includes('미디어아트') || 
+        n.includes('미디어기념품') || 
+        n.includes('미디여기념품') || 
+        n.includes('미디어기프트') || 
+        n.includes('미디어카페') ||
+        n.includes('미디어가페')
+      ) {
+        return '미디어아트센터';
+      }
+      if (
+        n.includes('목장체험') || 
+        name.trim() === '목장' || 
+        n.includes('얼룩말카페')
+      ) {
+        return '목장';
+      }
+      return name;
+    };
+
+    // 모든 영업장 수집 및 병합
     processedData.forEach(d => {
       if (d.leisureSalesByLocation) {
         Object.keys(d.leisureSalesByLocation).forEach(loc => {
-          if (!locMap[loc]) locMap[loc] = new Array(processedData.length).fill(0);
+          const groupedName = mapLocationName(loc);
+          if (!locMap[groupedName]) locMap[groupedName] = new Array(processedData.length).fill(0);
         });
       }
     });
 
-    // 배열 채우기
+    // 배열 채우기 (동일 그룹으로 묶이는 영업장들의 금액은 합산)
     processedData.forEach((d, i) => {
       if (d.leisureSalesByLocation) {
         Object.entries(d.leisureSalesByLocation).forEach(([loc, amt]) => {
-          locMap[loc][i] = amt;
+          const groupedName = mapLocationName(loc);
+          locMap[groupedName][i] += amt;
         });
       }
     });

@@ -200,10 +200,22 @@ export default function MonthlyDataForm({ settings }) {
         let leisureSalesByLocation = {};
 
         const mapLocationName = (name) => {
-          if (name.includes('미디어아트센터') || name.includes('미디어 기념품') || name.includes('미디어 카페')) {
+          const n = name.replace(/\s+/g, '');
+          if (
+            n.includes('미디어아트') || 
+            n.includes('미디어기념품') || 
+            n.includes('미디여기념품') || 
+            n.includes('미디어기프트') || 
+            n.includes('미디어카페') ||
+            n.includes('미디어가페')
+          ) {
             return '미디어아트센터';
           }
-          if (name.includes('목장 체험') || name === '목장' || name.includes('얼룩말카페')) {
+          if (
+            n.includes('목장체험') || 
+            name.trim() === '목장' || 
+            n.includes('얼룩말카페')
+          ) {
             return '목장';
           }
           return name;
