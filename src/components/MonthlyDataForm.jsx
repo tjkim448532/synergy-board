@@ -221,7 +221,7 @@ export default function MonthlyDataForm() {
               <Save size={18} /> 이대로 DB에 저장하기
             </button>
           </div>
-          <div style={{display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '15px'}}>
+          <div style={{display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '15px'}}>
             <div className="stat-card">
               <div style={{color: 'var(--text-muted)', fontSize: '14px'}}>대상 연/월</div>
               <div style={{fontSize: '24px', fontWeight: 'bold'}}>{stagedData.yearMonth || '미인식'}</div>
@@ -238,9 +238,18 @@ export default function MonthlyDataForm() {
               <div style={{color: 'var(--text-muted)', fontSize: '14px'}}>51평 판매</div>
               <div style={{fontSize: '24px', fontWeight: 'bold'}}>{formatCurrency(stagedData.sold51)}실</div>
             </div>
-            <div className="stat-card">
+            <div className="stat-card" style={{gridColumn: 'span 2'}}>
               <div style={{color: 'var(--text-muted)', fontSize: '14px'}}>레저 총 매출</div>
               <div style={{fontSize: '24px', fontWeight: 'bold', color: 'var(--accent-gold)'}}>₩ {formatCurrency(stagedData.leisureSales)}</div>
+              {Object.keys(stagedData.leisureSalesByLocation || {}).length > 0 && (
+                <div style={{marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '4px'}}>
+                  {Object.entries(stagedData.leisureSalesByLocation).map(([loc, amt]) => (
+                    <span key={loc} style={{fontSize: '11px', background: 'rgba(255,255,255,0.1)', padding: '3px 6px', borderRadius: '4px', color: '#ccc'}}>
+                      {loc}: {formatCurrency(amt)}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -260,6 +269,7 @@ export default function MonthlyDataForm() {
                 <th>35평</th>
                 <th>51평</th>
                 <th>레저본부 총매출</th>
+                <th>영업장별 상세 내역</th>
                 <th>관리</th>
               </tr>
             </thead>
@@ -271,6 +281,9 @@ export default function MonthlyDataForm() {
                   <td>{formatCurrency(r.sold35 || 0)}실</td>
                   <td>{formatCurrency(r.sold51 || r.connectingSold)}실</td>
                   <td>₩ {formatCurrency(r.leisureSales)}</td>
+                  <td style={{fontSize: '12px', color: 'var(--text-muted)', maxWidth: '250px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}} title={r.leisureSalesByLocation ? Object.entries(r.leisureSalesByLocation).map(([loc, amt]) => `${loc}(${formatCurrency(amt)})`).join(', ') : '-'}>
+                    {r.leisureSalesByLocation ? Object.entries(r.leisureSalesByLocation).map(([loc, amt]) => `${loc}: ${formatCurrency(amt)}`).join(', ') : '-'}
+                  </td>
                   <td>
                     <button className="btn-delete" onClick={() => handleDelete(r.id)}>
                       <Trash2 size={16} />
