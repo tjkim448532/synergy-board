@@ -113,3 +113,24 @@
   background: #ef4444;
   color: white;
 }
+
+.upload-box {
+  transition: all 0.2s ease-in-out;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.upload-box:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.upload-box.success {
+  background: rgba(52, 211, 153, 0.05);
+}
+
+.stat-card {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}

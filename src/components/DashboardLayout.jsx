@@ -6,7 +6,7 @@ const SIDEBAR_MENU = [
   { id: 'overview', icon: LayoutDashboard, label: '대시보드 개요' },
   { id: 'analytics', icon: PieChart, label: '상관관계 분석' },
   { id: 'upload', icon: Upload, label: '데이터 업로드' },
-  { id: 'db', icon: Database, label: 'DB 콘솔' },
+  { id: 'validation', icon: Database, label: '검증 마스터' },
   { id: 'settings', icon: Settings, label: '설정' }
 ];
 

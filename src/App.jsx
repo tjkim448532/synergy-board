@@ -6,7 +6,6 @@ import DashboardLayout from './components/DashboardLayout'
 import PieChart3D from './components/PieChart3D'
 import ValidationMaster from './components/ValidationMaster'
 import PresentationView from './components/PresentationView'
-import BigQueryConsole from './components/BigQueryConsole'
 import Settings from './components/Settings'
 import MonthlyDataForm from './components/MonthlyDataForm'
 import CorrelationAnalytics from './components/CorrelationAnalytics'
@@ -186,21 +185,17 @@ function App() {
         )
       case 'upload':
         return (
-          <div style={{height: '100%', display: 'flex', flexDirection: 'column', gap: '20px', overflowY: 'auto'}}>
-            <div className="glass-panel" style={{flexShrink: 0}}>
-              <MonthlyDataForm />
-            </div>
-            <div className="glass-panel" style={{flex: 1, minHeight: '400px'}}>
-              <ValidationMaster />
-            </div>
+          <div style={{height: '100%', padding: '32px', overflowY: 'auto'}}>
+            <MonthlyDataForm />
           </div>
         )
-      case 'db':
+      case 'validation':
         return (
-          <div className="glass-panel" style={{height: '100%', padding: '32px'}}>
-            <BigQueryConsole />
+          <div className="glass-panel" style={{height: '100%', padding: '32px', overflowY: 'auto'}}>
+            <ValidationMaster />
           </div>
         )
+
       case 'settings':
         return (
           <div className="glass-panel" style={{height: '100%', padding: '32px'}}>
