@@ -5,6 +5,8 @@ import ValidationMaster from './components/ValidationMaster'
 import PresentationView from './components/PresentationView'
 import BigQueryConsole from './components/BigQueryConsole'
 import Settings from './components/Settings'
+import MonthlyDataForm from './components/MonthlyDataForm'
+import CorrelationAnalytics from './components/CorrelationAnalytics'
 import './App.css'
 
 function App() {
@@ -64,11 +66,20 @@ function App() {
           </div>
         )
       case 'analytics':
-        return <div className="glass-panel" style={{height: '100%', padding: '32px'}}><h2>상관관계 분석 (준비 중)</h2></div>
-      case 'upload':
         return (
           <div className="glass-panel" style={{height: '100%', padding: '32px'}}>
-            <ValidationMaster />
+            <CorrelationAnalytics />
+          </div>
+        )
+      case 'upload':
+        return (
+          <div style={{height: '100%', display: 'flex', flexDirection: 'column', gap: '20px', overflowY: 'auto'}}>
+            <div className="glass-panel" style={{flexShrink: 0}}>
+              <MonthlyDataForm />
+            </div>
+            <div className="glass-panel" style={{flex: 1, minHeight: '400px'}}>
+              <ValidationMaster />
+            </div>
           </div>
         )
       case 'db':
