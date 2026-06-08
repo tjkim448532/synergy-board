@@ -325,6 +325,7 @@ export default function MonthlyDataForm({ settings }) {
                 <tr>
                   <th>연/월 (영업일)</th>
                   <th>16평 / 35평 / 51평</th>
+                  <th>예상 투숙객</th>
                   <th>주중 (일~목) 실적</th>
                   <th>주말 (금~토) 실적</th>
                   <th>객실 총매출</th>
@@ -333,7 +334,12 @@ export default function MonthlyDataForm({ settings }) {
                 </tr>
               </thead>
               <tbody>
-                {records.map(r => (
+                {records.map(r => {
+                  const s16 = r.sold16 || r.standardSold || 0;
+                  const s35 = r.sold35 || 0;
+                  const s51 = r.sold51 || r.connectingSold || 0;
+                  const estimatedGuests = (s16 * 2) + (s35 * 4) + (s51 * 6);
+                  return (
                   <tr key={r.id}>
                     <td>
                       {r.yearMonth}
@@ -342,7 +348,11 @@ export default function MonthlyDataForm({ settings }) {
                       </div>
                     </td>
                     <td>
-                      <div style={{fontSize: '12px'}}>{formatCurrency(r.sold16 || r.standardSold || 0)} / {formatCurrency(r.sold35 || 0)} / {formatCurrency(r.sold51 || r.connectingSold || 0)} 실</div>
+                      <div style={{fontSize: '12px'}}>{formatCurrency(s16)} / {formatCurrency(s35)} / {formatCurrency(s51)} 실</div>
+                    </td>
+                    <td>
+                      <div style={{fontWeight: 'bold', color: 'var(--accent-emerald)'}}>{formatCurrency(estimatedGuests)}명</div>
+                      <div style={{fontSize: '10px', color: 'var(--text-muted)'}}>16평x2, 35평x4, 51평x6</div>
                     </td>
                     <td>
                       <div style={{fontWeight: 'bold', color: 'var(--text-main)'}}>{formatCurrency(r.soldWeekday || 0)}실</div>
@@ -360,7 +370,7 @@ export default function MonthlyDataForm({ settings }) {
                       </button>
                     </td>
                   </tr>
-                ))}
+                )})}
               </tbody>
             </table>
           </div>

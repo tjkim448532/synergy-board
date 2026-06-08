@@ -14,6 +14,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
     let totalInventoryAll = 0;
     let totalRoomRevenueAll = 0;
     let totalLeisureRevenueAll = 0;
+    let totalGuestsAll = 0;
 
     const data = [...monthlyData].sort((a, b) => a.yearMonth.localeCompare(b.yearMonth)).map(d => {
       const days = d.daysCount || 30;
@@ -21,6 +22,9 @@ export default function RevenuePrediction({ monthlyData, settings }) {
       const sold16 = Number(d.sold16 || d.standardSold || 0);
       const sold35 = Number(d.sold35 || 0);
       const sold51 = Number(d.sold51 || d.connectingSold || 0);
+      
+      // 예상 투숙객
+      const guests = (sold16 * 2) + (sold35 * 4) + (sold51 * 6);
       
       // 51평 산정 방식 설정 반영
       const count51AsTwoRooms = settings.count51AsTwoRooms !== false; // 기본값 true
@@ -41,6 +45,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
       totalInventoryAll += totalInventory;
       totalRoomRevenueAll += totalRoomRevenue;
       totalLeisureRevenueAll += leisureSales;
+      totalGuestsAll += guests;
 
       return {
         yearMonth: d.yearMonth,
@@ -51,13 +56,23 @@ export default function RevenuePrediction({ monthlyData, settings }) {
     });
 
     const globalOccRate = totalInventoryAll > 0 ? (totalSoldAll / totalInventoryAll) * 100 : 0;
+    const avgGuestsPerSoldRoom = totalSoldAll > 0 ? totalGuestsAll / totalSoldAll : 0;
+    
+    // 월 평균 모수 기준
+    const physicalRooms = Number(settings.totalRooms) || 500;
+    const rooms51Sets = Number(settings.connectingRooms51) || 50;
+    const count51AsTwoRooms = settings.count51AsTwoRooms !== false;
+    const dailyInventory = count51AsTwoRooms ? physicalRooms : (physicalRooms - rooms51Sets);
+    const monthlyInventory = dailyInventory * 30; // 시뮬레이션용 한달 30일 가정
 
     return { 
       processedData: data, 
       globalStats: {
         totalOccupancyRate: globalOccRate,
         totalRoomRevenue: totalRoomRevenueAll,
-        totalLeisureRevenue: totalLeisureRevenueAll
+        totalLeisureRevenue: totalLeisureRevenueAll,
+        avgGuestsPerSoldRoom: avgGuestsPerSoldRoom,
+        monthlyInventory: monthlyInventory
       }
     };
   }, [monthlyData, settings]);
@@ -106,6 +121,10 @@ export default function RevenuePrediction({ monthlyData, settings }) {
   const expectedRoomRevenue = Math.max(0, roomRegression.slope * targetOccupancy + roomRegression.intercept);
   const expectedLeisureRevenue = Math.max(0, leisureRegression.slope * targetOccupancy + leisureRegression.intercept);
   const expectedTotalRevenue = expectedRoomRevenue + expectedLeisureRevenue;
+
+  // 예상 투숙객 계산
+  const expectedRoomsSold = (targetOccupancy / 100) * globalStats.monthlyInventory;
+  const expectedGuests = expectedRoomsSold * globalStats.avgGuestsPerSoldRoom;
 
   // 차트용 데이터 (점 + 선)
   const chartData = useMemo(() => {
@@ -164,6 +183,9 @@ export default function RevenuePrediction({ monthlyData, settings }) {
             onChange={(e) => setTargetOccupancy(Number(e.target.value))}
             style={{width: '100%', accentColor: 'var(--accent-emerald)', cursor: 'pointer', height: '12px'}}
           />
+          <div style={{textAlign: 'center', marginTop: '16px', fontSize: '18px', color: 'var(--text-muted)'}}>
+            해당 점유율 달성 시 예상 투숙객: <strong style={{color: 'white'}}>{formatCurrency(expectedGuests)} 명</strong>
+          </div>
         </div>
 
         <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', maxWidth: '1000px', margin: '0 auto'}}>
