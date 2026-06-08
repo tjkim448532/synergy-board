@@ -65,7 +65,13 @@ export default function MonthlyDataForm() {
         let sold16 = 0, sold35 = 0, sold51 = 0;
         let revenue16 = 0, revenue35 = 0, revenue51 = 0;
         let totalRoomRevenue = 0;
+        
+        let soldWeekday = 0, soldWeekend = 0;
+        let revWeekday = 0, revWeekend = 0;
+        
         const uniqueDates = new Set();
+        const uniqueWeekdayDates = new Set();
+        const uniqueWeekendDates = new Set();
 
         for (let i = headerRowIdx + 1; i < data.length; i++) {
           const row = data[i];
@@ -73,11 +79,24 @@ export default function MonthlyDataForm() {
           
           let dateVal = row[dateIdx].toString().trim();
           const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+          
+          let isWeekend = false;
+          
           if (dateRegex.test(dateVal)) {
             uniqueDates.add(dateVal);
             if (!monthStr) {
               const parts = dateVal.split('-');
               monthStr = `${parts[0]}-${parts[1]}`;
+            }
+            // 요일 판별 (금요일: 5, 토요일: 6)
+            const d = new Date(dateVal);
+            const day = d.getDay();
+            isWeekend = (day === 5 || day === 6);
+            
+            if (isWeekend) {
+              uniqueWeekendDates.add(dateVal);
+            } else {
+              uniqueWeekdayDates.add(dateVal);
             }
           }
           
@@ -86,6 +105,13 @@ export default function MonthlyDataForm() {
           const rev = parseInt(row[revIdx], 10) || 0;
 
           totalRoomRevenue += rev;
+          if (isWeekend) {
+            soldWeekend += count;
+            revWeekend += rev;
+          } else {
+            soldWeekday += count;
+            revWeekday += rev;
+          }
           
           if (roomType.includes('16평')) {
             sold16 += count; revenue16 += rev;
@@ -104,9 +130,13 @@ export default function MonthlyDataForm() {
         setRoomData({
           yearMonth: monthStr,
           daysCount: uniqueDates.size,
+          daysCountWeekday: uniqueWeekdayDates.size,
+          daysCountWeekend: uniqueWeekendDates.size,
           sold16, sold35, sold51,
           revenue16, revenue35, revenue51,
-          totalRoomRevenue
+          totalRoomRevenue,
+          soldWeekday, soldWeekend,
+          revWeekday, revWeekend
         });
 
       } catch (err) {
@@ -286,29 +316,33 @@ export default function MonthlyDataForm() {
               <thead>
                 <tr>
                   <th>연/월 (영업일)</th>
-                  <th>16평 (실/매출)</th>
-                  <th>35평 (실/매출)</th>
-                  <th>51평 (실/매출)</th>
+                  <th>16평 / 35평 / 51평</th>
+                  <th>주중 (일~목) 실적</th>
+                  <th>주말 (금~토) 실적</th>
                   <th>객실 총매출</th>
-                  <th>레저본부 총매출</th>
+                  <th>레저 총매출</th>
                   <th>관리</th>
                 </tr>
               </thead>
               <tbody>
                 {records.map(r => (
                   <tr key={r.id}>
-                    <td>{r.yearMonth} <span style={{fontSize: '12px', color: 'var(--text-muted)'}}>{r.daysCount ? `(${r.daysCount}일)` : ''}</span></td>
                     <td>
-                      <div>{formatCurrency(r.sold16 || r.standardSold)}실</div>
-                      <div style={{fontSize: '12px', color: 'var(--accent-blue)'}}>₩{formatCurrency(r.revenue16 || 0)}</div>
+                      {r.yearMonth}
+                      <div style={{fontSize: '12px', color: 'var(--text-muted)'}}>
+                        총 {r.daysCount || 0}일 (주중 {r.daysCountWeekday || 0}일 / 주말 {r.daysCountWeekend || 0}일)
+                      </div>
                     </td>
                     <td>
-                      <div>{formatCurrency(r.sold35 || 0)}실</div>
-                      <div style={{fontSize: '12px', color: 'var(--accent-blue)'}}>₩{formatCurrency(r.revenue35 || 0)}</div>
+                      <div style={{fontSize: '12px'}}>{formatCurrency(r.sold16 || r.standardSold || 0)} / {formatCurrency(r.sold35 || 0)} / {formatCurrency(r.sold51 || r.connectingSold || 0)} 실</div>
                     </td>
                     <td>
-                      <div>{formatCurrency(r.sold51 || r.connectingSold)}실</div>
-                      <div style={{fontSize: '12px', color: 'var(--accent-blue)'}}>₩{formatCurrency(r.revenue51 || 0)}</div>
+                      <div style={{fontWeight: 'bold', color: 'var(--text-main)'}}>{formatCurrency(r.soldWeekday || 0)}실</div>
+                      <div style={{fontSize: '12px', color: 'var(--accent-blue)'}}>₩{formatCurrency(r.revWeekday || 0)}</div>
+                    </td>
+                    <td>
+                      <div style={{fontWeight: 'bold', color: 'var(--text-main)'}}>{formatCurrency(r.soldWeekend || 0)}실</div>
+                      <div style={{fontSize: '12px', color: 'var(--accent-purple)'}}>₩{formatCurrency(r.revWeekend || 0)}</div>
                     </td>
                     <td style={{color: 'var(--accent-blue)', fontWeight: 'bold'}}>₩ {formatCurrency(r.totalRoomRevenue || 0)}</td>
                     <td style={{color: 'var(--accent-gold)', fontWeight: 'bold'}}>₩ {formatCurrency(r.leisureSales || 0)}</td>

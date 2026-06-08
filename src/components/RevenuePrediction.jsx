@@ -17,12 +17,21 @@ export default function RevenuePrediction({ monthlyData, settings }) {
 
     const data = [...monthlyData].sort((a, b) => a.yearMonth.localeCompare(b.yearMonth)).map(d => {
       const days = d.daysCount || 30;
-      const totalInventory = (Number(settings.totalRooms) || 500) * days;
       
       const sold16 = Number(d.sold16 || d.standardSold || 0);
       const sold35 = Number(d.sold35 || 0);
       const sold51 = Number(d.sold51 || d.connectingSold || 0);
-      const totalSold = sold16 + sold35 + sold51;
+      
+      // 51평 산정 방식 설정 반영
+      const count51AsTwoRooms = settings.count51AsTwoRooms !== false; // 기본값 true
+      const totalSold = sold16 + sold35 + (count51AsTwoRooms ? sold51 * 2 : sold51);
+      
+      // 총 객실 모수 계산
+      const physicalRooms = Number(settings.totalRooms) || 500;
+      const rooms51Sets = Number(settings.connectingRooms51) || 50;
+      const dailyInventory = count51AsTwoRooms ? physicalRooms : (physicalRooms - rooms51Sets);
+      const totalInventory = dailyInventory * days;
+      
       const totalRoomRevenue = Number(d.totalRoomRevenue || 0);
       const leisureSales = Number(d.leisureSales || 0);
       

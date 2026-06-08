@@ -179,8 +179,35 @@ export default function Settings() {
             onChange={handleChange} 
             placeholder="예: 50"
           />
-          <small style={{color: 'var(--text-muted)', fontSize: '12px', marginTop: '4px'}}>
-            * 51평형 1세트는 물리적 객실 2개로 구성됩니다. 점유율 동적 계산 시 기준 데이터로 사용됩니다.
+        </div>
+
+        <div className="form-group">
+          <label>51평형(커넥팅 룸) 점유율 산정 방식</label>
+          <div style={{display: 'flex', gap: '20px', marginTop: '8px'}}>
+            <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'normal'}}>
+              <input 
+                type="radio" 
+                name="count51AsTwoRooms" 
+                checked={settings.count51AsTwoRooms !== false} 
+                onChange={() => setSettings(p => ({...p, count51AsTwoRooms: true}))}
+                style={{width: '18px', height: '18px', accentColor: 'var(--accent-emerald)'}}
+              />
+              방 2개로 산정 (물리적 객실 기준)
+            </label>
+            <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'normal'}}>
+              <input 
+                type="radio" 
+                name="count51AsTwoRooms" 
+                checked={settings.count51AsTwoRooms === false} 
+                onChange={() => setSettings(p => ({...p, count51AsTwoRooms: false}))}
+                style={{width: '18px', height: '18px', accentColor: 'var(--accent-emerald)'}}
+              />
+              방 1개로 산정 (단일 판매 단위 기준)
+            </label>
+          </div>
+          <small style={{color: 'var(--text-muted)', fontSize: '12px', marginTop: '8px', display: 'block'}}>
+            * 방 2개로 산정 시: 점유율 분모(총 객실)는 설정된 '고정 총 객실 수'를 그대로 사용하며, 판매 객실 수는 51평 판매량 × 2로 계산합니다.<br/>
+            * 방 1개로 산정 시: 점유율 분모는 '고정 총 객실 수 - 51평 세트 수'로 줄어들며, 판매 객실 수는 51평 판매량 × 1로 계산합니다.
           </small>
         </div>
 

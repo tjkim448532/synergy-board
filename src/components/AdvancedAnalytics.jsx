@@ -31,14 +31,22 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     const sorted = [...monthlyData].sort((a, b) => a.yearMonth.localeCompare(b.yearMonth));
     
     return sorted.map(d => {
-      // 영업일수 fallback (없으면 월별 기본 일수 대략 30으로 계산)
+      // 영업일수 fallback
       const days = d.daysCount || 30; 
-      const totalInventory = (Number(settings.totalRooms) || 500) * days;
+      
+      // 51평 산정 방식 설정 반영
+      const count51AsTwoRooms = settings.count51AsTwoRooms !== false; // 기본값 true
       
       const sold16 = Number(d.sold16 || d.standardSold || 0);
       const sold35 = Number(d.sold35 || 0);
       const sold51 = Number(d.sold51 || d.connectingSold || 0);
-      const totalSold = sold16 + sold35 + sold51;
+      const totalSold = sold16 + sold35 + (count51AsTwoRooms ? sold51 * 2 : sold51);
+      
+      // 총 객실 모수 계산
+      const physicalRooms = Number(settings.totalRooms) || 500;
+      const rooms51Sets = Number(settings.connectingRooms51) || 50;
+      const dailyInventory = count51AsTwoRooms ? physicalRooms : (physicalRooms - rooms51Sets);
+      const totalInventory = dailyInventory * days;
       
       const occRate = totalInventory > 0 ? (totalSold / totalInventory) * 100 : 0;
 
