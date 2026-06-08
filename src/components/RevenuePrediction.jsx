@@ -8,11 +8,16 @@ const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(Math.round
 export default function RevenuePrediction({ monthlyData, settings }) {
   const [targetWeekdayOcc, setTargetWeekdayOcc] = useState(50);
   const [targetWeekendOcc, setTargetWeekendOcc] = useState(80);
+  const [initialized, setInitialized] = useState(false);
 
   // 1. 데이터 가공 및 기초 통계
   const { processedData, globalStats } = useMemo(() => {
     let totalSoldAll = 0;
     let totalInventoryAll = 0;
+    let totalSoldWdAll = 0;
+    let totalInvWdAll = 0;
+    let totalSoldWeAll = 0;
+    let totalInvWeAll = 0;
     let totalRoomRevenueAll = 0;
     let totalLeisureRevenueAll = 0;
     let totalGuestsAll = 0;
@@ -52,6 +57,10 @@ export default function RevenuePrediction({ monthlyData, settings }) {
 
       totalSoldAll += totalSold;
       totalInventoryAll += totalInventory;
+      totalSoldWdAll += soldWd;
+      totalInvWdAll += invWd;
+      totalSoldWeAll += soldWe;
+      totalInvWeAll += invWe;
       totalRoomRevenueAll += totalRoomRevenue;
       totalLeisureRevenueAll += leisureSales;
       totalGuestsAll += guests;
@@ -69,6 +78,8 @@ export default function RevenuePrediction({ monthlyData, settings }) {
     });
 
     const globalOccRate = totalInventoryAll > 0 ? (totalSoldAll / totalInventoryAll) * 100 : 0;
+    const globalWdOccRate = totalInvWdAll > 0 ? (totalSoldWdAll / totalInvWdAll) * 100 : 0;
+    const globalWeOccRate = totalInvWeAll > 0 ? (totalSoldWeAll / totalInvWeAll) * 100 : 0;
     const avgGuestsPerSoldRoom = totalSoldAll > 0 ? totalGuestsAll / totalSoldAll : 0;
     
     const physicalRooms = Number(settings.totalRooms) || 500;
@@ -83,6 +94,8 @@ export default function RevenuePrediction({ monthlyData, settings }) {
       processedData: data, 
       globalStats: {
         totalOccupancyRate: globalOccRate,
+        globalWdOccRate,
+        globalWeOccRate,
         totalRoomRevenue: totalRoomRevenueAll,
         totalLeisureRevenue: totalLeisureRevenueAll,
         avgGuestsPerSoldRoom,
@@ -131,6 +144,15 @@ export default function RevenuePrediction({ monthlyData, settings }) {
       regOverallRoom: calcRegression('occupancyRate', 'totalRoomRevenue')
     };
   }, [processedData]);
+
+  // 첫 로드 시 슬라이더 기본값을 실제 누적 평균값으로 세팅
+  React.useEffect(() => {
+    if (!initialized && processedData.length > 0) {
+      if (globalStats.globalWdOccRate > 0) setTargetWeekdayOcc(Math.round(globalStats.globalWdOccRate));
+      if (globalStats.globalWeOccRate > 0) setTargetWeekendOcc(Math.round(globalStats.globalWeOccRate));
+      setInitialized(true);
+    }
+  }, [processedData, globalStats, initialized]);
 
   // 목표 매출 계산
   const expRevWd = Math.max(0, regWd.slope * targetWeekdayOcc + regWd.intercept);
@@ -201,6 +223,9 @@ export default function RevenuePrediction({ monthlyData, settings }) {
               onChange={(e) => setTargetWeekdayOcc(Number(e.target.value))}
               style={{width: '100%', accentColor: 'var(--accent-blue)', cursor: 'pointer', height: '12px'}}
             />
+            <div style={{fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px', textAlign: 'right'}}>
+              (실제 누적 평균: {globalStats.globalWdOccRate.toFixed(1)}%)
+            </div>
           </div>
           <div style={{flex: '1', minWidth: '300px', maxWidth: '400px'}}>
             <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '16px'}}>
@@ -213,6 +238,9 @@ export default function RevenuePrediction({ monthlyData, settings }) {
               onChange={(e) => setTargetWeekendOcc(Number(e.target.value))}
               style={{width: '100%', accentColor: 'var(--accent-purple)', cursor: 'pointer', height: '12px'}}
             />
+            <div style={{fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px', textAlign: 'right'}}>
+              (실제 누적 평균: {globalStats.globalWeOccRate.toFixed(1)}%)
+            </div>
           </div>
         </div>
 
@@ -258,8 +286,16 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         <div className="glass-panel" style={{padding: '24px'}}>
           <h3 style={{marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '12px'}}>전체 누적 데이터 현황</h3>
           <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '12px'}}>
-            <span style={{color: 'var(--text-muted)'}}>평균 객실 점유율</span>
+            <span style={{color: 'var(--text-muted)'}}>평균 전체 점유율</span>
             <span style={{fontWeight: 'bold', fontSize: '18px'}}>{globalStats.totalOccupancyRate.toFixed(1)}%</span>
+          </div>
+          <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '12px'}}>
+            <span style={{color: 'var(--text-muted)'}}>- 평균 주중 점유율</span>
+            <span style={{fontWeight: 'bold', fontSize: '15px', color: 'var(--accent-blue)'}}>{globalStats.globalWdOccRate.toFixed(1)}%</span>
+          </div>
+          <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '12px'}}>
+            <span style={{color: 'var(--text-muted)'}}>- 평균 주말 점유율</span>
+            <span style={{fontWeight: 'bold', fontSize: '15px', color: 'var(--accent-purple)'}}>{globalStats.globalWeOccRate.toFixed(1)}%</span>
           </div>
           <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '12px'}}>
             <span style={{color: 'var(--text-muted)'}}>총 객실 누적 매출</span>
