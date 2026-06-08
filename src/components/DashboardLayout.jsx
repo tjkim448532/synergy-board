@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { LayoutDashboard, PieChart, Upload, Database, Settings, Presentation } from 'lucide-react';
+import React from 'react';
+import { Upload, Settings, PieChart } from 'lucide-react';
 import './DashboardLayout.css';
 
 const SIDEBAR_MENU = [
+  { id: 'analytics', icon: PieChart, label: '상관관계 분석' },
   { id: 'upload', icon: Upload, label: '데이터 업로드' },
   { id: 'settings', icon: Settings, label: '설정' }
 ];
