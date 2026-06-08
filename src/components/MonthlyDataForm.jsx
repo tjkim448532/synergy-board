@@ -142,11 +142,19 @@ export default function MonthlyDataForm() {
           const sumVal = parseInt(row[sumIdx], 10);
           if (isNaN(sumVal)) continue;
 
-          totalLeisureSales += sumVal;
-          
           if (locIdx !== -1 && row[locIdx]) {
             const locName = row[locIdx].toString().trim();
+            
+            // TOTAL, 합계, 소계 행은 중복 계산을 막기 위해 건너뜁니다
+            if (locName.toUpperCase().includes('TOTAL') || locName.includes('합계') || locName.includes('소계')) {
+              continue;
+            }
+
             leisureSalesByLocation[locName] = (leisureSalesByLocation[locName] || 0) + sumVal;
+            totalLeisureSales += sumVal;
+          } else if (locIdx === -1) {
+            // 영업장 열이 아예 없는 예외적인 경우에만 무조건 더함 (하지만 총계행 중복 위험 있음)
+            totalLeisureSales += sumVal;
           }
         }
         
