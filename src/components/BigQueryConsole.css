@@ -1,0 +1,121 @@
+.bq-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 20px;
+}
+
+.bq-header {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.bq-header .tab {
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+}
+
+.bq-header .tab.active {
+  color: var(--accent-blue);
+  border-bottom: 2px solid var(--accent-blue);
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.bq-editor-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bq-textarea {
+  width: 100%;
+  height: 180px;
+  background: #1e1e1e;
+  border: 1px solid var(--border-glass);
+  border-radius: 8px;
+  padding: 16px;
+  color: #d4d4d4;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 15px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.bq-textarea:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+}
+
+.bq-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.run-query-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent-emerald);
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.run-query-btn:hover:not(:disabled) {
+  background: #059669;
+}
+
+.run-query-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.bq-results-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.results-header {
+  padding: 12px 20px;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid var(--border-glass);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.empty-results {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.results-table th, .results-table td {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border-glass);
+  text-align: left;
+}
+
+.results-table th {
+  color: var(--text-muted);
+  font-weight: 500;
+}

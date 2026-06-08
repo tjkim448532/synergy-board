@@ -1,121 +1,96 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import React, { useState } from 'react'
+import DashboardLayout from './components/DashboardLayout'
+import PieChart3D from './components/PieChart3D'
+import ValidationMaster from './components/ValidationMaster'
+import PresentationView from './components/PresentationView'
+import BigQueryConsole from './components/BigQueryConsole'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [activeTab, setActiveTab] = useState('overview')
+  const [presentationMode, setPresentationMode] = useState(false)
+
+  const slides = [
+    (
+      <div key="slide1" style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
+        <h1 style={{ fontSize: '48px', marginBottom: '20px', color: 'var(--accent-gold)' }}>Executive Summary</h1>
+        <p style={{ fontSize: '24px', color: 'var(--text-muted)' }}>Condo Occupancy vs Leisure Sales Correlation</p>
+      </div>
+    ),
+    (
+      <div key="slide2" style={{ display: 'flex', flexDirection: 'column', height: '100%', alignItems: 'center' }}>
+        <h2 style={{ fontSize: '36px', marginBottom: '40px' }}>Revenue Contribution</h2>
+        <PieChart3D tilt={45} depth={40} />
+      </div>
+    ),
+    (
+      <div key="slide3" style={{ display: 'flex', flexDirection: 'column', height: '100%', alignItems: 'center' }}>
+        <h2 style={{ fontSize: '36px', marginBottom: '40px' }}>Leisure Department Efficiency & Master Grid</h2>
+        <div style={{ flex: 1, width: '100%' }}>
+          <ValidationMaster />
+        </div>
+      </div>
+    )
+  ];
+
+  if (presentationMode) {
+    return <PresentationView slides={slides} onClose={() => setPresentationMode(false)} />
+  }
+
+  const renderContent = () => {
+    switch(activeTab) {
+      case 'overview':
+        return (
+          <div className="glass-panel" style={{height: '100%', padding: '32px', display: 'flex', flexDirection: 'column', gap: '20px'}}>
+            <h2>Executive Dashboard Overview</h2>
+            <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px'}}>
+              <div className="glass-panel" style={{padding: '20px'}}>
+                <div style={{color: 'var(--text-muted)'}}>Avg. Occupancy</div>
+                <div style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-emerald)'}}>74.2%</div>
+              </div>
+              <div className="glass-panel" style={{padding: '20px'}}>
+                <div style={{color: 'var(--text-muted)'}}>Total Leisure Sales</div>
+                <div style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-blue)'}}>1,845,000,000</div>
+              </div>
+              <div className="glass-panel" style={{padding: '20px'}}>
+                <div style={{color: 'var(--text-muted)'}}>Sales Correlation (r)</div>
+                <div style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-gold)'}}>0.86</div>
+              </div>
+            </div>
+            <div style={{flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '20px'}}>
+              <PieChart3D />
+            </div>
+          </div>
+        )
+      case 'analytics':
+        return <div className="glass-panel" style={{height: '100%', padding: '32px'}}><h2>Correlation Analytics (Coming Soon)</h2></div>
+      case 'upload':
+        return (
+          <div className="glass-panel" style={{height: '100%', padding: '32px'}}>
+            <ValidationMaster />
+          </div>
+        )
+      case 'db':
+        return (
+          <div className="glass-panel" style={{height: '100%', padding: '32px'}}>
+            <BigQueryConsole />
+          </div>
+        )
+      case 'settings':
+        return <div className="glass-panel" style={{height: '100%', padding: '32px'}}><h2>Settings (Coming Soon)</h2></div>
+      default:
+        return null;
+    }
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+    <DashboardLayout 
+      activeTab={activeTab} 
+      setActiveTab={setActiveTab}
+      onPresentationMode={() => setPresentationMode(true)}
+    >
+      {renderContent()}
+    </DashboardLayout>
   )
 }
 
