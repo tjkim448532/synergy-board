@@ -9,7 +9,9 @@ export default function Settings() {
   const [settings, setSettings] = useState({
     resortName: '벨포레 리조트',
     totalRooms: 500,
-    connectingRooms51: 50
+    connectingRooms51: 50,
+    count51AsTwoRooms: true,
+    customWeekends: ''
   });
 
   const [sheetUrl, setSheetUrl] = useState('');
@@ -38,7 +40,7 @@ export default function Settings() {
     const { name, value } = e.target;
     setSettings(prev => ({
       ...prev,
-      [name]: name === 'resortName' ? value : Number(value)
+      [name]: (name === 'resortName' || name === 'customWeekends') ? value : Number(value)
     }));
   };
 
@@ -209,6 +211,24 @@ export default function Settings() {
             * 방 2개로 산정 시: 점유율 분모(총 객실)는 설정된 '고정 총 객실 수'를 그대로 사용하며, 판매 객실 수는 51평 판매량 × 2로 계산합니다.<br/>
             * 방 1개로 산정 시: 점유율 분모는 '고정 총 객실 수 - 51평 세트 수'로 줄어들며, 판매 객실 수는 51평 판매량 × 1로 계산합니다.
           </small>
+        </div>
+
+        <h3 style={{marginBottom: '20px', marginTop: '40px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px'}}>
+          휴일 및 특수 주말 설정
+        </h3>
+        <div className="form-group">
+          <label htmlFor="customWeekends">특수 주말 (공휴일 전날 등) 지정</label>
+          <p style={{color: 'var(--text-muted)', fontSize: '12px', marginBottom: '8px'}}>
+            금, 토요일이 아니더라도 주말로 간주하여 점유율을 계산할 날짜를 쉼표(,)로 구분하여 입력하세요. (예: 공휴일 전날)
+          </p>
+          <textarea 
+            id="customWeekends" 
+            name="customWeekends" 
+            value={settings.customWeekends || ''} 
+            onChange={handleChange} 
+            placeholder="예: 2026-05-04, 2026-09-23"
+            style={{width: '100%', minHeight: '80px', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-glass)', background: 'rgba(255,255,255,0.05)', color: 'white', resize: 'vertical'}}
+          />
         </div>
 
         <div className="settings-actions">

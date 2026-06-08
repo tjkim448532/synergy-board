@@ -47,7 +47,7 @@ function App() {
       case 'upload':
         return (
           <div style={{height: '100%', padding: '32px', overflowY: 'auto'}}>
-            <MonthlyDataForm />
+            <MonthlyDataForm settings={settings} />
           </div>
         )
       case 'settings':

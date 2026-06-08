@@ -5,7 +5,7 @@ import { db } from '../firebase';
 import * as XLSX from 'xlsx';
 import './MonthlyDataForm.css';
 
-export default function MonthlyDataForm() {
+export default function MonthlyDataForm({ settings }) {
   const [records, setRecords] = useState([]);
   
   // 개별 상태로 분리
@@ -88,10 +88,18 @@ export default function MonthlyDataForm() {
               const parts = dateVal.split('-');
               monthStr = `${parts[0]}-${parts[1]}`;
             }
-            // 요일 판별 (금요일: 5, 토요일: 6)
-            const d = new Date(dateVal);
-            const day = d.getDay();
-            isWeekend = (day === 5 || day === 6);
+            // 사용자 지정 특수 주말/공휴일 체크
+            const customWeekendsStr = settings?.customWeekends || '';
+            const customWeekendsArray = customWeekendsStr.split(',').map(s => s.trim()).filter(s => s);
+            
+            if (customWeekendsArray.includes(dateVal)) {
+              isWeekend = true;
+            } else {
+              // 요일 판별 (금요일: 5, 토요일: 6)
+              const d = new Date(dateVal);
+              const day = d.getDay();
+              isWeekend = (day === 5 || day === 6);
+            }
             
             if (isWeekend) {
               uniqueWeekendDates.add(dateVal);
