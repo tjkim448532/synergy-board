@@ -3,14 +3,11 @@ import { LayoutDashboard, PieChart, Upload, Database, Settings, Presentation } f
 import './DashboardLayout.css';
 
 const SIDEBAR_MENU = [
-  { id: 'overview', icon: LayoutDashboard, label: '대시보드 개요' },
-  { id: 'analytics', icon: PieChart, label: '상관관계 분석' },
   { id: 'upload', icon: Upload, label: '데이터 업로드' },
-  { id: 'validation', icon: Database, label: '검증 마스터' },
   { id: 'settings', icon: Settings, label: '설정' }
 ];
 
-export default function DashboardLayout({ children, activeTab, setActiveTab, onPresentationMode }) {
+export default function DashboardLayout({ children, activeTab, setActiveTab }) {
   return (
     <div className="dashboard-container">
       {/* Sidebar */}
@@ -35,13 +32,6 @@ export default function DashboardLayout({ children, activeTab, setActiveTab, onP
             );
           })}
         </nav>
-
-        <div className="sidebar-footer">
-          <button className="nav-item presentation-btn" onClick={onPresentationMode}>
-            <Presentation size={20} />
-            <span>프레젠테이션 시작</span>
-          </button>
-        </div>
       </aside>
 
       {/* Main Content Area */}
