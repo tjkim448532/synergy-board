@@ -12,6 +12,17 @@ import './App.css'
 function App() {
   const [activeTab, setActiveTab] = useState('overview')
   const [presentationMode, setPresentationMode] = useState(false)
+  const [calculationMode, setCalculationMode] = useState('physical') // 'physical' or 'sales'
+  
+  const getSettings = () => {
+    const saved = localStorage.getItem('synergy_settings');
+    return saved ? JSON.parse(saved) : { totalRooms: 500, connectingRooms51: 50 };
+  };
+
+  const getMonthlyData = () => {
+    const saved = localStorage.getItem('synergy_monthly_data');
+    return saved ? JSON.parse(saved) : [];
+  };
 
   const slides = [
     (
@@ -42,14 +53,47 @@ function App() {
 
   const renderContent = () => {
     switch(activeTab) {
-      case 'overview':
+      case 'overview': {
+        const settings = getSettings();
+        const data = getMonthlyData();
+        
+        let avgOccupancy = '0.0%';
+        if (data.length > 0) {
+          let totalInventory = 0;
+          let totalSold = 0;
+          
+          data.forEach(d => {
+            if (calculationMode === 'physical') {
+              totalInventory += Number(settings.totalRooms);
+              totalSold += (Number(d.standardSold) + (Number(d.connectingSold) * 2));
+            } else {
+              totalInventory += (Number(settings.totalRooms) - Number(settings.connectingRooms51));
+              totalSold += (Number(d.standardSold) + Number(d.connectingSold));
+            }
+          });
+          
+          avgOccupancy = ((totalSold / totalInventory) * 100).toFixed(1) + '%';
+        }
+
         return (
           <div className="glass-panel" style={{height: '100%', padding: '32px', display: 'flex', flexDirection: 'column', gap: '20px'}}>
-            <h2>대시보드 개요</h2>
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+              <h2>대시보드 개요</h2>
+              <div style={{display: 'flex', gap: '10px', background: 'rgba(0,0,0,0.3)', padding: '6px', borderRadius: '8px'}}>
+                <button 
+                  onClick={() => setCalculationMode('physical')}
+                  style={{padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', background: calculationMode === 'physical' ? 'var(--accent-blue)' : 'transparent', color: calculationMode === 'physical' ? 'white' : 'var(--text-muted)'}}
+                >물리 객실 기준 (51평=2실)</button>
+                <button 
+                  onClick={() => setCalculationMode('sales')}
+                  style={{padding: '8px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', background: calculationMode === 'sales' ? 'var(--accent-blue)' : 'transparent', color: calculationMode === 'sales' ? 'white' : 'var(--text-muted)'}}
+                >판매 객실 기준 (51평=1실)</button>
+              </div>
+            </div>
             <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px'}}>
               <div className="glass-panel" style={{padding: '20px'}}>
                 <div style={{color: 'var(--text-muted)'}}>평균 객실 점유율</div>
-                <div style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-emerald)'}}>74.2%</div>
+                <div style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-emerald)'}}>{avgOccupancy}</div>
               </div>
               <div className="glass-panel" style={{padding: '20px'}}>
                 <div style={{color: 'var(--text-muted)'}}>레저본부 총 매출</div>
@@ -68,7 +112,7 @@ function App() {
       case 'analytics':
         return (
           <div className="glass-panel" style={{height: '100%', padding: '32px'}}>
-            <CorrelationAnalytics />
+            <CorrelationAnalytics calculationMode={calculationMode} onModeChange={setCalculationMode} />
           </div>
         )
       case 'upload':

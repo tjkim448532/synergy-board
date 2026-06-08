@@ -4,15 +4,35 @@ import {
   ScatterChart, Scatter, ZAxis
 } from 'recharts';
 
-export default function CorrelationAnalytics() {
-  const [data, setData] = useState([]);
+export default function CorrelationAnalytics({ calculationMode, onModeChange }) {
+  const [rawData, setRawData] = useState([]);
+  const [settings, setSettings] = useState({ totalRooms: 500, connectingRooms51: 50 });
 
   useEffect(() => {
-    const saved = localStorage.getItem('synergy_monthly_data');
-    if (saved) {
-      setData(JSON.parse(saved));
-    }
+    const savedData = localStorage.getItem('synergy_monthly_data');
+    if (savedData) setRawData(JSON.parse(savedData));
+    
+    const savedSettings = localStorage.getItem('synergy_settings');
+    if (savedSettings) setSettings(JSON.parse(savedSettings));
   }, []);
+
+  // Calculate dynamic occupancy
+  const data = rawData.map(d => {
+    let occupancy = 0;
+    if (calculationMode === 'physical') {
+      const inventory = Number(settings.totalRooms);
+      const sold = Number(d.standardSold) + (Number(d.connectingSold) * 2);
+      occupancy = inventory > 0 ? (sold / inventory) * 100 : 0;
+    } else {
+      const inventory = Number(settings.totalRooms) - Number(settings.connectingRooms51);
+      const sold = Number(d.standardSold) + Number(d.connectingSold);
+      occupancy = inventory > 0 ? (sold / inventory) * 100 : 0;
+    }
+    return {
+      ...d,
+      occupancyRate: Number(occupancy.toFixed(1))
+    };
+  });
 
   // Calculate Pearson correlation coefficient
   const calculateCorrelation = (data) => {
@@ -52,7 +72,19 @@ export default function CorrelationAnalytics() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', height: '100%', overflowY: 'auto' }}>
       <div className="glass-panel" style={{ padding: '24px' }}>
-        <h3 style={{ marginTop: 0, marginBottom: '20px' }}>매월 변화 트렌드 (객실 점유율 vs 레저본부 매출)</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <h3 style={{ margin: 0 }}>매월 변화 트렌드 (객실 점유율 vs 레저본부 매출)</h3>
+          <div style={{display: 'flex', gap: '10px', background: 'rgba(0,0,0,0.3)', padding: '6px', borderRadius: '8px'}}>
+            <button 
+              onClick={() => onModeChange('physical')}
+              style={{padding: '6px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer', background: calculationMode === 'physical' ? 'var(--accent-blue)' : 'transparent', color: calculationMode === 'physical' ? 'white' : 'var(--text-muted)'}}
+            >물리 객실 기준 (51평=2실)</button>
+            <button 
+              onClick={() => onModeChange('sales')}
+              style={{padding: '6px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer', background: calculationMode === 'sales' ? 'var(--accent-blue)' : 'transparent', color: calculationMode === 'sales' ? 'white' : 'var(--text-muted)'}}
+            >판매 객실 기준 (51평=1실)</button>
+          </div>
+        </div>
         <div style={{ height: '300px', width: '100%' }}>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>

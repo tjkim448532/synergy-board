@@ -4,9 +4,9 @@ import './Settings.css';
 
 export default function Settings() {
   const [settings, setSettings] = useState({
-    resortName: '프리미엄 리조트',
+    resortName: '벨포레 리조트',
     totalRooms: 500,
-    baseOccupancyRate: 70
+    connectingRooms51: 50
   });
 
   const [isSaved, setIsSaved] = useState(false);
@@ -54,7 +54,7 @@ export default function Settings() {
         </div>
 
         <div className="form-group">
-          <label htmlFor="totalRooms">총 객실 수</label>
+          <label htmlFor="totalRooms">고정 총 객실 수 (물리적 객실 기준)</label>
           <input 
             type="number" 
             id="totalRooms" 
@@ -66,15 +66,18 @@ export default function Settings() {
         </div>
 
         <div className="form-group">
-          <label htmlFor="baseOccupancyRate">목표 평균 점유율 (%)</label>
+          <label htmlFor="connectingRooms51">51평형(커넥팅 룸) 세트 수</label>
           <input 
             type="number" 
-            id="baseOccupancyRate" 
-            name="baseOccupancyRate" 
-            value={settings.baseOccupancyRate} 
+            id="connectingRooms51" 
+            name="connectingRooms51" 
+            value={settings.connectingRooms51} 
             onChange={handleChange} 
-            placeholder="예: 70"
+            placeholder="예: 50"
           />
+          <small style={{color: 'var(--text-muted)', fontSize: '12px', marginTop: '4px'}}>
+            * 51평형 1세트는 물리적 객실 2개로 구성됩니다. 점유율 동적 계산 시 기준 데이터로 사용됩니다.
+          </small>
         </div>
 
         <div className="settings-actions">

@@ -6,7 +6,8 @@ export default function MonthlyDataForm() {
   const [records, setRecords] = useState([]);
   const [newRecord, setNewRecord] = useState({
     yearMonth: '',
-    occupancyRate: '',
+    standardSold: '',
+    connectingSold: '',
     leisureSales: ''
   });
 
@@ -18,18 +19,19 @@ export default function MonthlyDataForm() {
   }, []);
 
   const handleAdd = () => {
-    if (!newRecord.yearMonth || !newRecord.occupancyRate || !newRecord.leisureSales) return;
+    if (!newRecord.yearMonth || !newRecord.standardSold || !newRecord.connectingSold || !newRecord.leisureSales) return;
     
     const updated = [...records, { 
       ...newRecord, 
       id: Date.now().toString(),
-      occupancyRate: parseFloat(newRecord.occupancyRate),
+      standardSold: parseInt(newRecord.standardSold, 10),
+      connectingSold: parseInt(newRecord.connectingSold, 10),
       leisureSales: parseInt(newRecord.leisureSales.replace(/,/g, ''), 10)
     }].sort((a, b) => a.yearMonth.localeCompare(b.yearMonth)); // Sort chronologically
     
     setRecords(updated);
     localStorage.setItem('synergy_monthly_data', JSON.stringify(updated));
-    setNewRecord({ yearMonth: '', occupancyRate: '', leisureSales: '' });
+    setNewRecord({ yearMonth: '', standardSold: '', connectingSold: '', leisureSales: '' });
   };
 
   const handleDelete = (id) => {
@@ -56,12 +58,21 @@ export default function MonthlyDataForm() {
             />
           </div>
           <div className="input-group">
-            <label>객실 점유율 (%)</label>
+            <label>일반 객실 판매 수</label>
             <input 
               type="number" 
-              placeholder="예: 75.5" 
-              value={newRecord.occupancyRate} 
-              onChange={e => setNewRecord({...newRecord, occupancyRate: e.target.value})} 
+              placeholder="예: 300" 
+              value={newRecord.standardSold} 
+              onChange={e => setNewRecord({...newRecord, standardSold: e.target.value})} 
+            />
+          </div>
+          <div className="input-group">
+            <label>51평(커넥팅) 판매 수</label>
+            <input 
+              type="number" 
+              placeholder="예: 20" 
+              value={newRecord.connectingSold} 
+              onChange={e => setNewRecord({...newRecord, connectingSold: e.target.value})} 
             />
           </div>
           <div className="input-group">
@@ -95,7 +106,8 @@ export default function MonthlyDataForm() {
             <thead>
               <tr>
                 <th>연/월</th>
-                <th>객실 점유율 (%)</th>
+                <th>일반실 판매</th>
+                <th>51평 판매</th>
                 <th>레저본부 매출</th>
                 <th>관리</th>
               </tr>
@@ -104,7 +116,8 @@ export default function MonthlyDataForm() {
               {records.map(r => (
                 <tr key={r.id}>
                   <td>{r.yearMonth}</td>
-                  <td>{r.occupancyRate}%</td>
+                  <td>{r.standardSold}실</td>
+                  <td>{r.connectingSold}실</td>
                   <td>{formatCurrency(r.leisureSales)}</td>
                   <td>
                     <button className="btn-delete" onClick={() => handleDelete(r.id)}>
