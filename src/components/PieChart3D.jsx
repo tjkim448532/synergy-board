@@ -8,8 +8,8 @@ function getCoordinatesForPercent(percent) {
 
 export default function PieChart3D({ 
   data = [
-    { label: 'Condo Rooms', value: 65, color: '#10b981' }, 
-    { label: 'Leisure Dept', value: 35, color: '#3b82f6' }
+    { label: '콘도 객실', value: 65, color: '#10b981' }, 
+    { label: '레저 부문', value: 35, color: '#3b82f6' }
   ],
   depth = 30,
   tilt = 55

@@ -56,10 +56,10 @@ export default function ValidationMaster() {
   return (
     <div className="validation-container">
       <div className="validation-header">
-        <h2>Validation Master Data</h2>
+        <h2>검증 마스터 데이터</h2>
         <div className="validation-actions">
-          <button className="btn-primary">Upload Monthly Data</button>
-          <button className="btn-secondary">Export Rules</button>
+          <button className="btn-primary">월별 데이터 업로드</button>
+          <button className="btn-secondary">검증 규칙 내보내기</button>
         </div>
       </div>
       
@@ -67,13 +67,13 @@ export default function ValidationMaster() {
         <table className="validation-table">
           <thead>
             <tr>
-              <th>Grand Category (대분류)</th>
-              <th>Operating Site (영업장)</th>
-              <th>Ticket Group (티켓그룹)</th>
-              <th>Base Price</th>
-              <th>Min Price</th>
-              <th>Max Price</th>
-              <th>Status</th>
+              <th>대분류 (Grand Category)</th>
+              <th>영업장 (Operating Site)</th>
+              <th>티켓그룹 (Ticket Group)</th>
+              <th>기준단가</th>
+              <th>최소단가</th>
+              <th>최대단가</th>
+              <th>상태</th>
             </tr>
           </thead>
           <tbody>

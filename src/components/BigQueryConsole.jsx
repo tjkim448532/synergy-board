@@ -23,8 +23,8 @@ export default function BigQueryConsole() {
   return (
     <div className="bq-container">
       <div className="bq-header">
-        <div className="tab active"><Terminal size={16} /> SQL Editor</div>
-        <div className="tab"><DbIcon size={16} /> Firestore Data Viewer</div>
+        <div className="tab active"><Terminal size={16} /> SQL 에디터</div>
+        <div className="tab"><DbIcon size={16} /> Firestore 데이터 뷰어</div>
       </div>
       
       <div className="bq-editor-section">
@@ -36,13 +36,13 @@ export default function BigQueryConsole() {
         />
         <div className="bq-actions">
           <button className="run-query-btn" onClick={executeQuery} disabled={isExecuting}>
-            <Play size={16} fill="currentColor" /> {isExecuting ? 'Running...' : 'Run Query'}
+            <Play size={16} fill="currentColor" /> {isExecuting ? '실행 중...' : '쿼리 실행'}
           </button>
         </div>
       </div>
 
       <div className="bq-results-section glass-panel">
-        <div className="results-header">Query Results</div>
+        <div className="results-header">쿼리 실행 결과</div>
         {results ? (
           <table className="results-table">
             <thead>
@@ -59,7 +59,7 @@ export default function BigQueryConsole() {
             </tbody>
           </table>
         ) : (
-          <div className="empty-results">No data to display. Run a query.</div>
+          <div className="empty-results">표시할 데이터가 없습니다. 쿼리를 실행해 주세요.</div>
         )}
       </div>
     </div>

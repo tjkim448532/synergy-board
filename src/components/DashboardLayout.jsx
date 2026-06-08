@@ -3,11 +3,11 @@ import { LayoutDashboard, PieChart, Upload, Database, Settings, Presentation } f
 import './DashboardLayout.css';
 
 const SIDEBAR_MENU = [
-  { id: 'overview', icon: LayoutDashboard, label: 'Overview' },
-  { id: 'analytics', icon: PieChart, label: 'Correlation Analytics' },
-  { id: 'upload', icon: Upload, label: 'Data Upload' },
-  { id: 'db', icon: Database, label: 'DB Console' },
-  { id: 'settings', icon: Settings, label: 'Settings' }
+  { id: 'overview', icon: LayoutDashboard, label: '대시보드 개요' },
+  { id: 'analytics', icon: PieChart, label: '상관관계 분석' },
+  { id: 'upload', icon: Upload, label: '데이터 업로드' },
+  { id: 'db', icon: Database, label: 'DB 콘솔' },
+  { id: 'settings', icon: Settings, label: '설정' }
 ];
 
 export default function DashboardLayout({ children, activeTab, setActiveTab, onPresentationMode }) {
@@ -17,7 +17,7 @@ export default function DashboardLayout({ children, activeTab, setActiveTab, onP
       <aside className="glass-panel sidebar">
         <div className="sidebar-header">
           <div className="logo-icon">S</div>
-          <h2>Synergy Board</h2>
+          <h2>시너지 리포트</h2>
         </div>
         
         <nav className="sidebar-nav">
@@ -39,7 +39,7 @@ export default function DashboardLayout({ children, activeTab, setActiveTab, onP
         <div className="sidebar-footer">
           <button className="nav-item presentation-btn" onClick={onPresentationMode}>
             <Presentation size={20} />
-            <span>Present Slides</span>
+            <span>프레젠테이션 시작</span>
           </button>
         </div>
       </aside>
@@ -47,10 +47,10 @@ export default function DashboardLayout({ children, activeTab, setActiveTab, onP
       {/* Main Content Area */}
       <main className="main-content">
         <header className="glass-panel topbar">
-          <h1>{SIDEBAR_MENU.find(m => m.id === activeTab)?.label || 'Dashboard'}</h1>
+          <h1>{SIDEBAR_MENU.find(m => m.id === activeTab)?.label || '대시보드'}</h1>
           <div className="user-profile">
             <div className="avatar">A</div>
-            <span>Admin</span>
+            <span>관리자</span>
           </div>
         </header>
         
