@@ -9,9 +9,11 @@ export default function MonthlyDataForm() {
   const [records, setRecords] = useState([]);
   const [stagedData, setStagedData] = useState({
     yearMonth: '',
-    standardSold: 0,
-    connectingSold: 0,
-    leisureSales: 0
+    sold16: 0,
+    sold35: 0,
+    sold51: 0,
+    leisureSales: 0,
+    leisureSalesByLocation: {}
   });
   
   const [roomUploaded, setRoomUploaded] = useState(false);
@@ -66,8 +68,9 @@ export default function MonthlyDataForm() {
         const countIdx = headers.findIndex(h => h === '객실수');
         
         let monthStr = '';
-        let standardSold = 0;
-        let connectingSold = 0;
+        let sold16 = 0;
+        let sold35 = 0;
+        let sold51 = 0;
 
         for (let i = headerRowIdx + 1; i < data.length; i++) {
           const row = data[i];
@@ -82,14 +85,16 @@ export default function MonthlyDataForm() {
           const roomType = row[typeIdx].toString();
           const count = parseInt(row[countIdx], 10) || 0;
           
-          if (roomType.includes('51평')) {
-            connectingSold += count;
-          } else {
-            standardSold += count;
+          if (roomType.includes('16평')) {
+            sold16 += count;
+          } else if (roomType.includes('35평')) {
+            sold35 += count;
+          } else if (roomType.includes('51평')) {
+            sold51 += count;
           }
         }
         
-        setStagedData(prev => ({ ...prev, yearMonth: monthStr || prev.yearMonth, standardSold, connectingSold }));
+        setStagedData(prev => ({ ...prev, yearMonth: monthStr || prev.yearMonth, sold16, sold35, sold51 }));
         setRoomUploaded(true);
       } catch (err) {
         console.error(err);
@@ -116,7 +121,8 @@ export default function MonthlyDataForm() {
         for (let i = 0; i < 10; i++) {
           if (data[i] && data[i].includes('합계')) {
             headerRowIdx = i;
-            break;
+            // 영업장 열이 있는 행을 우선적으로 찾음
+            if (data[i].includes('영업장')) break;
           }
         }
         
@@ -124,19 +130,27 @@ export default function MonthlyDataForm() {
         
         const headers = data[headerRowIdx];
         const sumIdx = headers.findIndex(h => h === '합계');
+        const locIdx = headers.findIndex(h => h === '영업장');
         
         let totalLeisureSales = 0;
+        let leisureSalesByLocation = {};
 
         for (let i = headerRowIdx + 1; i < data.length; i++) {
           const row = data[i];
           if (!row) continue;
+          
           const sumVal = parseInt(row[sumIdx], 10);
-          if (!isNaN(sumVal)) {
-            totalLeisureSales += sumVal;
+          if (isNaN(sumVal)) continue;
+
+          totalLeisureSales += sumVal;
+          
+          if (locIdx !== -1 && row[locIdx]) {
+            const locName = row[locIdx].toString().trim();
+            leisureSalesByLocation[locName] = (leisureSalesByLocation[locName] || 0) + sumVal;
           }
         }
         
-        setStagedData(prev => ({ ...prev, leisureSales: totalLeisureSales }));
+        setStagedData(prev => ({ ...prev, leisureSales: totalLeisureSales, leisureSalesByLocation }));
         setLeisureUploaded(true);
       } catch (err) {
         console.error(err);
@@ -156,7 +170,7 @@ export default function MonthlyDataForm() {
     
     try {
       await setDoc(doc(db, 'monthly_records', stagedData.yearMonth), stagedData);
-      setStagedData({ yearMonth: '', standardSold: 0, connectingSold: 0, leisureSales: 0 });
+      setStagedData({ yearMonth: '', sold16: 0, sold35: 0, sold51: 0, leisureSales: 0, leisureSalesByLocation: {} });
       setRoomUploaded(false);
       setLeisureUploaded(false);
       alert('데이터가 성공적으로 저장되었습니다!');
@@ -207,18 +221,22 @@ export default function MonthlyDataForm() {
               <Save size={18} /> 이대로 DB에 저장하기
             </button>
           </div>
-          <div style={{display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px'}}>
+          <div style={{display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '15px'}}>
             <div className="stat-card">
               <div style={{color: 'var(--text-muted)', fontSize: '14px'}}>대상 연/월</div>
               <div style={{fontSize: '24px', fontWeight: 'bold'}}>{stagedData.yearMonth || '미인식'}</div>
             </div>
             <div className="stat-card">
-              <div style={{color: 'var(--text-muted)', fontSize: '14px'}}>일반 객실 판매</div>
-              <div style={{fontSize: '24px', fontWeight: 'bold'}}>{formatCurrency(stagedData.standardSold)}실</div>
+              <div style={{color: 'var(--text-muted)', fontSize: '14px'}}>16평 판매</div>
+              <div style={{fontSize: '24px', fontWeight: 'bold'}}>{formatCurrency(stagedData.sold16)}실</div>
             </div>
             <div className="stat-card">
-              <div style={{color: 'var(--text-muted)', fontSize: '14px'}}>51평형 판매</div>
-              <div style={{fontSize: '24px', fontWeight: 'bold'}}>{formatCurrency(stagedData.connectingSold)}실</div>
+              <div style={{color: 'var(--text-muted)', fontSize: '14px'}}>35평 판매</div>
+              <div style={{fontSize: '24px', fontWeight: 'bold'}}>{formatCurrency(stagedData.sold35)}실</div>
+            </div>
+            <div className="stat-card">
+              <div style={{color: 'var(--text-muted)', fontSize: '14px'}}>51평 판매</div>
+              <div style={{fontSize: '24px', fontWeight: 'bold'}}>{formatCurrency(stagedData.sold51)}실</div>
             </div>
             <div className="stat-card">
               <div style={{color: 'var(--text-muted)', fontSize: '14px'}}>레저 총 매출</div>
@@ -238,9 +256,10 @@ export default function MonthlyDataForm() {
             <thead>
               <tr>
                 <th>연/월</th>
-                <th>일반실 판매</th>
-                <th>51평 판매</th>
-                <th>레저본부 매출</th>
+                <th>16평</th>
+                <th>35평</th>
+                <th>51평</th>
+                <th>레저본부 총매출</th>
                 <th>관리</th>
               </tr>
             </thead>
@@ -248,9 +267,10 @@ export default function MonthlyDataForm() {
               {records.map(r => (
                 <tr key={r.id}>
                   <td>{r.yearMonth}</td>
-                  <td>{formatCurrency(r.standardSold)}실</td>
-                  <td>{formatCurrency(r.connectingSold)}실</td>
-                  <td>{formatCurrency(r.leisureSales)}</td>
+                  <td>{formatCurrency(r.sold16 || r.standardSold)}실</td>
+                  <td>{formatCurrency(r.sold35 || 0)}실</td>
+                  <td>{formatCurrency(r.sold51 || r.connectingSold)}실</td>
+                  <td>₩ {formatCurrency(r.leisureSales)}</td>
                   <td>
                     <button className="btn-delete" onClick={() => handleDelete(r.id)}>
                       <Trash2 size={16} />
