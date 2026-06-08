@@ -13,6 +13,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('overview')
   const [presentationMode, setPresentationMode] = useState(false)
   const [calculationMode, setCalculationMode] = useState('physical') // 'physical' or 'sales'
+  const [selectedMonth, setSelectedMonth] = useState('ALL')
   
   const getSettings = () => {
     const saved = localStorage.getItem('synergy_settings');
@@ -22,6 +23,36 @@ function App() {
   const getMonthlyData = () => {
     const saved = localStorage.getItem('synergy_monthly_data');
     return saved ? JSON.parse(saved) : [];
+  };
+
+  const calculateCorrelation = (data, calcMode, settings) => {
+    if (data.length < 2) return null;
+    
+    const mapped = data.map(d => {
+      let occupancy = 0;
+      if (calcMode === 'physical') {
+        const inventory = Number(settings.totalRooms);
+        const sold = Number(d.standardSold) + (Number(d.connectingSold) * 2);
+        occupancy = inventory > 0 ? (sold / inventory) * 100 : 0;
+      } else {
+        const inventory = Number(settings.totalRooms) - Number(settings.connectingRooms51);
+        const sold = Number(d.standardSold) + Number(d.connectingSold);
+        occupancy = inventory > 0 ? (sold / inventory) * 100 : 0;
+      }
+      return { occupancyRate: occupancy, leisureSales: d.leisureSales };
+    });
+
+    const n = mapped.length;
+    const sumX = mapped.reduce((acc, val) => acc + val.occupancyRate, 0);
+    const sumY = mapped.reduce((acc, val) => acc + val.leisureSales, 0);
+    const sumX2 = mapped.reduce((acc, val) => acc + (val.occupancyRate * val.occupancyRate), 0);
+    const sumY2 = mapped.reduce((acc, val) => acc + (val.leisureSales * val.leisureSales), 0);
+    const sumXY = mapped.reduce((acc, val) => acc + (val.occupancyRate * val.leisureSales), 0);
+
+    const numerator = (n * sumXY) - (sumX * sumY);
+    const denominator = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+    if (denominator === 0) return 0;
+    return numerator / denominator;
   };
 
   const slides = [
@@ -55,14 +86,20 @@ function App() {
     switch(activeTab) {
       case 'overview': {
         const settings = getSettings();
-        const data = getMonthlyData();
+        const allData = getMonthlyData();
+        
+        const availableMonths = Array.from(new Set(allData.map(d => d.yearMonth))).sort().reverse();
+        const filteredData = selectedMonth === 'ALL' ? allData : allData.filter(d => d.yearMonth === selectedMonth);
         
         let avgOccupancy = '0.0%';
-        if (data.length > 0) {
+        let totalSales = 0;
+        let correlation = null;
+
+        if (filteredData.length > 0) {
           let totalInventory = 0;
           let totalSold = 0;
           
-          data.forEach(d => {
+          filteredData.forEach(d => {
             if (calculationMode === 'physical') {
               totalInventory += Number(settings.totalRooms);
               totalSold += (Number(d.standardSold) + (Number(d.connectingSold) * 2));
@@ -70,15 +107,27 @@ function App() {
               totalInventory += (Number(settings.totalRooms) - Number(settings.connectingRooms51));
               totalSold += (Number(d.standardSold) + Number(d.connectingSold));
             }
+            totalSales += Number(d.leisureSales);
           });
           
           avgOccupancy = ((totalSold / totalInventory) * 100).toFixed(1) + '%';
+          correlation = calculateCorrelation(filteredData, calculationMode, settings);
         }
 
         return (
           <div className="glass-panel" style={{height: '100%', padding: '32px', display: 'flex', flexDirection: 'column', gap: '20px'}}>
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-              <h2>대시보드 개요</h2>
+              <div style={{display: 'flex', alignItems: 'center', gap: '16px'}}>
+                <h2 style={{margin: 0}}>대시보드 개요</h2>
+                <select 
+                  value={selectedMonth} 
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                  style={{background: 'rgba(255,255,255,0.1)', color: 'var(--text-main)', border: '1px solid var(--border-glass)', padding: '6px 12px', borderRadius: '6px', outline: 'none'}}
+                >
+                  <option value="ALL" style={{color: 'black'}}>통합 전체 기간</option>
+                  {availableMonths.map(m => <option key={m} value={m} style={{color: 'black'}}>{m}</option>)}
+                </select>
+              </div>
               <div style={{display: 'flex', gap: '10px', background: 'rgba(0,0,0,0.3)', padding: '6px', borderRadius: '8px'}}>
                 <button 
                   onClick={() => setCalculationMode('physical')}
@@ -97,11 +146,15 @@ function App() {
               </div>
               <div className="glass-panel" style={{padding: '20px'}}>
                 <div style={{color: 'var(--text-muted)'}}>레저본부 총 매출</div>
-                <div style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-blue)'}}>1,845,000,000</div>
+                <div style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-blue)'}}>
+                  {new Intl.NumberFormat('ko-KR').format(totalSales)}
+                </div>
               </div>
               <div className="glass-panel" style={{padding: '20px'}}>
                 <div style={{color: 'var(--text-muted)'}}>매출 상관계수 (r)</div>
-                <div style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-gold)'}}>0.86</div>
+                <div style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-gold)'}}>
+                  {correlation !== null ? correlation.toFixed(3) : 'N/A'}
+                </div>
               </div>
             </div>
             <div style={{flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '20px'}}>
