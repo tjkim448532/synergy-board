@@ -172,6 +172,7 @@ function App() {
             </div>
           </div>
         )
+      }
       case 'analytics':
         return (
           <div className="glass-panel" style={{height: '100%', padding: '32px'}}>
