@@ -205,7 +205,7 @@ export default function MonthlyDataForm() {
     }
     
     try {
-      await setDoc(doc(db, 'monthly_records', stagedData.yearMonth), stagedData);
+      await setDoc(doc(db, 'monthly_records', stagedData.yearMonth), stagedData, { merge: true });
       setStagedData({ 
         yearMonth: '', daysCount: 0, 
         sold16: 0, sold35: 0, sold51: 0, 
