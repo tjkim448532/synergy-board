@@ -195,9 +195,16 @@ export default function MonthlyDataForm({ settings }) {
         const headers = data[headerRowIdx];
         const sumIdx = headers.findIndex(h => h === '합계');
         const locIdx = headers.findIndex(h => h === '영업장');
+        const dateIdx = headers.findIndex(h => h === '일자');
         
         let totalLeisureSales = 0;
+        let leisureRevWd = 0;
+        let leisureRevWe = 0;
         let leisureSalesByLocation = {};
+
+        const uniqueDates = new Set();
+        const uniqueWdDates = new Set();
+        const uniqueWeDates = new Set();
 
         const mapLocationName = (name) => {
           const n = name.replace(/\s+/g, '');
@@ -228,6 +235,8 @@ export default function MonthlyDataForm({ settings }) {
           const sumVal = parseInt(row[sumIdx], 10);
           if (isNaN(sumVal)) continue;
 
+          let isDataRow = false;
+
           if (locIdx !== -1 && row[locIdx]) {
             const locName = row[locIdx].toString().trim();
             if (locName.toUpperCase().includes('TOTAL') || locName.includes('합계') || locName.includes('소계')) {
@@ -236,9 +245,47 @@ export default function MonthlyDataForm({ settings }) {
             const groupedName = mapLocationName(locName);
             leisureSalesByLocation[groupedName] = (leisureSalesByLocation[groupedName] || 0) + sumVal;
             totalLeisureSales += sumVal;
+            isDataRow = true;
           } else if (locIdx === -1) {
             totalLeisureSales += sumVal;
+            isDataRow = true;
           }
+
+          if (isDataRow && dateIdx !== -1 && row[dateIdx]) {
+            let dateVal = row[dateIdx].toString().trim();
+            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+            if (dateRegex.test(dateVal)) {
+              uniqueDates.add(dateVal);
+              const [yyyy, mm, dd] = dateVal.split('-');
+              const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+              const day = d.getDay();
+              
+              // 레저 주말: 토(6), 일(0) 및 당일 공휴일 (객실의 공휴일 전날과 다름)
+              const isSatOrSun = (day === 0 || day === 6);
+              const isTodayHoliday = isHoliday(d);
+              
+              const customWeekendsStr = settings?.customWeekends || '';
+              const customWeekendsArray = customWeekendsStr.split(',').map(s => s.trim()).filter(s => s);
+              
+              let isWe = false;
+              if (customWeekendsArray.includes(dateVal) || isSatOrSun || isTodayHoliday) {
+                isWe = true;
+              }
+
+              if (isWe) {
+                uniqueWeDates.add(dateVal);
+                leisureRevWe += sumVal;
+              } else {
+                uniqueWdDates.add(dateVal);
+                leisureRevWd += sumVal;
+              }
+            }
+          }
+        }
+        
+        // 날짜 파싱이 전혀 안되었다면 전체를 주중/주말로 어떻게 나눌지 알 수 없음
+        if (dateIdx === -1 || uniqueDates.size === 0) {
+          console.warn("레저 엑셀에 유효한 '일자' 열이 없어서 주중/주말 분리가 불가능합니다.");
         }
         
         const monthStr = prompt('레저 매출의 연/월을 입력해주세요 (예: 2026-01)', '');
@@ -247,6 +294,8 @@ export default function MonthlyDataForm({ settings }) {
         setLeisureData({
           yearMonth: monthStr,
           leisureSales: totalLeisureSales,
+          leisureRevWd: leisureRevWd,
+          leisureRevWe: leisureRevWe,
           leisureSalesByLocation
         });
 
@@ -366,8 +415,8 @@ export default function MonthlyDataForm({ settings }) {
                   <th>연/월 (영업일)</th>
                   <th>16평 / 35평 / 51평</th>
                   <th>예상 투숙객</th>
-                  <th>주중 (일~목) 실적</th>
-                  <th>주말 (금~토) 실적</th>
+                  <th>주중(객실/레저) 실적</th>
+                  <th>주말(객실/레저) 실적</th>
                   <th>객실 총매출</th>
                   <th>레저 총매출</th>
                   <th>관리</th>
@@ -395,12 +444,18 @@ export default function MonthlyDataForm({ settings }) {
                       <div style={{fontSize: '10px', color: 'var(--text-muted)'}}>16평x2, 35평x4, 51평x6</div>
                     </td>
                     <td>
-                      <div style={{fontWeight: 'bold', color: 'var(--text-main)'}}>{formatCurrency(r.soldWeekday || 0)}실</div>
-                      <div style={{fontSize: '12px', color: 'var(--accent-blue)'}}>₩{formatCurrency(r.revWeekday || 0)}</div>
+                      <div style={{fontWeight: 'bold', color: 'var(--text-main)'}}>객: {formatCurrency(r.soldWeekday || 0)}실</div>
+                      <div style={{fontSize: '12px', color: 'var(--accent-blue)'}}>객: ₩{formatCurrency(r.revWeekday || 0)}</div>
+                      {r.leisureRevWd !== undefined && (
+                        <div style={{fontSize: '12px', color: 'var(--accent-gold)', marginTop: '4px'}}>레: ₩{formatCurrency(r.leisureRevWd)}</div>
+                      )}
                     </td>
                     <td>
-                      <div style={{fontWeight: 'bold', color: 'var(--text-main)'}}>{formatCurrency(r.soldWeekend || 0)}실</div>
-                      <div style={{fontSize: '12px', color: 'var(--accent-purple)'}}>₩{formatCurrency(r.revWeekend || 0)}</div>
+                      <div style={{fontWeight: 'bold', color: 'var(--text-main)'}}>객: {formatCurrency(r.soldWeekend || 0)}실</div>
+                      <div style={{fontSize: '12px', color: 'var(--accent-purple)'}}>객: ₩{formatCurrency(r.revWeekend || 0)}</div>
+                      {r.leisureRevWe !== undefined && (
+                        <div style={{fontSize: '12px', color: 'var(--accent-gold)', marginTop: '4px'}}>레: ₩{formatCurrency(r.leisureRevWe)}</div>
+                      )}
                     </td>
                     <td style={{color: 'var(--accent-blue)', fontWeight: 'bold'}}>₩ {formatCurrency(r.totalRoomRevenue || 0)}</td>
                     <td style={{color: 'var(--accent-gold)', fontWeight: 'bold'}}>₩ {formatCurrency(r.leisureSales || 0)}</td>

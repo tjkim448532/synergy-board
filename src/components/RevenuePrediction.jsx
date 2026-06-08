@@ -49,7 +49,10 @@ export default function RevenuePrediction({ monthlyData, settings }) {
       const totalRoomRevenue = Number(d.totalRoomRevenue || 0);
       const revWd = Number(d.revWeekday || 0);
       const revWe = Number(d.revWeekend || 0);
+      
       const leisureSales = Number(d.leisureSales || 0);
+      const lRevWd = d.leisureRevWd !== undefined ? Number(d.leisureRevWd) : null;
+      const lRevWe = d.leisureRevWe !== undefined ? Number(d.leisureRevWe) : null;
       
       const occRate = totalInventory > 0 ? (totalSold / totalInventory) * 100 : 0;
       const occWd = invWd > 0 ? (soldWd / invWd) * 100 : 0;
@@ -73,7 +76,9 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         totalRoomRevenue,
         revWd,
         revWe,
-        leisureSales
+        leisureSales,
+        lRevWd,
+        lRevWe
       };
     });
 
@@ -140,7 +145,9 @@ export default function RevenuePrediction({ monthlyData, settings }) {
     return {
       regWd: calcRegression('occWd', 'revWd'),
       regWe: calcRegression('occWe', 'revWe'),
-      regLeisure: calcRegression('occupancyRate', 'leisureSales'),
+      regLeisureWd: calcRegression('occWd', 'lRevWd'),
+      regLeisureWe: calcRegression('occWe', 'lRevWe'),
+      regLeisureTotal: calcRegression('occupancyRate', 'leisureSales'),
       regOverallRoom: calcRegression('occupancyRate', 'totalRoomRevenue')
     };
   }, [processedData]);
@@ -159,8 +166,24 @@ export default function RevenuePrediction({ monthlyData, settings }) {
   const expRevWe = Math.max(0, regWe.slope * targetWeekendOcc + regWe.intercept);
   const expectedRoomRevenue = expRevWd + expRevWe;
 
+  // 레저 목표 계산
   const targetTotalOcc = ((targetWeekdayOcc * globalStats.avgWdDays) + (targetWeekendOcc * globalStats.avgWeDays)) / (globalStats.avgWdDays + globalStats.avgWeDays);
-  const expectedLeisureRevenue = Math.max(0, regLeisure.slope * targetTotalOcc + regLeisure.intercept);
+  
+  let expectedLeisureRevenue = 0;
+  let expLeisureWd = 0;
+  let expLeisureWe = 0;
+  
+  // 데이터에 주중/주말 분리 레저 매출이 하나라도 있다면 분리 예측 사용, 아니면 통합 예측 사용
+  const hasSplitLeisure = processedData.some(d => d.lRevWd !== null);
+  
+  if (hasSplitLeisure) {
+    expLeisureWd = Math.max(0, regLeisureWd.slope * targetWeekdayOcc + regLeisureWd.intercept);
+    expLeisureWe = Math.max(0, regLeisureWe.slope * targetWeekendOcc + regLeisureWe.intercept);
+    expectedLeisureRevenue = expLeisureWd + expLeisureWe;
+  } else {
+    expectedLeisureRevenue = Math.max(0, regLeisureTotal.slope * targetTotalOcc + regLeisureTotal.intercept);
+  }
+  
   const expectedTotalRevenue = expectedRoomRevenue + expectedLeisureRevenue;
 
   const expSoldWd = (targetWeekdayOcc / 100) * (globalStats.dailyInventory * globalStats.avgWdDays);
@@ -181,13 +204,13 @@ export default function RevenuePrediction({ monthlyData, settings }) {
       yearMonth: '예측선 시작점',
       occupancyRate: 0,
       trendRoom: Math.max(0, regOverallRoom.intercept),
-      trendLeisure: Math.max(0, regLeisure.intercept)
+      trendLeisure: Math.max(0, regLeisureTotal.intercept)
     });
     data.push({
       yearMonth: '예측선 끝점',
       occupancyRate: 100,
       trendRoom: regOverallRoom.slope * 100 + regOverallRoom.intercept,
-      trendLeisure: regLeisure.slope * 100 + regLeisure.intercept
+      trendLeisure: regLeisureTotal.slope * 100 + regLeisureTotal.intercept
     });
     
     data.push({
@@ -199,7 +222,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
     });
 
     return data.sort((a, b) => a.occupancyRate - b.occupancyRate);
-  }, [processedData, regOverallRoom, regLeisure, targetTotalOcc, expectedRoomRevenue, expectedLeisureRevenue]);
+  }, [processedData, regOverallRoom, regLeisureTotal, targetTotalOcc, expectedRoomRevenue, expectedLeisureRevenue]);
 
   return (
     <div style={{display: 'flex', flexDirection: 'column', gap: '24px'}}>
@@ -266,7 +289,9 @@ export default function RevenuePrediction({ monthlyData, settings }) {
               ₩ {formatCurrency(expectedLeisureRevenue)}
             </div>
             <div style={{fontSize: '14px', color: 'var(--text-muted)', marginTop: '8px'}}>
-              (종합 점유율 {targetTotalOcc.toFixed(1)}% 기준 예측)
+              {hasSplitLeisure 
+                ? `(주중 ₩${formatCurrency(expLeisureWd)} + 주말 ₩${formatCurrency(expLeisureWe)})` 
+                : `(종합 점유율 ${targetTotalOcc.toFixed(1)}% 기준 예측)`}
             </div>
           </div>
         </div>
