@@ -194,7 +194,12 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
 
       {/* 2. 메인 트렌드 차트 */}
       <div className="glass-panel" style={{padding: '24px', height: '400px'}}>
-        <h3 style={{marginBottom: '20px'}}>월별 추이: 객실 점유율 vs 레저 총매출</h3>
+        <div style={{marginBottom: '20px'}}>
+          <h3 style={{margin: '0 0 8px 0'}}>월별 추이: 객실 점유율 vs 레저 총매출</h3>
+          <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0}}>
+            💡 <strong>해석 가이드:</strong> 초록색 선(점유율)과 노란색 선(레저매출)의 오르내리는 모습이 비슷할수록, 레저 시설의 매출이 투숙객 수에 크게 의존하고 있음을 뜻합니다.
+          </p>
+        </div>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={processedData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
@@ -217,8 +222,13 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
         
         {/* 평형별 산점도 */}
         <div className="glass-panel" style={{padding: '24px'}}>
-          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
-            <h3 style={{margin: 0}}>평형별 판매량 vs 레저매출 (산점도)</h3>
+          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px'}}>
+            <div>
+              <h3 style={{margin: '0 0 8px 0'}}>평형별 판매량 vs 레저매출 (산점도)</h3>
+              <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0}}>
+                💡 <strong>해석 가이드:</strong> 점들이 우측 상단(↗)으로 좁게 뭉쳐서 뻗어나갈수록, 해당 평형의 투숙객이 레저 시설에 돈을 많이 쓴다는 확실한 증거입니다.
+              </p>
+            </div>
             <select 
               value={selectedRoomType} 
               onChange={(e) => setSelectedRoomType(e.target.value)}

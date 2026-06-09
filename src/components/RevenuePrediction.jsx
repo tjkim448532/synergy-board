@@ -334,7 +334,12 @@ export default function RevenuePrediction({ monthlyData, settings }) {
 
         {/* 회귀 분석 차트 */}
         <div className="glass-panel" style={{padding: '24px', height: '400px'}}>
-          <h3 style={{marginBottom: '20px'}}>전체 점유율 vs 통합 매출 예측 트렌드 (객실/레저)</h3>
+          <div style={{marginBottom: '20px'}}>
+            <h3 style={{margin: '0 0 8px 0'}}>전체 점유율 vs 통합 매출 예측 트렌드 (객실/레저)</h3>
+            <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0}}>
+              💡 <strong>해석 가이드:</strong> 둥근 점들은 <strong>'과거의 실제 성적'</strong>을 나타내고, 직선(---)은 AI가 과거 데이터를 바탕으로 그어놓은 <strong>'미래 매출 예측 궤도'</strong>입니다.
+            </p>
+          </div>
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
