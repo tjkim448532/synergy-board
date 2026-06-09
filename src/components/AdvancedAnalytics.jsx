@@ -173,6 +173,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     const channelMap = {
       '온라인': 0,
       '세미나': 0,
+      '휴양소': 0,
       '예약실': 0,
       '홈페이지': 0,
       '기타': 0
@@ -185,7 +186,8 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
           const rev = record.revenue || 0;
           
           if (market.includes('온라인')) channelMap['온라인'] += rev;
-          else if (market.includes('세미나') || market.includes('단체') || market.includes('기업')) channelMap['세미나'] += rev;
+          else if (market.includes('기업') || market.includes('휴양소')) channelMap['휴양소'] += rev;
+          else if (market.includes('세미나') || market.includes('단체')) channelMap['세미나'] += rev;
           else if (market.includes('예약실') || market.includes('전화') || market.includes('메신저')) channelMap['예약실'] += rev;
           else if (market.includes('홈페이지') || market.includes('APP')) channelMap['홈페이지'] += rev;
           else channelMap['기타'] += rev;
@@ -199,7 +201,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       .sort((a, b) => b.value - a.value);
   }, [monthlyData]);
 
-  const PIE_COLORS = ['#3b82f6', '#10b981', '#fbbf24', '#a855f7', '#64748b'];
+  const PIE_COLORS = ['#3b82f6', '#10b981', '#fbbf24', '#a855f7', '#ef4444', '#64748b'];
 
   if (processedData.length < 2) {
     return (
