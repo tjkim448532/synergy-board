@@ -34,8 +34,8 @@ export default function RevenuePrediction({ monthlyData, settings }) {
       const guests = (sold16 * 2) + (sold35 * 4) + (sold51 * 6);
       
       const count51AsTwoRooms = settings.count51AsTwoRooms !== false;
-      const physicalRooms = 145;
-      const rooms51Sets = 72;
+      const physicalRooms = 175;
+      const rooms51Sets = 90;
       const dailyInventory = count51AsTwoRooms ? physicalRooms : (physicalRooms - rooms51Sets);
       
       const totalInventory = dailyInventory * days;
@@ -97,8 +97,8 @@ export default function RevenuePrediction({ monthlyData, settings }) {
     const globalWeOccRate = totalInvWeAll > 0 ? (totalSoldWeAll / totalInvWeAll) * 100 : 0;
     const avgGuestsPerSoldRoom = totalSoldAll > 0 ? totalGuestsAll / totalSoldAll : 0;
     
-    const physicalRooms = 145;
-    const rooms51Sets = 72;
+    const physicalRooms = 175;
+    const rooms51Sets = 90;
     const count51AsTwoRooms = settings.count51AsTwoRooms !== false;
     const dailyInventory = count51AsTwoRooms ? physicalRooms : (physicalRooms - rooms51Sets);
     

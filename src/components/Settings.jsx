@@ -137,7 +137,7 @@ export default function Settings() {
         <div className="form-group">
           <label>객실 인벤토리 고정값</label>
           <div style={{color: 'var(--text-muted)', fontSize: '14px', marginTop: '4px'}}>
-            총 객실 수는 <strong>145실</strong>, 51평형(커넥팅) 세트는 <strong>72세트</strong>로 고정되어 있습니다.
+            총 객실 수는 <strong>175실</strong>, 51평형(커넥팅) 세트는 <strong>90세트</strong>로 고정되어 있습니다.
           </div>
         </div>
 

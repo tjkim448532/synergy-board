@@ -43,16 +43,16 @@ export default function LogicGuide() {
             <div className="formula-box">
               <div className="formula-item">
                 <span className="label">총 객실 수</span>
-                <span className="value text-accent">145 실</span>
+                <span className="value text-accent">175 실</span>
               </div>
               <div className="formula-item">
                 <span className="label">51평형(커넥팅)</span>
-                <span className="value text-accent">72 세트</span>
+                <span className="value text-accent">90 세트</span>
               </div>
             </div>
             <div className="alert-box info">
               <Info size={16} />
-              <span>어떤 데이터를 업로드하든, 모든 점유율 분모의 근간은 이 145실에서 출발합니다.</span>
+              <span>어떤 데이터를 업로드하든, 모든 점유율 분모의 근간은 이 175실에서 출발합니다.</span>
             </div>
           </div>
         </div>
@@ -74,7 +74,7 @@ export default function LogicGuide() {
               <div className="toggle-state active">
                 <h4>방 2개로 산정 시 (기본)</h4>
                 <ul>
-                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>분모(인벤토리):</strong> 145실 전체</li>
+                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>분모(인벤토리):</strong> 175실 전체</li>
                   <li><CheckCircle2 size={14} className="text-emerald" /> <strong>분자(판매량):</strong> 16평 + 35평 + (51평 예약 × 2)</li>
                 </ul>
               </div>
@@ -82,7 +82,7 @@ export default function LogicGuide() {
               <div className="toggle-state">
                 <h4>방 1개로 산정 시</h4>
                 <ul>
-                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>분모(인벤토리):</strong> 73실 (145실 - 72세트)</li>
+                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>분모(인벤토리):</strong> 85실 (175실 - 90세트)</li>
                   <li><CheckCircle2 size={14} className="text-emerald" /> <strong>분자(판매량):</strong> 16평 + 35평 + (51평 예약 × 1)</li>
                 </ul>
               </div>
