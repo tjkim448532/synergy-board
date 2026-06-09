@@ -433,7 +433,11 @@ export default function MonthlyDataForm({ settings }) {
     <div className="monthly-data-container">
       <div className="upload-header glass-panel" style={{marginBottom: '20px'}}>
         <h2>엑셀 개별 업로드 시스템</h2>
-        <p style={{color: 'var(--text-muted)'}}>객실과 레저 엑셀을 완전히 분리하여 각각 독립적으로 파싱하고 개별 저장합니다. (서로 덮어쓰지 않습니다)</p>
+        <p style={{color: 'var(--text-muted)', marginBottom: '10px'}}>객실과 레저 엑셀을 완전히 분리하여 각각 독립적으로 파싱하고 개별 저장합니다. (서로 덮어쓰지 않습니다)</p>
+        <div style={{background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--accent-red)', padding: '12px', borderRadius: '6px', color: 'var(--text-main)', fontSize: '13px'}}>
+          <strong>⚠️ 데이터 덮어쓰기 주의:</strong> 동일한 연/월(예: 2026-06)의 데이터를 중복 업로드하면, <span style={{color: 'var(--accent-red)'}}>기존 데이터가 모두 삭제되고 완전히 덮어씌워집니다.</span><br/>
+          반드시 1일부터 말일까지 취합된 <strong>'해당 월 전체 통합 엑셀 파일'</strong>을 월말에 한 번만 업로드해 주세요!
+        </div>
       </div>
 
       <div className="upload-grid" style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px'}}>

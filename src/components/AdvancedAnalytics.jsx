@@ -8,14 +8,20 @@ import {
 function calculateCorrelation(xArray, yArray) {
   if (xArray.length !== yArray.length || xArray.length < 2) return null;
   const n = xArray.length;
-  const sumX = xArray.reduce((a, b) => a + b, 0);
-  const sumY = yArray.reduce((a, b) => a + b, 0);
-  const sumX2 = xArray.reduce((a, b) => a + (b * b), 0);
-  const sumY2 = yArray.reduce((a, b) => a + (b * b), 0);
-  const sumXY = xArray.reduce((acc, val, i) => acc + (val * yArray[i]), 0);
+  // 매출 제곱 시 자바스크립트 최대 정수 한계(9000조) 초과를 막기 위해 1만원 단위로 스케일링
+  const normX = xArray.map(v => v / 10000);
+  const normY = yArray.map(v => v / 10000);
+
+  const sumX = normX.reduce((a, b) => a + b, 0);
+  const sumY = normY.reduce((a, b) => a + b, 0);
+  const sumX2 = normX.reduce((a, b) => a + (b * b), 0);
+  const sumY2 = normY.reduce((a, b) => a + (b * b), 0);
+  const sumXY = normX.reduce((acc, val, i) => acc + (val * normY[i]), 0);
 
   const numerator = (n * sumXY) - (sumX * sumY);
-  const denominator = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+  const denomInside = (n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY);
+  if (denomInside <= 0) return 0;
+  const denominator = Math.sqrt(denomInside);
   if (denominator === 0) return 0;
   return numerator / denominator;
 }
@@ -215,7 +221,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
   }, [processedData, settings]);
 
   // 객실 판매채널(Market Type) 데이터 집계
-  const channelData = useMemo(() => {
+  const { channelData, negativeChannels } = useMemo(() => {
     const channelMap = {
       '온라인': 0,
       '세미나': 0,
@@ -241,10 +247,11 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       }
     });
 
-    return Object.entries(channelMap)
-      .map(([name, value]) => ({ name, value }))
-      .filter(d => d.value > 0)
-      .sort((a, b) => b.value - a.value);
+    const arr = Object.entries(channelMap).map(([name, value]) => ({ name, value }));
+    return {
+      channelData: arr.filter(d => d.value > 0).sort((a, b) => b.value - a.value),
+      negativeChannels: arr.filter(d => d.value < 0).sort((a, b) => a.value - b.value)
+    };
   }, [monthlyData]);
 
   // 채널별 평형별 객단가 (ADR)
@@ -546,6 +553,12 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>
+              {negativeChannels && negativeChannels.length > 0 && (
+                <div style={{marginTop: '10px', fontSize: '11px', color: 'var(--accent-red)', background: 'rgba(239,68,68,0.1)', padding: '8px', borderRadius: '4px', width: '100%'}}>
+                  <strong>⚠️ 환불/조정 마이너스 내역 (원그래프 비중 제외됨):</strong><br/>
+                  {negativeChannels.map(d => `${d.name} (₩${formatCurrency(d.value)})`).join(', ')}
+                </div>
+              )}
             </div>
 
             {/* ADR Table */}
