@@ -295,6 +295,51 @@ export default function LogicGuide() {
           </div>
         </div>
 
+        {/* Card 8: AI 기반 투숙객 비중 자동 추정 */}
+        <div className="guide-card glass-panel" style={{gridColumn: '1 / -1', marginTop: '24px'}}>
+          <div className="card-top">
+            <div className="icon-circle" style={{background: 'rgba(16, 185, 129, 0.1)'}}>
+              <Calculator size={24} className="text-emerald" style={{color: '#10b981'}} />
+            </div>
+            <h3>8. AI 기반 투숙객 매출 비중(Capture Rate) 통계적 추정 알고리즘</h3>
+          </div>
+          <div className="card-body">
+            <p>
+              [설정] 탭의 <strong>'데이터 기반 AI 추정'</strong> 기능은 사용자가 임의의 감이나 직관으로 입력하던 투숙객 비중을, 실제 업로드된 매출 데이터의 상관관계 흐름 속에서 수학적으로 역산해내는 고도화된 기능입니다.
+            </p>
+            
+            <div className="formula-box vertical" style={{marginTop: '16px'}}>
+              <div className="math-step">
+                <span className="step-num">Step 1: 데이터 분산(Scatter) 매핑</span>
+                <div style={{color: 'var(--text-muted)'}}>
+                  누적된 모든 월별 데이터를 바탕으로 X축을 <code>객실 점유율(%)</code>, Y축을 <code>해당 부대시설의 매출액(원)</code>으로 설정하여 좌표 평면에 점을 찍습니다.
+                </div>
+              </div>
+              <div className="math-step">
+                <span className="step-num">Step 2: 최소제곱법(OLS) 선형 회귀 모형 구축</span>
+                <div style={{color: 'var(--text-muted)'}}>
+                  찍힌 점들의 오차 제곱합을 최소화하는 최적의 추세선 <code>Y = mX + b</code>를 찾습니다.<br/>
+                  여기서 <strong>기울기(m)</strong>는 객실 점유율 1%가 오를 때 추가로 발생하는 부대시설 매출을 의미하며, <strong>Y절편(b)</strong>은 점유율이 0%일 때(투숙객이 없을 때) 발생하는 순수 '워크인(외부 고객)' 매출을 의미합니다.
+                </div>
+              </div>
+              <div className="math-step">
+                <span className="step-num">Step 3: 비중(Capture Rate) 역산 도출</span>
+                <div style={{color: 'var(--text-muted)'}}>
+                  <code>(기울기 × 평균 점유율) ÷ 평균 총매출</code><br/>
+                  평균적인 달력 월을 기준으로, <strong>'점유율에 의해 견인된 변동 매출(투숙객 기여분)'</strong>이 <strong>'전체 매출(투숙객 + 워크인)'</strong>에서 차지하는 정확한 비율(%)을 수학적으로 분리해냅니다.
+                </div>
+              </div>
+            </div>
+            
+            <div className="alert-box success" style={{marginTop: '16px', borderColor: 'rgba(16, 185, 129, 0.3)', background: 'rgba(16, 185, 129, 0.05)'}}>
+              <CheckCircle2 size={16} style={{color: '#10b981'}} />
+              <span style={{color: 'var(--text-main)'}}>
+                <strong>💡 AI 추정의 가치:</strong> 데이터가 쌓이면 쌓일수록 (최소 2개월 이상, 권장 6개월 이상) 선형 회귀 모델의 정확도는 무한히 상승하며, 계절적 요인이나 일시적 마케팅 변수에 흔들리지 않는 <strong>'가장 신뢰도 높은 순수 객실 연계 가치'</strong>를 평가할 수 있게 됩니다.
+              </span>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );
