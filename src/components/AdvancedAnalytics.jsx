@@ -196,8 +196,12 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       <div className="glass-panel" style={{padding: '24px', height: '400px'}}>
         <div style={{marginBottom: '20px'}}>
           <h3 style={{margin: '0 0 8px 0'}}>월별 추이: 객실 점유율 vs 레저 총매출</h3>
-          <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0}}>
+          <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: '1.4'}}>
             💡 <strong>해석 가이드:</strong> 초록색 선(점유율)과 노란색 선(레저매출)의 오르내리는 모습이 비슷할수록, 레저 시설의 매출이 투숙객 수에 크게 의존하고 있음을 뜻합니다.
+            <br/>
+            <span style={{fontSize: '11px', color: 'rgba(255,255,255,0.4)'}}>
+              (※ 좌측 숫자는 점유율(%), 우측 세로축의 'M'은 백만 단위를 뜻합니다. 예: 800M = 8억 원)
+            </span>
           </p>
         </div>
         <ResponsiveContainer width="100%" height="100%">
@@ -225,8 +229,12 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px'}}>
             <div>
               <h3 style={{margin: '0 0 8px 0'}}>평형별 판매량 vs 레저매출 (산점도)</h3>
-              <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0}}>
+              <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: '1.4'}}>
                 💡 <strong>해석 가이드:</strong> 점들이 우측 상단(↗)으로 좁게 뭉쳐서 뻗어나갈수록, 해당 평형의 투숙객이 레저 시설에 돈을 많이 쓴다는 확실한 증거입니다.
+                <br/>
+                <span style={{fontSize: '11px', color: 'rgba(255,255,255,0.4)'}}>
+                  (※ 가로축 숫자는 한 달간 팔린 객실 수(방 갯수)이며, 세로축의 'M'은 백만 단위를 뜻합니다. 예: 800M = 8억 원)
+                </span>
               </p>
             </div>
             <select 

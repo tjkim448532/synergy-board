@@ -336,8 +336,12 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         <div className="glass-panel" style={{padding: '24px', height: '400px'}}>
           <div style={{marginBottom: '20px'}}>
             <h3 style={{margin: '0 0 8px 0'}}>전체 점유율 vs 통합 매출 예측 트렌드 (객실/레저)</h3>
-            <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0}}>
+            <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: '1.4'}}>
               💡 <strong>해석 가이드:</strong> 둥근 점들은 <strong>'과거의 실제 성적'</strong>을 나타내고, 직선(---)은 AI가 과거 데이터를 바탕으로 그어놓은 <strong>'미래 매출 예측 궤도'</strong>입니다.
+              <br/>
+              <span style={{fontSize: '11px', color: 'rgba(255,255,255,0.4)'}}>
+                (※ 세로축의 'M'은 백만 단위를 뜻합니다. 예: 800M = 8억 원)
+              </span>
             </p>
           </div>
           <ResponsiveContainer width="100%" height="100%">
