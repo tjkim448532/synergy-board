@@ -207,6 +207,7 @@ export default function MonthlyDataForm({ settings }) {
         const dateIdx = 0;
         const sumIdx = headers.findIndex(h => h && h.toString().includes('합계'));
         const roomIdx = headers.findIndex(h => h && h.toString().toUpperCase() === 'ROOM');
+        const roomOtherIdx = headers.findIndex(h => h && h.toString().toUpperCase().replace(/\s/g,'') === 'ROOMOTHER');
         
         // 월별 데이터를 담을 객체
         const monthlyParsedMap = {};
@@ -301,9 +302,14 @@ export default function MonthlyDataForm({ settings }) {
               monthData.leisureRevWd += rowLeisureSum;
             }
 
-            if (roomIdx !== -1) {
-                const roomVal = parseInt(row[roomIdx], 10);
-                if (!isNaN(roomVal)) monthData.crossCheckRoomSum += roomVal;
+            if (roomIdx !== -1 || roomOtherIdx !== -1) {
+                const roomVal = roomIdx !== -1 ? parseInt(row[roomIdx], 10) : 0;
+                const roomOtherVal = roomOtherIdx !== -1 ? parseInt(row[roomOtherIdx], 10) : 0;
+                
+                const validRoom = isNaN(roomVal) ? 0 : roomVal;
+                const validOther = isNaN(roomOtherVal) ? 0 : roomOtherVal;
+                
+                monthData.crossCheckRoomSum += (validRoom + validOther);
             }
           }
         }
@@ -320,7 +326,8 @@ export default function MonthlyDataForm({ settings }) {
             const existingRecord = records.find(r => r.id === monthData.yearMonth);
             if (existingRecord && existingRecord.totalRoomRevenue) {
                 const dbRoom = existingRecord.totalRoomRevenue;
-                const isMatch = Math.abs(dbRoom - monthData.crossCheckRoomSum) < 100; // 허용 오차
+                // 기존 객실 데이터와 (ROOM + ROOM OTHER)의 합이 거의 일치하는지 (1000원 미만 오차 허용)
+                const isMatch = Math.abs(dbRoom - monthData.crossCheckRoomSum) < 1000; 
                 crossCheckResults[monthData.yearMonth] = {
                     hasRecord: true,
                     dbRoom,
@@ -458,16 +465,16 @@ export default function MonthlyDataForm({ settings }) {
                                   ✓ 객실 매출 교차 검증 ({data.yearMonth})
                               </div>
                               {!check.hasRecord ? (
-                                  <div style={{fontSize: '13px'}}>DB에 객실 데이터가 없음 (현재 엑셀 ROOM: ₩{formatCurrency(check.parsedRoom)})</div>
+                                  <div style={{fontSize: '13px'}}>DB에 객실 데이터가 없음 (현재 엑셀 ROOM(+OTHER) 합: ₩{formatCurrency(check.parsedRoom)})</div>
                               ) : check.isMatch ? (
                                   <div style={{fontSize: '13px'}}>
-                                      <strong>일치함!</strong> (DB 객실: ₩{formatCurrency(check.dbRoom)} / 현재 엑셀 ROOM: ₩{formatCurrency(check.parsedRoom)})
+                                      <strong>일치함!</strong> (DB 객실: ₩{formatCurrency(check.dbRoom)} / 현재 엑셀 ROOM(+OTHER) 합: ₩{formatCurrency(check.parsedRoom)})
                                   </div>
                               ) : (
                                   <div style={{fontSize: '13px'}}>
                                       <strong>불일치 주의!</strong> 
                                       <br/>- DB 객실총매출: ₩{formatCurrency(check.dbRoom)}
-                                      <br/>- 이번 엑셀 ROOM 합: ₩{formatCurrency(check.parsedRoom)}
+                                      <br/>- 이번 엑셀 ROOM(+OTHER) 합: ₩{formatCurrency(check.parsedRoom)}
                                   </div>
                               )}
                           </div>
