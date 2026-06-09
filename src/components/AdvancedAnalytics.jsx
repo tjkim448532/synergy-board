@@ -33,6 +33,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
   const [activeDivision, setActiveDivision] = useState('leisure');
 
   const divisionConfig = {
+    all: { title: '전체통합', dataKey: 'totalSales', color: 'var(--accent-emerald)' },
     leisure: { title: '레저본부', dataKey: 'leisureSales', color: 'var(--accent-purple)' },
     fnb: { title: '식음본부', dataKey: 'fnbSales', color: 'var(--accent-blue)' },
     moto: { title: '모토아레나', dataKey: 'motoSales', color: 'var(--accent-gold)' }
@@ -94,6 +95,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
         leisureSales,
         motoSales,
         fnbSales,
+        totalSales: leisureSales + motoSales + fnbSales,
         totalRoomRevenue: Number(d.totalRoomRevenue || 0)
       };
     });
@@ -150,7 +152,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       const salesObj = d.salesByLocation || d.leisureSalesByLocation || {};
       Object.entries(salesObj).forEach(([loc, amt]) => {
         const group = locationGroups[loc] || 'leisure';
-        if (group === activeDivision) {
+        if (activeDivision === 'all' || group === activeDivision) {
           const groupedName = mapLocationName(loc);
           if (!locMap[groupedName]) locMap[groupedName] = new Array(processedData.length).fill(0);
           locMap[groupedName][i] += amt;
