@@ -141,9 +141,97 @@ export default function Settings({ monthlyData }) {
           setIsSyncing(false);
         }
       });
-    } catch (e) {
-      alert(e.message);
+    } catch (error) {
+      console.error("Error reading sheet:", error);
+      alert('오류가 발생했습니다: ' + error.message);
       setIsSyncing(false);
+    }
+  };
+
+  const handleAiEstimate = () => {
+    if (!monthlyData || monthlyData.length < 2) {
+      alert("상관관계를 분석하기 위해 최소 2개월 이상의 데이터가 필요합니다.");
+      return;
+    }
+
+    const count51AsTwoRooms = settings.count51AsTwoRooms !== false;
+    const physicalRooms = Number(settings.totalRooms) || 175;
+    const rooms51Sets = Number(settings.connectingRooms51) || 85;
+    const dailyInventory = count51AsTwoRooms ? physicalRooms : (physicalRooms - rooms51Sets);
+    const locationGroups = settings.locationGroups || {};
+
+    let dataPoints = monthlyData.map(d => {
+      const [year, month] = d.id.split('-');
+      const days = new Date(year, month, 0).getDate();
+      const totalInventory = dailyInventory * days;
+
+      const sold16 = Number(d.sold16 || d.standardSold || 0);
+      const sold35 = Number(d.sold35 || 0);
+      const sold51 = Number(d.sold51 || d.connectingSold || 0);
+      const sold51Acc = Number(d.sold51Acc || 0);
+      const totalSold = sold16 + sold35 + (count51AsTwoRooms ? sold51 * 2 : sold51) + sold51Acc;
+      
+      const occRate = totalInventory > 0 ? (totalSold / totalInventory) * 100 : 0;
+
+      let leisureSales = 0;
+      let motoSales = 0;
+      let fnbSales = 0;
+
+      if (d.salesByLocation) {
+        Object.keys(d.salesByLocation).forEach(loc => {
+          const group = locationGroups[loc] || 'leisure';
+          if (group === 'leisure') leisureSales += d.salesByLocation[loc];
+          else if (group === 'moto') motoSales += d.salesByLocation[loc];
+          else if (group === 'fnb') fnbSales += d.salesByLocation[loc];
+        });
+      } else {
+        leisureSales = Number(d.totalLeisureSales || d.leisureSales || 0);
+      }
+
+      return { occRate, leisureSales, motoSales, fnbSales };
+    });
+
+    const calculateCaptureRate = (yKey) => {
+      const n = dataPoints.length;
+      let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+      dataPoints.forEach(p => {
+        sumX += p.occRate;
+        sumY += p[yKey];
+        sumXY += p.occRate * p[yKey];
+        sumX2 += p.occRate * p.occRate;
+      });
+
+      const denominator = (n * sumX2 - sumX * sumX);
+      if (denominator === 0) return null;
+      
+      const slope = (n * sumXY - sumX * sumY) / denominator;
+      
+      const avgOcc = sumX / n;
+      const avgY = sumY / n;
+      
+      if (avgY <= 0) return 0;
+      
+      let captureRate = (slope * avgOcc) / avgY;
+      captureRate = Math.max(0, Math.min(1, captureRate));
+      return Math.round(captureRate * 100);
+    };
+
+    const estLeisure = calculateCaptureRate('leisureSales');
+    const estFnb = calculateCaptureRate('fnbSales');
+    const estMoto = calculateCaptureRate('motoSales');
+
+    if (estLeisure === null) {
+      alert("데이터 편차가 부족하여 회귀 분석을 수행할 수 없습니다.");
+      return;
+    }
+
+    if (window.confirm(`📊 [AI 데이터 기반 추정 결과]\n\n업로드된 전체 엑셀 데이터를 선형 회귀 분석한 결과, 다음의 투숙객 매출 비중(Capture Rate)이 가장 통계적으로 유력합니다:\n\n- 레저본부 투숙객 비중: ${estLeisure}%\n- 식음본부 투숙객 비중: ${estFnb}%\n- 모토아레나 투숙객 비중: ${estMoto}%\n\n이 추정값을 설정에 덮어쓰고 적용하시겠습니까?`)) {
+      setSettings(prev => ({
+        ...prev,
+        captureRateLeisure: estLeisure,
+        captureRateFnb: estFnb,
+        captureRateMoto: estMoto
+      }));
     }
   };
 
@@ -285,9 +373,20 @@ export default function Settings({ monthlyData }) {
         <h3 style={{marginBottom: '20px', marginTop: '40px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px'}}>
           투숙객 매출 비중 설정 (Capture Rate)
         </h3>
-        <p className="settings-desc" style={{marginBottom: '16px'}}>
-          각 부대시설 총매출 중 '객실 투숙객'이 결제한 비중(%)을 설정합니다. 워크인(비투숙객) 매출을 제외한 <strong>순수 객실 연계 매출(순수 TrevPAR)</strong> 산출에 사용됩니다.
-        </p>
+        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '16px', flexWrap: 'wrap', gap: '12px'}}>
+          <p className="settings-desc" style={{margin: 0, flex: 1, minWidth: '300px'}}>
+            각 부대시설 총매출 중 '객실 투숙객'이 결제한 비중(%)을 설정합니다. 워크인(비투숙객) 매출을 제외한 <strong>순수 객실 연계 매출(순수 TrevPAR)</strong> 산출에 사용됩니다.
+          </p>
+          <button 
+            type="button" 
+            onClick={handleAiEstimate} 
+            className="action-button primary" 
+            style={{display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', background: 'var(--accent-purple)', borderColor: 'var(--accent-purple)'}}
+          >
+            <RefreshCw size={16} />
+            데이터 기반 AI 추정
+          </button>
+        </div>
 
         <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
           <div className="form-group" style={{flex: 1, minWidth: '200px'}}>
