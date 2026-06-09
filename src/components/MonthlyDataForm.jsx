@@ -7,6 +7,14 @@ import './MonthlyDataForm.css';
 
 import { isHoliday } from 'korean-holidays';
 
+const parseSafeInt = (val) => {
+  if (val === undefined || val === null) return 0;
+  if (typeof val === 'number') return Math.floor(val);
+  const str = val.toString().replace(/,/g, '').trim();
+  const parsed = parseInt(str, 10);
+  return isNaN(parsed) ? 0 : parsed;
+};
+
 export default function MonthlyDataForm({ settings }) {
   const [records, setRecords] = useState([]);
   
@@ -64,17 +72,7 @@ export default function MonthlyDataForm({ settings }) {
         const countIdx = headers.findIndex(h => h === '객실수');
         const revIdx = headers.findIndex(h => h === '합계');
         
-        let monthStr = '';
-        let sold16 = 0, sold35 = 0, sold51 = 0, sold51Acc = 0;
-        let revenue16 = 0, revenue35 = 0, revenue51 = 0, revenue51Acc = 0;
-        let totalRoomRevenue = 0;
-        
-        let soldWeekday = 0, soldWeekend = 0;
-        let revWeekday = 0, revWeekend = 0;
-        
-        const uniqueDates = new Set();
-        const uniqueWeekdayDates = new Set();
-        const uniqueWeekendDates = new Set();
+        const roomParsedMap = {};
 
         for (let i = headerRowIdx + 1; i < data.length; i++) {
           const row = data[i];
@@ -83,88 +81,92 @@ export default function MonthlyDataForm({ settings }) {
           let dateVal = row[dateIdx].toString().trim();
           const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
           
-          let isWeekend = false;
-          
           if (dateRegex.test(dateVal)) {
-            uniqueDates.add(dateVal);
-            if (!monthStr) {
-              const parts = dateVal.split('-');
-              monthStr = `${parts[0]}-${parts[1]}`;
+            const [yyyy, mm, dd] = dateVal.split('-');
+            const monthKey = `${yyyy}-${mm}`;
+            
+            if (!roomParsedMap[monthKey]) {
+              roomParsedMap[monthKey] = {
+                yearMonth: monthKey,
+                uniqueDates: new Set(),
+                uniqueWeekdayDates: new Set(),
+                uniqueWeekendDates: new Set(),
+                sold16: 0, sold35: 0, sold51: 0, sold51Acc: 0,
+                revenue16: 0, revenue35: 0, revenue51: 0, revenue51Acc: 0,
+                totalRoomRevenue: 0,
+                soldWeekday: 0, soldWeekend: 0,
+                revWeekday: 0, revWeekend: 0
+              };
             }
             
-            // 1. 날짜 파싱
-            const [yyyy, mm, dd] = dateVal.split('-');
-            // 다음날 계산 (공휴일 전날인지 확인하기 위해)
+            const monthData = roomParsedMap[monthKey];
+            monthData.uniqueDates.add(dateVal);
+            
             const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
             const day = d.getDay();
-            
             const nextDay = new Date(d);
             nextDay.setDate(d.getDate() + 1);
             
-            // 2. 주말 및 공휴일 조건
             const isFriOrSat = (day === 5 || day === 6);
-            // 한국의 공휴일인지 확인 (다음날이 공휴일이면 오늘은 주말 요금)
             const isNextDayHoliday = isHoliday(nextDay);
             
-            // 사용자 지정 특수 주말/공휴일 체크 (기존 기능 유지)
             const customWeekendsStr = settings?.customWeekends || '';
             const customWeekendsArray = customWeekendsStr.split(',').map(s => s.trim()).filter(s => s);
             
+            let isWeekend = false;
             if (customWeekendsArray.includes(dateVal) || isFriOrSat || isNextDayHoliday) {
               isWeekend = true;
-            } else {
-              isWeekend = false;
             }
             
-            if (isWeekend) {
-              uniqueWeekendDates.add(dateVal);
-            } else {
-              uniqueWeekdayDates.add(dateVal);
-            }
-          }
-          
-          const roomType = row[typeIdx] ? row[typeIdx].toString() : '';
-          const count = parseInt(row[countIdx], 10) || 0;
-          const rev = parseInt(row[revIdx], 10) || 0;
+            if (isWeekend) monthData.uniqueWeekendDates.add(dateVal);
+            else monthData.uniqueWeekdayDates.add(dateVal);
+            
+            const roomType = row[typeIdx] ? row[typeIdx].toString().trim() : '';
+            const count = parseSafeInt(row[countIdx]);
+            const rev = parseSafeInt(row[revIdx]);
 
-          totalRoomRevenue += rev;
-          if (isWeekend) {
-            soldWeekend += count;
-            revWeekend += rev;
-          } else {
-            soldWeekday += count;
-            revWeekday += rev;
-          }
-          
-          if (roomType.includes('16평')) {
-            sold16 += count; revenue16 += rev;
-          } else if (roomType.includes('35평')) {
-            sold35 += count; revenue35 += rev;
-          } else if (roomType.includes('51평')) {
-            if (roomType.includes('장애') || roomType.includes('휠체어')) {
-              sold51Acc += count; revenue51Acc += rev;
+            if (!roomType.includes('16평') && !roomType.includes('35평') && !roomType.includes('51평')) {
+               continue;
+            }
+
+            monthData.totalRoomRevenue += rev;
+            if (isWeekend) {
+              monthData.soldWeekend += count;
+              monthData.revWeekend += rev;
             } else {
-              sold51 += count; revenue51 += rev;
+              monthData.soldWeekday += count;
+              monthData.revWeekday += rev;
+            }
+            
+            if (roomType.includes('16평')) {
+              monthData.sold16 += count; monthData.revenue16 += rev;
+            } else if (roomType.includes('35평')) {
+              monthData.sold35 += count; monthData.revenue35 += rev;
+            } else if (roomType.includes('51평')) {
+              if (roomType.includes('장애') || roomType.includes('휠체어')) {
+                monthData.sold51Acc += count; monthData.revenue51Acc += rev;
+              } else {
+                monthData.sold51 += count; monthData.revenue51 += rev;
+              }
             }
           }
         }
         
-        if (!monthStr) {
-          monthStr = prompt('연/월을 자동으로 인식하지 못했습니다. 수동으로 입력해주세요 (예: 2026-01)', '');
-          if (!monthStr) return;
+        const parsedMonthsArray = Object.values(roomParsedMap).map(m => ({
+          ...m,
+          daysCount: m.uniqueDates.size,
+          daysCountWeekday: m.uniqueWeekdayDates.size,
+          daysCountWeekend: m.uniqueWeekendDates.size,
+          uniqueDates: undefined,
+          uniqueWeekdayDates: undefined,
+          uniqueWeekendDates: undefined
+        }));
+
+        if (parsedMonthsArray.length === 0) {
+           return alert('유효한 날짜가 포함된 행을 찾을 수 없습니다.');
         }
 
-        setRoomData({
-          yearMonth: monthStr,
-          daysCount: uniqueDates.size,
-          daysCountWeekday: uniqueWeekdayDates.size,
-          daysCountWeekend: uniqueWeekendDates.size,
-          sold16, sold35, sold51, sold51Acc,
-          revenue16, revenue35, revenue51, revenue51Acc,
-          totalRoomRevenue,
-          soldWeekday, soldWeekend,
-          revWeekday, revWeekend
-        });
+        setRoomData(parsedMonthsArray);
 
       } catch (err) {
         console.error(err);
@@ -292,7 +294,7 @@ export default function MonthlyDataForm({ settings }) {
 
             let rowLeisureSum = 0;
             locationCols.forEach(col => {
-                const val = parseInt(row[col.index], 10);
+                const val = parseSafeInt(row[col.index]);
                 if (!isNaN(val)) {
                     monthData.leisureSalesByLocation[col.name] = (monthData.leisureSalesByLocation[col.name] || 0) + val;
                     rowLeisureSum += val;
@@ -307,8 +309,8 @@ export default function MonthlyDataForm({ settings }) {
             }
 
             if (roomIdx !== -1 || roomOtherIdx !== -1) {
-                const roomVal = roomIdx !== -1 ? parseInt(row[roomIdx], 10) : 0;
-                const roomOtherVal = roomOtherIdx !== -1 ? parseInt(row[roomOtherIdx], 10) : 0;
+                const roomVal = roomIdx !== -1 ? parseSafeInt(row[roomIdx]) : 0;
+                const roomOtherVal = roomOtherIdx !== -1 ? parseSafeInt(row[roomOtherIdx]) : 0;
                 
                 const validRoom = isNaN(roomVal) ? 0 : roomVal;
                 const validOther = isNaN(roomOtherVal) ? 0 : roomOtherVal;
@@ -359,10 +361,12 @@ export default function MonthlyDataForm({ settings }) {
   };
 
   const handleSaveRoomData = async () => {
-    if (!roomData) return;
+    if (!roomData || !Array.isArray(roomData)) return;
     try {
-      await setDoc(doc(db, 'monthly_records', roomData.yearMonth), roomData, { merge: true });
-      alert(`[${roomData.yearMonth}] 객실 데이터가 성공적으로 저장(병합)되었습니다!`);
+      for (const data of roomData) {
+        await setDoc(doc(db, 'monthly_records', data.yearMonth), data, { merge: true });
+      }
+      alert(`[${roomData.map(d => d.yearMonth).join(', ')}] 객실 데이터가 성공적으로 저장(병합)되었습니다!`);
       setRoomData(null);
     } catch (e) {
       alert('저장 실패: ' + e.message);
