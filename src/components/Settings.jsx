@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Link as LinkIcon, RefreshCw } from 'lucide-react';
+import { Save, Link as LinkIcon, RefreshCw, Lock } from 'lucide-react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import Papa from 'papaparse';
@@ -24,6 +24,19 @@ export default function Settings({ monthlyData }) {
   const [isSaved, setIsSaved] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
+
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [pin, setPin] = useState('');
+
+  const handlePinSubmit = (e) => {
+    e.preventDefault();
+    if (pin === '5025') {
+      setIsAuthenticated(true);
+    } else {
+      alert('비밀번호가 일치하지 않습니다.');
+      setPin('');
+    }
+  };
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -157,6 +170,37 @@ export default function Settings({ monthlyData }) {
   const avgAdr16 = sumSold16 > 0 ? Math.round(sumRev16 / sumSold16) : 0;
   const avgAdr35 = sumSold35 > 0 ? Math.round(sumRev35 / sumSold35) : 0;
   const avgAdr51 = sumSold51 > 0 ? Math.round(sumRev51 / sumSold51) : 0;
+
+  if (!isAuthenticated) {
+    return (
+      <div style={{height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+        <form onSubmit={handlePinSubmit} className="glass-panel" style={{padding: '40px', display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center', maxWidth: '400px'}}>
+          <div style={{background: 'rgba(255,255,255,0.1)', padding: '16px', borderRadius: '50%'}}>
+            <Lock size={32} color="var(--accent-gold)" />
+          </div>
+          <h2 style={{margin: 0}}>관리자 권한 필요</h2>
+          <p style={{color: 'var(--text-muted)', textAlign: 'center', margin: 0, fontSize: '14px'}}>
+            환경 설정은 시스템 전체에 영향을 미치므로 관리자만 접근할 수 있습니다.
+          </p>
+          <input
+            type="password"
+            value={pin}
+            onChange={(e) => setPin(e.target.value)}
+            placeholder="비밀번호 4자리"
+            style={{
+              padding: '12px', borderRadius: '8px', border: '1px solid var(--border-glass)', 
+              background: 'rgba(0,0,0,0.2)', color: 'white', fontSize: '20px', 
+              textAlign: 'center', width: '100%', letterSpacing: '4px'
+            }}
+            autoFocus
+          />
+          <button type="submit" className="btn-primary" style={{width: '100%', padding: '12px'}}>
+            잠금 해제
+          </button>
+        </form>
+      </div>
+    );
+  }
 
   return (
     <div className="settings-container">
