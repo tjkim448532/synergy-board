@@ -208,15 +208,8 @@ export default function MonthlyDataForm({ settings }) {
         const sumIdx = headers.findIndex(h => h && h.toString().includes('합계'));
         const roomIdx = headers.findIndex(h => h && h.toString().toUpperCase() === 'ROOM');
         
-        let totalLeisureSales = 0;
-        let leisureRevWd = 0;
-        let leisureRevWe = 0;
-        let leisureSalesByLocation = {};
-        let crossCheckRoomSum = 0;
-
-        const uniqueDates = new Set();
-        const uniqueWdDates = new Set();
-        const uniqueWeDates = new Set();
+        // 월별 데이터를 담을 객체
+        const monthlyParsedMap = {};
 
         const mapLocationName = (name) => {
           const n = name.replace(/\s+/g, '');
@@ -262,8 +255,22 @@ export default function MonthlyDataForm({ settings }) {
           
           if (dateRegex.test(dateVal)) {
             if (!firstDateStr) firstDateStr = dateVal;
-            uniqueDates.add(dateVal);
             const [yyyy, mm, dd] = dateVal.split('-');
+            const monthKey = `${yyyy}-${mm}`;
+            
+            if (!monthlyParsedMap[monthKey]) {
+                monthlyParsedMap[monthKey] = {
+                    yearMonth: monthKey,
+                    totalLeisureSales: 0,
+                    leisureRevWd: 0,
+                    leisureRevWe: 0,
+                    leisureSalesByLocation: {},
+                    crossCheckRoomSum: 0
+                };
+            }
+            
+            const monthData = monthlyParsedMap[monthKey];
+
             const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
             const day = d.getDay();
             
@@ -282,63 +289,54 @@ export default function MonthlyDataForm({ settings }) {
             locationCols.forEach(col => {
                 const val = parseInt(row[col.index], 10);
                 if (!isNaN(val)) {
-                    leisureSalesByLocation[col.name] = (leisureSalesByLocation[col.name] || 0) + val;
+                    monthData.leisureSalesByLocation[col.name] = (monthData.leisureSalesByLocation[col.name] || 0) + val;
                     rowLeisureSum += val;
                 }
             });
 
-            totalLeisureSales += rowLeisureSum;
+            monthData.totalLeisureSales += rowLeisureSum;
             if (isWe) {
-              uniqueWeDates.add(dateVal);
-              leisureRevWe += rowLeisureSum;
+              monthData.leisureRevWe += rowLeisureSum;
             } else {
-              uniqueWdDates.add(dateVal);
-              leisureRevWd += rowLeisureSum;
+              monthData.leisureRevWd += rowLeisureSum;
             }
 
             if (roomIdx !== -1) {
                 const roomVal = parseInt(row[roomIdx], 10);
-                if (!isNaN(roomVal)) crossCheckRoomSum += roomVal;
+                if (!isNaN(roomVal)) monthData.crossCheckRoomSum += roomVal;
             }
           }
         }
         
-        let monthStr = '';
-        if (firstDateStr) {
-            const parts = firstDateStr.split('-');
-            monthStr = `${parts[0]}-${parts[1]}`;
-        } else {
-            monthStr = prompt('레저 매출의 연/월을 자동으로 인식하지 못했습니다 (예: 2026-01)', '');
-            if (!monthStr) return;
+        const parsedMonthsArray = Object.values(monthlyParsedMap).sort((a, b) => b.yearMonth.localeCompare(a.yearMonth));
+        if (parsedMonthsArray.length === 0) {
+            alert('유효한 날짜 데이터를 찾을 수 없습니다.');
+            return;
         }
 
-        // 교차 검증 로직
-        let crossCheck = null;
-        const existingRecord = records.find(r => r.id === monthStr);
-        if (existingRecord && existingRecord.totalRoomRevenue) {
-            const dbRoom = existingRecord.totalRoomRevenue;
-            const isMatch = Math.abs(dbRoom - crossCheckRoomSum) < 100; // 허용 오차
-            crossCheck = {
-                hasRecord: true,
-                dbRoom,
-                parsedRoom: crossCheckRoomSum,
-                isMatch
-            };
-        } else {
-            crossCheck = {
-                hasRecord: false,
-                parsedRoom: crossCheckRoomSum
-            };
-        }
-        setCrossCheckResult(crossCheck);
-
-        setLeisureData({
-          yearMonth: monthStr,
-          leisureSales: totalLeisureSales,
-          leisureRevWd: leisureRevWd,
-          leisureRevWe: leisureRevWe,
-          leisureSalesByLocation
+        // 교차 검증 로직 적용 (각 월별로)
+        const crossCheckResults = {};
+        parsedMonthsArray.forEach(monthData => {
+            const existingRecord = records.find(r => r.id === monthData.yearMonth);
+            if (existingRecord && existingRecord.totalRoomRevenue) {
+                const dbRoom = existingRecord.totalRoomRevenue;
+                const isMatch = Math.abs(dbRoom - monthData.crossCheckRoomSum) < 100; // 허용 오차
+                crossCheckResults[monthData.yearMonth] = {
+                    hasRecord: true,
+                    dbRoom,
+                    parsedRoom: monthData.crossCheckRoomSum,
+                    isMatch
+                };
+            } else {
+                crossCheckResults[monthData.yearMonth] = {
+                    hasRecord: false,
+                    parsedRoom: monthData.crossCheckRoomSum
+                };
+            }
         });
+
+        setCrossCheckResult(crossCheckResults);
+        setLeisureData(parsedMonthsArray);
 
       } catch (err) {
         console.error(err);
@@ -361,10 +359,20 @@ export default function MonthlyDataForm({ settings }) {
   };
 
   const handleSaveLeisureData = async () => {
-    if (!leisureData) return;
+    if (!leisureData || !Array.isArray(leisureData)) return;
     try {
-      await setDoc(doc(db, 'monthly_records', leisureData.yearMonth), leisureData, { merge: true });
-      alert(`[${leisureData.yearMonth}] 레저 데이터가 성공적으로 저장(병합)되었습니다!`);
+      for (const data of leisureData) {
+         // monthData object includes crossCheckRoomSum which we don't strictly need in DB, but it's fine.
+         const dataToSave = {
+            yearMonth: data.yearMonth,
+            leisureSales: data.totalLeisureSales,
+            leisureRevWd: data.leisureRevWd,
+            leisureRevWe: data.leisureRevWe,
+            leisureSalesByLocation: data.leisureSalesByLocation
+         };
+         await setDoc(doc(db, 'monthly_records', data.yearMonth), dataToSave, { merge: true });
+      }
+      alert(`총 ${leisureData.length}개월의 레저 데이터가 성공적으로 저장(병합)되었습니다!`);
       setLeisureData(null);
       setCrossCheckResult(null);
     } catch (e) {
@@ -429,42 +437,48 @@ export default function MonthlyDataForm({ settings }) {
             <input type="file" accept=".xlsx" onChange={handleLeisureFileUpload} style={{display: 'none'}} />
           </label>
 
-          {leisureData && (
+          {leisureData && Array.isArray(leisureData) && (
             <div style={{background: 'rgba(251, 191, 36, 0.1)', padding: '16px', borderRadius: '8px', border: '1px solid var(--accent-gold)'}}>
-              <h4 style={{margin: '0 0 12px 0', color: 'var(--accent-gold)'}}>파싱 결과 ({leisureData.yearMonth})</h4>
+              <h4 style={{margin: '0 0 12px 0', color: 'var(--accent-gold)'}}>파싱 결과 (총 {leisureData.length}개월)</h4>
               
-              {/* 교차 검증 UI */}
-              {crossCheckResult && (
-                  <div style={{
-                      marginBottom: '16px', padding: '12px', borderRadius: '6px',
-                      background: crossCheckResult.hasRecord && !crossCheckResult.isMatch ? 'rgba(239, 68, 68, 0.15)' : 'rgba(52, 211, 153, 0.15)',
-                      border: `1px solid ${crossCheckResult.hasRecord && !crossCheckResult.isMatch ? 'var(--accent-red)' : 'var(--accent-emerald)'}`
-                  }}>
-                      <div style={{fontWeight: 'bold', marginBottom: '8px', color: crossCheckResult.hasRecord && !crossCheckResult.isMatch ? 'var(--accent-red)' : 'var(--accent-emerald)'}}>
-                          ✓ 객실 매출 교차 검증
-                      </div>
-                      {!crossCheckResult.hasRecord ? (
-                          <div style={{fontSize: '13px'}}>DB에 해당 월의 객실 데이터가 아직 없어서 비교할 수 없습니다. (현재 엑셀 내 ROOM 총합: ₩{formatCurrency(crossCheckResult.parsedRoom)})</div>
-                      ) : crossCheckResult.isMatch ? (
-                          <div style={{fontSize: '13px'}}>
-                              <strong>일치함!</strong> (DB 객실매출: ₩{formatCurrency(crossCheckResult.dbRoom)} / 현재 엑셀 ROOM: ₩{formatCurrency(crossCheckResult.parsedRoom)})
-                          </div>
-                      ) : (
-                          <div style={{fontSize: '13px'}}>
-                              <strong>불일치 주의!</strong> 
-                              <br/>- DB에 저장된 객실총매출: ₩{formatCurrency(crossCheckResult.dbRoom)}
-                              <br/>- 이번에 올린 엑셀 내 ROOM 합: ₩{formatCurrency(crossCheckResult.parsedRoom)}
-                              <br/>두 데이터의 금액이 다릅니다. 확인이 필요할 수 있습니다.
+              <div style={{maxHeight: '300px', overflowY: 'auto', marginBottom: '16px', paddingRight: '8px'}}>
+                {leisureData.map(data => {
+                  const check = crossCheckResult?.[data.yearMonth];
+                  return (
+                    <div key={data.yearMonth} style={{marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px dashed rgba(255,255,255,0.2)'}}>
+                      <div style={{fontSize: '16px', fontWeight: 'bold', marginBottom: '8px'}}>{data.yearMonth} 레저 매출: ₩{formatCurrency(data.totalLeisureSales)}</div>
+                      {/* 교차 검증 UI */}
+                      {check && (
+                          <div style={{
+                              padding: '12px', borderRadius: '6px',
+                              background: check.hasRecord && !check.isMatch ? 'rgba(239, 68, 68, 0.15)' : 'rgba(52, 211, 153, 0.15)',
+                              border: `1px solid ${check.hasRecord && !check.isMatch ? 'var(--accent-red)' : 'var(--accent-emerald)'}`
+                          }}>
+                              <div style={{fontWeight: 'bold', marginBottom: '4px', color: check.hasRecord && !check.isMatch ? 'var(--accent-red)' : 'var(--accent-emerald)'}}>
+                                  ✓ 객실 매출 교차 검증 ({data.yearMonth})
+                              </div>
+                              {!check.hasRecord ? (
+                                  <div style={{fontSize: '13px'}}>DB에 객실 데이터가 없음 (현재 엑셀 ROOM: ₩{formatCurrency(check.parsedRoom)})</div>
+                              ) : check.isMatch ? (
+                                  <div style={{fontSize: '13px'}}>
+                                      <strong>일치함!</strong> (DB 객실: ₩{formatCurrency(check.dbRoom)} / 현재 엑셀 ROOM: ₩{formatCurrency(check.parsedRoom)})
+                                  </div>
+                              ) : (
+                                  <div style={{fontSize: '13px'}}>
+                                      <strong>불일치 주의!</strong> 
+                                      <br/>- DB 객실총매출: ₩{formatCurrency(check.dbRoom)}
+                                      <br/>- 이번 엑셀 ROOM 합: ₩{formatCurrency(check.parsedRoom)}
+                                  </div>
+                              )}
                           </div>
                       )}
-                  </div>
-              )}
-
-              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '16px'}}>
-                <span>레저 총 매출</span> <strong style={{color: 'var(--accent-gold)', fontSize: '20px'}}>₩ {formatCurrency(leisureData.leisureSales)}</strong>
+                    </div>
+                  );
+                })}
               </div>
+
               <button className="btn-primary" onClick={handleSaveLeisureData} style={{width: '100%', background: 'var(--accent-gold)', display: 'flex', justifyContent: 'center', gap: '8px', color: 'black'}}>
-                <Save size={18} /> 레저 데이터만 DB에 저장
+                <Save size={18} /> 전체 {leisureData.length}개월 레저 데이터 DB에 일괄 저장
               </button>
             </div>
           )}
