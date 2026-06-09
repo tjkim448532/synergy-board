@@ -201,6 +201,59 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       .sort((a, b) => b.value - a.value);
   }, [monthlyData]);
 
+  // 채널별 평형별 객단가 (ADR)
+  const channelAdrData = useMemo(() => {
+    const channelMap = {
+      '온라인': { '16평': {rev: 0, cnt: 0}, '35평': {rev: 0, cnt: 0}, '51평': {rev: 0, cnt: 0}, '전체': {rev: 0, cnt: 0} },
+      '세미나': { '16평': {rev: 0, cnt: 0}, '35평': {rev: 0, cnt: 0}, '51평': {rev: 0, cnt: 0}, '전체': {rev: 0, cnt: 0} },
+      '휴양소': { '16평': {rev: 0, cnt: 0}, '35평': {rev: 0, cnt: 0}, '51평': {rev: 0, cnt: 0}, '전체': {rev: 0, cnt: 0} },
+      '예약실': { '16평': {rev: 0, cnt: 0}, '35평': {rev: 0, cnt: 0}, '51평': {rev: 0, cnt: 0}, '전체': {rev: 0, cnt: 0} },
+      '홈페이지': { '16평': {rev: 0, cnt: 0}, '35평': {rev: 0, cnt: 0}, '51평': {rev: 0, cnt: 0}, '전체': {rev: 0, cnt: 0} },
+      '기타': { '16평': {rev: 0, cnt: 0}, '35평': {rev: 0, cnt: 0}, '51평': {rev: 0, cnt: 0}, '전체': {rev: 0, cnt: 0} }
+    };
+
+    monthlyData.forEach(month => {
+      if (month.rawRoomRecords) {
+        month.rawRoomRecords.forEach(record => {
+          const market = record.marketType || '';
+          const rev = record.revenue || 0;
+          const cnt = record.count || 0;
+          const type = record.roomType || '';
+
+          let channelName = '기타';
+          if (market.includes('온라인')) channelName = '온라인';
+          else if (market.includes('기업') || market.includes('휴양소')) channelName = '휴양소';
+          else if (market.includes('세미나') || market.includes('단체')) channelName = '세미나';
+          else if (market.includes('예약실') || market.includes('전화') || market.includes('메신저')) channelName = '예약실';
+          else if (market.includes('홈페이지') || market.includes('APP')) channelName = '홈페이지';
+
+          let typeName = '기타';
+          if (type.includes('16평')) typeName = '16평';
+          else if (type.includes('35평')) typeName = '35평';
+          else if (type.includes('51평')) typeName = '51평';
+
+          if (typeName !== '기타') {
+            channelMap[channelName][typeName].rev += rev;
+            channelMap[channelName][typeName].cnt += cnt;
+          }
+          channelMap[channelName]['전체'].rev += rev;
+          channelMap[channelName]['전체'].cnt += cnt;
+        });
+      }
+    });
+
+    return Object.entries(channelMap).map(([channel, types]) => {
+      return {
+        channel,
+        '16평': types['16평'].cnt > 0 ? types['16평'].rev / types['16평'].cnt : 0,
+        '35평': types['35평'].cnt > 0 ? types['35평'].rev / types['35평'].cnt : 0,
+        '51평': types['51평'].cnt > 0 ? types['51평'].rev / types['51평'].cnt : 0,
+        '전체': types['전체'].cnt > 0 ? types['전체'].rev / types['전체'].cnt : 0,
+        totalRev: types['전체'].rev
+      };
+    }).filter(d => d.totalRev > 0).sort((a, b) => b.totalRev - a.totalRev);
+  }, [monthlyData]);
+
   const PIE_COLORS = ['#3b82f6', '#10b981', '#fbbf24', '#a855f7', '#ef4444', '#64748b'];
 
   if (processedData.length < 2) {
@@ -376,34 +429,70 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
           </div>
         </div>
 
-        {/* 객실 판매채널 분석 (Pie Chart) */}
+        {/* 객실 판매채널 분석 (Pie Chart & Table) */}
         <div className="glass-panel" style={{padding: '24px', gridColumn: 'span 2'}}>
-          <h3 style={{marginBottom: '20px'}}>전체 객실 판매채널(Market Type) 매출 비중</h3>
-          <p style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '15px'}}>온라인, 세미나, 예약실, 홈페이지 등 주요 예약 채널별 수익 창출 비율입니다.</p>
-          <div style={{width: '100%', height: '300px'}}>
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={channelData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={true}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
-                  outerRadius={100}
-                  dataKey="value"
-                  stroke="rgba(255,255,255,0.1)"
-                >
-                  {channelData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                  ))}
-                </Pie>
-                <RechartsTooltip 
-                  contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)'}}
-                  formatter={(val) => `₩${formatCurrency(val)}`} 
-                />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
+          <h3 style={{marginBottom: '20px'}}>객실 판매채널 심층 분석</h3>
+          <p style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '15px'}}>채널별 매출 비중 및 평형별 객단가(ADR)를 한눈에 비교합니다.</p>
+          
+          <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px'}}>
+            {/* Pie Chart */}
+            <div style={{width: '100%', height: '300px', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+              <h4 style={{margin: '0 0 10px 0', color: 'var(--text-main)'}}>매출 비중</h4>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={channelData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={true}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
+                    outerRadius={90}
+                    dataKey="value"
+                    stroke="rgba(255,255,255,0.1)"
+                  >
+                    {channelData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <RechartsTooltip 
+                    contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)'}}
+                    formatter={(val) => `₩${formatCurrency(val)}`} 
+                  />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* ADR Table */}
+            <div style={{width: '100%', display: 'flex', flexDirection: 'column'}}>
+              <h4 style={{margin: '0 0 10px 0', color: 'var(--text-main)', textAlign: 'center'}}>채널별 평형 객단가(ADR)</h4>
+              <div style={{overflowX: 'auto', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid var(--border-glass)'}}>
+                <table style={{width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'right'}}>
+                  <thead>
+                    <tr style={{background: 'rgba(255,255,255,0.05)'}}>
+                      <th style={{padding: '12px', textAlign: 'left', borderBottom: '1px solid var(--border-glass)'}}>채널명</th>
+                      <th style={{padding: '12px', borderBottom: '1px solid var(--border-glass)'}}>16평</th>
+                      <th style={{padding: '12px', borderBottom: '1px solid var(--border-glass)'}}>35평</th>
+                      <th style={{padding: '12px', borderBottom: '1px solid var(--border-glass)'}}>51평</th>
+                      <th style={{padding: '12px', color: 'var(--accent-gold)', borderBottom: '1px solid var(--border-glass)'}}>종합(평균)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {channelAdrData.map((row, idx) => (
+                      <tr key={idx} style={{borderBottom: '1px solid rgba(255,255,255,0.05)'}}>
+                        <td style={{padding: '12px', textAlign: 'left', fontWeight: 'bold'}}>{row.channel}</td>
+                        <td style={{padding: '12px'}}>{row['16평'] ? `₩${formatCurrency(row['16평'])}` : '-'}</td>
+                        <td style={{padding: '12px'}}>{row['35평'] ? `₩${formatCurrency(row['35평'])}` : '-'}</td>
+                        <td style={{padding: '12px'}}>{row['51평'] ? `₩${formatCurrency(row['51평'])}` : '-'}</td>
+                        <td style={{padding: '12px', color: 'var(--accent-gold)', fontWeight: 'bold'}}>
+                          {row['전체'] ? `₩${formatCurrency(row['전체'])}` : '-'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
 
