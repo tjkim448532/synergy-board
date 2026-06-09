@@ -179,9 +179,9 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     if (!processedData || processedData.length === 0) return null;
     
     // settings에서 캡처 레이트 가져오기 (없으면 기본값)
-    const capLeisure = (settings.captureRateLeisure ?? 90) / 100;
-    const capFnb = (settings.captureRateFnb ?? 80) / 100;
-    const capMoto = (settings.captureRateMoto ?? 30) / 100;
+    const capLeisure = (settings.captureRateLeisure ?? 85) / 100;
+    const capFnb = (settings.captureRateFnb ?? 75) / 100;
+    const capMoto = (settings.captureRateMoto ?? 25) / 100;
 
     let totalAvailableRooms = 0;
     let totalRoomRev = 0;

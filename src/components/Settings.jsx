@@ -296,7 +296,7 @@ export default function Settings({ monthlyData }) {
               type="number" 
               id="captureRateLeisure" 
               name="captureRateLeisure" 
-              value={settings.captureRateLeisure ?? 90} 
+              value={settings.captureRateLeisure ?? 85} 
               onChange={handleChange} 
               placeholder="예: 90"
               min="0" max="100"
@@ -308,7 +308,7 @@ export default function Settings({ monthlyData }) {
               type="number" 
               id="captureRateFnb" 
               name="captureRateFnb" 
-              value={settings.captureRateFnb ?? 80} 
+              value={settings.captureRateFnb ?? 75} 
               onChange={handleChange} 
               placeholder="예: 80"
               min="0" max="100"
@@ -320,7 +320,7 @@ export default function Settings({ monthlyData }) {
               type="number" 
               id="captureRateMoto" 
               name="captureRateMoto" 
-              value={settings.captureRateMoto ?? 30} 
+              value={settings.captureRateMoto ?? 25} 
               onChange={handleChange} 
               placeholder="예: 30"
               min="0" max="100"
