@@ -331,38 +331,42 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
 
       {/* KPI Dashboard (TrevPAR & RevPAR) */}
       {kpiData && (
-        <div className="glass-panel" style={{padding: '24px', display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'center'}}>
-          <div style={{flex: '1 1 300px', paddingRight: '20px', borderRight: '1px solid rgba(255,255,255,0.1)'}}>
+        <div className="glass-panel" style={{padding: '24px', display: 'flex', gap: '32px', flexWrap: 'wrap'}}>
+          <div style={{flex: '1 1 300px', minWidth: '280px', display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
             <h3 style={{margin: '0 0 16px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px'}}>
               <span style={{color: 'var(--accent-gold)'}}>⚡</span> 경영 핵심 KPI (월평균)
             </h3>
-            <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: '1.5'}}>
+            <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: '1.5', wordBreak: 'keep-all'}}>
               방 1개를 팔았을 때 하루에 창출되는 평균 수익입니다. [설정]에 입력된 '투숙객 비중'을 바탕으로 워크인 매출을 제외한 <strong>순수 객실 연계 가치(Pure TrevPAR)</strong>를 분리하여 측정합니다.
             </p>
           </div>
           
-          <div style={{flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '200px'}}>
-            <div style={{fontSize: '12px', color: 'var(--text-muted)'}}>RevPAR (객실 수익만)</div>
-            <div style={{fontSize: '24px', fontWeight: 'bold', color: 'var(--text-main)'}}>
-              ₩{formatCurrency(kpiData.revPar)}
+          <div style={{flex: '2 1 500px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '20px', alignItems: 'start'}}>
+            <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
+              <div style={{fontSize: '12px', color: 'var(--text-muted)', minHeight: '36px', wordBreak: 'keep-all', display: 'flex', alignItems: 'flex-end'}}>
+                RevPAR (객실 수익만)
+              </div>
+              <div style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--text-main)', letterSpacing: '-0.5px'}}>
+                ₩{formatCurrency(kpiData.revPar)}
+              </div>
             </div>
-          </div>
 
-          <div style={{flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '200px'}}>
-            <div style={{fontSize: '12px', color: 'var(--text-muted)'}}>
-              <span style={{color: 'var(--accent-emerald)'}}>●</span> 순수 TrevPAR (객실+투숙객 부대매출)
+            <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
+              <div style={{fontSize: '12px', color: 'var(--text-muted)', minHeight: '36px', wordBreak: 'keep-all', display: 'flex', alignItems: 'flex-end'}}>
+                <span><span style={{color: 'var(--accent-emerald)'}}>●</span> 순수 TrevPAR (객실+투숙객 부대매출)</span>
+              </div>
+              <div style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-emerald)', letterSpacing: '-0.5px'}}>
+                ₩{formatCurrency(kpiData.pureTrevPar)}
+              </div>
             </div>
-            <div style={{fontSize: '24px', fontWeight: 'bold', color: 'var(--accent-emerald)'}}>
-              ₩{formatCurrency(kpiData.pureTrevPar)}
-            </div>
-          </div>
 
-          <div style={{flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '200px'}}>
-            <div style={{fontSize: '12px', color: 'var(--text-muted)'}}>
-              Gross TrevPAR (워크인 포함 전체)
-            </div>
-            <div style={{fontSize: '24px', fontWeight: 'bold', color: 'var(--text-main)'}}>
-              ₩{formatCurrency(kpiData.grossTrevPar)}
+            <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
+              <div style={{fontSize: '12px', color: 'var(--text-muted)', minHeight: '36px', wordBreak: 'keep-all', display: 'flex', alignItems: 'flex-end'}}>
+                Gross TrevPAR (워크인 포함 전체)
+              </div>
+              <div style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--text-main)', letterSpacing: '-0.5px'}}>
+                ₩{formatCurrency(kpiData.grossTrevPar)}
+              </div>
             </div>
           </div>
         </div>
