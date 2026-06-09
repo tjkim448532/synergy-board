@@ -127,7 +127,13 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
 
     const results = [];
     Object.keys(locMap).forEach(loc => {
-      const corr = calculateCorrelation(occArr, locMap[loc]);
+      const dataArr = locMap[loc];
+      const totalAmt = dataArr.reduce((sum, val) => sum + val, 0);
+      
+      // 월 평균 100만 원 미만인 소규모 영업장(노이즈)은 유의미한 분석에서 제외
+      if (totalAmt < 1000000 * processedData.length) return;
+
+      const corr = calculateCorrelation(occArr, dataArr);
       if (corr !== null && !isNaN(corr)) {
         results.push({ name: loc, correlation: corr });
       }
