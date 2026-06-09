@@ -4,6 +4,7 @@ import Settings from './components/Settings'
 import MonthlyDataForm from './components/MonthlyDataForm'
 import AdvancedAnalytics from './components/AdvancedAnalytics'
 import RevenuePrediction from './components/RevenuePrediction'
+import LogicGuide from './components/LogicGuide'
 import { collection, onSnapshot, doc } from 'firebase/firestore';
 import { db } from './firebase';
 import './App.css'
@@ -42,6 +43,12 @@ function App() {
         return (
           <div className="glass-panel" style={{height: '100%', padding: '32px', overflowY: 'auto'}}>
             <AdvancedAnalytics monthlyData={allData} settings={settings} />
+          </div>
+        )
+      case 'logic':
+        return (
+          <div className="glass-panel" style={{height: '100%', padding: '32px', overflowY: 'auto'}}>
+            <LogicGuide />
           </div>
         )
       case 'upload':

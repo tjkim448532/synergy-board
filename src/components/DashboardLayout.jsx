@@ -1,10 +1,11 @@
 import React from 'react';
-import { Upload, Settings, PieChart, TrendingUp } from 'lucide-react';
+import { Upload, Settings, PieChart, TrendingUp, BookOpen } from 'lucide-react';
 import './DashboardLayout.css';
 
 const SIDEBAR_MENU = [
   { id: 'prediction', icon: TrendingUp, label: '매출 예측 시뮬레이터' },
   { id: 'analytics', icon: PieChart, label: '상관관계 분석' },
+  { id: 'logic', icon: BookOpen, label: '분석 로직 가이드' },
   { id: 'upload', icon: Upload, label: '데이터 업로드' },
   { id: 'settings', icon: Settings, label: '설정' }
 ];
