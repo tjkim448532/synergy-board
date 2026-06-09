@@ -21,6 +21,10 @@ export default function RevenuePrediction({ monthlyData, settings }) {
     let totalRoomRevenueAll = 0;
     let totalLeisureRevenueAll = 0;
     let totalGuestsAll = 0;
+    
+    let total16All = 0;
+    let total35All = 0;
+    let total51All = 0;
 
     const data = [...monthlyData].sort((a, b) => a.yearMonth.localeCompare(b.yearMonth)).map(d => {
       const days = d.daysCount || 30;
@@ -78,6 +82,10 @@ export default function RevenuePrediction({ monthlyData, settings }) {
       totalRoomRevenueAll += totalRoomRevenue;
       totalLeisureRevenueAll += leisureSales;
       totalGuestsAll += guests;
+      
+      total16All += sold16;
+      total35All += sold35;
+      total51All += (count51AsTwoRooms ? sold51 * 2 : sold51) + sold51Acc;
 
       return {
         yearMonth: d.yearMonth,
@@ -105,6 +113,11 @@ export default function RevenuePrediction({ monthlyData, settings }) {
     
     const avgWdDays = 22;
     const avgWeDays = 8;
+    
+    const sumRooms = total16All + total35All + total51All;
+    const mix16 = sumRooms > 0 ? total16All / sumRooms : 0;
+    const mix35 = sumRooms > 0 ? total35All / sumRooms : 0;
+    const mix51 = sumRooms > 0 ? total51All / sumRooms : 0;
 
     return { 
       processedData: data, 
@@ -117,7 +130,10 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         avgGuestsPerSoldRoom,
         dailyInventory,
         avgWdDays,
-        avgWeDays
+        avgWeDays,
+        mix16,
+        mix35,
+        mix51
       }
     };
   }, [monthlyData, settings]);
@@ -172,10 +188,29 @@ export default function RevenuePrediction({ monthlyData, settings }) {
     }
   }, [processedData, globalStats, initialized]);
 
-  // 목표 매출 계산
+  // 1. 기존 선형 회귀 목표 매출 (과거 추세선)
   const expRevWd = Math.max(0, regWd.slope * targetWeekdayOcc + regWd.intercept);
   const expRevWe = Math.max(0, regWe.slope * targetWeekendOcc + regWe.intercept);
   const expectedRoomRevenue = expRevWd + expRevWe;
+
+  // 2. 평형별 목표 객단가(Target ADR) 반영 매출
+  const expSoldWd = (targetWeekdayOcc / 100) * (globalStats.dailyInventory * globalStats.avgWdDays);
+  const expSoldWe = (targetWeekendOcc / 100) * (globalStats.dailyInventory * globalStats.avgWeDays);
+  const totalExpectedSoldRooms = expSoldWd + expSoldWe;
+  
+  const expected16 = totalExpectedSoldRooms * globalStats.mix16;
+  const expected35 = totalExpectedSoldRooms * globalStats.mix35;
+  const expected51 = totalExpectedSoldRooms * globalStats.mix51;
+
+  const targetAdr16 = Number(settings.targetAdr16) || 0;
+  const targetAdr35 = Number(settings.targetAdr35) || 0;
+  const targetAdr51 = Number(settings.targetAdr51) || 0;
+  
+  const hasTargetAdr = targetAdr16 > 0 || targetAdr35 > 0 || targetAdr51 > 0;
+  let targetAdrRoomRevenue = 0;
+  if (hasTargetAdr) {
+    targetAdrRoomRevenue = (expected16 * targetAdr16) + (expected35 * targetAdr35) + (expected51 * targetAdr51);
+  }
 
   // 레저 목표 계산
   const targetTotalOcc = ((targetWeekdayOcc * globalStats.avgWdDays) + (targetWeekendOcc * globalStats.avgWeDays)) / (globalStats.avgWdDays + globalStats.avgWeDays);
@@ -196,10 +231,9 @@ export default function RevenuePrediction({ monthlyData, settings }) {
   }
   
   const expectedTotalRevenue = expectedRoomRevenue + expectedLeisureRevenue;
+  const targetAdrTotalRevenue = targetAdrRoomRevenue + expectedLeisureRevenue;
 
-  const expSoldWd = (targetWeekdayOcc / 100) * (globalStats.dailyInventory * globalStats.avgWdDays);
-  const expSoldWe = (targetWeekendOcc / 100) * (globalStats.dailyInventory * globalStats.avgWeDays);
-  const expectedGuests = (expSoldWd + expSoldWe) * globalStats.avgGuestsPerSoldRoom;
+  const expectedGuests = totalExpectedSoldRooms * globalStats.avgGuestsPerSoldRoom;
 
   // 차트용 데이터 (전체 점유율 대비 트렌드)
   const chartData = useMemo(() => {
@@ -316,12 +350,44 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', maxWidth: '1000px', margin: '0 auto'}}>
           <div style={{background: 'rgba(0,0,0,0.3)', padding: '30px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)'}}>
             <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '12px'}}>예상 객실 매출</div>
-            <div style={{fontSize: '36px', fontWeight: 'bold', color: 'var(--accent-blue)'}}>
-              ₩ {formatCurrency(expectedRoomRevenue)}
-            </div>
-            <div style={{fontSize: '14px', color: 'var(--text-muted)', marginTop: '8px'}}>
-              (주중 ₩{formatCurrency(expRevWd)} + 주말 ₩{formatCurrency(expRevWe)})
-            </div>
+            
+            {hasTargetAdr ? (
+              <div style={{display: 'flex', gap: '16px', justifyContent: 'center', alignItems: 'center'}}>
+                <div style={{flex: 1, padding: '16px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', border: '1px dashed rgba(255,255,255,0.2)'}}>
+                  <div style={{fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px'}}>과거 추세선 기준</div>
+                  <div style={{fontSize: '24px', fontWeight: 'bold', color: 'var(--text-muted)'}}>
+                    ₩ {formatCurrency(expectedRoomRevenue)}
+                  </div>
+                </div>
+                
+                <div style={{color: 'var(--accent-gold)', fontWeight: 'bold', fontSize: '20px'}}>VS</div>
+                
+                <div style={{flex: 1, padding: '16px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px', border: '1px solid var(--accent-emerald)', position: 'relative'}}>
+                  <div style={{position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)', background: 'var(--accent-emerald)', color: 'white', padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: 'bold'}}>
+                    목표 객단가 달성 시
+                  </div>
+                  <div style={{fontSize: '13px', color: 'var(--accent-emerald)', marginBottom: '8px', marginTop: '4px'}}>전략 목표 기준</div>
+                  <div style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-gold)'}}>
+                    ₩ {formatCurrency(targetAdrRoomRevenue)}
+                  </div>
+                  <div style={{fontSize: '12px', color: 'var(--accent-emerald)', marginTop: '8px'}}>
+                    추가수익: +₩{formatCurrency(targetAdrRoomRevenue - expectedRoomRevenue)}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div style={{fontSize: '36px', fontWeight: 'bold', color: 'var(--accent-blue)'}}>
+                  ₩ {formatCurrency(expectedRoomRevenue)}
+                </div>
+                <div style={{fontSize: '14px', color: 'var(--text-muted)', marginTop: '8px'}}>
+                  (주중 ₩{formatCurrency(expRevWd)} + 주말 ₩{formatCurrency(expRevWe)})
+                </div>
+                <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px'}}>
+                  * 설정에서 목표 객단가를 입력하시면 전략적 시뮬레이션이 가능합니다.
+                </div>
+              </>
+            )}
           </div>
           
           <div style={{background: 'rgba(0,0,0,0.3)', padding: '30px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)'}}>
@@ -340,8 +406,13 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         <div style={{maxWidth: '1000px', margin: '20px auto 0', background: 'rgba(251, 191, 36, 0.1)', padding: '40px', borderRadius: '16px', textAlign: 'center', border: '2px solid var(--accent-gold)'}}>
           <div style={{color: 'var(--accent-gold)', fontSize: '24px', marginBottom: '16px', fontWeight: 'bold'}}>차월 총 예상 수익 (Total Revenue)</div>
           <div style={{fontSize: '64px', fontWeight: '900', color: 'var(--text-main)', textShadow: '0 4px 12px rgba(0,0,0,0.5)'}}>
-            ₩ {formatCurrency(expectedTotalRevenue)}
+            ₩ {formatCurrency(hasTargetAdr ? targetAdrTotalRevenue : expectedTotalRevenue)}
           </div>
+          {hasTargetAdr && (
+            <div style={{color: 'var(--text-muted)', fontSize: '16px', marginTop: '12px'}}>
+              (과거 추세선 기준 총매출액: ₩ {formatCurrency(expectedTotalRevenue)})
+            </div>
+          )}
         </div>
       </div>
 

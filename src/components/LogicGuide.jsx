@@ -160,6 +160,51 @@ export default function LogicGuide() {
         </div>
 
       </div>
+
+      <div className="guide-cards" style={{marginTop: '24px'}}>
+        {/* Card 5: 평형별 목표 객단가(ADR) 예측 */}
+        <div className="guide-card glass-panel" style={{gridColumn: '1 / -1'}}>
+          <div className="card-top">
+            <div className="icon-circle">
+              <BarChart3 size={24} />
+            </div>
+            <h3>5. 목표 객단가(Target ADR) 예측 모델 (수익 관리 기법)</h3>
+          </div>
+          <div className="card-body">
+            <p>
+              [설정] 메뉴에서 <strong>평형별 목표 객단가</strong>를 입력하면, 단순 선형 회귀를 넘어선 <strong>'가중 평균 기반 수익 관리(Yield Management)'</strong> 알고리즘이 가동되어 전략적 예상 매출을 계산합니다.
+            </p>
+            
+            <div className="formula-box vertical" style={{marginTop: '16px'}}>
+              <div className="math-step">
+                <span className="step-num">Step 1: 과거 판매 비중(Room Mix) 추출</span>
+                <div style={{color: 'var(--text-muted)'}}>
+                  전체 누적 엑셀 데이터에서 16평, 35평, 51평이 각각 몇 퍼센트 비율로 팔렸는지 역사적 비중을 계산합니다. (예: 16평 45%, 35평 40%, 51평 15%)
+                </div>
+              </div>
+              <div className="math-step">
+                <span className="step-num">Step 2: 타겟 점유율 객실 할당</span>
+                <div style={{color: 'var(--text-muted)'}}>
+                  사용자가 슬라이더로 목표 점유율을 지정하면 산출되는 <code>예상 총 판매 객실 수</code>를 Step 1의 판매 비중에 따라 분배합니다.
+                </div>
+              </div>
+              <div className="math-step">
+                <span className="step-num">Step 3: 평형별 매출 합산</span>
+                <div style={{color: 'var(--text-muted)'}}>
+                  <code>(16평 예상판매량 × 16평 목표단가) + (35평 예상판매량 × 35평 목표단가) + (51평 예상판매량 × 51평 목표단가)</code>
+                </div>
+              </div>
+            </div>
+            
+            <div className="alert-box info" style={{marginTop: '16px'}}>
+              <Info size={16} />
+              <span>
+                과거의 "할인 프로모션" 등으로 인해 낮아진 평균 단가를 벗어나, <strong>"점유율을 조금 포기하더라도 제값을 다 받으면 수익이 얼마나 개선되는지(추가수익)"</strong>를 과거 추세선과 비교 분석할 수 있게 해줍니다.
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

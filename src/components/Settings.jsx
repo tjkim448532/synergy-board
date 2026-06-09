@@ -5,13 +5,16 @@ import { db } from '../firebase';
 import Papa from 'papaparse';
 import './Settings.css';
 
-export default function Settings() {
+export default function Settings({ monthlyData }) {
   const [settings, setSettings] = useState({
-    resortName: '벨포레 리조트',
-    totalRooms: 500,
-    connectingRooms51: 50,
+    resortName: '시너지 리조트',
+    totalRooms: 175,
+    connectingRooms51: 85,
     count51AsTwoRooms: true,
-    customWeekends: ''
+    customWeekends: '',
+    targetAdr16: 0,
+    targetAdr35: 0,
+    targetAdr51: 0
   });
 
   const [sheetUrl, setSheetUrl] = useState('');
@@ -111,6 +114,26 @@ export default function Settings() {
     return <div style={{padding: '32px', color: 'white'}}>설정 불러오는 중...</div>;
   }
 
+  // 과거 평균 객단가 계산 (참고용)
+  let sumSold16 = 0, sumRev16 = 0;
+  let sumSold35 = 0, sumRev35 = 0;
+  let sumSold51 = 0, sumRev51 = 0;
+
+  if (monthlyData && monthlyData.length > 0) {
+    monthlyData.forEach(d => {
+      sumSold16 += (d.sold16 || 0);
+      sumRev16 += (d.revenue16 || 0);
+      sumSold35 += (d.sold35 || 0);
+      sumRev35 += (d.revenue35 || 0);
+      sumSold51 += (d.sold51 || 0) + (d.sold51Acc || 0);
+      sumRev51 += (d.revenue51 || 0) + (d.revenue51Acc || 0);
+    });
+  }
+
+  const avgAdr16 = sumSold16 > 0 ? Math.round(sumRev16 / sumSold16) : 0;
+  const avgAdr35 = sumSold35 > 0 ? Math.round(sumRev35 / sumSold35) : 0;
+  const avgAdr51 = sumSold51 > 0 ? Math.round(sumRev51 / sumSold51) : 0;
+
   return (
     <div className="settings-container">
       <div className="settings-header">
@@ -191,7 +214,64 @@ export default function Settings() {
           />
         </div>
 
-        <div className="settings-actions">
+        <h3 style={{marginBottom: '20px', marginTop: '40px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px'}}>
+          목표 객단가(Target ADR) 설정
+        </h3>
+        <p className="settings-desc" style={{marginBottom: '16px'}}>
+          매출 예측(시뮬레이션) 시 사용될 평형별 목표 객단가를 설정합니다. 빈칸이거나 0일 경우 과거 추세선 모델만 사용됩니다.
+        </p>
+
+        <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
+          <div className="form-group" style={{flex: 1, minWidth: '200px'}}>
+            <label htmlFor="targetAdr16">16평형 목표 객단가</label>
+            <div style={{color: 'var(--text-muted)', fontSize: '12px', marginBottom: '8px'}}>과거 평균: {avgAdr16.toLocaleString()}원</div>
+            <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+              <input 
+                type="number" 
+                id="targetAdr16" 
+                name="targetAdr16" 
+                value={settings.targetAdr16 || ''} 
+                onChange={handleChange} 
+                placeholder="예: 120000"
+              />
+              <span>원</span>
+            </div>
+          </div>
+
+          <div className="form-group" style={{flex: 1, minWidth: '200px'}}>
+            <label htmlFor="targetAdr35">35평형 목표 객단가</label>
+            <div style={{color: 'var(--text-muted)', fontSize: '12px', marginBottom: '8px'}}>과거 평균: {avgAdr35.toLocaleString()}원</div>
+            <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+              <input 
+                type="number" 
+                id="targetAdr35" 
+                name="targetAdr35" 
+                value={settings.targetAdr35 || ''} 
+                onChange={handleChange} 
+                placeholder="예: 180000"
+              />
+              <span>원</span>
+            </div>
+          </div>
+
+          <div className="form-group" style={{flex: 1, minWidth: '200px'}}>
+            <label htmlFor="targetAdr51">51평형 목표 객단가</label>
+            <div style={{color: 'var(--text-muted)', fontSize: '12px', marginBottom: '8px'}}>과거 평균: {avgAdr51.toLocaleString()}원</div>
+            <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+              <input 
+                type="number" 
+                id="targetAdr51" 
+                name="targetAdr51" 
+                value={settings.targetAdr51 || ''} 
+                onChange={handleChange} 
+                placeholder="예: 250000"
+              />
+              <span>원</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="settings-actions" style={{marginTop: '40px'}}>
           <button className="btn-save" onClick={handleSave}>
             <Save size={18} /> 설정 저장하기
           </button>

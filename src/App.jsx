@@ -60,7 +60,7 @@ function App() {
       case 'settings':
         return (
           <div className="glass-panel" style={{height: '100%', padding: '32px'}}>
-            <Settings />
+            <Settings monthlyData={allData} />
           </div>
         )
       default:
