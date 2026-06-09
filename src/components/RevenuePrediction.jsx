@@ -9,6 +9,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
   const [targetWeekdayOcc, setTargetWeekdayOcc] = useState(50);
   const [targetWeekendOcc, setTargetWeekendOcc] = useState(80);
   const [initialized, setInitialized] = useState(false);
+  const [selectedRefMonth, setSelectedRefMonth] = useState('latest');
 
   // 1. 데이터 가공 및 기초 통계
   const { processedData, globalStats } = useMemo(() => {
@@ -348,7 +349,30 @@ export default function RevenuePrediction({ monthlyData, settings }) {
     return data.sort((a, b) => a.occupancyRate - b.occupancyRate);
   }, [processedData, regOverallRoom, regLeisureTotal, regMotoTotal, targetTotalOcc, expectedRoomRevenue, expectedLeisureRevenue, expectedMotoRevenue]);
 
-  const latestData = processedData.length > 0 ? processedData[processedData.length - 1] : null;
+  const monthOptions = useMemo(() => {
+    return [...processedData].map(d => d.yearMonth).sort((a, b) => b.localeCompare(a));
+  }, [processedData]);
+
+  const refData = useMemo(() => {
+    if (processedData.length === 0) return null;
+    if (selectedRefMonth === 'all') {
+      return {
+        label: `전체 누적 (${processedData.length}개월)`,
+        totalRev: globalStats.totalRoomRevenue + globalStats.totalLeisureRevenue,
+        occRate: globalStats.totalOccupancyRate,
+        occLabel: '누적 평균 점유율'
+      };
+    } else {
+      const targetMonth = selectedRefMonth === 'latest' ? processedData[processedData.length - 1].yearMonth : selectedRefMonth;
+      const monthRow = processedData.find(d => d.yearMonth === targetMonth) || processedData[processedData.length - 1];
+      return {
+        label: `선택 마감 실적 (${monthRow.yearMonth})`,
+        totalRev: monthRow.totalRoomRevenue + monthRow.leisureSales,
+        occRate: monthRow.occupancyRate,
+        occLabel: '해당 월 점유율'
+      };
+    }
+  }, [processedData, globalStats, selectedRefMonth]);
 
   return (
     <div style={{display: 'flex', flexDirection: 'column', gap: '24px'}}>
@@ -359,8 +383,22 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         <p style={{fontSize: '16px', color: 'var(--text-muted)', marginBottom: '40px', textAlign: 'center'}}>
           주중 및 주말 점유율 변화에 따른 과거 매출 트렌드를 분석하여 객실 및 레저본부의 예상 수익을 계산합니다.
         </p>
+
+        <div style={{display: 'flex', justifyContent: 'center', marginBottom: '20px'}}>
+          <select 
+            value={selectedRefMonth} 
+            onChange={(e) => setSelectedRefMonth(e.target.value)}
+            style={{background: 'rgba(255,255,255,0.1)', color: 'var(--accent-emerald)', border: '1px solid rgba(255,255,255,0.2)', padding: '8px 16px', borderRadius: '8px', outline: 'none', fontSize: '16px', cursor: 'pointer', fontWeight: 'bold'}}
+          >
+            <option value="latest" style={{color: 'black'}}>가장 최근 마감월</option>
+            <option value="all" style={{color: 'black'}}>전체 누적 통합</option>
+            {monthOptions.map(m => (
+              <option key={m} value={m} style={{color: 'black'}}>{m}</option>
+            ))}
+          </select>
+        </div>
         
-        {latestData && (
+        {refData && (
           <div style={{
             background: 'rgba(16, 185, 129, 0.1)', 
             border: '1px solid var(--accent-emerald)', 
@@ -374,15 +412,15 @@ export default function RevenuePrediction({ monthlyData, settings }) {
             gap: '20px'
           }}>
             <div style={{textAlign: 'center'}}>
-              <div style={{color: 'var(--accent-emerald)', fontSize: '16px', marginBottom: '8px', fontWeight: 'bold'}}>📌 최근 마감 실적 ({latestData.yearMonth})</div>
+              <div style={{color: 'var(--accent-emerald)', fontSize: '16px', marginBottom: '8px', fontWeight: 'bold'}}>📌 {refData.label}</div>
               <div style={{fontSize: '32px', fontWeight: 'bold', color: 'white'}}>
-                레저+숙박 총매출: <span style={{color: 'var(--accent-gold)'}}>₩ {formatCurrency(latestData.totalRoomRevenue + latestData.leisureSales)}</span>
+                레저+숙박 총매출: <span style={{color: 'var(--accent-gold)'}}>₩ {formatCurrency(refData.totalRev)}</span>
               </div>
             </div>
             <div style={{textAlign: 'center'}}>
-              <div style={{color: 'var(--accent-emerald)', fontSize: '16px', marginBottom: '8px', fontWeight: 'bold'}}>월 평균 점유율</div>
+              <div style={{color: 'var(--accent-emerald)', fontSize: '16px', marginBottom: '8px', fontWeight: 'bold'}}>{refData.occLabel}</div>
               <div style={{fontSize: '32px', fontWeight: 'bold', color: 'white'}}>
-                {latestData.occupancyRate.toFixed(1)}%
+                {refData.occRate.toFixed(1)}%
               </div>
             </div>
           </div>
