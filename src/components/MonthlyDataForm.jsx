@@ -215,7 +215,6 @@ export default function MonthlyDataForm({ settings }) {
         const roomIdx = headers.findIndex(h => h && h.toString().toUpperCase() === 'ROOM');
         const roomOtherIdx = headers.findIndex(h => h && h.toString().toUpperCase().replace(/\s/g,'') === 'ROOMOTHER');
         
-        // 월별 데이터를 담을 객체
         const monthlyParsedMap = {};
 
         const mapLocationName = (name) => {
@@ -272,6 +271,9 @@ export default function MonthlyDataForm({ settings }) {
                     leisureRevWd: 0,
                     leisureRevWe: 0,
                     leisureSalesByLocation: {},
+                    salesByLocation: {},
+                    salesWdByLocation: {},
+                    salesWeByLocation: {},
                     crossCheckRoomSum: 0
                 };
             }
@@ -297,6 +299,13 @@ export default function MonthlyDataForm({ settings }) {
                 const val = parseSafeInt(row[col.index]);
                 if (!isNaN(val)) {
                     monthData.leisureSalesByLocation[col.name] = (monthData.leisureSalesByLocation[col.name] || 0) + val;
+                    monthData.salesByLocation[col.name] = (monthData.salesByLocation[col.name] || 0) + val;
+                    
+                    if (isWe) {
+                        monthData.salesWeByLocation[col.name] = (monthData.salesWeByLocation[col.name] || 0) + val;
+                    } else {
+                        monthData.salesWdByLocation[col.name] = (monthData.salesWdByLocation[col.name] || 0) + val;
+                    }
                     rowLeisureSum += val;
                 }
             });

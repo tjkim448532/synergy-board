@@ -14,8 +14,11 @@ export default function Settings({ monthlyData }) {
     customWeekends: '',
     targetAdr16: 0,
     targetAdr35: 0,
-    targetAdr51: 0
+    targetAdr51: 0,
+    locationGroups: {}
   });
+
+  const [uniqueLocations, setUniqueLocations] = useState([]);
 
   const [sheetUrl, setSheetUrl] = useState('');
   const [isSaved, setIsSaved] = useState(false);
@@ -38,6 +41,27 @@ export default function Settings({ monthlyData }) {
     };
     fetchSettings();
   }, []);
+
+  useEffect(() => {
+    if (monthlyData && monthlyData.length > 0) {
+      const locSet = new Set();
+      monthlyData.forEach(month => {
+        if (month.salesByLocation) Object.keys(month.salesByLocation).forEach(loc => locSet.add(loc));
+        if (month.leisureSalesByLocation) Object.keys(month.leisureSalesByLocation).forEach(loc => locSet.add(loc)); // legacy
+      });
+      setUniqueLocations(Array.from(locSet).sort());
+    }
+  }, [monthlyData]);
+
+  const handleLocationGroupChange = (loc, group) => {
+    setSettings(prev => ({
+      ...prev,
+      locationGroups: {
+        ...(prev.locationGroups || {}),
+        [loc]: group
+      }
+    }));
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -269,6 +293,59 @@ export default function Settings({ monthlyData }) {
               <span>원</span>
             </div>
           </div>
+        </div>
+
+        <h3 style={{marginBottom: '20px', marginTop: '40px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px'}}>
+          영업장 그룹핑 설정 (동적 분리)
+        </h3>
+        <p className="settings-desc" style={{marginBottom: '16px'}}>
+          데이터베이스에 기록된 모든 영업장을 어떤 본부 매출로 합산할지 결정합니다. '제외'를 선택하면 통계에서 완전히 무시됩니다.
+        </p>
+
+        <div style={{background: 'rgba(255,255,255,0.05)', borderRadius: '12px', border: '1px solid var(--border-glass)', padding: '20px'}}>
+          {uniqueLocations.length === 0 ? (
+            <div style={{color: 'var(--text-muted)', textAlign: 'center'}}>데이터가 아직 업로드되지 않았습니다.</div>
+          ) : (
+            <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
+              {uniqueLocations.map(loc => {
+                const currentGroup = (settings.locationGroups && settings.locationGroups[loc]) || 'leisure';
+                return (
+                  <div key={loc} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px'}}>
+                    <strong style={{fontSize: '16px', flex: 1}}>{loc}</strong>
+                    <div style={{display: 'flex', gap: '16px'}}>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: currentGroup === 'leisure' ? 'var(--accent-emerald)' : 'var(--text-muted)'}}>
+                        <input 
+                          type="radio" 
+                          name={`group_${loc}`} 
+                          checked={currentGroup === 'leisure'}
+                          onChange={() => handleLocationGroupChange(loc, 'leisure')}
+                          style={{accentColor: 'var(--accent-emerald)'}}
+                        /> 레저 본부
+                      </label>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: currentGroup === 'moto' ? 'var(--accent-gold)' : 'var(--text-muted)'}}>
+                        <input 
+                          type="radio" 
+                          name={`group_${loc}`} 
+                          checked={currentGroup === 'moto'}
+                          onChange={() => handleLocationGroupChange(loc, 'moto')}
+                          style={{accentColor: 'var(--accent-gold)'}}
+                        /> 모토아레나
+                      </label>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: currentGroup === 'exclude' ? '#ef4444' : 'var(--text-muted)'}}>
+                        <input 
+                          type="radio" 
+                          name={`group_${loc}`} 
+                          checked={currentGroup === 'exclude'}
+                          onChange={() => handleLocationGroupChange(loc, 'exclude')}
+                          style={{accentColor: '#ef4444'}}
+                        /> 제외
+                      </label>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         <div className="settings-actions" style={{marginTop: '40px'}}>

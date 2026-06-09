@@ -51,30 +51,67 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       
       const occRate = totalInventory > 0 ? (totalSold / totalInventory) * 100 : 0;
 
+      // 동적 매출 합산 로직
+      const locationGroups = settings.locationGroups || {};
+      let leisureSales = 0;
+      let motoSales = 0;
+
+      if (d.salesByLocation) {
+        Object.keys(d.salesByLocation).forEach(loc => {
+          const group = locationGroups[loc] || 'leisure';
+          if (group === 'leisure') {
+            leisureSales += d.salesByLocation[loc];
+          } else if (group === 'moto') {
+            motoSales += d.salesByLocation[loc];
+          }
+        });
+      } else {
+        // Fallback for legacy DB
+        leisureSales = Number(d.totalLeisureSales || d.leisureSales || 0);
+      }
+
       return {
         ...d,
         sold16, sold35, sold51: sold51 + sold51Acc, totalSold,
         occupancyRate: occRate,
-        leisureSales: Number(d.leisureSales || 0),
+        leisureSales,
+        motoSales,
         totalRoomRevenue: Number(d.totalRoomRevenue || 0)
       };
     });
   }, [monthlyData, settings]);
 
-  // 전체 상관계수 계산
+  // 전체 상관계수 계산 (레저)
   const globalCorrelation = useMemo(() => {
     const occArr = processedData.map(d => d.occupancyRate);
     const leiArr = processedData.map(d => d.leisureSales);
     return calculateCorrelation(occArr, leiArr);
   }, [processedData]);
 
-  // 평형별 상관계수 계산
+  // 전체 상관계수 계산 (모토아레나)
+  const motoGlobalCorrelation = useMemo(() => {
+    const occArr = processedData.map(d => d.occupancyRate);
+    const motoArr = processedData.map(d => d.motoSales);
+    return calculateCorrelation(occArr, motoArr);
+  }, [processedData]);
+
+  // 평형별 상관계수 계산 (레저)
   const roomTypeCorrelations = useMemo(() => {
     const leiArr = processedData.map(d => d.leisureSales);
     return {
       '16평': calculateCorrelation(processedData.map(d => d.sold16), leiArr),
       '35평': calculateCorrelation(processedData.map(d => d.sold35), leiArr),
       '51평': calculateCorrelation(processedData.map(d => d.sold51), leiArr)
+    };
+  }, [processedData]);
+
+  // 평형별 상관계수 계산 (모토아레나)
+  const motoRoomTypeCorrelations = useMemo(() => {
+    const motoArr = processedData.map(d => d.motoSales);
+    return {
+      '16평': calculateCorrelation(processedData.map(d => d.sold16), motoArr),
+      '35평': calculateCorrelation(processedData.map(d => d.sold35), motoArr),
+      '51평': calculateCorrelation(processedData.map(d => d.sold51), motoArr)
     };
   }, [processedData]);
 
@@ -296,6 +333,73 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
           </div>
         </div>
 
+      </div>
+
+      {/* 4. 모토아레나 심층 분석 섹션 */}
+      <div style={{marginTop: '40px', borderTop: '2px solid rgba(255,255,255,0.1)', paddingTop: '40px'}}>
+        <div style={{display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px'}}>
+          <h2 style={{color: 'var(--accent-gold)', margin: 0, fontSize: '28px'}}>모토아레나 독립 분석</h2>
+          <span style={{background: 'rgba(251, 191, 36, 0.1)', color: 'var(--accent-gold)', padding: '4px 12px', borderRadius: '20px', fontSize: '14px', border: '1px solid var(--accent-gold)'}}>
+            r = {motoGlobalCorrelation ? motoGlobalCorrelation.toFixed(3) : 'N/A'} ({getInterpretation(motoGlobalCorrelation)})
+          </span>
+        </div>
+
+        <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px'}}>
+          {/* 모토아레나 메인 트렌드 */}
+          <div className="glass-panel" style={{padding: '24px'}}>
+            <h3 style={{margin: '0 0 16px 0'}}>월별 추이: 객실 점유율 vs 모토아레나 매출</h3>
+            <div style={{width: '100%', height: '300px'}}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={processedData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <XAxis dataKey="yearMonth" stroke="var(--text-muted)" />
+                  <YAxis yAxisId="left" stroke="var(--accent-emerald)" tickFormatter={(v) => `${v.toFixed(0)}%`} />
+                  <YAxis yAxisId="right" orientation="right" stroke="var(--accent-gold)" tickFormatter={(v) => `${(v/1000000).toFixed(0)}M`} />
+                  <RechartsTooltip 
+                    contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)'}}
+                    formatter={(value, name) => name === '점유율' ? `${value.toFixed(1)}%` : `₩${formatCurrency(value)}`}
+                  />
+                  <Legend />
+                  <Line yAxisId="left" type="monotone" dataKey="occupancyRate" name="점유율" stroke="var(--accent-emerald)" strokeWidth={3} dot={{r: 4}} />
+                  <Line yAxisId="right" type="monotone" dataKey="motoSales" name="모토아레나 매출" stroke="var(--accent-gold)" strokeWidth={3} dot={{r: 4}} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* 모토아레나 산점도 */}
+          <div className="glass-panel" style={{padding: '24px'}}>
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px'}}>
+              <h3 style={{margin: 0}}>판매량 vs 모토아레나 매출 (산점도)</h3>
+              <select 
+                value={selectedRoomType} 
+                onChange={(e) => setSelectedRoomType(e.target.value)}
+                style={{background: 'rgba(255,255,255,0.1)', color: 'var(--text-main)', border: 'none', padding: '6px 12px', borderRadius: '4px', outline: 'none'}}
+              >
+                <option value="all" style={{color: 'black'}}>전체 객실</option>
+                <option value="sold16" style={{color: 'black'}}>16평</option>
+                <option value="sold35" style={{color: 'black'}}>35평</option>
+                <option value="sold51" style={{color: 'black'}}>51평</option>
+              </select>
+            </div>
+            <div style={{width: '100%', height: '300px'}}>
+              <ResponsiveContainer width="100%" height="100%">
+                <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <XAxis type="number" dataKey={selectedRoomType === 'all' ? 'totalSold' : selectedRoomType} name="객실 판매(실)" stroke="var(--text-muted)" />
+                  <YAxis type="number" dataKey="motoSales" name="모토아레나 매출" stroke="var(--text-muted)" tickFormatter={(v) => `${(v/1000000).toFixed(0)}M`} />
+                  <ZAxis type="category" dataKey="yearMonth" name="연/월" />
+                  <RechartsTooltip 
+                    cursor={{ strokeDasharray: '3 3' }}
+                    contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)'}}
+                    formatter={(val, name) => name === '모토아레나 매출' ? `₩${formatCurrency(val)}` : `${val}실`}
+                  />
+                  <Scatter data={processedData} fill="var(--accent-gold)" />
+                </ScatterChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
