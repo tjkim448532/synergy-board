@@ -125,9 +125,7 @@ export default function MonthlyDataForm({ settings }) {
             const count = parseSafeInt(row[countIdx]);
             const rev = parseSafeInt(row[revIdx]);
 
-            if (!roomType.includes('16평') && !roomType.includes('35평') && !roomType.includes('51평')) {
-               continue;
-            }
+            // 모든 객실 합계를 구하기 위해 continue 조건 제거
 
             monthData.totalRoomRevenue += rev;
             if (isWeekend) {
