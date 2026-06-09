@@ -174,7 +174,7 @@ export default function Settings({ monthlyData }) {
   if (!isAuthenticated) {
     return (
       <div style={{height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-        <form onSubmit={handlePinSubmit} className="glass-panel" style={{padding: '40px', display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center', maxWidth: '400px'}}>
+        <form onSubmit={handlePinSubmit} className="glass-panel" style={{padding: '40px', display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center', width: '100%', maxWidth: '400px', margin: '0 16px'}}>
           <div style={{background: 'rgba(255,255,255,0.1)', padding: '16px', borderRadius: '50%'}}>
             <Lock size={32} color="var(--accent-gold)" />
           </div>

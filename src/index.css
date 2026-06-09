@@ -108,3 +108,13 @@ body {
   cursor: grabbing;
   transform: scale(0.95);
 }
+
+/* Responsive Base */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+  .glass-panel {
+    border-radius: 12px;
+  }
+}

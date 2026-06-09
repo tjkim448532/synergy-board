@@ -398,7 +398,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       </div>
 
       {/* 1. 상단 요약 카드 (전체 흐름) */}
-      <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px'}}>
+      <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px'}}>
         <div className="glass-panel" style={{padding: '24px'}}>
           <h3 style={{margin: '0 0 10px 0', color: 'var(--text-muted)'}}>통합 상관계수 (r)</h3>
           <div style={{fontSize: '36px', fontWeight: 'bold', color: activeConf.color}}>
@@ -458,7 +458,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       </div>
 
       {/* 3. 산점도 및 영업장 분석 */}
-      <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px'}}>
+      <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px'}}>
         
         {/* 평형별 산점도 */}
         <div className="glass-panel" style={{padding: '24px'}}>

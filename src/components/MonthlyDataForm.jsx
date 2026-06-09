@@ -445,7 +445,7 @@ export default function MonthlyDataForm({ settings }) {
   if (!isAuthenticated) {
     return (
       <div style={{height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-        <form onSubmit={handlePinSubmit} className="glass-panel" style={{padding: '40px', display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center', maxWidth: '400px'}}>
+        <form onSubmit={handlePinSubmit} className="glass-panel" style={{padding: '40px', display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center', width: '100%', maxWidth: '400px', margin: '0 16px'}}>
           <div style={{background: 'rgba(255,255,255,0.1)', padding: '16px', borderRadius: '50%'}}>
             <Lock size={32} color="var(--accent-gold)" />
           </div>
@@ -484,7 +484,7 @@ export default function MonthlyDataForm({ settings }) {
         </div>
       </div>
 
-      <div className="upload-grid" style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px'}}>
+      <div className="upload-grid" style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px', marginBottom: '20px'}}>
         
         {/* Room Section */}
         <div className="glass-panel" style={{display: 'flex', flexDirection: 'column', padding: '24px', border: roomData ? '2px solid var(--accent-emerald)' : '1px solid var(--border-glass)'}}>
