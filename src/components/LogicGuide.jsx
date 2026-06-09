@@ -87,6 +87,13 @@ export default function LogicGuide() {
                 </ul>
               </div>
             </div>
+            
+            <div className="alert-box success">
+              <Info size={16} />
+              <span>
+                <strong>💡 장애인 객실 예외 처리:</strong> 51평형 예약 중 '장애' 또는 '휠체어' 키워드가 포함된 예약은 물리적 단일 키(Key)이므로 <strong>스위치 설정과 무관하게 무조건 1객실로만 카운트</strong>되도록 스마트 분류 로직이 적용되어 있습니다.
+              </span>
+            </div>
           </div>
         </div>
 
