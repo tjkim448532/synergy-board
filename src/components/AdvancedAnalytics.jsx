@@ -83,13 +83,14 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     const locMap = {};
     
     const mapLocationName = (name) => {
-      const n = name.replace(/\s+/g, '');
+      const n = name.replace(/[\s-]+/g, '');
       if (
         n.includes('미디어아트') || 
         n.includes('미디어기념품') || 
         n.includes('미디여기념품') || 
         n.includes('미디어기프트') || 
         n.includes('미디어카페') ||
+        n.includes('뮤지엄카페') ||
         n.includes('미디어가페')
       ) {
         return '미디어아트센터';

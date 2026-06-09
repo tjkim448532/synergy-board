@@ -213,7 +213,7 @@ export default function MonthlyDataForm({ settings }) {
         const monthlyParsedMap = {};
 
         const mapLocationName = (name) => {
-          const n = name.replace(/\s+/g, '');
+          const n = name.replace(/[\s-]+/g, '');
           if (
             n.includes('미디어아트') || 
             n.includes('미디어기념품') || 
