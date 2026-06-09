@@ -44,8 +44,8 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       const totalSold = sold16 + sold35 + (count51AsTwoRooms ? sold51 * 2 : sold51) + sold51Acc;
       
       // 총 객실 모수 계산 (고정값)
-      const physicalRooms = 175;
-      const rooms51Sets = 85;
+      const physicalRooms = Number(settings.totalRooms) || 175;
+      const rooms51Sets = Number(settings.connectingRooms51) || 85;
       const dailyInventory = count51AsTwoRooms ? physicalRooms : (physicalRooms - rooms51Sets);
       const totalInventory = dailyInventory * days;
       
@@ -53,7 +53,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
 
       return {
         ...d,
-        sold16, sold35, sold51, totalSold,
+        sold16, sold35, sold51: sold51 + sold51Acc, totalSold,
         occupancyRate: occRate,
         leisureSales: Number(d.leisureSales || 0),
         totalRoomRevenue: Number(d.totalRoomRevenue || 0)
