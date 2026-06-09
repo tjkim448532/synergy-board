@@ -189,9 +189,10 @@ export default function LogicGuide() {
                 </div>
               </div>
               <div className="math-step">
-                <span className="step-num">Step 3: 평형별 매출 합산</span>
+                <span className="step-num">Step 3: 물리적 객실 환산 및 평형별 매출 합산</span>
                 <div style={{color: 'var(--text-muted)'}}>
-                  <code>(16평 예상판매량 × 16평 목표단가) + (35평 예상판매량 × 35평 목표단가) + (51평 예상판매량 × 51평 목표단가)</code>
+                  가상으로 분배된 객실 수를 <strong>물리적 키(Key) 개수</strong>로 환원한 뒤 목표 단가를 곱합니다. (예: 51평 커넥팅룸이 가상 2객실로 잡혔다면, 1개로 환원하여 51평 단가를 1번만 곱해 매출 중복 뻥튀기를 방지합니다.)<br/>
+                  <code>(16평 물리판매량 × 16평 목표단가) + (35평 물리판매량 × 35평 목표단가) + (51평 물리판매량 × 51평 목표단가)</code>
                 </div>
               </div>
             </div>
