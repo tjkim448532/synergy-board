@@ -65,8 +65,8 @@ export default function MonthlyDataForm({ settings }) {
         const revIdx = headers.findIndex(h => h === '합계');
         
         let monthStr = '';
-        let sold16 = 0, sold35 = 0, sold51 = 0;
-        let revenue16 = 0, revenue35 = 0, revenue51 = 0;
+        let sold16 = 0, sold35 = 0, sold51 = 0, sold51Acc = 0;
+        let revenue16 = 0, revenue35 = 0, revenue51 = 0, revenue51Acc = 0;
         let totalRoomRevenue = 0;
         
         let soldWeekday = 0, soldWeekend = 0;
@@ -141,7 +141,11 @@ export default function MonthlyDataForm({ settings }) {
           } else if (roomType.includes('35평')) {
             sold35 += count; revenue35 += rev;
           } else if (roomType.includes('51평')) {
-            sold51 += count; revenue51 += rev;
+            if (roomType.includes('장애') || roomType.includes('휠체어')) {
+              sold51Acc += count; revenue51Acc += rev;
+            } else {
+              sold51 += count; revenue51 += rev;
+            }
           }
         }
         
@@ -155,8 +159,8 @@ export default function MonthlyDataForm({ settings }) {
           daysCount: uniqueDates.size,
           daysCountWeekday: uniqueWeekdayDates.size,
           daysCountWeekend: uniqueWeekendDates.size,
-          sold16, sold35, sold51,
-          revenue16, revenue35, revenue51,
+          sold16, sold35, sold51, sold51Acc,
+          revenue16, revenue35, revenue51, revenue51Acc,
           totalRoomRevenue,
           soldWeekday, soldWeekend,
           revWeekday, revWeekend

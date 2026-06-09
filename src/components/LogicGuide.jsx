@@ -47,7 +47,7 @@ export default function LogicGuide() {
               </div>
               <div className="formula-item">
                 <span className="label">51평형(커넥팅)</span>
-                <span className="value text-accent">90 세트</span>
+                <span className="value text-accent">85 세트</span>
               </div>
             </div>
             <div className="alert-box info">
@@ -82,7 +82,7 @@ export default function LogicGuide() {
               <div className="toggle-state">
                 <h4>방 1개로 산정 시</h4>
                 <ul>
-                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>분모(인벤토리):</strong> 85실 (175실 - 90세트)</li>
+                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>분모(인벤토리):</strong> 90실 (175실 - 85세트)</li>
                   <li><CheckCircle2 size={14} className="text-emerald" /> <strong>분자(판매량):</strong> 16평 + 35평 + (51평 예약 × 1)</li>
                 </ul>
               </div>
