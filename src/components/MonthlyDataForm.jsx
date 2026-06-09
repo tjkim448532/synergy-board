@@ -447,23 +447,30 @@ export default function MonthlyDataForm({ settings }) {
             <input type="file" accept=".xlsx" onChange={handleRoomFileUpload} style={{display: 'none'}} />
           </label>
 
-          {roomData && (
+          {roomData && Array.isArray(roomData) && (
             <div style={{background: 'rgba(52, 211, 153, 0.1)', padding: '16px', borderRadius: '8px', border: '1px solid var(--accent-emerald)'}}>
-              <h4 style={{margin: '0 0 12px 0', color: 'var(--accent-emerald)'}}>파싱 결과 ({roomData.yearMonth})</h4>
-              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
-                <span>영업일수</span> <strong>{roomData.daysCount}일</strong>
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
-                <span>객실 총 매출</span> <strong style={{color: 'var(--accent-blue)'}}>₩ {formatCurrency(roomData.totalRoomRevenue)}</strong>
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
-                <span>16/35/51평 판매량</span> <strong>{roomData.sold16} / {roomData.sold35} / {roomData.sold51} 실</strong>
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '16px'}}>
-                <span>예상 투숙객</span> <strong style={{color: 'var(--accent-emerald)'}}>{formatCurrency((roomData.sold16 * 2) + (roomData.sold35 * 4) + (roomData.sold51 * 6))} 명</strong>
+              <h4 style={{margin: '0 0 12px 0', color: 'var(--accent-emerald)'}}>파싱 결과 (총 {roomData.length}개월)</h4>
+              <div style={{maxHeight: '300px', overflowY: 'auto', marginBottom: '16px', paddingRight: '8px'}}>
+                {roomData.map(data => (
+                  <div key={data.yearMonth} style={{marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px dashed rgba(255,255,255,0.2)'}}>
+                    <h5 style={{margin: '0 0 8px 0', color: 'var(--text-bright)'}}>{data.yearMonth}</h5>
+                    <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
+                      <span>영업일수</span> <strong>{data.daysCount}일</strong>
+                    </div>
+                    <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
+                      <span>객실 총 매출</span> <strong style={{color: 'var(--accent-blue)'}}>₩ {formatCurrency(data.totalRoomRevenue)}</strong>
+                    </div>
+                    <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
+                      <span>16/35/51평 판매량</span> <strong>{data.sold16} / {data.sold35} / {data.sold51} 실</strong>
+                    </div>
+                    <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
+                      <span>예상 투숙객</span> <strong style={{color: 'var(--accent-emerald)'}}>{formatCurrency((data.sold16 * 2) + (data.sold35 * 4) + (data.sold51 * 6))} 명</strong>
+                    </div>
+                  </div>
+                ))}
               </div>
               <button className="btn-primary" onClick={handleSaveRoomData} style={{width: '100%', background: 'var(--accent-emerald)', display: 'flex', justifyContent: 'center', gap: '8px'}}>
-                <Save size={18} /> 객실 데이터만 DB에 저장
+                <Save size={18} /> 객실 데이터 DB에 저장
               </button>
             </div>
           )}
