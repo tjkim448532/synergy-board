@@ -15,6 +15,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
     let totalSoldAll = 0;
     let totalInventoryAll = 0;
     let totalSoldWdAll = 0;
+    let totalSoldWeAll = 0;
     let totalInvWdAll = 0;
     let totalInvWeAll = 0;
     let totalRoomRevenueAll = 0;
