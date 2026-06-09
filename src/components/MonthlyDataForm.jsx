@@ -72,6 +72,11 @@ export default function MonthlyDataForm({ settings }) {
         const countIdx = headers.findIndex(h => h === '객실수');
         const revIdx = headers.findIndex(h => h === '합계');
         
+        const rateIdx = headers.findIndex(h => h === '요금타입');
+        const marketIdx = headers.findIndex(h => h === '마켓타입');
+        const sourceIdx = headers.findIndex(h => h === '소스타입');
+        const agencyIdx = headers.findIndex(h => h === '거래처');
+        
         const roomParsedMap = {};
 
         for (let i = headerRowIdx + 1; i < data.length; i++) {
@@ -126,6 +131,20 @@ export default function MonthlyDataForm({ settings }) {
             const rev = parseSafeInt(row[revIdx]);
 
             // 모든 객실 합계를 구하기 위해 continue 조건 제거
+
+            if (!monthData.rawRoomRecords) {
+                monthData.rawRoomRecords = [];
+            }
+            monthData.rawRoomRecords.push({
+                date: dateVal,
+                roomType: roomType,
+                count: count,
+                revenue: rev,
+                rateType: rateIdx !== -1 && row[rateIdx] ? row[rateIdx].toString().trim() : '',
+                marketType: marketIdx !== -1 && row[marketIdx] ? row[marketIdx].toString().trim() : '',
+                sourceType: sourceIdx !== -1 && row[sourceIdx] ? row[sourceIdx].toString().trim() : '',
+                agency: agencyIdx !== -1 && row[agencyIdx] ? row[agencyIdx].toString().trim() : ''
+            });
 
             monthData.totalRoomRevenue += rev;
             if (isWeekend) {
