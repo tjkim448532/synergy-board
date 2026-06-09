@@ -242,6 +242,59 @@ export default function LogicGuide() {
             </div>
           </div>
         </div>
+        {/* Card 7: 핵심 성과 지표 (TrevPAR, RevPAR) */}
+        <div className="guide-card glass-panel" style={{gridColumn: '1 / -1', marginTop: '24px'}}>
+          <div className="card-top">
+            <div className="icon-circle" style={{background: 'rgba(234, 179, 8, 0.1)'}}>
+              <CheckCircle2 size={24} className="text-yellow" style={{color: '#eab308'}} />
+            </div>
+            <h3>7. 리조트 수익성 평가 핵심 지표 (RevPAR & TrevPAR)</h3>
+          </div>
+          <div className="card-body">
+            <p>
+              단순히 '총매출'이나 '점유율'만으로는 객실 영업 효율을 제대로 파악하기 어렵습니다. 이에 <strong>PAR(Per Available Room, 가용 객실당)</strong> 개념을 도입하여, 방 1개를 기준으로 창출되는 수익을 정확히 측정합니다.
+            </p>
+            
+            <div className="formula-box vertical" style={{marginTop: '16px'}}>
+              <div className="math-step">
+                <span className="step-num">기본 전제: 분모(가용 객실 수)의 무결성</span>
+                <div style={{color: 'var(--text-muted)'}}>
+                  모든 지표의 분모가 되는 <code>총 가용 객실 수 = 일일 객실 인벤토리 × 해당 월의 일수</code> 입니다. 51평 스위치 설정에 따라 '방 1개' 또는 '방 2개'로 모수(Denominator)가 다이내믹하게 변화하며 지표를 재계산합니다.
+                </div>
+              </div>
+              <div className="math-step">
+                <span className="step-num">지표 1: RevPAR (객실 수익만)</span>
+                <div style={{color: 'var(--text-muted)'}}>
+                  <code>(월간 총 객실 매출) ÷ (총 가용 객실 수)</code><br/>
+                  방 1개가 하루에 벌어들이는 '평균 객실료'입니다. 공실(비어있는 방)까지 모두 포함하여 평균을 내므로, 무리한 할인(ADR 하락)으로 방을 채우는 게 유리한지, 비싸게 적게 파는 게 유리한지 평가하는 기준이 됩니다.
+                </div>
+              </div>
+              <div className="math-step">
+                <span className="step-num">지표 2: Gross TrevPAR (워크인 포함 전체)</span>
+                <div style={{color: 'var(--text-muted)'}}>
+                  <code>(객실 + 식음 + 레저 + 모토아레나 전체 총매출) ÷ (총 가용 객실 수)</code><br/>
+                  투숙객과 워크인(비투숙 외부 방문객)을 가리지 않고, 리조트라는 거대한 공간 시설 전체가 하루에 뿜어내는 총체적인 '공간 수익성'을 객실 모수로 나누어 직관적으로 보여줍니다.
+                </div>
+              </div>
+              <div className="math-step">
+                <span className="step-num">지표 3: 순수(Pure) TrevPAR (객실 + 투숙객 부대매출)</span>
+                <div style={{color: 'var(--text-muted)'}}>
+                  <code>[ (총 객실 매출) + (레저매출 × 투숙객비중) + (식음매출 × 투숙객비중) + (모토매출 × 투숙객비중) ] ÷ (총 가용 객실 수)</code><br/>
+                  방 1개를 채웠을 때, 오직 <strong>'그 투숙객'</strong>이 식당, 레저 등에서 카드를 긁을 것으로 기대되는 수익을 합친 <strong>진짜 객실 1개의 연계 가치</strong>입니다.
+                </div>
+              </div>
+            </div>
+            
+            <div className="alert-box warning" style={{marginTop: '16px', borderColor: 'rgba(234, 179, 8, 0.3)', background: 'rgba(234, 179, 8, 0.05)'}}>
+              <Info size={16} style={{color: '#eab308'}} />
+              <span style={{color: 'var(--text-main)'}}>
+                <strong>💡 '순수'와 'Gross'가 벌어지는 원리 (워크인 변수 통제):</strong><br/>
+                현재 엑셀의 결제 데이터에는 '투숙객'과 '워크인'이 섞여 있습니다. 시스템은 [설정] 탭에 입력된 <strong>투숙객 매출 비중(Capture Rate %)</strong>이라는 돋보기를 통해 전체 매출에서 수학적으로 투숙객 지분만 깎아내어(필터링) 순수 TrevPAR를 계산합니다. 따라서, Gross와 순수 TrevPAR 사이의 금액 격차는 온전히 <strong>외부 나들이객(워크인)이 기여한 매출분</strong>을 의미합니다.
+              </span>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );
