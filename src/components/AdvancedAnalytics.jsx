@@ -582,8 +582,8 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {channelAdrData.map((row, idx) => (
-                      <tr key={idx} style={{borderBottom: '1px solid rgba(255,255,255,0.05)'}}>
+                    {channelAdrData.map((row) => (
+                      <tr key={row.channel} style={{borderBottom: '1px solid rgba(255,255,255,0.05)'}}>
                         <td style={{padding: '12px', textAlign: 'left', fontWeight: 'bold'}}>{row.channel}</td>
                         <td style={{padding: '12px'}}>{row['16평'] ? `₩${formatCurrency(row['16평'])}` : '-'}</td>
                         <td style={{padding: '12px'}}>{row['35평'] ? `₩${formatCurrency(row['35평'])}` : '-'}</td>
@@ -645,7 +645,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                   };
 
                   return (
-                    <tr key={idx} style={{borderBottom: '1px solid rgba(255,255,255,0.05)'}}>
+                    <tr key={channel} style={{borderBottom: '1px solid rgba(255,255,255,0.05)'}}>
                       <td style={{padding: '12px', textAlign: 'left', fontWeight: 'bold'}}>{channel}</td>
                       <td style={{padding: '12px', color: getColor(cLeisure), fontWeight: cLeisure >= 0.4 ? 'bold' : 'normal'}}>{cLeisure.toFixed(2)}</td>
                       <td style={{padding: '12px', color: getColor(cFnb), fontWeight: cFnb >= 0.4 ? 'bold' : 'normal'}}>{cFnb.toFixed(2)}</td>

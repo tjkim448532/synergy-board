@@ -49,7 +49,7 @@ function App() {
       case 'logic':
         return (
           <div className="glass-panel" style={{height: '100%', padding: '32px', overflowY: 'auto'}}>
-            <LogicGuide />
+            <LogicGuide settings={settings} />
           </div>
         )
       case 'accuracy-tasks':
