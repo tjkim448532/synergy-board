@@ -10,7 +10,7 @@ import './App.css'
 
 function App() {
   const [activeTab, setActiveTab] = useState('analytics')
-  const [settings, setSettings] = useState({ totalRooms: 500, connectingRooms51: 50 });
+  const [settings, setSettings] = useState({});
   const [allData, setAllData] = useState([]);
 
   useEffect(() => {

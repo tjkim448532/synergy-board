@@ -87,8 +87,8 @@ export default function RevenuePrediction({ monthlyData, settings }) {
     const globalWeOccRate = totalInvWeAll > 0 ? (totalSoldWeAll / totalInvWeAll) * 100 : 0;
     const avgGuestsPerSoldRoom = totalSoldAll > 0 ? totalGuestsAll / totalSoldAll : 0;
     
-    const physicalRooms = Number(settings.totalRooms) || 500;
-    const rooms51Sets = Number(settings.connectingRooms51) || 50;
+    const physicalRooms = 145;
+    const rooms51Sets = 72;
     const count51AsTwoRooms = settings.count51AsTwoRooms !== false;
     const dailyInventory = count51AsTwoRooms ? physicalRooms : (physicalRooms - rooms51Sets);
     

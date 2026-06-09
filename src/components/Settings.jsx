@@ -120,31 +120,6 @@ export default function Settings() {
 
       <div className="settings-card glass-panel">
         <h3 style={{marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px'}}>
-          마스터 객실 정보 구글 시트 연동
-        </h3>
-        <p style={{color: 'var(--text-muted)', fontSize: '14px', marginBottom: '16px'}}>
-          객실 정보가 담긴 구글 시트 링크를 넣으시면 총 객실 수와 51평형 세트 수를 자동으로 추출합니다.
-        </p>
-        <div style={{display: 'flex', gap: '10px', marginBottom: '30px'}}>
-          <input 
-            type="text" 
-            placeholder="구글 시트 URL 입력 (링크 공유 켜기 필수)" 
-            value={sheetUrl}
-            onChange={(e) => setSheetUrl(e.target.value)}
-            style={{flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid var(--border-glass)', background: 'rgba(255,255,255,0.05)', color: 'white'}}
-          />
-          <button 
-            className="btn-primary" 
-            onClick={handleSyncFromSheet}
-            disabled={isSyncing}
-            style={{display: 'flex', alignItems: 'center', gap: '6px', background: isSyncing ? 'var(--text-muted)' : 'var(--accent-emerald)'}}
-          >
-            {isSyncing ? <RefreshCw size={18} className="spin" /> : <LinkIcon size={18} />}
-            {isSyncing ? '연동 중...' : '시트 연동 및 계산'}
-          </button>
-        </div>
-
-        <h3 style={{marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px'}}>
           기본 설정
         </h3>
         <div className="form-group">
@@ -153,35 +128,20 @@ export default function Settings() {
             type="text" 
             id="resortName" 
             name="resortName" 
-            value={settings.resortName} 
+            value={settings.resortName || ''} 
             onChange={handleChange} 
-            placeholder="예: 벨포레 리조트"
+            placeholder="예: 시너지 리조트"
           />
         </div>
 
         <div className="form-group">
-          <label htmlFor="totalRooms">고정 총 객실 수 (물리적 객실 기준)</label>
-          <input 
-            type="number" 
-            id="totalRooms" 
-            name="totalRooms" 
-            value={settings.totalRooms} 
-            onChange={handleChange} 
-            placeholder="예: 500"
-          />
+          <label>객실 인벤토리 고정값</label>
+          <div style={{color: 'var(--text-muted)', fontSize: '14px', marginTop: '4px'}}>
+            총 객실 수는 <strong>145실</strong>, 51평형(커넥팅) 세트는 <strong>72세트</strong>로 고정되어 있습니다.
+          </div>
         </div>
 
-        <div className="form-group">
-          <label htmlFor="connectingRooms51">51평형(커넥팅 룸) 세트 수</label>
-          <input 
-            type="number" 
-            id="connectingRooms51" 
-            name="connectingRooms51" 
-            value={settings.connectingRooms51} 
-            onChange={handleChange} 
-            placeholder="예: 50"
-          />
-        </div>
+
 
         <div className="form-group">
           <label>51평형(커넥팅 룸) 점유율 산정 방식</label>
