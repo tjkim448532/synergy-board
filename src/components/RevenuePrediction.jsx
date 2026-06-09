@@ -360,6 +360,8 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         label: `전체 누적 (${processedData.length}개월)`,
         totalRev: globalStats.totalRoomRevenue + globalStats.totalLeisureRevenue,
         occRate: globalStats.totalOccupancyRate,
+        wdOccRate: globalStats.globalWdOccRate,
+        weOccRate: globalStats.globalWeOccRate,
         occLabel: '누적 평균 점유율'
       };
     } else {
