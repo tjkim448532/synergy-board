@@ -496,6 +496,64 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
           </div>
         </div>
 
+        {/* 채널 ↔ 부대시설 거시적 상관관계 (Macro-Correlation) */}
+        <div className="glass-panel" style={{padding: '24px', gridColumn: 'span 2'}}>
+          <h3 style={{marginBottom: '20px'}}>채널 비중 ↔ 부대시설 매출 거시적 상관관계</h3>
+          <p style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '15px'}}>특정 예약 채널(온라인, 세미나 등)의 매출 비중이 높았던 월에 각 영업장(레저, 식음, 모토아레나)의 총매출이 얼마나 함께 상승했는지를 보여주는 상관계수(-1.0 ~ 1.0)입니다. (0.4 이상 뚜렷한 연관, 0.7 이상 매우 강한 연관)</p>
+          
+          <div style={{overflowX: 'auto', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid var(--border-glass)'}}>
+            <table style={{width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'center'}}>
+              <thead>
+                <tr style={{background: 'rgba(255,255,255,0.05)'}}>
+                  <th style={{padding: '12px', textAlign: 'left', borderBottom: '1px solid var(--border-glass)'}}>채널명</th>
+                  <th style={{padding: '12px', borderBottom: '1px solid var(--border-glass)'}}>레저본부 (상관도)</th>
+                  <th style={{padding: '12px', borderBottom: '1px solid var(--border-glass)'}}>식음본부 (상관도)</th>
+                  <th style={{padding: '12px', borderBottom: '1px solid var(--border-glass)'}}>모토아레나 (상관도)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {['온라인', '세미나', '휴양소', '예약실', '홈페이지'].map((channel, idx) => {
+                  // 채널별 상관계수 계산
+                  const channelMonthlyRev = processedData.map(d => {
+                    let total = 0;
+                    if (d.rawRoomRecords) {
+                      d.rawRoomRecords.forEach(r => {
+                        const m = r.marketType || '';
+                        if (channel === '온라인' && m.includes('온라인')) total += r.revenue || 0;
+                        else if (channel === '세미나' && (m.includes('세미나') || m.includes('단체'))) total += r.revenue || 0;
+                        else if (channel === '휴양소' && (m.includes('기업') || m.includes('휴양소'))) total += r.revenue || 0;
+                        else if (channel === '예약실' && (m.includes('예약실') || m.includes('전화') || m.includes('메신저'))) total += r.revenue || 0;
+                        else if (channel === '홈페이지' && (m.includes('홈페이지') || m.includes('APP'))) total += r.revenue || 0;
+                      });
+                    }
+                    return total;
+                  });
+
+                  const cLeisure = calculateCorrelation(channelMonthlyRev, processedData.map(d => d.leisureSales)) || 0;
+                  const cFnb = calculateCorrelation(channelMonthlyRev, processedData.map(d => d.fnbSales)) || 0;
+                  const cMoto = calculateCorrelation(channelMonthlyRev, processedData.map(d => d.motoSales)) || 0;
+
+                  const getColor = (r) => {
+                    if (r >= 0.7) return 'var(--accent-emerald)';
+                    if (r >= 0.4) return 'var(--accent-gold)';
+                    if (r <= -0.4) return 'var(--accent-red)';
+                    return 'var(--text-main)';
+                  };
+
+                  return (
+                    <tr key={idx} style={{borderBottom: '1px solid rgba(255,255,255,0.05)'}}>
+                      <td style={{padding: '12px', textAlign: 'left', fontWeight: 'bold'}}>{channel}</td>
+                      <td style={{padding: '12px', color: getColor(cLeisure), fontWeight: cLeisure >= 0.4 ? 'bold' : 'normal'}}>{cLeisure.toFixed(2)}</td>
+                      <td style={{padding: '12px', color: getColor(cFnb), fontWeight: cFnb >= 0.4 ? 'bold' : 'normal'}}>{cFnb.toFixed(2)}</td>
+                      <td style={{padding: '12px', color: getColor(cMoto), fontWeight: cMoto >= 0.4 ? 'bold' : 'normal'}}>{cMoto.toFixed(2)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     </div>
   );

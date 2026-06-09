@@ -205,6 +205,43 @@ export default function LogicGuide() {
             </div>
           </div>
         </div>
+        {/* Card 6: 판매채널-부대시설 거시적 상관관계 */}
+        <div className="guide-card glass-panel" style={{gridColumn: '1 / -1', marginTop: '24px'}}>
+          <div className="card-top">
+            <div className="icon-circle" style={{background: 'rgba(59, 130, 246, 0.1)'}}>
+              <SplitSquareHorizontal size={24} className="text-blue" style={{color: '#3b82f6'}} />
+            </div>
+            <h3>6. 예약 채널별 ↔ 부대시설 거시적 상관관계 (Macro-Correlation)</h3>
+          </div>
+          <div className="card-body">
+            <p>
+              "온라인으로 예약한 사람이 모토아레나에서 돈을 썼는가?"를 직접 1:1로 추적하려면 객실 시스템(PMS)과 업장 포스(POS) 데이터가 고객 단위로 연동되어야 합니다. 그러나 현재 엑셀 업로드 방식은 독립된 월별 총합계 데이터이므로, <strong>'월별 채널 매출의 흐름'</strong>과 <strong>'월별 부대시설 매출의 흐름'</strong> 간의 거시적 통계 상관계수(Pearson Correlation)를 도출하여 이를 극복합니다.
+            </p>
+            
+            <div className="formula-box vertical" style={{marginTop: '16px'}}>
+              <div className="math-step">
+                <span className="step-num">Step 1: 데이터 분리 및 월간 집계</span>
+                <div style={{color: 'var(--text-muted)'}}>
+                  매월 객실 엑셀에서 '마켓타입'을 파싱해 <strong>채널별(온라인, 세미나, 휴양소 등) 월 총매출 배열 X</strong>를 추출하고, 영업장 엑셀에서 <strong>본부별(식음, 레저, 모토) 월 총매출 배열 Y</strong>를 추출합니다.
+                </div>
+              </div>
+              <div className="math-step">
+                <span className="step-num">Step 2: 피어슨 상관계수 (r) 적용</span>
+                <div style={{color: 'var(--text-muted)'}}>
+                  공분산을 표준편차의 곱으로 나눈 통계학적 공식을 사용하여 두 배열(X, Y)이 얼마나 함께 오르고 내리는지 -1.0 부터 1.0 사이의 수치로 반환합니다.<br/>
+                  <code>r = Cov(X,Y) / (StdDev(X) * StdDev(Y))</code>
+                </div>
+              </div>
+            </div>
+            
+            <div className="alert-box success" style={{marginTop: '16px', borderColor: 'rgba(59, 130, 246, 0.3)', background: 'rgba(59, 130, 246, 0.05)'}}>
+              <CheckCircle2 size={16} style={{color: '#3b82f6'}} />
+              <span style={{color: 'var(--text-main)'}}>
+                <strong>💡 해석 팁:</strong> 상관계수가 0.7 이상이면 매우 강한 연관성(특정 채널 투숙객이 해당 영업장 매출을 견인할 확률이 매우 높음), 0.4 이상이면 유의미한 연관성으로 해석할 수 있습니다. 단, 현재 누적된 개월 수(데이터 포인트)가 적을 때는 경향성 파악 용도로만 참고하세요.
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
