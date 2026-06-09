@@ -392,7 +392,10 @@ export default function MonthlyDataForm({ settings }) {
             leisureSales: data.totalLeisureSales,
             leisureRevWd: data.leisureRevWd,
             leisureRevWe: data.leisureRevWe,
-            leisureSalesByLocation: data.leisureSalesByLocation
+            leisureSalesByLocation: data.leisureSalesByLocation,
+            salesByLocation: data.salesByLocation,
+            salesWdByLocation: data.salesWdByLocation,
+            salesWeByLocation: data.salesWeByLocation
          };
          await setDoc(doc(db, 'monthly_records', data.yearMonth), dataToSave, { merge: true });
       }

@@ -344,6 +344,34 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
           </span>
         </div>
 
+        <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '20px'}}>
+          <div className="glass-panel" style={{padding: '24px'}}>
+            <h3 style={{margin: '0 0 10px 0', color: 'var(--text-muted)'}}>통합 상관계수 (r)</h3>
+            <div style={{fontSize: '36px', fontWeight: 'bold', color: 'var(--accent-gold)'}}>
+              {motoGlobalCorrelation ? motoGlobalCorrelation.toFixed(3) : 'N/A'}
+            </div>
+            <div style={{color: 'var(--text-muted)', marginTop: '8px'}}>
+              객실 점유율 ↔ 모토아레나 매출<br/>
+              <strong>{getInterpretation(motoGlobalCorrelation)}</strong>
+            </div>
+          </div>
+
+          <div className="glass-panel" style={{padding: '24px', gridColumn: 'span 2'}}>
+            <h3 style={{margin: '0 0 10px 0', color: 'var(--text-muted)'}}>모토아레나 매출과 가장 연관 깊은 객실 평형</h3>
+            <div style={{display: 'flex', gap: '20px', height: '100%', alignItems: 'center'}}>
+              {Object.entries(motoRoomTypeCorrelations).map(([type, r]) => (
+                <div key={type} style={{flex: 1, background: 'rgba(255,255,255,0.05)', padding: '16px', borderRadius: '8px', textAlign: 'center'}}>
+                  <div style={{fontSize: '18px', fontWeight: 'bold'}}>{type}</div>
+                  <div style={{fontSize: '24px', color: (r && r > 0.5) ? 'var(--accent-gold)' : 'var(--text-main)', margin: '8px 0'}}>
+                    {r ? r.toFixed(2) : '-'}
+                  </div>
+                  <div style={{fontSize: '12px', color: 'var(--text-muted)'}}>{getInterpretation(r)}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
         <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px'}}>
           {/* 모토아레나 메인 트렌드 */}
           <div className="glass-panel" style={{padding: '24px'}}>
