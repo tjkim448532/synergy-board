@@ -325,10 +325,11 @@ export default function RevenuePrediction({ monthlyData, settings }) {
               <span style={{fontWeight: 'bold', fontSize: '28px', color: 'var(--accent-blue)'}}>{targetWeekdayOcc}%</span>
             </div>
             <input 
+              className="custom-handle-slider"
               type="range" min="0" max="100" step="1" 
               value={targetWeekdayOcc} 
               onChange={(e) => setTargetWeekdayOcc(Number(e.target.value))}
-              style={{width: '100%', accentColor: 'var(--accent-blue)', cursor: 'pointer', height: '12px'}}
+              style={{'--accent-color': 'var(--accent-blue)'}}
             />
             <div style={{fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px', textAlign: 'right'}}>
               (실제 누적 평균: {globalStats.globalWdOccRate.toFixed(1)}%)
@@ -340,10 +341,11 @@ export default function RevenuePrediction({ monthlyData, settings }) {
               <span style={{fontWeight: 'bold', fontSize: '28px', color: 'var(--accent-purple)'}}>{targetWeekendOcc}%</span>
             </div>
             <input 
+              className="custom-handle-slider"
               type="range" min="0" max="100" step="1" 
               value={targetWeekendOcc} 
               onChange={(e) => setTargetWeekendOcc(Number(e.target.value))}
-              style={{width: '100%', accentColor: 'var(--accent-purple)', cursor: 'pointer', height: '12px'}}
+              style={{'--accent-color': 'var(--accent-purple)'}}
             />
             <div style={{fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px', textAlign: 'right'}}>
               (실제 누적 평균: {globalStats.globalWeOccRate.toFixed(1)}%)
