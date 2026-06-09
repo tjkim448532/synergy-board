@@ -333,7 +333,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         </div>
 
         {/* 회귀 분석 차트 */}
-        <div className="glass-panel" style={{padding: '24px', height: '400px'}}>
+        <div className="glass-panel" style={{padding: '24px', height: '450px', display: 'flex', flexDirection: 'column'}}>
           <div style={{marginBottom: '20px'}}>
             <h3 style={{margin: '0 0 8px 0'}}>전체 점유율 vs 통합 매출 예측 트렌드 (객실/레저)</h3>
             <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: '1.4'}}>
@@ -344,28 +344,30 @@ export default function RevenuePrediction({ monthlyData, settings }) {
               </span>
             </p>
           </div>
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={chartData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-              <XAxis type="number" dataKey="occupancyRate" name="종합 점유율" stroke="var(--text-muted)" tickFormatter={(v) => `${v}%`} domain={[0, 100]} />
-              <YAxis yAxisId="left" type="number" stroke="var(--accent-blue)" tickFormatter={(v) => `${(v/1000000).toFixed(0)}M`} />
-              <YAxis yAxisId="right" orientation="right" type="number" stroke="var(--accent-purple)" tickFormatter={(v) => `${(v/1000000).toFixed(0)}M`} />
-              
-              <RechartsTooltip 
-                cursor={{ strokeDasharray: '3 3' }}
-                contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)'}}
-                formatter={(val, name) => [ `₩${formatCurrency(val)}`, name ]}
-                labelFormatter={(label) => `종합 점유율: ${Number(label).toFixed(1)}%`}
-              />
-              <Legend />
-              
-              <Scatter yAxisId="left" dataKey="actualRoomRevenue" name="실제 객실매출" fill="var(--accent-blue)" />
-              <Scatter yAxisId="right" dataKey="actualLeisureRevenue" name="실제 레저매출" fill="var(--accent-purple)" />
-              
-              <Line yAxisId="left" type="monotone" dataKey="trendRoom" name="객실 예측선" stroke="var(--accent-blue)" strokeWidth={2} dot={false} activeDot={false} strokeDasharray="5 5" />
-              <Line yAxisId="right" type="monotone" dataKey="trendLeisure" name="레저 예측선" stroke="var(--accent-purple)" strokeWidth={2} dot={false} activeDot={false} strokeDasharray="5 5" />
-            </ComposedChart>
-          </ResponsiveContainer>
+          <div style={{flex: 1, minHeight: 0, width: '100%'}}>
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={chartData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                <XAxis type="number" dataKey="occupancyRate" name="종합 점유율" stroke="var(--text-muted)" tickFormatter={(v) => `${v}%`} domain={[0, 100]} />
+                <YAxis yAxisId="left" type="number" stroke="var(--accent-blue)" tickFormatter={(v) => `${(v/1000000).toFixed(0)}M`} />
+                <YAxis yAxisId="right" orientation="right" type="number" stroke="var(--accent-purple)" tickFormatter={(v) => `${(v/1000000).toFixed(0)}M`} />
+                
+                <RechartsTooltip 
+                  cursor={{ strokeDasharray: '3 3' }}
+                  contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)'}}
+                  formatter={(val, name) => [ `₩${formatCurrency(val)}`, name ]}
+                  labelFormatter={(label) => `종합 점유율: ${Number(label).toFixed(1)}%`}
+                />
+                <Legend />
+                
+                <Scatter yAxisId="left" dataKey="actualRoomRevenue" name="실제 객실매출" fill="var(--accent-blue)" />
+                <Scatter yAxisId="right" dataKey="actualLeisureRevenue" name="실제 레저매출" fill="var(--accent-purple)" />
+                
+                <Line yAxisId="left" connectNulls={true} type="monotone" dataKey="trendRoom" name="객실 예측선" stroke="var(--accent-blue)" strokeWidth={2} dot={false} activeDot={false} strokeDasharray="5 5" />
+                <Line yAxisId="right" connectNulls={true} type="monotone" dataKey="trendLeisure" name="레저 예측선" stroke="var(--accent-purple)" strokeWidth={2} dot={false} activeDot={false} strokeDasharray="5 5" />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
       </div>

@@ -193,7 +193,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       </div>
 
       {/* 2. 메인 트렌드 차트 */}
-      <div className="glass-panel" style={{padding: '24px', height: '400px'}}>
+      <div className="glass-panel" style={{padding: '24px', height: '450px', display: 'flex', flexDirection: 'column'}}>
         <div style={{marginBottom: '20px'}}>
           <h3 style={{margin: '0 0 8px 0'}}>월별 추이: 객실 점유율 vs 레저 총매출</h3>
           <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: '1.4'}}>
@@ -204,28 +204,30 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
             </span>
           </p>
         </div>
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={processedData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-            <XAxis dataKey="yearMonth" stroke="var(--text-muted)" />
-            <YAxis yAxisId="left" stroke="var(--accent-emerald)" tickFormatter={(v) => `${v.toFixed(0)}%`} />
-            <YAxis yAxisId="right" orientation="right" stroke="var(--accent-gold)" tickFormatter={(v) => `${(v/1000000).toFixed(0)}M`} />
-            <RechartsTooltip 
-              contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)'}}
-              formatter={(value, name) => name === '점유율' ? `${value.toFixed(1)}%` : `₩${formatCurrency(value)}`}
-            />
-            <Legend />
-            <Line yAxisId="left" type="monotone" dataKey="occupancyRate" name="점유율" stroke="var(--accent-emerald)" strokeWidth={3} dot={{r: 4}} activeDot={{r: 8}} />
-            <Line yAxisId="right" type="monotone" dataKey="leisureSales" name="레저 매출" stroke="var(--accent-gold)" strokeWidth={3} dot={{r: 4}} />
-          </LineChart>
-        </ResponsiveContainer>
+        <div style={{flex: 1, minHeight: 0, width: '100%'}}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={processedData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+              <XAxis dataKey="yearMonth" stroke="var(--text-muted)" />
+              <YAxis yAxisId="left" stroke="var(--accent-emerald)" tickFormatter={(v) => `${v.toFixed(0)}%`} />
+              <YAxis yAxisId="right" orientation="right" stroke="var(--accent-gold)" tickFormatter={(v) => `${(v/1000000).toFixed(0)}M`} />
+              <RechartsTooltip 
+                contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)'}}
+                formatter={(value, name) => name === '점유율' ? `${value.toFixed(1)}%` : `₩${formatCurrency(value)}`}
+              />
+              <Legend />
+              <Line yAxisId="left" type="monotone" dataKey="occupancyRate" name="점유율" stroke="var(--accent-emerald)" strokeWidth={3} dot={{r: 4}} activeDot={{r: 8}} />
+              <Line yAxisId="right" type="monotone" dataKey="leisureSales" name="레저 매출" stroke="var(--accent-gold)" strokeWidth={3} dot={{r: 4}} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
       {/* 3. 산점도 및 영업장 분석 */}
       <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px'}}>
         
         {/* 평형별 산점도 */}
-        <div className="glass-panel" style={{padding: '24px'}}>
+        <div className="glass-panel" style={{padding: '24px', height: '450px', display: 'flex', flexDirection: 'column'}}>
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px'}}>
             <div>
               <h3 style={{margin: '0 0 8px 0'}}>평형별 판매량 vs 레저매출 (산점도)</h3>
@@ -249,7 +251,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
             </select>
           </div>
           
-          <div style={{height: '300px'}}>
+          <div style={{flex: 1, minHeight: 0, width: '100%'}}>
             <ResponsiveContainer width="100%" height="100%">
               <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
