@@ -20,6 +20,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
     let totalRoomRevenueAll = 0;
     let totalLeisureRevenueAll = 0;
     let totalMotoRevenueAll = 0;
+    let totalFnbRevenueAll = 0;
     let totalGuestsAll = 0;
     
     let total16All = 0;
@@ -73,6 +74,9 @@ export default function RevenuePrediction({ monthlyData, settings }) {
       let lRevWe = 0;
       let mRevWd = 0;
       let mRevWe = 0;
+      let fnbSales = 0;
+      let fRevWd = 0;
+      let fRevWe = 0;
 
       if (d.salesByLocation) {
         Object.keys(d.salesByLocation).forEach(loc => {
@@ -85,6 +89,10 @@ export default function RevenuePrediction({ monthlyData, settings }) {
             motoSales += d.salesByLocation[loc];
             if (d.salesWdByLocation && d.salesWdByLocation[loc]) mRevWd += d.salesWdByLocation[loc];
             if (d.salesWeByLocation && d.salesWeByLocation[loc]) mRevWe += d.salesWeByLocation[loc];
+          } else if (group === 'fnb') {
+            fnbSales += d.salesByLocation[loc];
+            if (d.salesWdByLocation && d.salesWdByLocation[loc]) fRevWd += d.salesWdByLocation[loc];
+            if (d.salesWeByLocation && d.salesWeByLocation[loc]) fRevWe += d.salesWeByLocation[loc];
           }
         });
       } else {
@@ -107,6 +115,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
       totalRoomRevenueAll += totalRoomRevenue;
       totalLeisureRevenueAll += leisureSales;
       totalMotoRevenueAll += motoSales;
+      totalFnbRevenueAll += fnbSales;
       totalGuestsAll += guests;
       
       total16All += sold16;
@@ -124,10 +133,13 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         revWe,
         leisureSales,
         motoSales,
+        fnbSales,
         lRevWd,
         lRevWe,
         mRevWd,
-        mRevWe
+        mRevWe,
+        fRevWd,
+        fRevWe
       };
     });
 
@@ -159,6 +171,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         totalRoomRevenue: totalRoomRevenueAll,
         totalLeisureRevenue: totalLeisureRevenueAll,
         totalMotoRevenue: totalMotoRevenueAll,
+        totalFnbRevenue: totalFnbRevenueAll,
         avgGuestsPerSoldRoom,
         dailyInventory,
         avgWdDays,
@@ -172,7 +185,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
   }, [monthlyData, settings]);
 
   // 2. 선형 회귀 알고리즘 (Least Squares)
-  const { regWd, regWe, regLeisureWd, regLeisureWe, regLeisureTotal, regOverallRoom } = useMemo(() => {
+  const { regWd, regWe, regLeisureWd, regLeisureWe, regLeisureTotal, regMotoWd, regMotoWe, regMotoTotal, regFnbWd, regFnbWe, regFnbTotal, regOverallRoom } = useMemo(() => {
     const calcRegression = (xKey, yKey) => {
       const points = processedData.filter(d => d[yKey] > 0);
       const n = points.length;
@@ -210,6 +223,9 @@ export default function RevenuePrediction({ monthlyData, settings }) {
       regMotoWd: calcRegression('occWd', 'mRevWd'),
       regMotoWe: calcRegression('occWe', 'mRevWe'),
       regMotoTotal: calcRegression('occupancyRate', 'motoSales'),
+      regFnbWd: calcRegression('occWd', 'fRevWd'),
+      regFnbWe: calcRegression('occWe', 'fRevWe'),
+      regFnbTotal: calcRegression('occupancyRate', 'fnbSales'),
       regOverallRoom: calcRegression('occupancyRate', 'totalRoomRevenue')
     };
   }, [processedData]);
@@ -264,6 +280,10 @@ export default function RevenuePrediction({ monthlyData, settings }) {
   let expMotoWd = 0;
   let expMotoWe = 0;
   
+  let expectedFnbRevenue = 0;
+  let expFnbWd = 0;
+  let expFnbWe = 0;
+  
   // 데이터에 주중/주말 분리 레저 매출이 하나라도 있다면 분리 예측 사용, 아니면 통합 예측 사용
   const hasSplitLeisure = processedData.some(d => d.lRevWd !== null);
   
@@ -275,13 +295,18 @@ export default function RevenuePrediction({ monthlyData, settings }) {
     expMotoWd = Math.max(0, regMotoWd.slope * targetWeekdayOcc + regMotoWd.intercept);
     expMotoWe = Math.max(0, regMotoWe.slope * targetWeekendOcc + regMotoWe.intercept);
     expectedMotoRevenue = expMotoWd + expMotoWe;
+
+    expFnbWd = Math.max(0, regFnbWd.slope * targetWeekdayOcc + regFnbWd.intercept);
+    expFnbWe = Math.max(0, regFnbWe.slope * targetWeekendOcc + regFnbWe.intercept);
+    expectedFnbRevenue = expFnbWd + expFnbWe;
   } else {
     expectedLeisureRevenue = Math.max(0, regLeisureTotal.slope * targetTotalOcc + regLeisureTotal.intercept);
     expectedMotoRevenue = Math.max(0, regMotoTotal.slope * targetTotalOcc + regMotoTotal.intercept);
+    expectedFnbRevenue = Math.max(0, regFnbTotal.slope * targetTotalOcc + regFnbTotal.intercept);
   }
   
-  const expectedTotalRevenue = expectedRoomRevenue + expectedLeisureRevenue + expectedMotoRevenue;
-  const targetAdrTotalRevenue = targetAdrRoomRevenue + expectedLeisureRevenue + expectedMotoRevenue;
+  const expectedTotalRevenue = expectedRoomRevenue + expectedLeisureRevenue + expectedMotoRevenue + expectedFnbRevenue;
+  const targetAdrTotalRevenue = targetAdrRoomRevenue + expectedLeisureRevenue + expectedMotoRevenue + expectedFnbRevenue;
 
   const expectedGuests = totalExpectedSoldRooms * globalStats.avgGuestsPerSoldRoom;
 
@@ -402,7 +427,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
           <span>해당 점유율 달성 시 예상 투숙객: <strong style={{color: 'white', fontSize: '22px'}}>{formatCurrency(expectedGuests)} 명</strong></span>
         </div>
 
-        <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', maxWidth: '1200px', margin: '0 auto'}}>
+        <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '20px', maxWidth: '1200px', margin: '0 auto'}}>
           <div style={{background: 'rgba(0,0,0,0.3)', padding: '30px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)'}}>
             <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '12px'}}>예상 객실 매출</div>
             
@@ -466,6 +491,19 @@ export default function RevenuePrediction({ monthlyData, settings }) {
             <div style={{fontSize: '14px', color: 'var(--text-muted)', marginTop: '8px'}}>
               {hasSplitLeisure 
                 ? `(주중 ₩${formatCurrency(expMotoWd)} + 주말 ₩${formatCurrency(expMotoWe)})` 
+                : `(종합 점유율 ${targetTotalOcc.toFixed(1)}% 기준 예측)`}
+            </div>
+          </div>
+
+          {/* 예상 식음본부 매출 */}
+          <div style={{background: 'rgba(0,0,0,0.3)', padding: '30px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)'}}>
+            <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '12px'}}>예상 식음본부 매출</div>
+            <div style={{fontSize: '36px', fontWeight: 'bold', color: 'var(--accent-blue)'}}>
+              ₩ {formatCurrency(expectedFnbRevenue)}
+            </div>
+            <div style={{fontSize: '14px', color: 'var(--text-muted)', marginTop: '8px'}}>
+              {hasSplitLeisure 
+                ? `(주중 ₩${formatCurrency(expFnbWd)} + 주말 ₩${formatCurrency(expFnbWe)})` 
                 : `(종합 점유율 ${targetTotalOcc.toFixed(1)}% 기준 예측)`}
             </div>
           </div>
