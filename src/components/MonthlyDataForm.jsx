@@ -169,15 +169,18 @@ export default function MonthlyDataForm({ settings }) {
           }
         }
         
-        const parsedMonthsArray = Object.values(roomParsedMap).map(m => ({
-          ...m,
-          daysCount: m.uniqueDates.size,
-          daysCountWeekday: m.uniqueWeekdayDates.size,
-          daysCountWeekend: m.uniqueWeekendDates.size,
-          uniqueDates: undefined,
-          uniqueWeekdayDates: undefined,
-          uniqueWeekendDates: undefined
-        }));
+        const parsedMonthsArray = Object.values(roomParsedMap).map(m => {
+          const newObj = {
+            ...m,
+            daysCount: m.uniqueDates.size,
+            daysCountWeekday: m.uniqueWeekdayDates.size,
+            daysCountWeekend: m.uniqueWeekendDates.size
+          };
+          delete newObj.uniqueDates;
+          delete newObj.uniqueWeekdayDates;
+          delete newObj.uniqueWeekendDates;
+          return newObj;
+        });
 
         if (parsedMonthsArray.length === 0) {
            return alert('유효한 날짜가 포함된 행을 찾을 수 없습니다.');
