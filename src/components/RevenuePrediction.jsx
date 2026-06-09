@@ -224,6 +224,8 @@ export default function RevenuePrediction({ monthlyData, settings }) {
     return data.sort((a, b) => a.occupancyRate - b.occupancyRate);
   }, [processedData, regOverallRoom, regLeisureTotal, targetTotalOcc, expectedRoomRevenue, expectedLeisureRevenue]);
 
+  const latestData = processedData.length > 0 ? processedData[processedData.length - 1] : null;
+
   return (
     <div style={{display: 'flex', flexDirection: 'column', gap: '24px'}}>
       
@@ -233,6 +235,34 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         <p style={{fontSize: '16px', color: 'var(--text-muted)', marginBottom: '40px', textAlign: 'center'}}>
           주중 및 주말 점유율 변화에 따른 과거 매출 트렌드를 분석하여 객실 및 레저본부의 예상 수익을 계산합니다.
         </p>
+        
+        {latestData && (
+          <div style={{
+            background: 'rgba(16, 185, 129, 0.1)', 
+            border: '1px solid var(--accent-emerald)', 
+            borderRadius: '12px', 
+            padding: '24px', 
+            marginBottom: '40px', 
+            display: 'flex', 
+            justifyContent: 'space-around',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '20px'
+          }}>
+            <div style={{textAlign: 'center'}}>
+              <div style={{color: 'var(--accent-emerald)', fontSize: '16px', marginBottom: '8px', fontWeight: 'bold'}}>📌 최근 마감 실적 ({latestData.yearMonth})</div>
+              <div style={{fontSize: '32px', fontWeight: 'bold', color: 'white'}}>
+                레저+숙박 총매출: <span style={{color: 'var(--accent-gold)'}}>₩ {formatCurrency(latestData.totalRoomRevenue + latestData.leisureSales)}</span>
+              </div>
+            </div>
+            <div style={{textAlign: 'center'}}>
+              <div style={{color: 'var(--accent-emerald)', fontSize: '16px', marginBottom: '8px', fontWeight: 'bold'}}>월 평균 점유율</div>
+              <div style={{fontSize: '32px', fontWeight: 'bold', color: 'white'}}>
+                {latestData.occupancyRate.toFixed(1)}%
+              </div>
+            </div>
+          </div>
+        )}
         
         <div style={{display: 'flex', gap: '40px', justifyContent: 'center', marginBottom: '20px', flexWrap: 'wrap'}}>
           <div style={{flex: '1', minWidth: '300px', maxWidth: '400px'}}>
