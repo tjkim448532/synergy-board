@@ -168,6 +168,52 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     return results.sort((a, b) => b.correlation - a.correlation);
   }, [processedData, settings.locationGroups, activeDivision]);
 
+  // TrevPAR / RevPAR 계산
+  const kpiData = useMemo(() => {
+    if (!processedData || processedData.length === 0) return null;
+    
+    // settings에서 캡처 레이트 가져오기 (없으면 기본값)
+    const capLeisure = (settings.captureRateLeisure ?? 90) / 100;
+    const capFnb = (settings.captureRateFnb ?? 80) / 100;
+    const capMoto = (settings.captureRateMoto ?? 30) / 100;
+
+    let totalAvailableRooms = 0;
+    let totalRoomRev = 0;
+    let totalGrossTrev = 0;
+    let totalPureTrev = 0;
+
+    processedData.forEach(d => {
+      const physicalRooms = Number(settings.totalRooms) || 175;
+      const rooms51Sets = Number(settings.connectingRooms51) || 85;
+      const count51AsTwo = settings.count51AsTwoRooms !== false;
+      const dailyInv = count51AsTwo ? physicalRooms : (physicalRooms - rooms51Sets);
+      
+      const days = d.daysCount || 30; // fallback
+      const monthlyInv = dailyInv * days;
+
+      totalAvailableRooms += monthlyInv;
+      totalRoomRev += (d.totalRoomRevenue || 0);
+
+      const leisureGross = d.leisureSales || 0;
+      const fnbGross = d.fnbSales || 0;
+      const motoGross = d.motoSales || 0;
+
+      totalGrossTrev += (d.totalRoomRevenue || 0) + leisureGross + fnbGross + motoGross;
+      totalPureTrev += (d.totalRoomRevenue || 0) + (leisureGross * capLeisure) + (fnbGross * capFnb) + (motoGross * capMoto);
+    });
+
+    if (totalAvailableRooms === 0) return null;
+
+    return {
+      revPar: Math.round(totalRoomRev / totalAvailableRooms),
+      grossTrevPar: Math.round(totalGrossTrev / totalAvailableRooms),
+      pureTrevPar: Math.round(totalPureTrev / totalAvailableRooms),
+      capLeisure: capLeisure * 100,
+      capFnb: capFnb * 100,
+      capMoto: capMoto * 100
+    };
+  }, [processedData, settings]);
+
   // 객실 판매채널(Market Type) 데이터 집계
   const channelData = useMemo(() => {
     const channelMap = {
@@ -275,6 +321,45 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
 
   return (
     <div style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
+
+      {/* KPI Dashboard (TrevPAR & RevPAR) */}
+      {kpiData && (
+        <div className="glass-panel" style={{padding: '24px', display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'center'}}>
+          <div style={{flex: '1 1 300px', paddingRight: '20px', borderRight: '1px solid rgba(255,255,255,0.1)'}}>
+            <h3 style={{margin: '0 0 16px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px'}}>
+              <span style={{color: 'var(--accent-gold)'}}>⚡</span> 경영 핵심 KPI (월평균)
+            </h3>
+            <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: '1.5'}}>
+              방 1개를 팔았을 때 하루에 창출되는 평균 수익입니다. [설정]에 입력된 '투숙객 비중'을 바탕으로 워크인 매출을 제외한 <strong>순수 객실 연계 가치(Pure TrevPAR)</strong>를 분리하여 측정합니다.
+            </p>
+          </div>
+          
+          <div style={{flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '200px'}}>
+            <div style={{fontSize: '12px', color: 'var(--text-muted)'}}>RevPAR (객실 수익만)</div>
+            <div style={{fontSize: '24px', fontWeight: 'bold', color: 'var(--text-main)'}}>
+              ₩{formatCurrency(kpiData.revPar)}
+            </div>
+          </div>
+
+          <div style={{flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '200px'}}>
+            <div style={{fontSize: '12px', color: 'var(--text-muted)'}}>
+              <span style={{color: 'var(--accent-emerald)'}}>●</span> 순수 TrevPAR (객실+투숙객 부대매출)
+            </div>
+            <div style={{fontSize: '24px', fontWeight: 'bold', color: 'var(--accent-emerald)'}}>
+              ₩{formatCurrency(kpiData.pureTrevPar)}
+            </div>
+          </div>
+
+          <div style={{flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '200px'}}>
+            <div style={{fontSize: '12px', color: 'var(--text-muted)'}}>
+              Gross TrevPAR (워크인 포함 전체)
+            </div>
+            <div style={{fontSize: '24px', fontWeight: 'bold', color: 'var(--text-main)'}}>
+              ₩{formatCurrency(kpiData.grossTrevPar)}
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* 0. 본부 선택기 */}
       <div className="glass-panel" style={{padding: '16px 24px', display: 'flex', alignItems: 'center', gap: '16px'}}>

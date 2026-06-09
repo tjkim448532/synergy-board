@@ -239,6 +239,52 @@ export default function Settings({ monthlyData }) {
         </div>
 
         <h3 style={{marginBottom: '20px', marginTop: '40px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px'}}>
+          투숙객 매출 비중 설정 (Capture Rate)
+        </h3>
+        <p className="settings-desc" style={{marginBottom: '16px'}}>
+          각 부대시설 총매출 중 '객실 투숙객'이 결제한 비중(%)을 설정합니다. 워크인(비투숙객) 매출을 제외한 <strong>순수 객실 연계 매출(순수 TrevPAR)</strong> 산출에 사용됩니다.
+        </p>
+
+        <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
+          <div className="form-group" style={{flex: 1, minWidth: '200px'}}>
+            <label htmlFor="captureRateLeisure">레저본부 투숙객 비중 (%)</label>
+            <input 
+              type="number" 
+              id="captureRateLeisure" 
+              name="captureRateLeisure" 
+              value={settings.captureRateLeisure ?? 90} 
+              onChange={handleChange} 
+              placeholder="예: 90"
+              min="0" max="100"
+            />
+          </div>
+          <div className="form-group" style={{flex: 1, minWidth: '200px'}}>
+            <label htmlFor="captureRateFnb">식음본부 투숙객 비중 (%)</label>
+            <input 
+              type="number" 
+              id="captureRateFnb" 
+              name="captureRateFnb" 
+              value={settings.captureRateFnb ?? 80} 
+              onChange={handleChange} 
+              placeholder="예: 80"
+              min="0" max="100"
+            />
+          </div>
+          <div className="form-group" style={{flex: 1, minWidth: '200px'}}>
+            <label htmlFor="captureRateMoto">모토아레나 투숙객 비중 (%)</label>
+            <input 
+              type="number" 
+              id="captureRateMoto" 
+              name="captureRateMoto" 
+              value={settings.captureRateMoto ?? 30} 
+              onChange={handleChange} 
+              placeholder="예: 30"
+              min="0" max="100"
+            />
+          </div>
+        </div>
+
+        <h3 style={{marginBottom: '20px', marginTop: '40px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px'}}>
           목표 객단가(Target ADR) 설정
         </h3>
         <p className="settings-desc" style={{marginBottom: '16px'}}>
