@@ -333,7 +333,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         </div>
 
         {/* 회귀 분석 차트 */}
-        <div className="glass-panel" style={{padding: '24px', height: '450px', display: 'flex', flexDirection: 'column'}}>
+        <div className="glass-panel" style={{padding: '24px'}}>
           <div style={{marginBottom: '20px'}}>
             <h3 style={{margin: '0 0 8px 0'}}>전체 점유율 vs 통합 매출 예측 트렌드 (객실/레저)</h3>
             <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: '1.4'}}>
@@ -344,7 +344,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
               </span>
             </p>
           </div>
-          <div style={{flex: 1, minHeight: 0, width: '100%'}}>
+          <div style={{width: '100%', height: '400px'}}>
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={chartData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />

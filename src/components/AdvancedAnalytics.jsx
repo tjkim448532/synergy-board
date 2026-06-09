@@ -193,7 +193,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       </div>
 
       {/* 2. 메인 트렌드 차트 */}
-      <div className="glass-panel" style={{padding: '24px', height: '450px', display: 'flex', flexDirection: 'column'}}>
+      <div className="glass-panel" style={{padding: '24px'}}>
         <div style={{marginBottom: '20px'}}>
           <h3 style={{margin: '0 0 8px 0'}}>월별 추이: 객실 점유율 vs 레저 총매출</h3>
           <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: '1.4'}}>
@@ -204,7 +204,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
             </span>
           </p>
         </div>
-        <div style={{flex: 1, minHeight: 0, width: '100%'}}>
+        <div style={{width: '100%', height: '400px'}}>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={processedData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
@@ -227,7 +227,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px'}}>
         
         {/* 평형별 산점도 */}
-        <div className="glass-panel" style={{padding: '24px', height: '450px', display: 'flex', flexDirection: 'column'}}>
+        <div className="glass-panel" style={{padding: '24px'}}>
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px'}}>
             <div>
               <h3 style={{margin: '0 0 8px 0'}}>평형별 판매량 vs 레저매출 (산점도)</h3>
