@@ -24,7 +24,8 @@ export default function RevenuePrediction({ monthlyData, settings }) {
     
     let total16All = 0;
     let total35All = 0;
-    let total51All = 0;
+    let total51ConnVirtualAll = 0;
+    let total51AccVirtualAll = 0;
 
     const data = [...monthlyData].sort((a, b) => a.yearMonth.localeCompare(b.yearMonth)).map(d => {
       const days = d.daysCount || 30;
@@ -85,7 +86,8 @@ export default function RevenuePrediction({ monthlyData, settings }) {
       
       total16All += sold16;
       total35All += sold35;
-      total51All += (count51AsTwoRooms ? sold51 * 2 : sold51) + sold51Acc;
+      total51ConnVirtualAll += (count51AsTwoRooms ? sold51 * 2 : sold51);
+      total51AccVirtualAll += sold51Acc;
 
       return {
         yearMonth: d.yearMonth,
@@ -114,10 +116,11 @@ export default function RevenuePrediction({ monthlyData, settings }) {
     const avgWdDays = 22;
     const avgWeDays = 8;
     
-    const sumRooms = total16All + total35All + total51All;
-    const mix16 = sumRooms > 0 ? total16All / sumRooms : 0;
-    const mix35 = sumRooms > 0 ? total35All / sumRooms : 0;
-    const mix51 = sumRooms > 0 ? total51All / sumRooms : 0;
+    const sumVirtualRooms = total16All + total35All + total51ConnVirtualAll + total51AccVirtualAll;
+    const mix16Virtual = sumVirtualRooms > 0 ? total16All / sumVirtualRooms : 0;
+    const mix35Virtual = sumVirtualRooms > 0 ? total35All / sumVirtualRooms : 0;
+    const mix51ConnVirtual = sumVirtualRooms > 0 ? total51ConnVirtualAll / sumVirtualRooms : 0;
+    const mix51AccVirtual = sumVirtualRooms > 0 ? total51AccVirtualAll / sumVirtualRooms : 0;
 
     return { 
       processedData: data, 
@@ -131,9 +134,10 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         dailyInventory,
         avgWdDays,
         avgWeDays,
-        mix16,
-        mix35,
-        mix51
+        mix16Virtual,
+        mix35Virtual,
+        mix51ConnVirtual,
+        mix51AccVirtual
       }
     };
   }, [monthlyData, settings]);
@@ -198,9 +202,15 @@ export default function RevenuePrediction({ monthlyData, settings }) {
   const expSoldWe = (targetWeekendOcc / 100) * (globalStats.dailyInventory * globalStats.avgWeDays);
   const totalExpectedSoldRooms = expSoldWd + expSoldWe;
   
-  const expected16 = totalExpectedSoldRooms * globalStats.mix16;
-  const expected35 = totalExpectedSoldRooms * globalStats.mix35;
-  const expected51 = totalExpectedSoldRooms * globalStats.mix51;
+  const vExpected16 = totalExpectedSoldRooms * globalStats.mix16Virtual;
+  const vExpected35 = totalExpectedSoldRooms * globalStats.mix35Virtual;
+  const vExpected51Conn = totalExpectedSoldRooms * globalStats.mix51ConnVirtual;
+  const vExpected51Acc = totalExpectedSoldRooms * globalStats.mix51AccVirtual;
+
+  const count51AsTwoRooms = settings.count51AsTwoRooms !== false;
+  const physicalExpected16 = vExpected16;
+  const physicalExpected35 = vExpected35;
+  const physicalExpected51 = (count51AsTwoRooms ? vExpected51Conn / 2 : vExpected51Conn) + vExpected51Acc;
 
   const targetAdr16 = Number(settings.targetAdr16) || 0;
   const targetAdr35 = Number(settings.targetAdr35) || 0;
@@ -209,7 +219,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
   const hasTargetAdr = targetAdr16 > 0 || targetAdr35 > 0 || targetAdr51 > 0;
   let targetAdrRoomRevenue = 0;
   if (hasTargetAdr) {
-    targetAdrRoomRevenue = (expected16 * targetAdr16) + (expected35 * targetAdr35) + (expected51 * targetAdr51);
+    targetAdrRoomRevenue = (physicalExpected16 * targetAdr16) + (physicalExpected35 * targetAdr35) + (physicalExpected51 * targetAdr51);
   }
 
   // 레저 목표 계산
