@@ -13,6 +13,7 @@ export default function MonthlyDataForm({ settings }) {
   // 개별 상태로 분리
   const [roomData, setRoomData] = useState(null);
   const [leisureData, setLeisureData] = useState(null);
+  const [crossCheckResult, setCrossCheckResult] = useState(null);
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'monthly_records'), (snapshot) => {
@@ -183,24 +184,35 @@ export default function MonthlyDataForm({ settings }) {
         const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
         
         let headerRowIdx = -1;
-        for (let i = 0; i < 10; i++) {
-          if (data[i] && data[i].includes('합계')) {
-            headerRowIdx = i;
-            if (data[i].includes('영업장')) break;
+        let dataStartIdx = -1;
+        for (let i = 0; i < 15; i++) {
+          if (data[i] && data[i][0] && (data[i][0].toString().includes('일자') || data[i][0].toString().includes('Date'))) {
+            // Find the row that actually has the location names.
+            // Usually it's the row that has 'ROOM' or many columns.
+            if (data[i].includes('ROOM') || data[i].includes('합계')) {
+                headerRowIdx = i;
+                dataStartIdx = i + 1;
+                // If the next row is sub-headers (like Food, Beverage), skip it.
+                if (data[i+1] && data[i+1].includes('합계')) {
+                    dataStartIdx = i + 2;
+                }
+                break;
+            }
           }
         }
         
-        if (headerRowIdx === -1) return alert('레저 엑셀 양식을 인식할 수 없습니다. "합계" 열이 포함된 파일을 올려주세요.');
+        if (headerRowIdx === -1) return alert('새로운 레저 엑셀 양식을 인식할 수 없습니다. "영업일자" 및 "ROOM" 열이 포함된 파일을 올려주세요.');
         
         const headers = data[headerRowIdx];
-        const sumIdx = headers.findIndex(h => h === '합계');
-        const locIdx = headers.findIndex(h => h === '영업장');
-        const dateIdx = headers.findIndex(h => h === '일자');
+        const dateIdx = 0;
+        const sumIdx = headers.findIndex(h => h && h.toString().includes('합계'));
+        const roomIdx = headers.findIndex(h => h && h.toString().toUpperCase() === 'ROOM');
         
         let totalLeisureSales = 0;
         let leisureRevWd = 0;
         let leisureRevWe = 0;
         let leisureSalesByLocation = {};
+        let crossCheckRoomSum = 0;
 
         const uniqueDates = new Set();
         const uniqueWdDates = new Set();
@@ -214,6 +226,7 @@ export default function MonthlyDataForm({ settings }) {
             n.includes('미디여기념품') || 
             n.includes('미디어기프트') || 
             n.includes('미디어카페') ||
+            n.includes('뮤지엄카페') ||
             n.includes('미디어가페')
           ) {
             return '미디어아트센터';
@@ -221,75 +234,103 @@ export default function MonthlyDataForm({ settings }) {
           if (
             n.includes('목장체험') || 
             name.trim() === '목장' || 
-            n.includes('얼룩말카페')
+            n.includes('얼룩말카페') ||
+            n.includes('벨포레목장')
           ) {
             return '목장';
           }
           return name;
         };
 
-        for (let i = headerRowIdx + 1; i < data.length; i++) {
+        const excludedCols = ['영업일자', '일자', 'ROOM', 'ROOM OTHER', 'ROOMOTHER', '합계'];
+        const locationCols = [];
+        for (let j = 1; j < headers.length; j++) {
+            if (j === sumIdx || j === roomIdx) continue;
+            const colName = headers[j] ? headers[j].toString().trim() : '';
+            if (!colName || excludedCols.includes(colName.toUpperCase().replace(/\s+/g, ''))) continue;
+            locationCols.push({ index: j, name: mapLocationName(colName) });
+        }
+
+        let firstDateStr = '';
+
+        for (let i = dataStartIdx; i < data.length; i++) {
           const row = data[i];
-          if (!row) continue;
+          if (!row || !row[dateIdx]) continue;
           
-          const sumVal = parseInt(row[sumIdx], 10);
-          if (isNaN(sumVal)) continue;
-
-          let isDataRow = false;
-
-          if (locIdx !== -1 && row[locIdx]) {
-            const locName = row[locIdx].toString().trim();
-            if (locName.toUpperCase().includes('TOTAL') || locName.includes('합계') || locName.includes('소계')) {
-              continue;
+          let dateVal = row[dateIdx].toString().trim();
+          const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+          
+          if (dateRegex.test(dateVal)) {
+            if (!firstDateStr) firstDateStr = dateVal;
+            uniqueDates.add(dateVal);
+            const [yyyy, mm, dd] = dateVal.split('-');
+            const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+            const day = d.getDay();
+            
+            // 레저 주말: 토(6), 일(0) 및 당일 공휴일
+            const isSatOrSun = (day === 0 || day === 6);
+            const isTodayHoliday = isHoliday(d);
+            const customWeekendsStr = settings?.customWeekends || '';
+            const customWeekendsArray = customWeekendsStr.split(',').map(s => s.trim()).filter(s => s);
+            
+            let isWe = false;
+            if (customWeekendsArray.includes(dateVal) || isSatOrSun || isTodayHoliday) {
+              isWe = true;
             }
-            const groupedName = mapLocationName(locName);
-            leisureSalesByLocation[groupedName] = (leisureSalesByLocation[groupedName] || 0) + sumVal;
-            totalLeisureSales += sumVal;
-            isDataRow = true;
-          } else if (locIdx === -1) {
-            totalLeisureSales += sumVal;
-            isDataRow = true;
-          }
 
-          if (isDataRow && dateIdx !== -1 && row[dateIdx]) {
-            let dateVal = row[dateIdx].toString().trim();
-            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-            if (dateRegex.test(dateVal)) {
-              uniqueDates.add(dateVal);
-              const [yyyy, mm, dd] = dateVal.split('-');
-              const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
-              const day = d.getDay();
-              
-              // 레저 주말: 토(6), 일(0) 및 당일 공휴일 (객실의 공휴일 전날과 다름)
-              const isSatOrSun = (day === 0 || day === 6);
-              const isTodayHoliday = isHoliday(d);
-              
-              const customWeekendsStr = settings?.customWeekends || '';
-              const customWeekendsArray = customWeekendsStr.split(',').map(s => s.trim()).filter(s => s);
-              
-              let isWe = false;
-              if (customWeekendsArray.includes(dateVal) || isSatOrSun || isTodayHoliday) {
-                isWe = true;
-              }
+            let rowLeisureSum = 0;
+            locationCols.forEach(col => {
+                const val = parseInt(row[col.index], 10);
+                if (!isNaN(val)) {
+                    leisureSalesByLocation[col.name] = (leisureSalesByLocation[col.name] || 0) + val;
+                    rowLeisureSum += val;
+                }
+            });
 
-              if (isWe) {
-                uniqueWeDates.add(dateVal);
-                leisureRevWe += sumVal;
-              } else {
-                uniqueWdDates.add(dateVal);
-                leisureRevWd += sumVal;
-              }
+            totalLeisureSales += rowLeisureSum;
+            if (isWe) {
+              uniqueWeDates.add(dateVal);
+              leisureRevWe += rowLeisureSum;
+            } else {
+              uniqueWdDates.add(dateVal);
+              leisureRevWd += rowLeisureSum;
+            }
+
+            if (roomIdx !== -1) {
+                const roomVal = parseInt(row[roomIdx], 10);
+                if (!isNaN(roomVal)) crossCheckRoomSum += roomVal;
             }
           }
         }
         
-        // 날짜 파싱이 전혀 안되었다면 전체를 주중/주말로 어떻게 나눌지 알 수 없음
-        if (dateIdx === -1 || uniqueDates.size === 0) {
-          console.warn("레저 엑셀에 유효한 '일자' 열이 없어서 주중/주말 분리가 불가능합니다.");
+        let monthStr = '';
+        if (firstDateStr) {
+            const parts = firstDateStr.split('-');
+            monthStr = `${parts[0]}-${parts[1]}`;
+        } else {
+            monthStr = prompt('레저 매출의 연/월을 자동으로 인식하지 못했습니다 (예: 2026-01)', '');
+            if (!monthStr) return;
         }
-        
-        const monthStr = prompt('레저 매출의 연/월을 입력해주세요 (예: 2026-01)', '');
-        if (!monthStr) return;
+
+        // 교차 검증 로직
+        let crossCheck = null;
+        const existingRecord = records.find(r => r.id === monthStr);
+        if (existingRecord && existingRecord.totalRoomRevenue) {
+            const dbRoom = existingRecord.totalRoomRevenue;
+            const isMatch = Math.abs(dbRoom - crossCheckRoomSum) < 100; // 허용 오차
+            crossCheck = {
+                hasRecord: true,
+                dbRoom,
+                parsedRoom: crossCheckRoomSum,
+                isMatch
+            };
+        } else {
+            crossCheck = {
+                hasRecord: false,
+                parsedRoom: crossCheckRoomSum
+            };
+        }
+        setCrossCheckResult(crossCheck);
 
         setLeisureData({
           yearMonth: monthStr,
@@ -325,6 +366,7 @@ export default function MonthlyDataForm({ settings }) {
       await setDoc(doc(db, 'monthly_records', leisureData.yearMonth), leisureData, { merge: true });
       alert(`[${leisureData.yearMonth}] 레저 데이터가 성공적으로 저장(병합)되었습니다!`);
       setLeisureData(null);
+      setCrossCheckResult(null);
     } catch (e) {
       alert('저장 실패: ' + e.message);
     }
@@ -390,6 +432,34 @@ export default function MonthlyDataForm({ settings }) {
           {leisureData && (
             <div style={{background: 'rgba(251, 191, 36, 0.1)', padding: '16px', borderRadius: '8px', border: '1px solid var(--accent-gold)'}}>
               <h4 style={{margin: '0 0 12px 0', color: 'var(--accent-gold)'}}>파싱 결과 ({leisureData.yearMonth})</h4>
+              
+              {/* 교차 검증 UI */}
+              {crossCheckResult && (
+                  <div style={{
+                      marginBottom: '16px', padding: '12px', borderRadius: '6px',
+                      background: crossCheckResult.hasRecord && !crossCheckResult.isMatch ? 'rgba(239, 68, 68, 0.15)' : 'rgba(52, 211, 153, 0.15)',
+                      border: `1px solid ${crossCheckResult.hasRecord && !crossCheckResult.isMatch ? 'var(--accent-red)' : 'var(--accent-emerald)'}`
+                  }}>
+                      <div style={{fontWeight: 'bold', marginBottom: '8px', color: crossCheckResult.hasRecord && !crossCheckResult.isMatch ? 'var(--accent-red)' : 'var(--accent-emerald)'}}>
+                          ✓ 객실 매출 교차 검증
+                      </div>
+                      {!crossCheckResult.hasRecord ? (
+                          <div style={{fontSize: '13px'}}>DB에 해당 월의 객실 데이터가 아직 없어서 비교할 수 없습니다. (현재 엑셀 내 ROOM 총합: ₩{formatCurrency(crossCheckResult.parsedRoom)})</div>
+                      ) : crossCheckResult.isMatch ? (
+                          <div style={{fontSize: '13px'}}>
+                              <strong>일치함!</strong> (DB 객실매출: ₩{formatCurrency(crossCheckResult.dbRoom)} / 현재 엑셀 ROOM: ₩{formatCurrency(crossCheckResult.parsedRoom)})
+                          </div>
+                      ) : (
+                          <div style={{fontSize: '13px'}}>
+                              <strong>불일치 주의!</strong> 
+                              <br/>- DB에 저장된 객실총매출: ₩{formatCurrency(crossCheckResult.dbRoom)}
+                              <br/>- 이번에 올린 엑셀 내 ROOM 합: ₩{formatCurrency(crossCheckResult.parsedRoom)}
+                              <br/>두 데이터의 금액이 다릅니다. 확인이 필요할 수 있습니다.
+                          </div>
+                      )}
+                  </div>
+              )}
+
               <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '16px'}}>
                 <span>레저 총 매출</span> <strong style={{color: 'var(--accent-gold)', fontSize: '20px'}}>₩ {formatCurrency(leisureData.leisureSales)}</strong>
               </div>
