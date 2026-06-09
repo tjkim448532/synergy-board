@@ -9,7 +9,7 @@ import { db } from './firebase';
 import './App.css'
 
 function App() {
-  const [activeTab, setActiveTab] = useState('upload')
+  const [activeTab, setActiveTab] = useState('analytics')
   const [settings, setSettings] = useState({ totalRooms: 500, connectingRooms51: 50 });
   const [allData, setAllData] = useState([]);
 
