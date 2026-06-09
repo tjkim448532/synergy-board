@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
-  ScatterChart, Scatter, ZAxis
+  ScatterChart, Scatter, ZAxis, PieChart, Pie, Cell
 } from 'recharts';
 
 // 피어슨 상관계수 계산 함수
@@ -168,6 +168,38 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     return results.sort((a, b) => b.correlation - a.correlation);
   }, [processedData, settings.locationGroups, activeDivision]);
 
+  // 객실 판매채널(Market Type) 데이터 집계
+  const channelData = useMemo(() => {
+    const channelMap = {
+      '온라인': 0,
+      '세미나': 0,
+      '예약실': 0,
+      '홈페이지': 0,
+      '기타': 0
+    };
+
+    monthlyData.forEach(month => {
+      if (month.rawRoomRecords) {
+        month.rawRoomRecords.forEach(record => {
+          const market = record.marketType || '';
+          const rev = record.revenue || 0;
+          
+          if (market.includes('온라인')) channelMap['온라인'] += rev;
+          else if (market.includes('세미나') || market.includes('단체') || market.includes('기업')) channelMap['세미나'] += rev;
+          else if (market.includes('예약실') || market.includes('전화') || market.includes('메신저')) channelMap['예약실'] += rev;
+          else if (market.includes('홈페이지') || market.includes('APP')) channelMap['홈페이지'] += rev;
+          else channelMap['기타'] += rev;
+        });
+      }
+    });
+
+    return Object.entries(channelMap)
+      .map(([name, value]) => ({ name, value }))
+      .filter(d => d.value > 0)
+      .sort((a, b) => b.value - a.value);
+  }, [monthlyData]);
+
+  const PIE_COLORS = ['#3b82f6', '#10b981', '#fbbf24', '#a855f7', '#64748b'];
 
   if (processedData.length < 2) {
     return (
@@ -339,6 +371,37 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
             {locationCorrelations.length === 0 && (
               <div style={{color: 'var(--text-muted)', textAlign: 'center', padding: '20px'}}>해당 본부의 영업장 데이터가 부족합니다.</div>
             )}
+          </div>
+        </div>
+
+        {/* 객실 판매채널 분석 (Pie Chart) */}
+        <div className="glass-panel" style={{padding: '24px', gridColumn: 'span 2'}}>
+          <h3 style={{marginBottom: '20px'}}>전체 객실 판매채널(Market Type) 매출 비중</h3>
+          <p style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '15px'}}>온라인, 세미나, 예약실, 홈페이지 등 주요 예약 채널별 수익 창출 비율입니다.</p>
+          <div style={{width: '100%', height: '300px'}}>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={channelData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={true}
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
+                  outerRadius={100}
+                  dataKey="value"
+                  stroke="rgba(255,255,255,0.1)"
+                >
+                  {channelData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                  ))}
+                </Pie>
+                <RechartsTooltip 
+                  contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)'}}
+                  formatter={(val) => `₩${formatCurrency(val)}`} 
+                />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
