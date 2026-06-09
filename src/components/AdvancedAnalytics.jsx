@@ -27,7 +27,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
   const [activeDivision, setActiveDivision] = useState('leisure');
 
   const divisionConfig = {
-    leisure: { title: '레저본부', dataKey: 'leisureSales', color: 'var(--accent-emerald)' },
+    leisure: { title: '레저본부', dataKey: 'leisureSales', color: 'var(--accent-purple)' },
     fnb: { title: '식음본부', dataKey: 'fnbSales', color: 'var(--accent-blue)' },
     moto: { title: '모토아레나', dataKey: 'motoSales', color: 'var(--accent-gold)' }
   };
