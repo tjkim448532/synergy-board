@@ -322,6 +322,15 @@ export default function Settings({ monthlyData }) {
                           style={{accentColor: 'var(--accent-emerald)'}}
                         /> 레저 본부
                       </label>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: currentGroup === 'fnb' ? 'var(--accent-blue)' : 'var(--text-muted)'}}>
+                        <input 
+                          type="radio" 
+                          name={`group_${loc}`} 
+                          checked={currentGroup === 'fnb'}
+                          onChange={() => handleLocationGroupChange(loc, 'fnb')}
+                          style={{accentColor: 'var(--accent-blue)'}}
+                        /> 식음 본부
+                      </label>
                       <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: currentGroup === 'moto' ? 'var(--accent-gold)' : 'var(--text-muted)'}}>
                         <input 
                           type="radio" 
