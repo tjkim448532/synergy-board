@@ -369,6 +369,8 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         label: `선택 마감 실적 (${monthRow.yearMonth})`,
         totalRev: monthRow.totalRoomRevenue + monthRow.leisureSales,
         occRate: monthRow.occupancyRate,
+        wdOccRate: monthRow.occWd,
+        weOccRate: monthRow.occWe,
         occLabel: '해당 월 점유율'
       };
     }
@@ -377,11 +379,11 @@ export default function RevenuePrediction({ monthlyData, settings }) {
   return (
     <div style={{display: 'flex', flexDirection: 'column', gap: '24px'}}>
       
-      {/* 1. 요약 및 프리젠테이션 시뮬레이터 */}
-      <div className="glass-panel" style={{padding: '40px', background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.9) 100%)', border: '1px solid var(--accent-gold)'}}>
-        <h2 style={{color: 'var(--accent-gold)', marginBottom: '8px', textAlign: 'center', fontSize: '28px'}}>차월 목표 매출 프리젠테이션 보드</h2>
+      {/* 1. 과거 실적 조회 */}
+      <div className="glass-panel" style={{padding: '40px', background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 41, 59, 0.7) 100%)', border: '1px solid rgba(255,255,255,0.1)'}}>
+        <h2 style={{color: 'var(--text-main)', marginBottom: '8px', textAlign: 'center', fontSize: '28px'}}>과거 실적 및 누적 데이터 조회</h2>
         <p style={{fontSize: '16px', color: 'var(--text-muted)', marginBottom: '40px', textAlign: 'center'}}>
-          주중 및 주말 점유율 변화에 따른 과거 매출 트렌드를 분석하여 객실 및 레저본부의 예상 수익을 계산합니다.
+          이전 달의 마감 실적을 확인하거나, 전체 기간의 누적 평균 점유율 및 합계 매출을 조회할 수 있습니다.
         </p>
 
         <div style={{display: 'flex', justifyContent: 'center', marginBottom: '20px'}}>
@@ -404,28 +406,45 @@ export default function RevenuePrediction({ monthlyData, settings }) {
             border: '1px solid var(--accent-emerald)', 
             borderRadius: '12px', 
             padding: '24px', 
-            marginBottom: '40px', 
             display: 'flex', 
             justifyContent: 'space-around',
             alignItems: 'center',
             flexWrap: 'wrap',
             gap: '20px'
           }}>
-            <div style={{textAlign: 'center'}}>
+            <div style={{textAlign: 'center', flex: '1', minWidth: '250px'}}>
               <div style={{color: 'var(--accent-emerald)', fontSize: '16px', marginBottom: '8px', fontWeight: 'bold'}}>📌 {refData.label}</div>
               <div style={{fontSize: '32px', fontWeight: 'bold', color: 'white'}}>
                 레저+숙박 총매출: <span style={{color: 'var(--accent-gold)'}}>₩ {formatCurrency(refData.totalRev)}</span>
               </div>
             </div>
-            <div style={{textAlign: 'center'}}>
+            <div style={{textAlign: 'center', flex: '1', minWidth: '150px', borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '20px'}}>
               <div style={{color: 'var(--accent-emerald)', fontSize: '16px', marginBottom: '8px', fontWeight: 'bold'}}>{refData.occLabel}</div>
               <div style={{fontSize: '32px', fontWeight: 'bold', color: 'white'}}>
                 {refData.occRate.toFixed(1)}%
               </div>
+              <div style={{display: 'flex', justifyContent: 'center', gap: '16px', marginTop: '12px'}}>
+                <div style={{fontSize: '14px'}}>
+                  <span style={{color: 'var(--text-muted)'}}>주중: </span>
+                  <span style={{color: 'var(--accent-blue)', fontWeight: 'bold'}}>{refData.wdOccRate.toFixed(1)}%</span>
+                </div>
+                <div style={{fontSize: '14px'}}>
+                  <span style={{color: 'var(--text-muted)'}}>주말: </span>
+                  <span style={{color: 'var(--accent-purple)', fontWeight: 'bold'}}>{refData.weOccRate.toFixed(1)}%</span>
+                </div>
+              </div>
             </div>
           </div>
         )}
-        
+      </div>
+
+      {/* 2. 미래 목표 시뮬레이터 */}
+      <div className="glass-panel" style={{padding: '40px', background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.9) 100%)', border: '1px solid var(--accent-gold)'}}>
+        <h2 style={{color: 'var(--accent-gold)', marginBottom: '8px', textAlign: 'center', fontSize: '28px'}}>차월 목표 매출 프리젠테이션 보드</h2>
+        <p style={{fontSize: '16px', color: 'var(--text-muted)', marginBottom: '40px', textAlign: 'center'}}>
+          슬라이더를 조작하여 목표 주중 및 주말 점유율에 따른 예상 매출과 투숙객 수를 시뮬레이션 합니다.
+        </p>
+
         <div style={{display: 'flex', gap: '40px', justifyContent: 'center', marginBottom: '20px', flexWrap: 'wrap'}}>
           <div style={{flex: '1', minWidth: '300px', maxWidth: '400px'}}>
             <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '16px'}}>
