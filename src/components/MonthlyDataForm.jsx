@@ -31,7 +31,7 @@ export default function MonthlyDataForm({ settings }) {
     if (pin === '5025') {
       setIsAuthenticated(true);
     } else {
-      alert('비밀번호가 일치하지 않습니다.');
+      toast.error('비밀번호가 일치하지 않습니다.');
       setPin('');
     }
   };
@@ -49,12 +49,29 @@ export default function MonthlyDataForm({ settings }) {
   }, []);
 
   const handleDelete = async (id) => {
-    if (!window.confirm(`정말 [${id}] 데이터를 삭제하시겠습니까? (객실과 레저 데이터가 모두 삭제됩니다)`)) return;
-    try {
-      await deleteDoc(doc(db, 'monthly_records', id));
-    } catch (error) {
-      console.error("Error deleting document: ", error);
-    }
+    toast((t) => (
+      <div>
+        <p style={{margin: '0 0 12px 0', fontSize: '14px', fontWeight: 'bold'}}>해당 월의 통합 실적(객실, 레저 등)을 모두 삭제하시겠습니까?</p>
+        <div style={{display: 'flex', gap: '8px', justifyContent: 'flex-end'}}>
+          <button 
+            onClick={() => toast.dismiss(t.id)} 
+            style={{padding: '6px 12px', borderRadius: '4px', border: '1px solid var(--border-glass)', background: 'transparent', color: 'white'}}
+          >취소</button>
+          <button 
+            onClick={async () => {
+              toast.dismiss(t.id);
+              try {
+                await deleteDoc(doc(db, 'monthly_records', id));
+                toast.success('삭제 완료되었습니다.');
+              } catch (e) {
+                toast.error('삭제 실패: ' + e.message);
+              }
+            }} 
+            style={{padding: '6px 12px', borderRadius: '4px', background: 'var(--accent-red)', color: 'white', border: 'none'}}
+          >삭제하기</button>
+        </div>
+      </div>
+    ), { duration: Infinity });
   };
 
   const handleRoomFileUpload = (e) => {
@@ -77,7 +94,7 @@ export default function MonthlyDataForm({ settings }) {
           }
         }
         
-        if (headerRowIdx === -1) return alert('객실 엑셀 양식을 인식할 수 없습니다. "일자", "객실타입" 열이 포함된 파일을 올려주세요.');
+        if (headerRowIdx === -1) return toast.error('객실 엑셀 양식을 인식할 수 없습니다. "일자", "객실타입" 열이 포함된 파일을 올려주세요.');
         
         const headers = data[headerRowIdx];
         const dateIdx = headers.findIndex(h => h === '일자');
@@ -196,14 +213,14 @@ export default function MonthlyDataForm({ settings }) {
         });
 
         if (parsedMonthsArray.length === 0) {
-           return alert('유효한 날짜가 포함된 행을 찾을 수 없습니다.');
+           return toast.error('유효한 날짜가 포함된 행을 찾을 수 없습니다.');
         }
 
         setRoomData(parsedMonthsArray);
 
       } catch (err) {
         console.error(err);
-        alert('객실 엑셀 파일을 파싱하는 중 오류가 발생했습니다.');
+        toast.error('객실 엑셀 파일을 파싱하는 중 오류가 발생했습니다.');
       }
       e.target.value = null;
     };
@@ -240,7 +257,7 @@ export default function MonthlyDataForm({ settings }) {
           }
         }
         
-        if (headerRowIdx === -1) return alert('새로운 레저 엑셀 양식을 인식할 수 없습니다. "영업일자" 및 "ROOM" 열이 포함된 파일을 올려주세요.');
+        if (headerRowIdx === -1) return toast.error('새로운 레저 엑셀 양식을 인식할 수 없습니다. "영업일자" 및 "ROOM" 열이 포함된 파일을 올려주세요.');
         
         const headers = data[headerRowIdx];
         const dateIdx = 0;
@@ -364,7 +381,7 @@ export default function MonthlyDataForm({ settings }) {
         
         const parsedMonthsArray = Object.values(monthlyParsedMap).sort((a, b) => b.yearMonth.localeCompare(a.yearMonth));
         if (parsedMonthsArray.length === 0) {
-            alert('유효한 날짜 데이터를 찾을 수 없습니다.');
+            toast.error('유효한 날짜 데이터를 찾을 수 없습니다.');
             return;
         }
 
@@ -395,7 +412,7 @@ export default function MonthlyDataForm({ settings }) {
 
       } catch (err) {
         console.error(err);
-        alert('레저 엑셀 파일을 파싱하는 중 오류가 발생했습니다.');
+        toast.error('레저 엑셀 파일을 파싱하는 중 오류가 발생했습니다.');
       }
       e.target.value = null;
     };
@@ -408,10 +425,10 @@ export default function MonthlyDataForm({ settings }) {
       for (const data of roomData) {
         await setDoc(doc(db, 'monthly_records', data.yearMonth), data, { merge: true });
       }
-      alert(`[${roomData.map(d => d.yearMonth).join(', ')}] 객실 데이터가 성공적으로 저장(병합)되었습니다!`);
+      toast.success(`[${roomData.map(d => d.yearMonth).join(', ')}] 객실 데이터가 성공적으로 저장(병합)되었습니다!`);
       setRoomData(null);
     } catch (e) {
-      alert('저장 실패: ' + e.message);
+      toast.error('저장 실패: ' + e.message);
     }
   };
 
@@ -432,11 +449,11 @@ export default function MonthlyDataForm({ settings }) {
          };
          await setDoc(doc(db, 'monthly_records', data.yearMonth), dataToSave, { merge: true });
       }
-      alert(`총 ${leisureData.length}개월의 레저 데이터가 성공적으로 저장(병합)되었습니다!`);
+      toast.success(`총 ${leisureData.length}개월의 레저 데이터가 성공적으로 저장(병합)되었습니다!`);
       setLeisureData(null);
       setCrossCheckResult(null);
     } catch (e) {
-      alert('저장 실패: ' + e.message);
+      toast.error('저장 실패: ' + e.message);
     }
   };
 

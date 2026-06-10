@@ -3,6 +3,7 @@ import { Save, Link as LinkIcon, RefreshCw, Lock } from 'lucide-react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import Papa from 'papaparse';
+import toast from 'react-hot-toast';
 import './Settings.css';
 
 export default function Settings({ monthlyData }) {
@@ -33,7 +34,7 @@ export default function Settings({ monthlyData }) {
     if (pin === '5025') {
       setIsAuthenticated(true);
     } else {
-      alert('비밀번호가 일치하지 않습니다.');
+      toast.error('비밀번호가 일치하지 않습니다.');
       setPin('');
     }
   };
@@ -90,14 +91,15 @@ export default function Settings({ monthlyData }) {
       await setDoc(docRef, settings);
       setIsSaved(true);
       setTimeout(() => setIsSaved(false), 2000);
+      toast.success("설정이 저장되었습니다.");
     } catch (error) {
       console.error("Error saving settings:", error);
-      alert("설정 저장에 실패했습니다.");
+      toast.error("설정 저장에 실패했습니다.");
     }
   };
 
   const handleSyncFromSheet = async () => {
-    if (!sheetUrl) return alert('구글 시트 링크를 입력해주세요.');
+    if (!sheetUrl) return toast.error('구글 시트 링크를 입력해주세요.');
     setIsSyncing(true);
     try {
       const match = sheetUrl.match(/\/d\/(.*?)(\/|$)/);
@@ -116,7 +118,7 @@ export default function Settings({ monthlyData }) {
           const connectingPairs = data.filter(row => row['결합시평형'] === '51평' || row['결합시평형']?.includes('51')).length / 2;
           
           if (totalRooms === 0) {
-            alert('데이터를 추출할 수 없습니다. 시트의 첫 번째 행에 "호수", "결합시평형" 열이 있는지 확인해주세요.');
+            toast.error('데이터를 추출할 수 없습니다. 시트의 첫 번째 행에 "호수", "결합시평형" 열이 있는지 확인해주세요.');
             setIsSyncing(false);
             return;
           }
@@ -131,26 +133,26 @@ export default function Settings({ monthlyData }) {
           const docRef = doc(db, 'config', 'mainSettings');
           await setDoc(docRef, newSettings);
           
-          alert(`연동 성공!\n- 총 객실 수: ${totalRooms}실\n- 51평 세트: ${connectingPairs}세트\n(DB에 자동 저장되었습니다)`);
+          toast.success(`연동 성공!\n- 총 객실 수: ${totalRooms}실\n- 51평 세트: ${connectingPairs}세트\n(DB에 자동 저장되었습니다)`);
           setIsSyncing(false);
           setSheetUrl('');
         },
         error: function(err) {
           console.error(err);
-          alert('시트 데이터를 불러오는데 실패했습니다. 시트 접근 권한이 "링크가 있는 모든 사용자"로 공개되어 있는지 확인해 주세요.');
+          toast.error('시트 데이터를 불러오는데 실패했습니다. 시트 접근 권한이 "링크가 있는 모든 사용자"로 공개되어 있는지 확인해 주세요.');
           setIsSyncing(false);
         }
       });
     } catch (error) {
       console.error("Error reading sheet:", error);
-      alert('오류가 발생했습니다: ' + error.message);
+      toast.error('오류가 발생했습니다: ' + error.message);
       setIsSyncing(false);
     }
   };
 
   const handleAiEstimate = () => {
     if (!monthlyData || monthlyData.length < 2) {
-      alert("상관관계를 분석하기 위해 최소 2개월 이상의 데이터가 필요합니다.");
+      toast.error("상관관계를 분석하기 위해 최소 2개월 이상의 데이터가 필요합니다.");
       return;
     }
 
@@ -221,7 +223,7 @@ export default function Settings({ monthlyData }) {
     const estMoto = calculateCaptureRate('motoSales');
 
     if (estLeisure === null) {
-      alert("데이터 편차가 부족하여 회귀 분석을 수행할 수 없습니다.");
+      toast.error("데이터 편차가 부족하여 회귀 분석을 수행할 수 없습니다.");
       return;
     }
 
