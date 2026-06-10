@@ -594,7 +594,8 @@ export default function MonthlyDataForm({ settings }) {
         {records.length === 0 ? (
           <div className="empty-state">등록된 월별 실적이 없습니다. 위 폼을 통해 엑셀을 업로드해 주세요.</div>
         ) : (
-          <div className="table-scroll-container">
+          <>
+          <div className="table-scroll-container hide-on-mobile">
             <table className="records-table" style={{minWidth: '800px'}}>
               <thead>
                 <tr>
@@ -655,6 +656,46 @@ export default function MonthlyDataForm({ settings }) {
               </tbody>
             </table>
           </div>
+          <div className="show-on-mobile-block" style={{display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px'}}>
+            {records.map(r => {
+              const s16 = r.sold16 || r.standardSold || 0;
+              const s35 = r.sold35 || 0;
+              const s51 = r.sold51 || r.connectingSold || 0;
+              const estimatedGuests = (s16 * 2) + (s35 * 4) + (s51 * 6);
+              return (
+                <div key={r.id} className="glass-panel" style={{padding: '16px', position: 'relative', borderLeft: '4px solid var(--accent-emerald)'}}>
+                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '12px', marginBottom: '12px'}}>
+                    <div>
+                      <div style={{fontSize: '16px', fontWeight: 'bold'}}>{r.yearMonth}</div>
+                      <div style={{fontSize: '12px', color: 'var(--text-muted)'}}>총 {r.daysCount || 0}일 (주중 {r.daysCountWeekday || 0}일 / 주말 {r.daysCountWeekend || 0}일)</div>
+                    </div>
+                    <button className="btn-delete" onClick={() => handleDelete(r.id)} style={{padding: '8px', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--accent-red)'}}>
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                  <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
+                    <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                      <span style={{color: 'var(--text-muted)'}}>판매 객실 (16/35/51)</span>
+                      <span>{formatCurrency(s16)} / {formatCurrency(s35)} / {formatCurrency(s51)}실</span>
+                    </div>
+                    <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                      <span style={{color: 'var(--text-muted)'}}>예상 투숙객</span>
+                      <span style={{color: 'var(--accent-emerald)', fontWeight: 'bold'}}>{formatCurrency(estimatedGuests)}명</span>
+                    </div>
+                    <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '8px', borderTop: '1px dashed rgba(255,255,255,0.1)', paddingTop: '8px'}}>
+                      <span style={{color: 'var(--accent-blue)'}}>객실 총매출</span>
+                      <span style={{fontWeight: 'bold'}}>₩{formatCurrency(r.totalRoomRevenue || 0)}</span>
+                    </div>
+                    <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                      <span style={{color: 'var(--accent-gold)'}}>레저 총매출</span>
+                      <span style={{fontWeight: 'bold'}}>₩{formatCurrency(r.leisureSales || 0)}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          </>
         )}
       </div>
     </div>

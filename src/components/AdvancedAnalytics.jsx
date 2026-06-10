@@ -570,7 +570,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
             {/* ADR Table */}
             <div style={{width: '100%', display: 'flex', flexDirection: 'column'}}>
               <h4 style={{margin: '0 0 10px 0', color: 'var(--text-main)', textAlign: 'center'}}>채널별 평형 객단가(ADR)</h4>
-              <div className="table-scroll-container" style={{background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid var(--border-glass)'}}>
+              <div className="table-scroll-container hide-on-mobile" style={{background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid var(--border-glass)'}}>
                 <table style={{width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'right'}}>
                   <thead>
                     <tr style={{background: 'rgba(255,255,255,0.05)'}}>
@@ -596,6 +596,29 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                   </tbody>
                 </table>
               </div>
+              <div className="show-on-mobile-block" style={{marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px'}}>
+                {channelAdrData.map((row) => (
+                  <div key={row.channel} className="glass-panel" style={{padding: '16px', borderLeft: '4px solid var(--accent-emerald)'}}>
+                    <div style={{fontSize: '16px', fontWeight: 'bold', marginBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px'}}>{row.channel}</div>
+                    <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
+                      <span style={{color: 'var(--text-muted)'}}>16평</span>
+                      <span>{row['16평'] ? `₩${formatCurrency(row['16평'])}` : '-'}</span>
+                    </div>
+                    <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
+                      <span style={{color: 'var(--text-muted)'}}>35평</span>
+                      <span>{row['35평'] ? `₩${formatCurrency(row['35평'])}` : '-'}</span>
+                    </div>
+                    <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
+                      <span style={{color: 'var(--text-muted)'}}>51평</span>
+                      <span>{row['51평'] ? `₩${formatCurrency(row['51평'])}` : '-'}</span>
+                    </div>
+                    <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '12px', borderTop: '1px dashed rgba(255,255,255,0.1)', paddingTop: '12px'}}>
+                      <span style={{color: 'var(--accent-gold)'}}>종합(평균)</span>
+                      <span style={{color: 'var(--accent-gold)', fontWeight: 'bold'}}>{row['전체'] ? `₩${formatCurrency(row['전체'])}` : '-'}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -605,7 +628,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
           <h3 style={{marginBottom: '20px'}}>채널 비중 ↔ 부대시설 매출 거시적 상관관계</h3>
           <p style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '15px'}}>특정 예약 채널(온라인, 세미나 등)의 매출 비중이 높았던 월에 각 영업장(레저, 식음, 모토아레나)의 총매출이 얼마나 함께 상승했는지를 보여주는 상관계수(-1.0 ~ 1.0)입니다. (0.4 이상 뚜렷한 연관, 0.7 이상 매우 강한 연관)</p>
           
-          <div className="table-scroll-container" style={{background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid var(--border-glass)'}}>
+          <div className="table-scroll-container hide-on-mobile" style={{background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid var(--border-glass)'}}>
             <table style={{width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'center'}}>
               <thead>
                 <tr style={{background: 'rgba(255,255,255,0.05)'}}>
@@ -655,6 +678,53 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                 })}
               </tbody>
             </table>
+          </div>
+          <div className="show-on-mobile-block" style={{marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px'}}>
+            {['온라인', '세미나', '휴양소', '예약실', '홈페이지'].map((channel, idx) => {
+              const channelMonthlyRev = processedData.map(d => {
+                let total = 0;
+                if (d.rawRoomRecords) {
+                  d.rawRoomRecords.forEach(r => {
+                    const m = r.marketType || '';
+                    if (channel === '온라인' && m.includes('온라인')) total += r.revenue || 0;
+                    else if (channel === '세미나' && (m.includes('세미나') || m.includes('단체'))) total += r.revenue || 0;
+                    else if (channel === '휴양소' && (m.includes('기업') || m.includes('휴양소'))) total += r.revenue || 0;
+                    else if (channel === '예약실' && (m.includes('예약실') || m.includes('전화') || m.includes('메신저'))) total += r.revenue || 0;
+                    else if (channel === '홈페이지' && (m.includes('홈페이지') || m.includes('APP'))) total += r.revenue || 0;
+                  });
+                }
+                return total;
+              });
+
+              const cLeisure = calculateCorrelation(channelMonthlyRev, processedData.map(d => d.leisureSales)) || 0;
+              const cFnb = calculateCorrelation(channelMonthlyRev, processedData.map(d => d.fnbSales)) || 0;
+              const cMoto = calculateCorrelation(channelMonthlyRev, processedData.map(d => d.motoSales)) || 0;
+
+              const getColor = (r) => {
+                if (r >= 0.7) return 'var(--accent-emerald)';
+                if (r >= 0.4) return 'var(--accent-gold)';
+                if (r <= -0.4) return 'var(--accent-red)';
+                return 'var(--text-main)';
+              };
+
+              return (
+                <div key={channel} className="glass-panel" style={{padding: '16px', borderLeft: '4px solid var(--accent-blue)'}}>
+                  <div style={{fontSize: '16px', fontWeight: 'bold', marginBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px'}}>{channel}</div>
+                  <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
+                    <span style={{color: 'var(--text-muted)'}}>레저본부</span>
+                    <span style={{color: getColor(cLeisure), fontWeight: cLeisure >= 0.4 ? 'bold' : 'normal'}}>{cLeisure.toFixed(2)}</span>
+                  </div>
+                  <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
+                    <span style={{color: 'var(--text-muted)'}}>식음본부</span>
+                    <span style={{color: getColor(cFnb), fontWeight: cFnb >= 0.4 ? 'bold' : 'normal'}}>{cFnb.toFixed(2)}</span>
+                  </div>
+                  <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                    <span style={{color: 'var(--text-muted)'}}>모토아레나</span>
+                    <span style={{color: getColor(cMoto), fontWeight: cMoto >= 0.4 ? 'bold' : 'normal'}}>{cMoto.toFixed(2)}</span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
