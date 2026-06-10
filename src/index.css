@@ -19,6 +19,8 @@
   padding: 0;
   box-sizing: border-box;
   font-family: 'Outfit', sans-serif;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 body {
@@ -162,6 +164,12 @@ body {
   .responsive-stat-value {
     font-size: 24px !important;
   }
+  .responsive-huge-number {
+    font-size: 36px !important;
+  }
+  .responsive-large-number {
+    font-size: 24px !important;
+  }
   .hide-on-mobile {
     display: none !important;
   }
@@ -181,4 +189,16 @@ body {
   font-size: 32px;
   font-weight: bold;
   color: white;
+}
+
+.responsive-huge-number {
+  font-size: 64px;
+  font-weight: 900;
+  color: var(--text-main);
+  text-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+
+.responsive-large-number {
+  font-size: 36px;
+  font-weight: bold;
 }
