@@ -155,7 +155,7 @@
     flex-direction: row;
     overflow-x: auto;
     gap: 8px;
-    padding-bottom: env(safe-area-inset-bottom, 8px); /* iOS safe area */
+    padding-bottom: calc(env(safe-area-inset-bottom, 8px) + 12px); /* Extra padding for iOS safe area to prevent accidental swipes */
   }
   
   .sidebar-nav::-webkit-scrollbar {

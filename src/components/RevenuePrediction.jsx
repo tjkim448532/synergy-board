@@ -414,15 +414,15 @@ export default function RevenuePrediction({ monthlyData, settings }) {
             flexWrap: 'wrap',
             gap: '20px'
           }}>
-            <div style={{textAlign: 'center', flex: '1', minWidth: '250px'}}>
+            <div style={{textAlign: 'center', flex: '1', minWidth: '250px', maxWidth: '100%'}}>
               <div style={{color: 'var(--accent-emerald)', fontSize: '16px', marginBottom: '8px', fontWeight: 'bold'}}>📌 {refData.label}</div>
-              <div style={{fontSize: '32px', fontWeight: 'bold', color: 'white'}}>
+              <div className="responsive-stat-value">
                 레저+숙박 총매출: <span style={{color: 'var(--accent-gold)'}}>₩ {formatCurrency(refData.totalRev)}</span>
               </div>
             </div>
-            <div className="mobile-no-border" style={{textAlign: 'center', flex: '1', minWidth: '150px', borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '20px'}}>
+            <div className="mobile-no-border" style={{textAlign: 'center', flex: '1', minWidth: '150px', maxWidth: '100%', borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '20px'}}>
               <div style={{color: 'var(--accent-emerald)', fontSize: '16px', marginBottom: '8px', fontWeight: 'bold'}}>{refData.occLabel}</div>
-              <div style={{fontSize: '32px', fontWeight: 'bold', color: 'white'}}>
+              <div className="responsive-stat-value">
                 {refData.occRate.toFixed(1)}%
               </div>
               <div style={{display: 'flex', justifyContent: 'center', gap: '16px', marginTop: '12px'}}>
@@ -448,7 +448,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         </p>
 
         <div style={{display: 'flex', gap: '40px', justifyContent: 'center', marginBottom: '20px', flexWrap: 'wrap'}}>
-          <div style={{flex: '1', minWidth: '300px', maxWidth: '400px'}}>
+          <div style={{flex: '1', minWidth: '250px', maxWidth: '400px'}}>
             <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '16px'}}>
               <span style={{fontSize: '20px'}}>목표 주중 점유율</span>
               <span style={{fontWeight: 'bold', fontSize: '28px', color: 'var(--accent-blue)'}}>{targetWeekdayOcc}%</span>
@@ -464,7 +464,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
               (실제 누적 평균: {globalStats.globalWdOccRate.toFixed(1)}%)
             </div>
           </div>
-          <div style={{flex: '1', minWidth: '300px', maxWidth: '400px'}}>
+          <div style={{flex: '1', minWidth: '250px', maxWidth: '400px'}}>
             <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '16px'}}>
               <span style={{fontSize: '20px'}}>목표 주말 점유율</span>
               <span style={{fontWeight: 'bold', fontSize: '28px', color: 'var(--accent-purple)'}}>{targetWeekendOcc}%</span>

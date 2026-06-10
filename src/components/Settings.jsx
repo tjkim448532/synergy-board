@@ -374,7 +374,7 @@ export default function Settings({ monthlyData }) {
           투숙객 매출 비중 설정 (Capture Rate)
         </h3>
         <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '16px', flexWrap: 'wrap', gap: '12px'}}>
-          <p className="settings-desc" style={{margin: 0, flex: 1, minWidth: '300px'}}>
+          <p className="settings-desc" style={{margin: 0, flex: 1, minWidth: '200px'}}>
             각 부대시설 총매출 중 '객실 투숙객'이 결제한 비중(%)을 설정합니다. 워크인(비투숙객) 매출을 제외한 <strong>순수 객실 연계 매출(순수 TrevPAR)</strong> 산출에 사용됩니다.
           </p>
           <button 
@@ -389,7 +389,7 @@ export default function Settings({ monthlyData }) {
         </div>
 
         <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
-          <div className="form-group" style={{flex: 1, minWidth: '200px'}}>
+          <div className="form-group" style={{flex: 1, minWidth: '150px'}}>
             <label htmlFor="captureRateLeisure">레저본부 투숙객 비중 (%)</label>
             <input 
               type="number" 
@@ -401,7 +401,7 @@ export default function Settings({ monthlyData }) {
               min="0" max="100"
             />
           </div>
-          <div className="form-group" style={{flex: 1, minWidth: '200px'}}>
+          <div className="form-group" style={{flex: 1, minWidth: '150px'}}>
             <label htmlFor="captureRateFnb">식음본부 투숙객 비중 (%)</label>
             <input 
               type="number" 
@@ -413,7 +413,7 @@ export default function Settings({ monthlyData }) {
               min="0" max="100"
             />
           </div>
-          <div className="form-group" style={{flex: 1, minWidth: '200px'}}>
+          <div className="form-group" style={{flex: 1, minWidth: '150px'}}>
             <label htmlFor="captureRateMoto">모토아레나 투숙객 비중 (%)</label>
             <input 
               type="number" 
@@ -435,7 +435,7 @@ export default function Settings({ monthlyData }) {
         </p>
 
         <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
-          <div className="form-group" style={{flex: 1, minWidth: '200px'}}>
+          <div className="form-group" style={{flex: 1, minWidth: '150px'}}>
             <label htmlFor="targetAdr16">16평형 목표 객단가</label>
             <div style={{color: 'var(--text-muted)', fontSize: '12px', marginBottom: '8px'}}>과거 평균: {avgAdr16.toLocaleString()}원</div>
             <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
@@ -451,7 +451,7 @@ export default function Settings({ monthlyData }) {
             </div>
           </div>
 
-          <div className="form-group" style={{flex: 1, minWidth: '200px'}}>
+          <div className="form-group" style={{flex: 1, minWidth: '150px'}}>
             <label htmlFor="targetAdr35">35평형 목표 객단가</label>
             <div style={{color: 'var(--text-muted)', fontSize: '12px', marginBottom: '8px'}}>과거 평균: {avgAdr35.toLocaleString()}원</div>
             <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
@@ -467,7 +467,7 @@ export default function Settings({ monthlyData }) {
             </div>
           </div>
 
-          <div className="form-group" style={{flex: 1, minWidth: '200px'}}>
+          <div className="form-group" style={{flex: 1, minWidth: '150px'}}>
             <label htmlFor="targetAdr51">51평형 목표 객단가</label>
             <div style={{color: 'var(--text-muted)', fontSize: '12px', marginBottom: '8px'}}>과거 평균: {avgAdr51.toLocaleString()}원</div>
             <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
