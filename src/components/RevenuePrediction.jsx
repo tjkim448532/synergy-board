@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { 
   ComposedChart, Scatter, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend 
 } from 'recharts';
+import CountUp from 'react-countup';
 
 const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(Math.round(val || 0));
 
@@ -484,7 +485,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
 
         <div style={{textAlign: 'center', marginBottom: '40px', fontSize: '18px', color: 'var(--text-muted)'}}>
           <span style={{marginRight: '20px'}}>종합 예상 점유율: <strong style={{color: 'var(--accent-emerald)', fontSize: '22px'}}>{targetTotalOcc.toFixed(1)}%</strong></span>
-          <span>해당 점유율 달성 시 예상 투숙객: <strong style={{color: 'white', fontSize: '22px'}}>{formatCurrency(expectedGuests)} 명</strong></span>
+          <span>해당 점유율 달성 시 예상 투숙객: <strong style={{color: 'white', fontSize: '22px'}}><CountUp end={expectedGuests} formattingFn={formatCurrency} duration={0.6} preserveValue /> 명</strong></span>
         </div>
 
         <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', maxWidth: '1200px', margin: '0 auto'}}>
@@ -496,7 +497,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
                 <div style={{flex: 1, padding: '16px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', border: '1px dashed rgba(255,255,255,0.2)'}}>
                   <div style={{fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px'}}>과거 추세선 기준</div>
                   <div style={{fontSize: '24px', fontWeight: 'bold', color: 'var(--text-muted)'}}>
-                    ₩ {formatCurrency(expectedRoomRevenue)}
+                    ₩ <CountUp end={expectedRoomRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
                   </div>
                 </div>
                 
@@ -508,7 +509,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
                   </div>
                   <div style={{fontSize: '13px', color: 'var(--accent-emerald)', marginBottom: '8px', marginTop: '4px'}}>전략 목표 기준</div>
                   <div style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-gold)'}}>
-                    ₩ {formatCurrency(targetAdrRoomRevenue)}
+                    ₩ <CountUp end={targetAdrRoomRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
                   </div>
                   <div style={{fontSize: '12px', color: 'var(--accent-emerald)', marginTop: '8px'}}>
                     추가수익: +₩{formatCurrency(targetAdrRoomRevenue - expectedRoomRevenue)}
@@ -518,7 +519,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
             ) : (
               <>
                 <div style={{fontSize: '36px', fontWeight: 'bold', color: 'var(--accent-blue)'}}>
-                  ₩ {formatCurrency(expectedRoomRevenue)}
+                  ₩ <CountUp end={expectedRoomRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
                 </div>
                 <div style={{fontSize: '14px', color: 'var(--text-muted)', marginTop: '8px'}}>
                   (주중 ₩{formatCurrency(expRevWd)} + 주말 ₩{formatCurrency(expRevWe)})
@@ -533,7 +534,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
           <div style={{background: 'rgba(0,0,0,0.3)', padding: '30px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)'}}>
             <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '12px'}}>예상 레저본부 매출</div>
             <div style={{fontSize: '36px', fontWeight: 'bold', color: 'var(--accent-purple)'}}>
-              ₩ {formatCurrency(expectedLeisureRevenue)}
+              ₩ <CountUp end={expectedLeisureRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
             </div>
             <div style={{fontSize: '14px', color: 'var(--text-muted)', marginTop: '8px'}}>
               {hasSplitLeisure 
@@ -546,7 +547,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
           <div style={{background: 'rgba(0,0,0,0.3)', padding: '30px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)'}}>
             <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '12px'}}>예상 모토아레나 매출</div>
             <div style={{fontSize: '36px', fontWeight: 'bold', color: 'var(--accent-gold)'}}>
-              ₩ {formatCurrency(expectedMotoRevenue)}
+              ₩ <CountUp end={expectedMotoRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
             </div>
             <div style={{fontSize: '14px', color: 'var(--text-muted)', marginTop: '8px'}}>
               {hasSplitLeisure 
@@ -559,7 +560,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
           <div style={{background: 'rgba(0,0,0,0.3)', padding: '30px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)'}}>
             <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '12px'}}>예상 식음본부 매출</div>
             <div style={{fontSize: '36px', fontWeight: 'bold', color: 'var(--accent-blue)'}}>
-              ₩ {formatCurrency(expectedFnbRevenue)}
+              ₩ <CountUp end={expectedFnbRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
             </div>
             <div style={{fontSize: '14px', color: 'var(--text-muted)', marginTop: '8px'}}>
               {hasSplitLeisure 
@@ -572,7 +573,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         <div style={{maxWidth: '1200px', margin: '20px auto 0', background: 'rgba(251, 191, 36, 0.1)', padding: '40px', borderRadius: '16px', textAlign: 'center', border: '2px solid var(--accent-gold)'}}>
           <div style={{color: 'var(--accent-gold)', fontSize: '24px', marginBottom: '16px', fontWeight: 'bold'}}>차월 총 예상 수익 (Total Revenue)</div>
           <div style={{fontSize: '64px', fontWeight: '900', color: 'var(--text-main)', textShadow: '0 4px 12px rgba(0,0,0,0.5)'}}>
-            ₩ {formatCurrency(hasTargetAdr ? targetAdrTotalRevenue : expectedTotalRevenue)}
+            ₩ <CountUp end={hasTargetAdr ? targetAdrTotalRevenue : expectedTotalRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
           </div>
           {hasTargetAdr && (
             <div style={{color: 'var(--text-muted)', fontSize: '16px', marginTop: '12px'}}>

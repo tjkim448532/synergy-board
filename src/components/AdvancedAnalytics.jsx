@@ -3,6 +3,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
   ScatterChart, Scatter, ZAxis, PieChart, Pie, Cell
 } from 'recharts';
+import CountUp from 'react-countup';
 
 // 피어슨 상관계수 계산 함수
 function calculateCorrelation(xArray, yArray) {
@@ -349,7 +350,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                 RevPAR (객실 수익만)
               </div>
               <div style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--text-main)', letterSpacing: '-0.5px'}}>
-                ₩{formatCurrency(kpiData.revPar)}
+                ₩<CountUp end={kpiData.revPar} formattingFn={formatCurrency} duration={1} preserveValue />
               </div>
             </div>
 
@@ -358,7 +359,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                 <span><span style={{color: 'var(--accent-emerald)'}}>●</span> 순수 TrevPAR (객실+투숙객 부대매출)</span>
               </div>
               <div style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-emerald)', letterSpacing: '-0.5px'}}>
-                ₩{formatCurrency(kpiData.pureTrevPar)}
+                ₩<CountUp end={kpiData.pureTrevPar} formattingFn={formatCurrency} duration={1} preserveValue />
               </div>
             </div>
 
@@ -367,7 +368,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                 Gross TrevPAR (워크인 포함 전체)
               </div>
               <div style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--text-main)', letterSpacing: '-0.5px'}}>
-                ₩{formatCurrency(kpiData.grossTrevPar)}
+                ₩<CountUp end={kpiData.grossTrevPar} formattingFn={formatCurrency} duration={1} preserveValue />
               </div>
             </div>
           </div>
