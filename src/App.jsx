@@ -50,37 +50,37 @@ function App() {
     switch(activeTab) {
       case 'prediction':
         return (
-          <motion.div key="prediction" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{height: '100%', padding: '32px', overflowY: 'auto'}}>
+          <motion.div key="prediction" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{padding: '32px'}}>
             <RevenuePrediction monthlyData={allData} settings={settings} />
           </motion.div>
         )
       case 'analytics':
         return (
-          <motion.div key="analytics" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{height: '100%', padding: '32px', overflowY: 'auto'}}>
+          <motion.div key="analytics" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{padding: '32px'}}>
             <AdvancedAnalytics monthlyData={allData} settings={settings} />
           </motion.div>
         )
       case 'logic':
         return (
-          <motion.div key="logic" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{height: '100%', padding: '32px', overflowY: 'auto'}}>
+          <motion.div key="logic" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{padding: '32px'}}>
             <LogicGuide settings={settings} />
           </motion.div>
         )
       case 'accuracy-tasks':
         return (
-          <motion.div key="accuracy-tasks" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{height: '100%', padding: '32px', overflowY: 'auto'}}>
+          <motion.div key="accuracy-tasks" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{padding: '32px'}}>
             <DataAccuracyTasks />
           </motion.div>
         )
       case 'upload':
         return (
-          <motion.div key="upload" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} style={{height: '100%', padding: '32px', overflowY: 'auto'}}>
+          <motion.div key="upload" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} style={{padding: '32px'}}>
             <MonthlyDataForm settings={settings} />
           </motion.div>
         )
       case 'settings':
         return (
-          <motion.div key="settings" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{height: '100%', padding: '32px'}}>
+          <motion.div key="settings" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{padding: '32px'}}>
             <Settings monthlyData={allData} />
           </motion.div>
         )
