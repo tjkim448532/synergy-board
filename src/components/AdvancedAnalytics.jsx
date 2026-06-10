@@ -375,9 +375,9 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       )}
       
       {/* 0. 본부 선택기 */}
-      <div className="glass-panel" style={{padding: '16px 24px', display: 'flex', alignItems: 'center', gap: '16px'}}>
+      <div className="glass-panel mobile-wrap" style={{padding: '16px 24px', display: 'flex', alignItems: 'center', gap: '16px'}}>
         <h3 style={{margin: 0}}>분석 대상 본부 선택:</h3>
-        <div style={{display: 'flex', gap: '12px'}}>
+        <div className="mobile-wrap" style={{display: 'flex', gap: '12px'}}>
           {Object.entries(divisionConfig).map(([key, conf]) => (
             <button
               key={key}

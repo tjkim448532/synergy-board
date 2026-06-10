@@ -420,7 +420,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
                 레저+숙박 총매출: <span style={{color: 'var(--accent-gold)'}}>₩ {formatCurrency(refData.totalRev)}</span>
               </div>
             </div>
-            <div style={{textAlign: 'center', flex: '1', minWidth: '150px', borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '20px'}}>
+            <div className="mobile-no-border" style={{textAlign: 'center', flex: '1', minWidth: '150px', borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '20px'}}>
               <div style={{color: 'var(--accent-emerald)', fontSize: '16px', marginBottom: '8px', fontWeight: 'bold'}}>{refData.occLabel}</div>
               <div style={{fontSize: '32px', fontWeight: 'bold', color: 'white'}}>
                 {refData.occRate.toFixed(1)}%

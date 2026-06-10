@@ -150,4 +150,13 @@ body {
   input, select, button {
     min-height: 44px; /* Ensure 44x44px touch target */
   }
+  .mobile-wrap {
+    flex-wrap: wrap !important;
+  }
+  .mobile-no-border {
+    border: none !important;
+    padding-left: 0 !important;
+    padding-top: 20px !important;
+    border-top: 1px solid rgba(255,255,255,0.1) !important;
+  }
 }
