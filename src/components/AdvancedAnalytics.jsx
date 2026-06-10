@@ -445,14 +445,14 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
             <LineChart data={processedData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
               <XAxis dataKey="yearMonth" stroke="var(--text-muted)" />
-              <YAxis yAxisId="left" stroke="var(--accent-emerald)" tickFormatter={(v) => `${v.toFixed(0)}%`} />
+              <YAxis yAxisId="left" stroke="#94a3b8" tickFormatter={(v) => `${v.toFixed(0)}%`} />
               <YAxis yAxisId="right" orientation="right" stroke={activeConf.color} tickFormatter={(v) => `${(v/1000000).toFixed(0)}M`} />
               <RechartsTooltip 
                 contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)'}}
                 formatter={(value, name) => name === '점유율' ? `${value.toFixed(1)}%` : `₩${formatCurrency(value)}`}
               />
               <Legend />
-              <Line yAxisId="left" type="monotone" dataKey="occupancyRate" name="점유율" stroke="var(--accent-emerald)" strokeWidth={3} dot={{r: 4}} activeDot={{r: 8}} />
+              <Line yAxisId="left" type="monotone" dataKey="occupancyRate" name="점유율" stroke="#94a3b8" strokeWidth={3} dot={{r: 4}} activeDot={{r: 8}} />
               <Line yAxisId="right" type="monotone" dataKey={activeConf.dataKey} name={`${activeConf.title} 매출`} stroke={activeConf.color} strokeWidth={3} dot={{r: 4}} />
             </LineChart>
           </ResponsiveContainer>
@@ -513,10 +513,10 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                 <div style={{flex: 1, fontWeight: 'bold'}}>{loc.name}</div>
                 <div style={{width: '100px', display: 'flex', alignItems: 'center'}}>
                   <div style={{flex: 1, height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden'}}>
-                    <div style={{height: '100%', background: 'var(--accent-emerald)', width: `${Math.max(0, loc.correlation * 100)}%`}}></div>
+                    <div style={{height: '100%', background: activeConf.color, width: `${Math.max(0, loc.correlation * 100)}%`}}></div>
                   </div>
                 </div>
-                <div style={{width: '60px', textAlign: 'right', fontWeight: 'bold', color: 'var(--accent-emerald)'}}>
+                <div style={{width: '60px', textAlign: 'right', fontWeight: 'bold', color: activeConf.color}}>
                   {loc.correlation.toFixed(2)}
                 </div>
               </div>
