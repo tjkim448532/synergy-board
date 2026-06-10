@@ -594,7 +594,7 @@ export default function MonthlyDataForm({ settings }) {
         {records.length === 0 ? (
           <div className="empty-state">등록된 월별 실적이 없습니다. 위 폼을 통해 엑셀을 업로드해 주세요.</div>
         ) : (
-          <div style={{overflowX: 'auto'}}>
+          <div className="table-scroll-container">
             <table className="records-table" style={{minWidth: '800px'}}>
               <thead>
                 <tr>

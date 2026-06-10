@@ -570,7 +570,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
             {/* ADR Table */}
             <div style={{width: '100%', display: 'flex', flexDirection: 'column'}}>
               <h4 style={{margin: '0 0 10px 0', color: 'var(--text-main)', textAlign: 'center'}}>채널별 평형 객단가(ADR)</h4>
-              <div style={{overflowX: 'auto', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid var(--border-glass)'}}>
+              <div className="table-scroll-container" style={{background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid var(--border-glass)'}}>
                 <table style={{width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'right'}}>
                   <thead>
                     <tr style={{background: 'rgba(255,255,255,0.05)'}}>
@@ -605,7 +605,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
           <h3 style={{marginBottom: '20px'}}>채널 비중 ↔ 부대시설 매출 거시적 상관관계</h3>
           <p style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '15px'}}>특정 예약 채널(온라인, 세미나 등)의 매출 비중이 높았던 월에 각 영업장(레저, 식음, 모토아레나)의 총매출이 얼마나 함께 상승했는지를 보여주는 상관계수(-1.0 ~ 1.0)입니다. (0.4 이상 뚜렷한 연관, 0.7 이상 매우 강한 연관)</p>
           
-          <div style={{overflowX: 'auto', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid var(--border-glass)'}}>
+          <div className="table-scroll-container" style={{background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid var(--border-glass)'}}>
             <table style={{width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'center'}}>
               <thead>
                 <tr style={{background: 'rgba(255,255,255,0.05)'}}>

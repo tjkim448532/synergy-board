@@ -109,12 +109,45 @@ body {
   transform: scale(0.95);
 }
 
-/* Responsive Base */
+/* Responsive Base & Mobile Opt */
+.table-scroll-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  padding-bottom: 8px; /* For scrollbar breathing room */
+}
+.table-scroll-container::-webkit-scrollbar {
+  height: 6px;
+  display: none; /* Hide scrollbar for a cleaner look on mobile */
+}
+.table-scroll-container:hover::-webkit-scrollbar {
+  display: block;
+}
+.table-scroll-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+.table-scroll-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
 @media (max-width: 768px) {
   body {
     font-size: 14px;
   }
   .glass-panel {
     border-radius: 12px;
+    padding: 20px !important; /* Reduce padding on mobile */
+  }
+  .custom-handle-slider::-webkit-slider-thumb {
+    width: 32px; /* Enlarge touch targets */
+    height: 32px;
+  }
+  .custom-handle-slider::-moz-range-thumb {
+    width: 32px;
+    height: 32px;
+  }
+  input, select, button {
+    min-height: 44px; /* Ensure 44x44px touch target */
   }
 }
