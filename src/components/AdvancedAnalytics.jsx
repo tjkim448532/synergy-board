@@ -28,7 +28,7 @@ function calculateCorrelation(xArray, yArray) {
   return numerator / denominator;
 }
 
-const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(val || 0);
+const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(Math.round(val || 0));
 
 export default function AdvancedAnalytics({ monthlyData, settings }) {
   const [selectedRoomType, setSelectedRoomType] = useState('all');
@@ -544,9 +544,9 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                     data={channelData}
                     cx="50%"
                     cy="50%"
-                    labelLine={true}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
-                    outerRadius={90}
+                    labelLine={false}
+                    outerRadius={110}
+                    innerRadius={50}
                     dataKey="value"
                     stroke="rgba(255,255,255,0.1)"
                   >
