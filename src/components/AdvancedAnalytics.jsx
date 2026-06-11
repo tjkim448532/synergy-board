@@ -3,7 +3,8 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
   ScatterChart, Scatter, ZAxis, PieChart, Pie, Cell
 } from 'recharts';
-import CountUp from 'react-countup';
+import CountUpModule from 'react-countup';
+const CountUp = CountUpModule.default || CountUpModule;
 
 // 피어슨 상관계수 계산 함수
 function calculateCorrelation(xArray, yArray) {
