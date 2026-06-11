@@ -545,8 +545,21 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    outerRadius={110}
-                    innerRadius={50}
+                    label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+                      if (percent < 0.05) return null; // 5% 미만은 라벨 숨김
+                      const RADIAN = Math.PI / 180;
+                      const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+                      const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                      const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                      return (
+                        <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize="12px" fontWeight="bold" style={{ textShadow: '0px 0px 4px rgba(0,0,0,0.8)' }}>
+                          {`${(percent * 100).toFixed(0)}%`}
+                        </text>
+                      );
+                    }}
+                    outerRadius={95}
+                    innerRadius={55}
+                    cy="45%"
                     dataKey="value"
                     stroke="rgba(255,255,255,0.1)"
                   >
