@@ -457,7 +457,7 @@ export default function MonthlyDataForm({ settings }) {
     }
   };
 
-  const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(val || 0);
+  const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(Math.round(val || 0));
 
   if (!isAuthenticated) {
     return (
