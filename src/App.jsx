@@ -5,6 +5,7 @@ import DashboardLayout from './components/DashboardLayout'
 import Settings from './components/Settings'
 import MonthlyDataForm from './components/MonthlyDataForm'
 import AdvancedAnalytics from './components/AdvancedAnalytics'
+import ChannelAnalysis from './components/ChannelAnalysis'
 import RevenuePrediction from './components/RevenuePrediction'
 import LogicGuide from './components/LogicGuide'
 import DataAccuracyTasks from './components/DataAccuracyTasks'
@@ -59,6 +60,12 @@ function App() {
         return (
           <motion.div key="analytics" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{padding: '32px'}}>
             <AdvancedAnalytics monthlyData={allData} settings={settings} />
+          </motion.div>
+        )
+      case 'channel-analysis':
+        return (
+          <motion.div key="channel-analysis" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{padding: '32px'}}>
+            <ChannelAnalysis monthlyData={allData} settings={settings} />
           </motion.div>
         )
       case 'new-business':

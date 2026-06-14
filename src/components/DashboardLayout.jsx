@@ -10,10 +10,11 @@ const SIDEBAR_MENU = [
     label: '신규 사업 시뮬레이터',
     subItems: [
       { id: 'new-business', label: '연수원' },
-      { id: 'new-business-soccer', label: '축구장 (준비중)' }
+      { id: 'new-business-soccer', label: '축구장(준비중)' }
     ]
   },
   { id: 'analytics', icon: PieChart, label: '상관관계 분석' },
+  { id: 'channel-analysis', icon: PieChart, label: '객실판매채널 심층분석' },
   { id: 'logic', icon: BookOpen, label: '분석 로직 및 검증 보고서' },
   { id: 'accuracy-tasks', icon: BookOpen, label: '데이터 정확도 핵심과제' },
   { id: 'upload', icon: Upload, label: '데이터 업로드' },
