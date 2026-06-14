@@ -60,7 +60,7 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
               let group = settings.motoTicketGroups?.[ticket];
               if (!group) {
                 if (ticket.includes('콘도') || ticket.includes('객실')) group = 'guest';
-                else if (ticket.includes('일반') || ticket.includes('증평군민') || ticket.includes('MOU') || ticket.includes('단체')) group = 'general';
+                else if (ticket.includes('?�반') || ticket.includes('증평군�?') || ticket.includes('MOU') || ticket.includes('?�체')) group = 'general';
                 else group = 'other';
               }
               if (group === 'guest') mGuestRev += rev;
@@ -140,9 +140,9 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
 
   const chartData = [
     { name: '객실 매출', value: expectedRoomRev, color: 'var(--accent-blue)' },
-    { name: '식음(F&B)', value: expectedFnbRev, color: '#ef4444' }, // Red-ish for F&B
-    { name: '모토아레나', value: expectedMotoRev, color: 'var(--accent-gold)' },
-    { name: '레저/기타', value: expectedLeisureRev, color: 'var(--accent-emerald)' }
+    { name: '?�음(F&B)', value: expectedFnbRev, color: '#ef4444' }, // Red-ish for F&B
+    { name: '모토?�레??, value: expectedMotoRev, color: 'var(--accent-gold)' },
+    { name: '?��?/기�?', value: expectedLeisureRev, color: 'var(--accent-emerald)' }
   ].filter(d => d.value > 0);
 
   return (
@@ -154,10 +154,10 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
         <div style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.4) 50%, transparent 100%)', zIndex: 1}}></div>
         <div style={{padding: '32px 32px 24px 32px', position: 'relative', zIndex: 2, width: '100%'}}>
           <h2 style={{margin: '0 0 12px 0', color: '#fff', display: 'flex', alignItems: 'center', gap: '12px', textShadow: '0 2px 4px rgba(0,0,0,0.5)'}}>
-            <Building2 size={28} color="var(--accent-emerald)" /> 신규 사업 시뮬레이터 (연수원)
+            <Building2 size={28} color="var(--accent-emerald)" /> ?�규 ?�업 ?��??�이??(?�수??
           </h2>
           <p style={{margin: 0, color: 'rgba(255,255,255,0.85)', fontSize: '15px', lineHeight: '1.6', textShadow: '0 1px 2px rgba(0,0,0,0.8)'}}>
-            기존 콘도의 운영 데이터(객단가 및 투숙객당 부대매출 창출액)를 베이스로, 연수원 등 신규 객실이 추가되었을 때 발생하는 <strong style={{color: '#fff'}}>연간 예상 파생 총매출</strong>을 시뮬레이션 합니다. 
+            기존 콘도???�영 ?�이??객단가 �??�숙객당 부?�매출 창출??�?베이?�로, ?�수?????�규 객실??추�??�었????발생?�는 <strong style={{color: '#fff'}}>?�간 ?�상 ?�생 총매�?/strong>???��??�이???�니?? 
           </p>
         </div>
       </div>
@@ -165,13 +165,13 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
       {/* Input Section */}
       <div className="glass-panel" style={{padding: '32px'}}>
         <h3 style={{margin: '0 0 20px 0', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-main)'}}>
-          <Calculator size={20} /> 시뮬레이션 설정 (연간 기준)
+          <Calculator size={20} /> ?��??�이???�정 (?�간 기�?)
         </h3>
         
         <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '24px'}}>
           
           <div style={{background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)'}}>
-            <label style={{display: 'block', marginBottom: '12px', color: 'var(--text-muted)', fontSize: '14px'}}>추가 건립 객실 수</label>
+            <label style={{display: 'block', marginBottom: '12px', color: 'var(--text-muted)', fontSize: '14px'}}>추�? 건립 객실 ??/label>
             <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
               <input 
                 type="number" 
@@ -179,12 +179,12 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
                 onChange={e => setNewRooms(Number(e.target.value))}
                 style={{width: '100px', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-glass)', background: 'rgba(0,0,0,0.3)', color: '#fff', fontSize: '18px', fontWeight: 'bold'}}
               />
-              <span style={{color: 'var(--text-muted)'}}>실</span>
+              <span style={{color: 'var(--text-muted)'}}>??/span>
             </div>
           </div>
 
           <div style={{background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)'}}>
-            <label style={{display: 'block', marginBottom: '12px', color: 'var(--text-muted)', fontSize: '14px'}}>예상 목표 점유율</label>
+            <label style={{display: 'block', marginBottom: '12px', color: 'var(--text-muted)', fontSize: '14px'}}>?�상 목표 ?�유??/label>
             <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
               <input 
                 type="number" 
@@ -195,14 +195,13 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
               <span style={{color: 'var(--text-muted)'}}>%</span>
             </div>
             <div style={{fontSize: '12px', color: 'var(--accent-emerald)', marginTop: '8px'}}>
-              연간 예상 판매 객실: {formatCurrency(annualSoldRooms)}실
-            </div>
+              ?�간 ?�상 ?�매 객실: {formatCurrency(annualSoldRooms)}??            </div>
           </div>
 
           <div style={{background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)'}}>
             <label style={{display: 'block', marginBottom: '12px', color: 'var(--text-muted)', fontSize: '14px'}}>객단가 (ADR)</label>
             <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-              <span style={{color: 'var(--text-muted)'}}>₩</span>
+              <span style={{color: 'var(--text-muted)'}}>??/span>
               <input 
                 type="number" 
                 value={activeAdr === 0 ? '' : activeAdr} 
@@ -211,14 +210,13 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
               />
             </div>
             <div style={{fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '8px', display: 'flex', justifyContent: 'space-between'}}>
-              <span>*기본값: 기존 콘도 평균치</span>
+              <span>*기본�? 기존 콘도 ?�균�?/span>
               {customAdr !== null && (
                 <button 
                   onClick={() => setCustomAdr(null)}
                   style={{background: 'none', border: 'none', color: 'var(--accent-gold)', cursor: 'pointer', fontSize: '11px', textDecoration: 'underline'}}
                 >
-                  초기화
-                </button>
+                  초기??                </button>
               )}
             </div>
           </div>
@@ -233,27 +231,27 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
         <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px'}}>
           
           <div className="glass-panel" style={{padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderTop: '4px solid rgba(255,255,255,0.2)'}}>
-            <div style={{fontSize: '16px', color: 'var(--text-muted)', marginBottom: '8px'}}>기존 연간 통합 매출 (과거 평균 기준)</div>
+            <div style={{fontSize: '16px', color: 'var(--text-muted)', marginBottom: '8px'}}>기존 ?�간 ?�합 매출 (과거 ?�균 기�?)</div>
             <div style={{fontSize: '36px', fontWeight: '900', color: 'var(--text-main)', letterSpacing: '-1px'}}>
-              ₩<CountUp end={(baseMetrics.totRev + baseMetrics.totLeisure + baseMetrics.totMoto + baseMetrics.totFnb) / baseMetrics.monthsCount * 12} duration={1} separator="," preserveValue />
+              ??CountUp end={(baseMetrics.totRev + baseMetrics.totLeisure + baseMetrics.totMoto + baseMetrics.totFnb) / baseMetrics.monthsCount * 12} duration={1} separator="," preserveValue />
             </div>
-            <div style={{fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px'}}>업로드된 데이터를 바탕으로 연 환산한 현재 매출 규모</div>
+            <div style={{fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px'}}>?�로?�된 ?�이?��? 바탕?�로 ???�산???�재 매출 규모</div>
           </div>
 
           <div className="glass-panel" style={{padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderTop: '4px solid var(--accent-gold)'}}>
-            <div style={{fontSize: '16px', color: 'var(--accent-gold)', marginBottom: '8px', fontWeight: 'bold'}}>신규 시설(연수원) 파생 매출</div>
+            <div style={{fontSize: '16px', color: 'var(--accent-gold)', marginBottom: '8px', fontWeight: 'bold'}}>?�규 ?�설(?�수?? ?�생 매출</div>
             <div style={{fontSize: '36px', fontWeight: '900', color: 'var(--accent-gold)', letterSpacing: '-1px'}}>
-              + ₩<CountUp end={expectedTotalRev} duration={1} separator="," preserveValue />
+              + ??CountUp end={expectedTotalRev} duration={1} separator="," preserveValue />
             </div>
-            <div style={{fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px'}}>신규 객실 추가로 인해 순수하게 증가하는 예상 매출액</div>
+            <div style={{fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px'}}>?�규 객실 추�?�??�해 ?�수?�게 증�??�는 ?�상 매출??/div>
           </div>
 
           <div className="glass-panel" style={{padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: 'rgba(59, 130, 246, 0.1)', borderTop: '4px solid var(--accent-blue)'}}>
-            <div style={{fontSize: '16px', color: 'var(--accent-blue)', marginBottom: '8px', fontWeight: 'bold'}}>미래 종합 연간 예상 매출</div>
+            <div style={{fontSize: '16px', color: 'var(--accent-blue)', marginBottom: '8px', fontWeight: 'bold'}}>미래 종합 ?�간 ?�상 매출</div>
             <div style={{fontSize: '42px', fontWeight: '900', color: '#fff', letterSpacing: '-1px'}}>
-              ₩<CountUp end={((baseMetrics.totRev + baseMetrics.totLeisure + baseMetrics.totMoto + baseMetrics.totFnb) / baseMetrics.monthsCount * 12) + expectedTotalRev} duration={1} separator="," preserveValue />
+              ??CountUp end={((baseMetrics.totRev + baseMetrics.totLeisure + baseMetrics.totMoto + baseMetrics.totFnb) / baseMetrics.monthsCount * 12) + expectedTotalRev} duration={1} separator="," preserveValue />
             </div>
-            <div style={{fontSize: '13px', color: 'rgba(255,255,255,0.7)', marginTop: '8px'}}>기존 매출 + 신규 시설 파생 매출</div>
+            <div style={{fontSize: '13px', color: 'rgba(255,255,255,0.7)', marginTop: '8px'}}>기존 매출 + ?�규 ?�설 ?�생 매출</div>
           </div>
 
         </div>
@@ -261,7 +259,7 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
         {/* Detailed Breakdown */}
         <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '24px'}}>
           <div className="glass-panel" style={{padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
-            <h3 style={{margin: '0 0 24px 0', color: 'var(--text-main)'}}>신규 시설(연수원) 파생 매출 세부내역</h3>
+            <h3 style={{margin: '0 0 24px 0', color: 'var(--text-main)'}}>?�규 ?�설(?�수?? ?�생 매출 ?��??�역</h3>
             <div style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>
             
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '12px', borderBottom: '1px dashed rgba(255,255,255,0.1)'}}>
@@ -269,39 +267,39 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
                 <div style={{width: '12px', height: '12px', borderRadius: '50%', background: 'var(--accent-blue)'}} />
                 <span>객실 매출</span>
               </div>
-              <strong style={{fontSize: '18px'}}>₩{formatCurrency(expectedRoomRev)}</strong>
+              <strong style={{fontSize: '18px'}}>??formatCurrency(expectedRoomRev)}</strong>
             </div>
 
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '12px', borderBottom: '1px dashed rgba(255,255,255,0.1)'}}>
               <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
                 <div style={{width: '12px', height: '12px', borderRadius: '50%', background: '#ef4444'}} />
-                <span>식음(F&B) 매출</span>
+                <span>?�음(F&B) 매출</span>
               </div>
               <div style={{textAlign: 'right'}}>
-                <strong style={{fontSize: '18px', color: fnbSim.isCapped ? '#ef4444' : 'inherit'}}>₩{formatCurrency(expectedFnbRev)}</strong>
-                {fnbSim.isCapped && <div style={{fontSize: '11px', color: '#ef4444', marginTop: '4px'}}>*Capa 상한 도달 (초과분 버림)</div>}
+                <strong style={{fontSize: '18px', color: fnbSim.isCapped ? '#ef4444' : 'inherit'}}>??formatCurrency(expectedFnbRev)}</strong>
+                {fnbSim.isCapped && <div style={{fontSize: '11px', color: '#ef4444', marginTop: '4px'}}>*Capa ?�한 ?�달 (초과�?버림)</div>}
               </div>
             </div>
 
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '12px', borderBottom: '1px dashed rgba(255,255,255,0.1)'}}>
               <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
                 <div style={{width: '12px', height: '12px', borderRadius: '50%', background: 'var(--accent-gold)'}} />
-                <span>모토아레나 매출</span>
+                <span>모토?�레??매출</span>
               </div>
               <div style={{textAlign: 'right'}}>
-                <strong style={{fontSize: '18px', color: motoSim.isCapped ? 'var(--accent-gold)' : 'inherit'}}>₩{formatCurrency(expectedMotoRev)}</strong>
-                {motoSim.isCapped && <div style={{fontSize: '11px', color: 'var(--accent-gold)', marginTop: '4px'}}>*Capa 상한 도달 (초과분 버림)</div>}
+                <strong style={{fontSize: '18px', color: motoSim.isCapped ? 'var(--accent-gold)' : 'inherit'}}>??formatCurrency(expectedMotoRev)}</strong>
+                {motoSim.isCapped && <div style={{fontSize: '11px', color: 'var(--accent-gold)', marginTop: '4px'}}>*Capa ?�한 ?�달 (초과�?버림)</div>}
               </div>
             </div>
 
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
               <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
                 <div style={{width: '12px', height: '12px', borderRadius: '50%', background: 'var(--accent-emerald)'}} />
-                <span>레저/기타 매출</span>
+                <span>?��?/기�? 매출</span>
               </div>
               <div style={{textAlign: 'right'}}>
-                <strong style={{fontSize: '18px', color: leisureSim.isCapped ? 'var(--accent-emerald)' : 'inherit'}}>₩{formatCurrency(expectedLeisureRev)}</strong>
-                {leisureSim.isCapped && <div style={{fontSize: '11px', color: 'var(--accent-emerald)', marginTop: '4px'}}>*Capa 상한 도달 (초과분 버림)</div>}
+                <strong style={{fontSize: '18px', color: leisureSim.isCapped ? 'var(--accent-emerald)' : 'inherit'}}>??formatCurrency(expectedLeisureRev)}</strong>
+                {leisureSim.isCapped && <div style={{fontSize: '11px', color: 'var(--accent-emerald)', marginTop: '4px'}}>*Capa ?�한 ?�달 (초과�?버림)</div>}
               </div>
             </div>
 
@@ -310,7 +308,7 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
 
         {/* Chart */}
         <div className="glass-panel" style={{padding: '32px', minWidth: 0}}>
-          <h3 style={{margin: '0 0 16px 0', fontSize: '16px', color: 'var(--text-muted)'}}>예상 매출 비중</h3>
+          <h3 style={{margin: '0 0 16px 0', fontSize: '16px', color: 'var(--text-muted)'}}>?�상 매출 비중</h3>
           <div style={{width: '100%', height: '350px', minWidth: 0, minHeight: 0}}>
             <ResponsiveContainer width="99%" height="100%" minWidth={0} minHeight={0}>
               <PieChart>
@@ -329,7 +327,7 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
                   ))}
                 </Pie>
                 <RechartsTooltip 
-                  formatter={(value) => `₩${formatCurrency(value)}`}
+                  formatter={(value) => `??{formatCurrency(value)}`}
                   contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)', borderRadius: '8px'}}
                 />
                 <Legend verticalAlign="bottom" height={36}/>
