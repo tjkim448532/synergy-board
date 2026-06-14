@@ -624,9 +624,13 @@ export default function RevenuePrediction({ monthlyData, settings }) {
             <span style={{color: 'var(--text-muted)'}}>총 레저 누적 매출</span>
             <span style={{fontWeight: 'bold', color: 'var(--accent-purple)'}}>₩ {formatCurrency(globalStats.totalLeisureRevenue)}</span>
           </div>
-          <div style={{display: 'flex', justifyContent: 'space-between'}}>
+          <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '12px'}}>
             <span style={{color: 'var(--text-muted)'}}>총 모토 누적 매출</span>
             <span style={{fontWeight: 'bold', color: 'var(--accent-gold)'}}>₩ {formatCurrency(globalStats.totalMotoRevenue)}</span>
+          </div>
+          <div style={{display: 'flex', justifyContent: 'space-between'}}>
+            <span style={{color: 'var(--text-muted)'}}>총 식음 누적 매출</span>
+            <span style={{fontWeight: 'bold', color: 'var(--accent-emerald)'}}>₩ {formatCurrency(globalStats.totalFnbRevenue)}</span>
           </div>
         </div>
 
