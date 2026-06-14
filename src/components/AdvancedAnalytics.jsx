@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import CountUpModule from 'react-countup';
 const CountUp = CountUpModule.default || CountUpModule;
+import * as XLSX from 'xlsx';
 
 // 피어슨 상관계수 계산 함수
 function calculateCorrelation(xArray, yArray) {
@@ -33,6 +34,8 @@ const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(Math.round
 export default function AdvancedAnalytics({ monthlyData, settings }) {
   const [selectedRoomType, setSelectedRoomType] = useState('all');
   const [activeDivision, setActiveDivision] = useState('leisure');
+  const [motoLogic, setMotoLogic] = useState('current');
+  const [motoTicketData, setMotoTicketData] = useState(null);
 
   const divisionConfig = {
     all: { title: '전체통합', dataKey: 'totalSales', color: 'var(--accent-emerald)' },
@@ -400,6 +403,135 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
           ))}
         </div>
       </div>
+
+      {/* 모토아레나 전용 정밀 분석 토글 */}
+      {activeDivision === 'moto' && (
+        <div className="glass-panel" style={{padding: '16px 24px', borderLeft: '4px solid var(--accent-gold)'}}>
+          <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px'}}>
+            <div>
+              <h3 style={{margin: '0 0 8px 0', color: 'var(--accent-gold)'}}>🎯 모토아레나 정밀 분석 (티켓 기반)</h3>
+              <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0}}>
+                기존 월별 총매출 추이와 엑셀 데이터 기반 고객유형 상세 분석을 함께 확인할 수 있습니다.
+              </p>
+            </div>
+            <div style={{display: 'flex', gap: '10px', background: 'rgba(0,0,0,0.2)', padding: '4px', borderRadius: '8px'}}>
+              <button 
+                onClick={() => setMotoLogic('current')}
+                style={{padding: '8px 16px', borderRadius: '6px', background: motoLogic === 'current' ? 'var(--accent-gold)' : 'transparent', color: motoLogic === 'current' ? '#000' : 'var(--text-main)', border: 'none', cursor: 'pointer', fontWeight: motoLogic === 'current' ? 'bold' : 'normal', transition: 'all 0.2s'}}
+              >
+                기존 추이 보기
+              </button>
+              <button 
+                onClick={() => setMotoLogic('new')}
+                style={{padding: '8px 16px', borderRadius: '6px', background: motoLogic === 'new' ? 'var(--accent-gold)' : 'transparent', color: motoLogic === 'new' ? '#000' : 'var(--text-main)', border: 'none', cursor: 'pointer', fontWeight: motoLogic === 'new' ? 'bold' : 'normal', transition: 'all 0.2s'}}
+              >
+                상세 매출 파싱 (신규)
+              </button>
+            </div>
+          </div>
+
+          {motoLogic === 'new' && (
+            <div style={{marginTop: '20px', padding: '16px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px'}}>
+              <div style={{display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap'}}>
+                <input 
+                  type="file" 
+                  accept=".xlsx, .xls, .csv" 
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (evt) => {
+                      const bstr = evt.target.result;
+                      const workbook = XLSX.read(bstr, { type: 'binary' });
+                      const sheetName = workbook.SheetNames[0];
+                      const worksheet = workbook.Sheets[sheetName];
+                      const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                      
+                      let guestRev = 0;
+                      let generalRev = 0;
+                      let internalRev = 0;
+                      let otherRev = 0;
+                      
+                      for (let i = 2; i < data.length; i++) {
+                        const row = data[i];
+                        if (!row || row.length < 9) continue;
+                        const txName = row[3];
+                        const rev = Number(row[8]) || 0;
+                        if (typeof txName === 'string') {
+                          if (txName.includes('TOTAL') || txName === 'TOTAL') continue;
+                          if (txName.includes('콘도') || txName.includes('객실')) {
+                            guestRev += rev;
+                          } else if (txName.includes('일반') || txName.includes('증평군민') || txName.includes('MOU') || txName.includes('단체')) {
+                            generalRev += rev;
+                          } else if (txName.includes('임직원') || txName.includes('직원동반')) {
+                            internalRev += rev;
+                          } else {
+                            otherRev += rev;
+                          }
+                        }
+                      }
+                      
+                      setMotoTicketData([
+                        { name: '투숙객 (콘도/객실)', value: guestRev },
+                        { name: '일반 (워크인/단체)', value: generalRev },
+                        { name: '내부 (임직원)', value: internalRev },
+                        { name: '기타 매출', value: otherRev }
+                      ].filter(d => d.value > 0));
+                    };
+                    reader.readAsBinaryString(file);
+                  }}
+                  style={{color: 'var(--text-main)', background: 'rgba(0,0,0,0.3)', padding: '8px', borderRadius: '6px'}}
+                />
+                <span style={{fontSize: '12px', color: 'var(--text-muted)'}}>* 모노아레나 엑셀 원본 파일을 업로드해주세요.</span>
+              </div>
+              
+              {motoTicketData && (
+                <div style={{marginTop: '24px', display: 'flex', gap: '24px', flexWrap: 'wrap'}}>
+                  <div style={{flex: 1, minWidth: '300px', height: '250px'}}>
+                    <h4 style={{margin: '0 0 10px 0', textAlign: 'center'}}>매출 비중 (고객 유형별)</h4>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={motoTicketData}
+                          cx="50%" cy="50%"
+                          labelLine={false}
+                          label={({ percent }) => percent > 0.05 ? `${(percent * 100).toFixed(1)}%` : ''}
+                          outerRadius={85}
+                          dataKey="value"
+                          stroke="rgba(255,255,255,0.1)"
+                        >
+                          {motoTicketData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <RechartsTooltip formatter={(val) => `₩${formatCurrency(val)}`} contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)'}} />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div style={{flex: 1, minWidth: '300px', display: 'flex', flexDirection: 'column', gap: '12px', justifyContent: 'center'}}>
+                    <h4 style={{margin: '0 0 4px 0'}}>업로드된 데이터 매출 요약</h4>
+                    <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
+                      {motoTicketData.map((d, idx) => (
+                        <div key={d.name} style={{display: 'flex', justifyContent: 'space-between', padding: '12px 16px', background: 'rgba(0,0,0,0.2)', borderRadius: '6px', borderLeft: `4px solid ${PIE_COLORS[idx % PIE_COLORS.length]}`}}>
+                          <span style={{color: 'var(--text-muted)'}}>{d.name}</span>
+                          <span style={{fontWeight: 'bold', color: 'var(--text-main)'}}>₩{formatCurrency(d.value)}</span>
+                        </div>
+                      ))}
+                      <div style={{display: 'flex', justifyContent: 'space-between', padding: '12px 16px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', borderLeft: `4px solid var(--text-main)`, marginTop: '8px'}}>
+                        <span style={{color: 'var(--accent-gold)', fontWeight: 'bold'}}>총 합계</span>
+                        <span style={{fontWeight: 'bold', color: 'var(--accent-gold)'}}>
+                          ₩{formatCurrency(motoTicketData.reduce((sum, d) => sum + d.value, 0))}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 1. 상단 요약 카드 (전체 흐름) */}
       <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px'}}>
