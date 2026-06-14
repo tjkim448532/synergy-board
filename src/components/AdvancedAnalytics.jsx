@@ -125,8 +125,10 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     groups.add('fnb');
     groups.add('moto');
     
-    // remove 'exclude' group from creating a tab
+    // remove 'exclude', 'golf', 'other' group from creating a tab
     groups.delete('exclude');
+    groups.delete('golf');
+    groups.delete('other');
     
     let colorIdx = 0;
     Array.from(groups).forEach(group => {
@@ -175,8 +177,8 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       if (d.salesByLocation) {
         Object.keys(d.salesByLocation).forEach(loc => {
           const group = locationGroups[loc] || 'leisure';
-          if (group !== 'exclude') {
-            groupSales[group] = (groupSales[group] || 0) + d.salesByLocation[loc];
+          groupSales[group] = (groupSales[group] || 0) + d.salesByLocation[loc];
+          if (group !== 'exclude' && group !== 'golf' && group !== 'other') {
             totalSales += d.salesByLocation[loc];
           }
         });
@@ -606,10 +608,10 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
             {displayVisitors !== null ? <CountUp end={displayVisitors} duration={2} separator="," /> : '...'}
           </div>
           <p style={{margin: 0, color: 'var(--text-muted)', fontSize: '14px'}}>
-            {selectedMonthFilter === 'all' ? '올해 전체 사업장을 방문한 통합 고객 누적 수' : `${selectedMonthFilter}월 한 달 동안 전체 사업장을 방문한 통합 고객 수`}
+            {selectedMonthFilter === 'all' ? '올해 리조트 전체 통합 고객 수 (골프장 제외)' : `${selectedMonthFilter}월 리조트 방문 통합 고객 수 (골프장 제외)`}
           </p>
           <div style={{marginTop: 'auto', background: 'rgba(255,255,255,0.05)', padding: '12px 16px', borderRadius: '8px', border: '1px solid rgba(251, 191, 36, 0.2)'}}>
-            <div style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px'}}>방문객 1인당 평균 소비액 (레저+식음+모토)</div>
+            <div style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px'}}>방문객 1인당 평균 소비액 <span style={{fontSize:'10px', opacity: 0.7}}>(골프 제외/레저+식음+모토 매출 합산)</span></div>
             <div style={{fontSize: '20px', fontWeight: 'bold', color: 'var(--accent-gold)'}}>
               {displayVisitors > 0 && kpiData ? `₩${Math.round(kpiData.totalSubsidiaryRev / displayVisitors).toLocaleString()}` : '₩0'}
             </div>
