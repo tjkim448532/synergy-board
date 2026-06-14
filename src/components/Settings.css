@@ -47,6 +47,9 @@
   font-size: 16px;
   outline: none;
   transition: all 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .form-group input:focus {
