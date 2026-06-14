@@ -96,14 +96,15 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
     <div style={{display: 'flex', flexDirection: 'column', gap: '24px'}}>
       
       {/* Header */}
-      <div className="glass-panel" style={{borderLeft: '4px solid var(--accent-emerald)', overflow: 'hidden'}}>
-        <div style={{width: '100%', height: '200px', backgroundImage: 'url("/training-center.png")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundColor: 'rgba(0,0,0,0.5)', backgroundBlendMode: 'overlay'}}></div>
-        <div style={{padding: '24px'}}>
-          <h2 style={{margin: '0 0 8px 0', color: 'var(--accent-emerald)', display: 'flex', alignItems: 'center', gap: '12px'}}>
-            <Building2 size={28} /> 신규 사업 시뮬레이터 (연수원)
+      <div className="glass-panel" style={{position: 'relative', overflow: 'hidden', borderLeft: '4px solid var(--accent-emerald)', minHeight: '220px', display: 'flex', alignItems: 'flex-end'}}>
+        <div style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundImage: 'url("/training-center.png")', backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0}}></div>
+        <div style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.4) 50%, transparent 100%)', zIndex: 1}}></div>
+        <div style={{padding: '32px 32px 24px 32px', position: 'relative', zIndex: 2, width: '100%'}}>
+          <h2 style={{margin: '0 0 12px 0', color: '#fff', display: 'flex', alignItems: 'center', gap: '12px', textShadow: '0 2px 4px rgba(0,0,0,0.5)'}}>
+            <Building2 size={28} color="var(--accent-emerald)" /> 신규 사업 시뮬레이터 (연수원)
           </h2>
-          <p style={{margin: 0, color: 'var(--text-muted)', fontSize: '14px', lineHeight: '1.6'}}>
-            기존 콘도의 운영 데이터(객단가 및 투숙객당 부대매출 창출액)를 베이스로, 연수원 등 신규 객실이 추가되었을 때 발생하는 <strong>연간 예상 파생 총매출</strong>을 시뮬레이션 합니다. 
+          <p style={{margin: 0, color: 'rgba(255,255,255,0.85)', fontSize: '15px', lineHeight: '1.6', textShadow: '0 1px 2px rgba(0,0,0,0.8)'}}>
+            기존 콘도의 운영 데이터(객단가 및 투숙객당 부대매출 창출액)를 베이스로, 연수원 등 신규 객실이 추가되었을 때 발생하는 <strong style={{color: '#fff'}}>연간 예상 파생 총매출</strong>을 시뮬레이션 합니다. 
           </p>
         </div>
       </div>
