@@ -341,30 +341,30 @@ export default function LogicGuide() {
           </div>
         </div>
 
-        {/* Card 9: 모토아레나 파싱 및 허수 판별 */}
+        {/* Card 9: 모토아레나 동적 그룹핑 파싱 및 허수 판별 */}
         <div className="guide-card glass-panel" style={{gridColumn: '1 / -1', marginTop: '24px'}}>
           <div className="card-top">
             <div className="icon-circle" style={{background: 'rgba(168, 85, 247, 0.1)'}}>
               <Search size={24} className="text-purple" style={{color: '#a855f7'}} />
             </div>
-            <h3>9. 모토아레나 정밀 파싱 및 허수 판별 (Illusion Check) 알고리즘</h3>
+            <h3>9. 모토아레나 동적 그룹핑(Dynamic Grouping) 파싱 및 허수 판별 알고리즘</h3>
           </div>
           <div className="card-body">
             <p>
-              단일 영업장 중 이질적인 성격을 띄는 '모토아레나'의 엑셀 데이터는 단순 총합계가 아닌, <strong>개별 결제 티켓의 명칭(Text)을 기반으로 한 딥 파싱(Deep-Parsing)</strong>을 거쳐 투숙객 매출과 일반객 매출로 완전 분리됩니다.
+              단일 영업장 중 이질적인 성격을 띄는 '모토아레나'의 엑셀 데이터는 단순 총합계가 아닌, <strong>개별 결제 티켓의 명칭을 바탕으로 한 동적 분류(Dynamic Grouping)</strong>를 거쳐 투숙객 매출과 일반객 매출로 완전 분리됩니다.
             </p>
             
             <div className="formula-box vertical" style={{marginTop: '16px'}}>
               <div className="math-step">
-                <span className="step-num">Step 1: 티켓 명칭 기반 딥 파싱(Deep-Parsing)</span>
+                <span className="step-num">Step 1: 설정 화면 커스텀 핀셋 매핑</span>
                 <div style={{color: 'var(--text-muted)'}}>
-                  모토아레나 엑셀 데이터를 스캔하여, 결제된 티켓 이름에 <code>'콘도', '객실'</code> 단어가 포함된 것은 <strong>투숙객(객실연계) 매출</strong>로 묶고, <code>'일반', '군민', '단체', 'MOU'</code> 등이 포함된 것은 <strong>일반객(외부유입) 매출</strong>로 자동 분류합니다.
+                  하드코딩된 규칙에 의존하지 않고, [설정] 화면에서 사용자가 엑셀 내 모든 모토아레나 티켓 종류를 직접 <code>투숙객 매출</code>, <code>일반객 매출</code>, <code>기타 매출</code> 로 클릭하여 영구적으로 분류(매핑)합니다.
                 </div>
               </div>
               <div className="math-step">
-                <span className="step-num">Step 2: 일반객(워크인) 통계 독립성 보장</span>
+                <span className="step-num">Step 2: 일반객 매출 뻥튀기 방지</span>
                 <div style={{color: 'var(--text-muted)'}}>
-                  일반객 매출은 애초에 객실 투숙과 무관하게 발생한 외부 마케팅 성과입니다. 따라서 억지스러운 상관관계 연산을 수행하지 않고, 전체 매출 대비 <strong>'순수 외부 매출 비중(%)'</strong>만 직관적으로 도출하여 통계의 순도를 높입니다.
+                  신규 객실에 따른 모토아레나 파생 매출을 예측할 때, 무식하게 총매출을 사용하지 않고 오직 <strong>Step 1에서 투숙객으로 분류된 매출액의 합계</strong>만을 추출하여 객단가 분모로 사용합니다. 이를 통해 일반객 비중이 객실 수익으로 뻥튀기되는 치명적인 오류를 원천 차단합니다.
                 </div>
               </div>
               <div className="math-step">
@@ -379,7 +379,59 @@ export default function LogicGuide() {
               <Info size={16} style={{color: '#a855f7'}} />
               <span style={{color: 'var(--text-main)'}}>
                 <strong>💡 허수 판별 자동 경고 시스템:</strong><br/>
-                모토아레나 정밀 분석 UI에서는 위 알고리즘이 실시간 가동됩니다. 상관관계가 높더라도 매출 비중이 기준치(예: 20%) 미만일 경우 ⚠️ <strong>[통계적 착시 주의]</strong> 경고를 띄워, 데이터 해석 오류를 시스템 차원에서 원천 차단합니다.
+                상관관계 분석 UI에서는 위 알고리즘이 실시간 가동됩니다. 상관관계가 높더라도 매출 비중이 기준치 미만일 경우 ⚠️ <strong>[통계적 착시 주의]</strong> 경고를 띄워, 데이터 해석 오류를 시스템 차원에서 원천 차단합니다.
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 10: 시뮬레이터 가동률 상한선(Capa Ceiling) */}
+        <div className="guide-card glass-panel" style={{gridColumn: '1 / -1', marginTop: '24px'}}>
+          <div className="card-top">
+            <div className="icon-circle" style={{background: 'rgba(244, 63, 94, 0.1)'}}>
+              <Building2 size={24} className="text-rose" style={{color: '#f43f5e'}} />
+            </div>
+            <h3>10. 미래 파생 매출 가동률 상한선(Capa Ceiling Limit) 알고리즘</h3>
+          </div>
+          <div className="card-body">
+            <p>
+              단순한 곱셈기의 가장 큰 모순인 <strong>"객실이 무한정 늘어난다고 식당 테이블과 레저 시설의 수용력도 무한정 늘어나는가?"</strong>에 대한 물리적 한계를 수학적 수식으로 방어하는 안전장치입니다.
+            </p>
+            
+            <div className="formula-box vertical" style={{marginTop: '16px'}}>
+              <div className="math-step">
+                <span className="step-num">Step 1: 시설별 현재 가동률(Capa %) 입력</span>
+                <div style={{color: 'var(--text-muted)'}}>
+                  [설정] 메뉴에서 식음, 레저, 모토아레나 각각의 현재 체감 가동률(이용률)을 0~100% 사이로 직접 지정합니다. (예: 현재 식당이 80% 정도 꽉 차서 돌아가고 있다)
+                </div>
+              </div>
+              <div className="math-step">
+                <span className="step-num">Step 2: 최대 수용 가능 매출(Max Capa) 역산</span>
+                <div style={{color: 'var(--text-muted)'}}>
+                  <code>최대 가능 매출 = 과거 연간 총매출 ÷ (현재 가동률 % / 100)</code><br/>
+                  현재 80% 가동률로 8억을 번다면, 100% 꽉 찼을 때의 물리적 최대 가능 매출은 10억이라는 수치를 수학적으로 역산해냅니다.
+                </div>
+              </div>
+              <div className="math-step">
+                <span className="step-num">Step 3: 남은 성장 여력(Remaining Capacity) 산출</span>
+                <div style={{color: 'var(--text-muted)'}}>
+                  <code>남은 성장 여력 = 최대 가능 매출(10억) - 과거 연간 총매출(8억) = 2억</code><br/>
+                  신규 객실로 인해 더 벌어들일 수 있는 부대매출의 한계선(Cap)을 그어줍니다.
+                </div>
+              </div>
+              <div className="math-step">
+                <span className="step-num">Step 4: 매출 증가량 방어(Cap) 적용</span>
+                <div style={{color: 'var(--text-muted)'}}>
+                  <code>실제 파생 매출 = MIN (객실 증가에 따른 단순 기대 파생매출, 남은 성장 여력)</code><br/>
+                  아무리 객실을 많이 지어도 파생 매출은 2억에서 멈추며(버려짐), 시뮬레이터 화면에는 <strong>*Capa 상한 도달 (초과분 버림)</strong>이라는 강력한 알림이 표시됩니다.
+                </div>
+              </div>
+            </div>
+            
+            <div className="alert-box success" style={{marginTop: '16px', borderColor: 'rgba(244, 63, 94, 0.3)', background: 'rgba(244, 63, 94, 0.05)'}}>
+              <CheckCircle2 size={16} style={{color: '#f43f5e'}} />
+              <span style={{color: 'var(--text-main)'}}>
+                <strong>💡 이 방어벽의 가치:</strong> 신규 사업(연수원) 건립 타당성을 검토할 때, 과도하게 부풀려진 장밋빛 파생 매출에 속아 잘못된 투자를 결정하는 리스크를 시스템이 선제적으로 완벽하게 막아줍니다.
               </span>
             </div>
           </div>
