@@ -7,7 +7,8 @@ import {
   Info,
   CheckCircle2,
   Calculator,
-  CalendarDays
+  CalendarDays,
+  Search
 } from 'lucide-react';
 import './LogicGuide.css';
 
@@ -335,6 +336,50 @@ export default function LogicGuide() {
               <CheckCircle2 size={16} style={{color: '#10b981'}} />
               <span style={{color: 'var(--text-main)'}}>
                 <strong>💡 AI 추정의 가치:</strong> 데이터가 쌓이면 쌓일수록 (최소 2개월 이상, 권장 6개월 이상) 선형 회귀 모델의 정확도는 무한히 상승하며, 계절적 요인이나 일시적 마케팅 변수에 흔들리지 않는 <strong>'가장 신뢰도 높은 순수 객실 연계 가치'</strong>를 평가할 수 있게 됩니다.
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 9: 모토아레나 파싱 및 허수 판별 */}
+        <div className="guide-card glass-panel" style={{gridColumn: '1 / -1', marginTop: '24px'}}>
+          <div className="card-top">
+            <div className="icon-circle" style={{background: 'rgba(168, 85, 247, 0.1)'}}>
+              <Search size={24} className="text-purple" style={{color: '#a855f7'}} />
+            </div>
+            <h3>9. 모토아레나 정밀 파싱 및 허수 판별 (Illusion Check) 알고리즘</h3>
+          </div>
+          <div className="card-body">
+            <p>
+              단일 영업장 중 이질적인 성격을 띄는 '모토아레나'의 엑셀 데이터는 단순 총합계가 아닌, <strong>개별 결제 티켓의 명칭(Text)을 기반으로 한 딥 파싱(Deep-Parsing)</strong>을 거쳐 투숙객 매출과 일반객 매출로 완전 분리됩니다.
+            </p>
+            
+            <div className="formula-box vertical" style={{marginTop: '16px'}}>
+              <div className="math-step">
+                <span className="step-num">Step 1: 티켓 명칭 기반 딥 파싱(Deep-Parsing)</span>
+                <div style={{color: 'var(--text-muted)'}}>
+                  모토아레나 엑셀 데이터를 스캔하여, 결제된 티켓 이름에 <code>'콘도', '객실'</code> 단어가 포함된 것은 <strong>투숙객(객실연계) 매출</strong>로 묶고, <code>'일반', '군민', '단체', 'MOU'</code> 등이 포함된 것은 <strong>일반객(외부유입) 매출</strong>로 자동 분류합니다.
+                </div>
+              </div>
+              <div className="math-step">
+                <span className="step-num">Step 2: 일반객(워크인) 통계 독립성 보장</span>
+                <div style={{color: 'var(--text-muted)'}}>
+                  일반객 매출은 애초에 객실 투숙과 무관하게 발생한 외부 마케팅 성과입니다. 따라서 억지스러운 상관관계 연산을 수행하지 않고, 전체 매출 대비 <strong>'순수 외부 매출 비중(%)'</strong>만 직관적으로 도출하여 통계의 순도를 높입니다.
+                </div>
+              </div>
+              <div className="math-step">
+                <span className="step-num">Step 3: 비중 + 상관관계 결합에 의한 '허수 판별' (핵심)</span>
+                <div style={{color: 'var(--text-muted)'}}>
+                  투숙객 매출을 객실 매출과 비교하여 피어슨 상관계수(r)를 구합니다. 단, <strong>상관계수(r)가 1에 가깝게 높게 나오더라도, 티켓 판매 전체에서 투숙객이 차지하는 비중(%) 자체가 쥐꼬리만 하다면 이는 비즈니스 성장을 이끌 수 없는 '통계적 착시(허수)'</strong>로 규정합니다.
+                </div>
+              </div>
+            </div>
+            
+            <div className="alert-box warning" style={{marginTop: '16px', borderColor: 'rgba(168, 85, 247, 0.3)', background: 'rgba(168, 85, 247, 0.05)'}}>
+              <Info size={16} style={{color: '#a855f7'}} />
+              <span style={{color: 'var(--text-main)'}}>
+                <strong>💡 허수 판별 자동 경고 시스템:</strong><br/>
+                모토아레나 정밀 분석 UI에서는 위 알고리즘이 실시간 가동됩니다. 상관관계가 높더라도 매출 비중이 기준치(예: 20%) 미만일 경우 ⚠️ <strong>[통계적 착시 주의]</strong> 경고를 띄워, 데이터 해석 오류를 시스템 차원에서 원천 차단합니다.
               </span>
             </div>
           </div>
