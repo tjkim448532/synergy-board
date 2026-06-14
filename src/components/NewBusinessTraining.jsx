@@ -46,6 +46,8 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
         });
       } else {
         leisureSales += Number(d.totalLeisureSales || d.leisureSales || 0);
+        motoSales += Number(d.totalMotoSales || d.motoSales || 0);
+        fnbSales += Number(d.totalFnbSales || d.fnbSales || 0);
       }
       
       totLeisure += leisureSales;

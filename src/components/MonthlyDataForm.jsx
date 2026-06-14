@@ -51,7 +51,7 @@ export default function MonthlyDataForm({ settings }) {
       snapshot.forEach(doc => {
         data.push({ id: doc.id, ...doc.data() });
       });
-      data.sort((a, b) => b.yearMonth.localeCompare(a.yearMonth)); // sort desc
+      data.sort((a, b) => (b.yearMonth || '').localeCompare(a.yearMonth || '')); // sort desc
       setRecords(data);
     });
     return () => unsub();
@@ -94,7 +94,7 @@ export default function MonthlyDataForm({ settings }) {
         const bstr = evt.target.result;
         const wb = XLSX.read(bstr, { type: 'binary' });
         const ws = wb.Sheets[wb.SheetNames[0]];
-        const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        const data = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false });
         
         let headerRowIdx = -1;
         for (let i = 0; i < 10; i++) {
@@ -124,9 +124,10 @@ export default function MonthlyDataForm({ settings }) {
           if (!row || !row[dateIdx]) continue;
           
           let dateVal = row[dateIdx].toString().trim();
-          const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+          const dateRegex = /^\d{4}[-./]\d{2}[-./]\d{2}$/;
           
           if (dateRegex.test(dateVal)) {
+            dateVal = dateVal.replace(/[./]/g, '-');
             const [yyyy, mm, dd] = dateVal.split('-');
             const monthKey = `${yyyy}-${mm}`;
             
@@ -248,7 +249,7 @@ export default function MonthlyDataForm({ settings }) {
         const bstr = evt.target.result;
         const wb = XLSX.read(bstr, { type: 'binary' });
         const ws = wb.Sheets[wb.SheetNames[0]];
-        const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        const data = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false });
         
         let headerRowIdx = -1;
         let dataStartIdx = -1;
@@ -318,9 +319,10 @@ export default function MonthlyDataForm({ settings }) {
           if (!row || !row[dateIdx]) continue;
           
           let dateVal = row[dateIdx].toString().trim();
-          const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+          const dateRegex = /^\d{4}[-./]\d{2}[-./]\d{2}$/;
           
           if (dateRegex.test(dateVal)) {
+            dateVal = dateVal.replace(/[./]/g, '-');
             if (!firstDateStr) firstDateStr = dateVal;
             const [yyyy, mm, dd] = dateVal.split('-');
             const monthKey = `${yyyy}-${mm}`;
@@ -499,7 +501,7 @@ export default function MonthlyDataForm({ settings }) {
         const bstr = evt.target.result;
         const wb = XLSX.read(bstr, { type: 'binary' });
         const ws = wb.Sheets[wb.SheetNames[0]];
-        const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        const data = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false });
         
         let guestRev = 0;
         let generalRev = 0;

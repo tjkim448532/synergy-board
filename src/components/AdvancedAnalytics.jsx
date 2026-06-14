@@ -35,6 +35,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
   const [selectedRoomType, setSelectedRoomType] = useState('all');
   const [activeDivision, setActiveDivision] = useState('leisure');
   const [motoLogic, setMotoLogic] = useState('current');
+  const [selectedMonthFilter, setSelectedMonthFilter] = useState('all');
   const [googleTotalVisitors, setGoogleTotalVisitors] = useState(null);
 
   useEffect(() => {
@@ -98,7 +99,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
   // 데이터 가공
   const processedData = useMemo(() => {
     // 오래된 순으로 정렬 (그래프용)
-    const sorted = [...monthlyData].sort((a, b) => a.yearMonth.localeCompare(b.yearMonth));
+    const sorted = [...monthlyData].sort((a, b) => (a.yearMonth || '').localeCompare(b.yearMonth || ''));
     
     return sorted.map(d => {
       // 영업일수 fallback
@@ -141,6 +142,8 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       } else {
         // Fallback for legacy DB
         leisureSales = Number(d.totalLeisureSales || d.leisureSales || 0);
+        motoSales = Number(d.totalMotoSales || d.motoSales || 0);
+        fnbSales = Number(d.totalFnbSales || d.fnbSales || 0);
       }
 
       // 회원 분석 로직 (rawRoomRecords 기반)
@@ -210,16 +213,49 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     });
   }, [monthlyData, settings]);
 
+  const filteredProcessedData = useMemo(() => {
+    if (selectedMonthFilter === 'all') return processedData;
+    return processedData.filter(d => {
+      const m = d.yearMonth.split('-')[1];
+      return m === selectedMonthFilter;
+    });
+  }, [processedData, selectedMonthFilter]);
+
+  // 회원 통계
+  const memberStats = useMemo(() => {
+    const totMem = filteredProcessedData.reduce((a, b) => a + b.totalMemberRooms, 0);
+    const totGen = filteredProcessedData.reduce((a, b) => a + b.totalGeneralRooms, 0);
+    const totalRooms = totMem + totGen;
+    
+    const memWd = filteredProcessedData.reduce((a, b) => a + b.memberWdRooms, 0);
+    const memWe = filteredProcessedData.reduce((a, b) => a + b.memberWeRooms, 0);
+    const genWd = filteredProcessedData.reduce((a, b) => a + b.generalWdRooms, 0);
+    const genWe = filteredProcessedData.reduce((a, b) => a + b.generalWeRooms, 0);
+
+    return {
+      available: totalRooms > 0,
+      totMem,
+      totalRooms,
+      memberRatio: totalRooms > 0 ? (totMem / totalRooms) * 100 : 0,
+      generalRatio: totalRooms > 0 ? (totGen / totalRooms) * 100 : 0,
+      memberWdRatio: (memWd + genWd) > 0 ? (memWd / (memWd + genWd)) * 100 : 0,
+      generalWdRatio: (memWd + genWd) > 0 ? (genWd / (memWd + genWd)) * 100 : 0,
+      memberWeRatio: (memWe + genWe) > 0 ? (memWe / (memWe + genWe)) * 100 : 0,
+      generalWeRatio: (memWe + genWe) > 0 ? (genWe / (memWe + genWe)) * 100 : 0,
+      memWd, memWe
+    };
+  }, [filteredProcessedData]);
+
   // 선택된 본부의 전체 상관계수 계산
   const activeGlobalCorrelation = useMemo(() => {
-    const occArr = processedData.map(d => d.occupancyRate);
-    const targetArr = processedData.map(d => d[activeConf.dataKey]);
+    const occArr = filteredProcessedData.map(d => d.occupancyRate);
+    const targetArr = filteredProcessedData.map(d => d[activeConf.dataKey]);
     return calculateCorrelation(occArr, targetArr);
-  }, [processedData, activeConf.dataKey]);
+  }, [filteredProcessedData, activeConf.dataKey]);
 
   const motoCorrelations = useMemo(() => {
     if (activeDivision !== 'moto' || motoLogic !== 'new') return null;
-    const filtered = processedData.filter(d => d.motoGuestRev !== undefined);
+    const filtered = filteredProcessedData.filter(d => d.motoGuestRev !== undefined);
     if (filtered.length === 0) return { guestAvailable: false };
     
     const occArr = filtered.map(d => d.occupancyRate || 0);
@@ -260,21 +296,21 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       total: calculateCorrelation(occArr, totalArr),
       guestAvailable: true
     };
-  }, [processedData, activeDivision, motoLogic]);
+  }, [filteredProcessedData, activeDivision, motoLogic]);
 
   // 선택된 본부의 평형별 상관계수 계산
   const activeRoomTypeCorrelations = useMemo(() => {
-    const targetArr = processedData.map(d => d[activeConf.dataKey]);
+    const targetArr = filteredProcessedData.map(d => d[activeConf.dataKey]);
     return {
-      '16평': calculateCorrelation(processedData.map(d => d.sold16), targetArr),
-      '35평': calculateCorrelation(processedData.map(d => d.sold35), targetArr),
-      '51평': calculateCorrelation(processedData.map(d => d.sold51), targetArr)
+      '16평': calculateCorrelation(filteredProcessedData.map(d => d.sold16), targetArr),
+      '35평': calculateCorrelation(filteredProcessedData.map(d => d.sold35), targetArr),
+      '51평': calculateCorrelation(filteredProcessedData.map(d => d.sold51), targetArr)
     };
-  }, [processedData, activeConf.dataKey]);
+  }, [filteredProcessedData, activeConf.dataKey]);
 
   // 영업장별 상관계수 계산 (객실 점유율 기준)
   const locationCorrelations = useMemo(() => {
-    const occArr = processedData.map(d => d.occupancyRate);
+    const occArr = filteredProcessedData.map(d => d.occupancyRate);
     const locMap = {};
     
     const mapLocationName = (name) => {
@@ -302,13 +338,13 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
 
     const locationGroups = settings.locationGroups || {};
 
-    processedData.forEach((d, i) => {
+    filteredProcessedData.forEach((d, i) => {
       const salesObj = d.salesByLocation || d.leisureSalesByLocation || {};
       Object.entries(salesObj).forEach(([loc, amt]) => {
         const group = locationGroups[loc] || 'leisure';
         if (activeDivision === 'all' || group === activeDivision) {
           const groupedName = mapLocationName(loc);
-          if (!locMap[groupedName]) locMap[groupedName] = new Array(processedData.length).fill(0);
+          if (!locMap[groupedName]) locMap[groupedName] = new Array(filteredProcessedData.length).fill(0);
           locMap[groupedName][i] += amt;
         }
       });
@@ -319,7 +355,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       const dataArr = locMap[loc];
       const totalAmt = dataArr.reduce((sum, val) => sum + val, 0);
       
-      if (totalAmt < 1000000 * processedData.length) return;
+      if (totalAmt < 1000000 * filteredProcessedData.length) return;
 
       const corr = calculateCorrelation(occArr, dataArr);
       if (corr !== null && !isNaN(corr)) {
@@ -328,11 +364,11 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     });
 
     return results.sort((a, b) => b.correlation - a.correlation);
-  }, [processedData, settings.locationGroups, activeDivision]);
+  }, [filteredProcessedData, settings.locationGroups, activeDivision]);
 
   // TrevPAR / RevPAR 계산
   const kpiData = useMemo(() => {
-    if (!processedData || processedData.length === 0) return null;
+    if (!filteredProcessedData || filteredProcessedData.length === 0) return null;
     
     // settings에서 캡처 레이트 가져오기 (없으면 기본값)
     const capLeisure = (settings.captureRateLeisure ?? 85) / 100;
@@ -344,7 +380,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     let totalGrossTrev = 0;
     let totalPureTrev = 0;
 
-    processedData.forEach(d => {
+    filteredProcessedData.forEach(d => {
       const physicalRooms = Number(settings.totalRooms) || 175;
       const rooms51Sets = Number(settings.connectingRooms51) || 85;
       const count51AsTwo = settings.count51AsTwoRooms !== false;
@@ -374,7 +410,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       capFnb: capFnb * 100,
       capMoto: capMoto * 100
     };
-  }, [processedData, settings]);
+  }, [filteredProcessedData, settings]);
 
   // 객실 판매채널(Market Type) 데이터 집계
   const { channelData, negativeChannels } = useMemo(() => {
@@ -387,7 +423,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       '기타': 0
     };
 
-    monthlyData.forEach(month => {
+    filteredProcessedData.forEach(month => {
       if (month.rawRoomRecords) {
         month.rawRoomRecords.forEach(record => {
           const market = record.marketType || '';
@@ -408,7 +444,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       channelData: arr.filter(d => d.value > 0).sort((a, b) => b.value - a.value),
       negativeChannels: arr.filter(d => d.value < 0).sort((a, b) => a.value - b.value)
     };
-  }, [monthlyData]);
+  }, [filteredProcessedData]);
 
   // 채널별 평형별 객단가 (ADR)
   const channelAdrData = useMemo(() => {
@@ -421,7 +457,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       '기타': { '16평': {rev: 0, cnt: 0}, '35평': {rev: 0, cnt: 0}, '51평': {rev: 0, cnt: 0}, '전체': {rev: 0, cnt: 0} }
     };
 
-    monthlyData.forEach(month => {
+    filteredProcessedData.forEach(month => {
       if (month.rawRoomRecords) {
         month.rawRoomRecords.forEach(record => {
           const market = record.marketType || '';
@@ -461,7 +497,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
         totalRev: types['전체'].rev
       };
     }).filter(d => d.totalRev > 0).sort((a, b) => b.totalRev - a.totalRev);
-  }, [monthlyData]);
+  }, [filteredProcessedData]);
 
   const PIE_COLORS = ['#3b82f6', '#10b981', '#fbbf24', '#a855f7', '#ef4444', '#64748b'];
 
@@ -557,28 +593,44 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
         </div>
       )}
       
-      {/* 0. 본부 선택기 */}
-      <div className="glass-panel mobile-wrap" style={{padding: '16px 24px', display: 'flex', alignItems: 'center', gap: '16px'}}>
-        <h3 style={{margin: 0}}>분석 대상 본부 선택:</h3>
-        <div className="mobile-wrap" style={{display: 'flex', gap: '12px'}}>
-          {Object.entries(divisionConfig).map(([key, conf]) => (
-            <button
-              key={key}
-              onClick={() => setActiveDivision(key)}
-              style={{
-                background: activeDivision === key ? conf.color : 'rgba(255,255,255,0.05)',
-                color: activeDivision === key ? '#000' : 'var(--text-main)',
-                border: `1px solid ${activeDivision === key ? 'transparent' : 'rgba(255,255,255,0.2)'}`,
-                padding: '8px 16px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontWeight: activeDivision === key ? 'bold' : 'normal',
-                transition: 'all 0.2s'
-              }}
-            >
-              {conf.title}
-            </button>
-          ))}
+      {/* 0. 본부 선택기 및 월별 필터 */}
+      <div className="glass-panel mobile-wrap" style={{padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap'}}>
+        <div style={{display: 'flex', alignItems: 'center', gap: '16px'}}>
+          <h3 style={{margin: 0}}>분석 대상 본부 선택:</h3>
+          <div className="mobile-wrap" style={{display: 'flex', gap: '12px'}}>
+            {Object.entries(divisionConfig).map(([key, conf]) => (
+              <button
+                key={key}
+                onClick={() => setActiveDivision(key)}
+                style={{
+                  background: activeDivision === key ? conf.color : 'rgba(255,255,255,0.05)',
+                  color: activeDivision === key ? '#000' : 'var(--text-main)',
+                  border: `1px solid ${activeDivision === key ? 'transparent' : 'rgba(255,255,255,0.2)'}`,
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: activeDivision === key ? 'bold' : 'normal',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {conf.title}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(0,0,0,0.2)', padding: '6px 12px', borderRadius: '8px'}}>
+          <span style={{fontSize: '14px', color: 'var(--text-muted)'}}>월별 필터:</span>
+          <select 
+            value={selectedMonthFilter}
+            onChange={(e) => setSelectedMonthFilter(e.target.value)}
+            style={{background: 'rgba(255,255,255,0.1)', color: 'var(--text-main)', border: 'none', padding: '6px 12px', borderRadius: '4px', outline: 'none', fontWeight: 'bold'}}
+          >
+            <option value="all" style={{color: 'black'}}>전월 종합 분석</option>
+            {['01','02','03','04','05','06','07','08','09','10','11','12'].map(m => (
+              <option key={m} value={m} style={{color: 'black'}}>{m}월만 분석</option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -845,7 +897,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
         </div>
         <div style={{width: '100%', height: '400px'}}>
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={processedData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+            <LineChart data={filteredProcessedData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
               <XAxis dataKey="yearMonth" stroke="var(--text-muted)" />
               <YAxis yAxisId="left" stroke="#94a3b8" tickFormatter={(v) => `${v.toFixed(0)}%`} />
@@ -898,7 +950,8 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                   contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)'}}
                   formatter={(val, name) => name === `${activeConf.title} 매출` ? `₩${formatCurrency(val)}` : `${val}실`}
                 />
-                <Scatter data={processedData} fill={activeConf.color} />
+                <Legend />
+                <Scatter name="월별 현황" data={filteredProcessedData} fill={activeConf.color} shape="circle" />
               </ScatterChart>
             </ResponsiveContainer>
           </div>
@@ -1057,7 +1110,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
               <tbody>
                 {['온라인', '세미나', '휴양소', '예약실', '홈페이지'].map((channel, idx) => {
                   // 채널별 상관계수 계산
-                  const channelMonthlyRev = processedData.map(d => {
+                  const channelMonthlyRev = filteredProcessedData.map(d => {
                     let total = 0;
                     if (d.rawRoomRecords) {
                       d.rawRoomRecords.forEach(r => {
@@ -1072,9 +1125,9 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                     return total;
                   });
 
-                  const cLeisure = calculateCorrelation(channelMonthlyRev, processedData.map(d => d.leisureSales)) || 0;
-                  const cFnb = calculateCorrelation(channelMonthlyRev, processedData.map(d => d.fnbSales)) || 0;
-                  const cMoto = calculateCorrelation(channelMonthlyRev, processedData.map(d => d.motoSales)) || 0;
+                  const cLeisure = calculateCorrelation(channelMonthlyRev, filteredProcessedData.map(d => d.leisureSales)) || 0;
+                  const cFnb = calculateCorrelation(channelMonthlyRev, filteredProcessedData.map(d => d.fnbSales)) || 0;
+                  const cMoto = calculateCorrelation(channelMonthlyRev, filteredProcessedData.map(d => d.motoSales)) || 0;
 
                   const getColor = (r) => {
                     if (r >= 0.7) return 'var(--accent-emerald)';
@@ -1097,7 +1150,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
           </div>
           <div className="show-on-mobile-block" style={{marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px'}}>
             {['온라인', '세미나', '휴양소', '예약실', '홈페이지'].map((channel, idx) => {
-              const channelMonthlyRev = processedData.map(d => {
+              const channelMonthlyRev = filteredProcessedData.map(d => {
                 let total = 0;
                 if (d.rawRoomRecords) {
                   d.rawRoomRecords.forEach(r => {
@@ -1112,9 +1165,9 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                 return total;
               });
 
-              const cLeisure = calculateCorrelation(channelMonthlyRev, processedData.map(d => d.leisureSales)) || 0;
-              const cFnb = calculateCorrelation(channelMonthlyRev, processedData.map(d => d.fnbSales)) || 0;
-              const cMoto = calculateCorrelation(channelMonthlyRev, processedData.map(d => d.motoSales)) || 0;
+              const cLeisure = calculateCorrelation(channelMonthlyRev, filteredProcessedData.map(d => d.leisureSales)) || 0;
+              const cFnb = calculateCorrelation(channelMonthlyRev, filteredProcessedData.map(d => d.fnbSales)) || 0;
+              const cMoto = calculateCorrelation(channelMonthlyRev, filteredProcessedData.map(d => d.motoSales)) || 0;
 
               const getColor = (r) => {
                 if (r >= 0.7) return 'var(--accent-emerald)';
