@@ -643,7 +643,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
             </p>
           </div>
           <div style={{width: '100%', height: '400px', minWidth: 0, minHeight: 0}}>
-            <ResponsiveContainer width="99%" height="100%">
+            <ResponsiveContainer width="99%" height="100%" minWidth={0} minHeight={0}>
               <ComposedChart data={chartData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                 <XAxis type="number" dataKey="occupancyRate" name="종합 점유율" stroke="var(--text-muted)" tickFormatter={(v) => `${v}%`} domain={[0, 100]} />
