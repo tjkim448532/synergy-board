@@ -16,7 +16,8 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
     let totRev = 0;
     let totSold = 0;
     let totLeisure = 0;
-    let totMoto = 0;
+    let totMotoGuest = 0;
+    let totMotoTotal = 0;
     let totFnb = 0;
     
     const locationGroups = settings.locationGroups || {};
@@ -34,7 +35,6 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
       totRev += Number(d.totalRoomRevenue || 0);
       
       let leisureSales = 0;
-      let motoSales = 0;
       let fnbSales = 0;
       
       if (d.salesByLocation) {
@@ -50,11 +50,13 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
       
       // Calculate Moto Arena Guest Revenue dynamically based on groupings
       let mGuestRev = 0;
+      let mTotalRev = 0;
       if (d.motoBreakdown) {
         Object.keys(d.motoBreakdown).forEach(cat => {
           if (d.motoBreakdown[cat]) {
             Object.keys(d.motoBreakdown[cat]).forEach(ticket => {
               const rev = d.motoBreakdown[cat][ticket];
+              mTotalRev += rev;
               let group = settings.motoTicketGroups?.[ticket];
               if (!group) {
                 if (ticket.includes('콘도') || ticket.includes('객실')) group = 'guest';
@@ -67,22 +69,23 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
         });
       } else {
         mGuestRev = Number(d.motoGuestRev || 0); // fallback to legacy
+        mTotalRev = Number(d.motoTotalRev || d.totalMotoSales || d.motoSales || 0);
       }
-      motoSales = mGuestRev;
       
       totLeisure += leisureSales;
-      totMoto += motoSales;
+      totMotoGuest += mGuestRev;
+      totMotoTotal += mTotalRev;
       totFnb += fnbSales;
     });
 
     return {
       avgAdr: totSold > 0 ? totRev / totSold : 150000,
       leisurePerRoom: totSold > 0 ? totLeisure / totSold : 0,
-      motoPerRoom: totSold > 0 ? totMoto / totSold : 0,
+      motoPerRoom: totSold > 0 ? totMotoGuest / totSold : 0,
       fnbPerRoom: totSold > 0 ? totFnb / totSold : 0,
       totRev,
       totLeisure,
-      totMoto,
+      totMoto: totMotoTotal,
       totFnb,
       monthsCount: monthlyData.length || 1
     };
