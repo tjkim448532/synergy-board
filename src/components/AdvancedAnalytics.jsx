@@ -167,15 +167,15 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     const filtered = processedData.filter(d => d.motoGuestRev !== undefined);
     if (filtered.length === 0) return { guestAvailable: false };
     
-    const occArr = filtered.map(d => d.occupancyRate);
+    const roomRevArr = filtered.map(d => d.totalRoomRevenue || 0);
     const guestArr = filtered.map(d => d.motoGuestRev || 0);
     const generalArr = filtered.map(d => d.motoGeneralRev || 0);
     const totalArr = filtered.map(d => d.motoTotalRev || 0);
     
     return {
-      guest: calculateCorrelation(occArr, guestArr),
-      general: calculateCorrelation(occArr, generalArr),
-      total: calculateCorrelation(occArr, totalArr),
+      guest: calculateCorrelation(roomRevArr, guestArr),
+      general: calculateCorrelation(roomRevArr, generalArr),
+      total: calculateCorrelation(roomRevArr, totalArr),
       guestAvailable: true
     };
   }, [processedData, activeDivision, motoLogic]);
@@ -536,7 +536,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
               ) : (
                 <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
                   <div className="glass-panel" style={{flex: 1, minWidth: '250px', padding: '20px', background: 'rgba(52, 211, 153, 0.1)', border: '1px solid var(--accent-emerald)'}}>
-                    <h4 style={{margin: '0 0 4px 0', color: 'var(--accent-emerald)'}}>투숙객 매출 ↔ 객실 점유율</h4>
+                    <h4 style={{margin: '0 0 4px 0', color: 'var(--accent-emerald)'}}>투숙객 매출 ↔ 객실 매출</h4>
                     <div style={{fontSize: '11px', color: 'var(--text-muted)', marginBottom: '12px'}}>(콘도, 객실 티켓합계)</div>
                     <div style={{fontSize: '32px', fontWeight: 'bold'}}>{motoCorrelations.guest !== null ? motoCorrelations.guest.toFixed(3) : 'N/A'}</div>
                     <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px'}}>
@@ -544,7 +544,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                     </div>
                   </div>
                   <div className="glass-panel" style={{flex: 1, minWidth: '250px', padding: '20px', background: 'rgba(251, 191, 36, 0.1)', border: '1px solid var(--accent-gold)'}}>
-                    <h4 style={{margin: '0 0 4px 0', color: 'var(--accent-gold)'}}>일반객 매출 ↔ 객실 점유율</h4>
+                    <h4 style={{margin: '0 0 4px 0', color: 'var(--accent-gold)'}}>일반객 매출 ↔ 객실 매출</h4>
                     <div style={{fontSize: '11px', color: 'var(--text-muted)', marginBottom: '12px'}}>(일반, 증평군민, MOU, 단체 티켓합계)</div>
                     <div style={{fontSize: '32px', fontWeight: 'bold'}}>{motoCorrelations.general !== null ? motoCorrelations.general.toFixed(3) : 'N/A'}</div>
                     <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px'}}>
@@ -552,7 +552,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                     </div>
                   </div>
                   <div className="glass-panel" style={{flex: 1, minWidth: '250px', padding: '20px', background: 'rgba(255,255,255,0.05)'}}>
-                    <h4 style={{margin: '0 0 8px 0', color: 'var(--text-bright)'}}>총 매출 ↔ 객실 점유율</h4>
+                    <h4 style={{margin: '0 0 8px 0', color: 'var(--text-bright)'}}>총 매출 ↔ 객실 매출</h4>
                     <div style={{fontSize: '32px', fontWeight: 'bold'}}>{motoCorrelations.total !== null ? motoCorrelations.total.toFixed(3) : 'N/A'}</div>
                     <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px'}}>
                       {motoCorrelations.total !== null ? getInterpretation(motoCorrelations.total) : '데이터 부족'}
