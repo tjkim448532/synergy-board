@@ -14,7 +14,7 @@ const SIDEBAR_MENU = [
     ]
   },
   { id: 'analytics', icon: PieChart, label: '상관관계 분석' },
-  { id: 'logic', icon: BookOpen, label: '분석 로직 가이드' },
+  { id: 'logic', icon: BookOpen, label: '분석 로직 및 검증 보고서' },
   { id: 'accuracy-tasks', icon: BookOpen, label: '데이터 정확도 핵심과제' },
   { id: 'upload', icon: Upload, label: '데이터 업로드' },
   { id: 'settings', icon: Settings, label: '설정' }
