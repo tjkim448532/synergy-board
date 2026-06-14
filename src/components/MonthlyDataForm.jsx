@@ -27,6 +27,10 @@ export default function MonthlyDataForm({ settings }) {
   const [motoTargetMonth, setMotoTargetMonth] = useState('');
   const [motoFileObj, setMotoFileObj] = useState(null);
 
+  const [isRoomSaved, setIsRoomSaved] = useState(false);
+  const [isLeisureSaved, setIsLeisureSaved] = useState(false);
+  const [isMotoSaved, setIsMotoSaved] = useState(false);
+
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pin, setPin] = useState('');
 
@@ -81,6 +85,7 @@ export default function MonthlyDataForm({ settings }) {
   const handleRoomFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    setIsRoomSaved(false);
 
     const reader = new FileReader();
     reader.onload = async (evt) => {
@@ -234,6 +239,7 @@ export default function MonthlyDataForm({ settings }) {
   const handleLeisureFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    setIsLeisureSaved(false);
 
     const reader = new FileReader();
     reader.onload = async (evt) => {
@@ -430,7 +436,7 @@ export default function MonthlyDataForm({ settings }) {
         await setDoc(doc(db, 'monthly_records', data.yearMonth), data, { merge: true });
       }
       toast.success(`[${roomData.map(d => d.yearMonth).join(', ')}] 객실 데이터가 성공적으로 저장(병합)되었습니다!`);
-      setRoomData(null);
+      setIsRoomSaved(true);
     } catch (e) {
       toast.error('저장 실패: ' + e.message);
     }
@@ -454,8 +460,7 @@ export default function MonthlyDataForm({ settings }) {
          await setDoc(doc(db, 'monthly_records', data.yearMonth), dataToSave, { merge: true });
       }
       toast.success(`총 ${leisureData.length}개월의 레저 데이터가 성공적으로 저장(병합)되었습니다!`);
-      setLeisureData(null);
-      setCrossCheckResult(null);
+      setIsLeisureSaved(true);
     } catch (e) {
       toast.error('저장 실패: ' + e.message);
     }
@@ -466,6 +471,7 @@ export default function MonthlyDataForm({ settings }) {
     if (!file) return;
     setMotoFileObj(file);
     setMotoData(null);
+    setIsMotoSaved(false);
   };
 
   const handleExtractMotoData = () => {
@@ -539,7 +545,7 @@ export default function MonthlyDataForm({ settings }) {
         motoTotalRev: motoData.motoTotalRev
       }, { merge: true });
       toast.success(`[${motoData.yearMonth}] 모토아레나 데이터가 성공적으로 저장(병합)되었습니다!`);
-      setMotoData(null);
+      setIsMotoSaved(true);
     } catch (e) {
       toast.error('저장 실패: ' + e.message);
     }
@@ -625,8 +631,8 @@ export default function MonthlyDataForm({ settings }) {
                   </div>
                 ))}
               </div>
-              <button className="btn-primary" onClick={handleSaveRoomData} style={{width: '100%', background: 'var(--accent-emerald)', display: 'flex', justifyContent: 'center', gap: '8px'}}>
-                <Save size={18} /> 객실 데이터 DB에 저장
+              <button className="btn-primary" onClick={handleSaveRoomData} disabled={isRoomSaved} style={{width: '100%', background: isRoomSaved ? 'var(--accent-emerald)' : 'var(--accent-blue)', display: 'flex', justifyContent: 'center', gap: '8px'}}>
+                <Save size={18} /> {isRoomSaved ? '✅ 저장 완료' : '객실 데이터 DB에 저장'}
               </button>
             </div>
           )}
@@ -684,8 +690,8 @@ export default function MonthlyDataForm({ settings }) {
                 })}
               </div>
 
-              <button className="btn-primary" onClick={handleSaveLeisureData} style={{width: '100%', background: 'var(--accent-gold)', display: 'flex', justifyContent: 'center', gap: '8px', color: 'black'}}>
-                <Save size={18} /> 전체 {leisureData.length}개월 레저 데이터 DB에 일괄 저장
+              <button className="btn-primary" onClick={handleSaveLeisureData} disabled={isLeisureSaved} style={{width: '100%', background: isLeisureSaved ? 'var(--accent-emerald)' : 'var(--accent-gold)', display: 'flex', justifyContent: 'center', gap: '8px', color: 'black'}}>
+                <Save size={18} /> {isLeisureSaved ? '✅ 저장 완료' : `전체 ${leisureData.length}개월 레저 데이터 DB에 일괄 저장`}
               </button>
             </div>
           )}
@@ -736,8 +742,8 @@ export default function MonthlyDataForm({ settings }) {
                 </div>
               </div>
 
-              <button className="btn-primary" onClick={handleSaveMotoData} style={{width: '100%', background: 'var(--accent-gold)', display: 'flex', justifyContent: 'center', gap: '8px', color: 'black'}}>
-                <Save size={18} /> 해당 월 모토아레나 DB에 저장
+              <button className="btn-primary" onClick={handleSaveMotoData} disabled={isMotoSaved} style={{width: '100%', background: isMotoSaved ? 'var(--accent-emerald)' : 'var(--accent-gold)', display: 'flex', justifyContent: 'center', gap: '8px', color: 'black'}}>
+                <Save size={18} /> {isMotoSaved ? '✅ 저장 완료' : '해당 월 모토아레나 DB에 저장'}
               </button>
             </div>
           )}
