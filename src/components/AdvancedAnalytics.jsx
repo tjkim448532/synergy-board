@@ -96,16 +96,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     return googleVisitorsData.months[selectedMonthFilter] || 0;
   }, [googleVisitorsData, selectedMonthFilter]);
 
-  const totalHotelGuests = useMemo(() => {
-    if (!filteredProcessedData || filteredProcessedData.length === 0) return 0;
-    return filteredProcessedData.reduce((sum, d) => {
-      const sold16 = Number(d.sold16 || d.standardSold || 0);
-      const sold35 = Number(d.sold35 || 0);
-      const sold51 = Number(d.sold51 || d.connectingSold || 0);
-      const sold51Acc = Number(d.sold51Acc || 0);
-      return sum + (sold16 * 2) + (sold35 * 4) + ((sold51 + sold51Acc) * 6);
-    }, 0);
-  }, [filteredProcessedData]);
+
 
   const divisionConfig = {
     all: { title: '전체통합', dataKey: 'totalSales', color: 'var(--accent-emerald)' },
@@ -238,6 +229,17 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       return m === selectedMonthFilter;
     });
   }, [processedData, selectedMonthFilter]);
+
+  const totalHotelGuests = useMemo(() => {
+    if (!filteredProcessedData || filteredProcessedData.length === 0) return 0;
+    return filteredProcessedData.reduce((sum, d) => {
+      const sold16 = Number(d.sold16 || d.standardSold || 0);
+      const sold35 = Number(d.sold35 || 0);
+      const sold51 = Number(d.sold51 || d.connectingSold || 0);
+      const sold51Acc = Number(d.sold51Acc || 0);
+      return sum + (sold16 * 2) + (sold35 * 4) + ((sold51 + sold51Acc) * 6);
+    }, 0);
+  }, [filteredProcessedData]);
 
   // 회원 통계
   const memberStats = useMemo(() => {
