@@ -5,7 +5,6 @@ import {
 } from 'recharts';
 import CountUpModule from 'react-countup';
 const CountUp = CountUpModule.default || CountUpModule;
-import * as XLSX from 'xlsx';
 
 // 피어슨 상관계수 계산 함수
 function calculateCorrelation(xArray, yArray) {
@@ -35,7 +34,6 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
   const [selectedRoomType, setSelectedRoomType] = useState('all');
   const [activeDivision, setActiveDivision] = useState('leisure');
   const [motoLogic, setMotoLogic] = useState('current');
-  const [motoTicketData, setMotoTicketData] = useState(null);
 
   const divisionConfig = {
     all: { title: '전체통합', dataKey: 'totalSales', color: 'var(--accent-emerald)' },
@@ -112,6 +110,24 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     const targetArr = processedData.map(d => d[activeConf.dataKey]);
     return calculateCorrelation(occArr, targetArr);
   }, [processedData, activeConf.dataKey]);
+
+  const motoCorrelations = useMemo(() => {
+    if (activeDivision !== 'moto' || motoLogic !== 'new') return null;
+    const filtered = processedData.filter(d => d.motoGuestRev !== undefined);
+    if (filtered.length === 0) return { guestAvailable: false };
+    
+    const occArr = filtered.map(d => d.occupancyRate);
+    const guestArr = filtered.map(d => d.motoGuestRev || 0);
+    const generalArr = filtered.map(d => d.motoGeneralRev || 0);
+    const totalArr = filtered.map(d => d.motoTotalRev || 0);
+    
+    return {
+      guest: calculateCorrelation(occArr, guestArr),
+      general: calculateCorrelation(occArr, generalArr),
+      total: calculateCorrelation(occArr, totalArr),
+      guestAvailable: true
+    };
+  }, [processedData, activeDivision, motoLogic]);
 
   // 선택된 본부의 평형별 상관계수 계산
   const activeRoomTypeCorrelations = useMemo(() => {
@@ -430,162 +446,34 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
             </div>
           </div>
 
-          {motoLogic === 'new' && (
+          {motoLogic === 'new' && motoCorrelations && (
             <div style={{marginTop: '20px', padding: '16px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px'}}>
-              <div style={{display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap'}}>
-                <input 
-                  type="file" 
-                  accept=".xlsx, .xls, .csv" 
-                  onChange={(e) => {
-                    const file = e.target.files[0];
-                    if (!file) return;
-
-                    const fileName = file.name;
-                    let extractedMonth = "월 정보 없음";
-                    const monthMatch = fileName.match(/(\d{1,2})월/);
-                    if (monthMatch) {
-                      extractedMonth = `${monthMatch[1]}월`;
-                    } else {
-                      const yymmMatch = fileName.match(/\b\d{2,4}(\d{2})\b/);
-                      if (yymmMatch) extractedMonth = `${Number(yymmMatch[1])}월`;
-                      else extractedMonth = fileName;
-                    }
-
-                    const reader = new FileReader();
-                    reader.onload = (evt) => {
-                      const bstr = evt.target.result;
-                      const workbook = XLSX.read(bstr, { type: 'binary' });
-                      const sheetName = workbook.SheetNames[0];
-                      const worksheet = workbook.Sheets[sheetName];
-                      const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-                      
-                      let guestRev = 0;
-                      let generalRev = 0;
-                      let internalRev = 0;
-                      let otherRev = 0;
-
-                      const details = { guest: [], general: [], internal: [], other: [] };
-                      
-                      for (let i = 2; i < data.length; i++) {
-                        const row = data[i];
-                        if (!row || row.length < 9) continue;
-                        const txName = row[3];
-                        const rev = Number(row[8]) || 0;
-                        if (typeof txName === 'string') {
-                          if (txName.includes('TOTAL') || txName === 'TOTAL') continue;
-                          
-                          const item = { name: txName, rev };
-                          if (txName.includes('콘도') || txName.includes('객실')) {
-                            guestRev += rev;
-                            details.guest.push(item);
-                          } else if (txName.includes('일반') || txName.includes('증평군민') || txName.includes('MOU') || txName.includes('단체')) {
-                            generalRev += rev;
-                            details.general.push(item);
-                          } else if (txName.includes('임직원') || txName.includes('직원동반')) {
-                            internalRev += rev;
-                            details.internal.push(item);
-                          } else {
-                            otherRev += rev;
-                            details.other.push(item);
-                          }
-                        }
-                      }
-                      
-                      setMotoTicketData({
-                        month: extractedMonth,
-                        summary: [
-                          { name: '투숙객 (콘도/객실)', value: guestRev },
-                          { name: '일반 (워크인/단체)', value: generalRev },
-                          { name: '내부 (임직원)', value: internalRev },
-                          { name: '기타 매출', value: otherRev }
-                        ].filter(d => d.value > 0),
-                        details
-                      });
-                    };
-                    reader.readAsBinaryString(file);
-                  }}
-                  style={{color: 'var(--text-main)', background: 'rgba(0,0,0,0.3)', padding: '8px', borderRadius: '6px'}}
-                />
-                <span style={{fontSize: '12px', color: 'var(--text-muted)'}}>* 모노아레나 엑셀 원본 파일을 업로드해주세요.</span>
-              </div>
-              
-              {motoTicketData && (
-                <div style={{marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '24px'}}>
-                  <div style={{display: 'flex', gap: '12px', alignItems: 'center', padding: '12px 16px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px'}}>
-                    <span style={{color: 'var(--accent-gold)', fontSize: '20px'}}>📅</span>
-                    <span style={{fontWeight: 'bold'}}>인식된 대상 월:</span>
-                    <span style={{color: 'var(--accent-emerald)', fontWeight: 'bold', fontSize: '18px'}}>{motoTicketData.month}</span>
-                  </div>
-
-                  <div style={{display: 'flex', gap: '24px', flexWrap: 'wrap'}}>
-                    <div style={{flex: 1, minWidth: '300px', height: '250px'}}>
-                      <h4 style={{margin: '0 0 10px 0', textAlign: 'center'}}>매출 비중 (고객 유형별)</h4>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={motoTicketData.summary}
-                            cx="50%" cy="50%"
-                            labelLine={false}
-                            label={({ percent }) => percent > 0.05 ? `${(percent * 100).toFixed(1)}%` : ''}
-                            outerRadius={85}
-                            dataKey="value"
-                            stroke="rgba(255,255,255,0.1)"
-                          >
-                            {motoTicketData.summary.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                            ))}
-                          </Pie>
-                          <RechartsTooltip formatter={(val) => `₩${formatCurrency(val)}`} contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)'}} />
-                          <Legend />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
-                    <div style={{flex: 1, minWidth: '300px', display: 'flex', flexDirection: 'column', gap: '12px', justifyContent: 'center'}}>
-                      <h4 style={{margin: '0 0 4px 0'}}>업로드된 데이터 매출 요약</h4>
-                      <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
-                        {motoTicketData.summary.map((d, idx) => (
-                          <div key={d.name} style={{display: 'flex', justifyContent: 'space-between', padding: '12px 16px', background: 'rgba(0,0,0,0.2)', borderRadius: '6px', borderLeft: `4px solid ${PIE_COLORS[idx % PIE_COLORS.length]}`}}>
-                            <span style={{color: 'var(--text-muted)'}}>{d.name}</span>
-                            <span style={{fontWeight: 'bold', color: 'var(--text-main)'}}>₩{formatCurrency(d.value)}</span>
-                          </div>
-                        ))}
-                        <div style={{display: 'flex', justifyContent: 'space-between', padding: '12px 16px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px', borderLeft: `4px solid var(--text-main)`, marginTop: '8px'}}>
-                          <span style={{color: 'var(--accent-gold)', fontWeight: 'bold'}}>총 합계</span>
-                          <span style={{fontWeight: 'bold', color: 'var(--accent-gold)'}}>
-                            ₩{formatCurrency(motoTicketData.summary.reduce((sum, d) => sum + d.value, 0))}
-                          </span>
-                        </div>
-                      </div>
+              {!motoCorrelations.guestAvailable ? (
+                <div style={{padding: '24px', textAlign: 'center', color: 'var(--text-muted)'}}>
+                  데이터 업로드 페이지에서 <strong>모토아레나 엑셀 파일</strong>을 업로드해 주세요.
+                  <br/>파싱된 데이터가 없어 정밀 분석을 수행할 수 없습니다.
+                </div>
+              ) : (
+                <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
+                  <div className="glass-panel" style={{flex: 1, minWidth: '250px', padding: '20px', background: 'rgba(52, 211, 153, 0.1)', border: '1px solid var(--accent-emerald)'}}>
+                    <h4 style={{margin: '0 0 8px 0', color: 'var(--accent-emerald)'}}>투숙객 매출 ↔ 객실 점유율</h4>
+                    <div style={{fontSize: '32px', fontWeight: 'bold'}}>{motoCorrelations.guest !== null ? motoCorrelations.guest.toFixed(3) : 'N/A'}</div>
+                    <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px'}}>
+                      {motoCorrelations.guest !== null ? getInterpretation(motoCorrelations.guest) : '데이터 부족'}
                     </div>
                   </div>
-
-                  {/* 세부 그룹핑 결과 */}
-                  <div style={{marginTop: '16px', padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px'}}>
-                    <h4 style={{margin: '0 0 16px 0', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px', color: 'var(--accent-gold)'}}>
-                      🔍 그룹핑 결과 상세 확인
-                    </h4>
-                    <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px'}}>
-                      {[
-                        { title: '투숙객 그룹', data: motoTicketData.details.guest, color: PIE_COLORS[0] },
-                        { title: '일반객 그룹', data: motoTicketData.details.general, color: PIE_COLORS[1] },
-                        { title: '내부직원 그룹', data: motoTicketData.details.internal, color: PIE_COLORS[2] },
-                        { title: '기타/미분류', data: motoTicketData.details.other, color: PIE_COLORS[3] }
-                      ].map(group => (
-                        <div key={group.title} style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
-                          <h5 style={{margin: 0, color: group.color}}>{group.title}</h5>
-                          {group.data.length === 0 ? (
-                            <span style={{fontSize: '12px', color: 'var(--text-muted)'}}>해당 없음</span>
-                          ) : (
-                            <ul style={{margin: 0, paddingLeft: '20px', fontSize: '12px', color: 'var(--text-muted)'}}>
-                              {group.data.sort((a,b) => b.rev - a.rev).map((item, idx) => (
-                                <li key={idx} style={{marginBottom: '4px'}}>
-                                  {item.name} <span style={{opacity: 0.5}}>(₩{formatCurrency(item.rev)})</span>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </div>
-                      ))}
+                  <div className="glass-panel" style={{flex: 1, minWidth: '250px', padding: '20px', background: 'rgba(251, 191, 36, 0.1)', border: '1px solid var(--accent-gold)'}}>
+                    <h4 style={{margin: '0 0 8px 0', color: 'var(--accent-gold)'}}>일반객 매출 ↔ 객실 점유율</h4>
+                    <div style={{fontSize: '32px', fontWeight: 'bold'}}>{motoCorrelations.general !== null ? motoCorrelations.general.toFixed(3) : 'N/A'}</div>
+                    <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px'}}>
+                      {motoCorrelations.general !== null ? getInterpretation(motoCorrelations.general) : '데이터 부족'}
+                    </div>
+                  </div>
+                  <div className="glass-panel" style={{flex: 1, minWidth: '250px', padding: '20px', background: 'rgba(255,255,255,0.05)'}}>
+                    <h4 style={{margin: '0 0 8px 0', color: 'var(--text-bright)'}}>총 매출 ↔ 객실 점유율</h4>
+                    <div style={{fontSize: '32px', fontWeight: 'bold'}}>{motoCorrelations.total !== null ? motoCorrelations.total.toFixed(3) : 'N/A'}</div>
+                    <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px'}}>
+                      {motoCorrelations.total !== null ? getInterpretation(motoCorrelations.total) : '데이터 부족'}
                     </div>
                   </div>
                 </div>

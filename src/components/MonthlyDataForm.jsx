@@ -22,6 +22,9 @@ export default function MonthlyDataForm({ settings }) {
   const [roomData, setRoomData] = useState(null);
   const [leisureData, setLeisureData] = useState(null);
   const [crossCheckResult, setCrossCheckResult] = useState(null);
+  
+  const [motoData, setMotoData] = useState(null);
+  const [motoTargetMonth, setMotoTargetMonth] = useState('');
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pin, setPin] = useState('');
@@ -457,6 +460,86 @@ export default function MonthlyDataForm({ settings }) {
     }
   };
 
+  const handleMotoFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!motoTargetMonth) {
+      toast.error('업로드 전에 대상 월(연/월)을 먼저 선택해주세요.');
+      e.target.value = null;
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      try {
+        const bstr = evt.target.result;
+        const wb = XLSX.read(bstr, { type: 'binary' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        
+        let guestRev = 0;
+        let generalRev = 0;
+        let internalRev = 0;
+        let otherRev = 0;
+        let totalRev = 0;
+
+        for (let i = 2; i < data.length; i++) {
+          const row = data[i];
+          if (!row || row.length < 9) continue;
+          const txName = row[3];
+          const rev = Number(row[8]) || 0;
+          if (typeof txName === 'string') {
+            if (txName.includes('TOTAL') || txName === 'TOTAL') continue;
+            
+            if (txName.includes('콘도') || txName.includes('객실')) {
+              guestRev += rev;
+            } else if (txName.includes('일반') || txName.includes('증평군민') || txName.includes('MOU') || txName.includes('단체')) {
+              generalRev += rev;
+            } else if (txName.includes('임직원') || txName.includes('직원동반')) {
+              internalRev += rev;
+            } else {
+              otherRev += rev;
+            }
+            totalRev += rev;
+          }
+        }
+        
+        setMotoData({
+          yearMonth: motoTargetMonth,
+          motoGuestRev: guestRev,
+          motoGeneralRev: generalRev,
+          motoInternalRev: internalRev,
+          motoOtherRev: otherRev,
+          motoTotalRev: totalRev
+        });
+
+      } catch (err) {
+        console.error(err);
+        toast.error('모토아레나 엑셀 파일을 파싱하는 중 오류가 발생했습니다.');
+      }
+      e.target.value = null;
+    };
+    reader.readAsBinaryString(file);
+  };
+
+  const handleSaveMotoData = async () => {
+    if (!motoData) return;
+    try {
+      await setDoc(doc(db, 'monthly_records', motoData.yearMonth), {
+        motoGuestRev: motoData.motoGuestRev,
+        motoGeneralRev: motoData.motoGeneralRev,
+        motoInternalRev: motoData.motoInternalRev,
+        motoOtherRev: motoData.motoOtherRev,
+        motoTotalRev: motoData.motoTotalRev
+      }, { merge: true });
+      toast.success(`[${motoData.yearMonth}] 모토아레나 데이터가 성공적으로 저장(병합)되었습니다!`);
+      setMotoData(null);
+    } catch (e) {
+      toast.error('저장 실패: ' + e.message);
+    }
+  };
+
   const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(Math.round(val || 0));
 
   if (!isAuthenticated) {
@@ -598,6 +681,52 @@ export default function MonthlyDataForm({ settings }) {
 
               <button className="btn-primary" onClick={handleSaveLeisureData} style={{width: '100%', background: 'var(--accent-gold)', display: 'flex', justifyContent: 'center', gap: '8px', color: 'black'}}>
                 <Save size={18} /> 전체 {leisureData.length}개월 레저 데이터 DB에 일괄 저장
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Moto Arena Section */}
+        <div className="glass-panel" style={{display: 'flex', flexDirection: 'column', padding: '24px', border: motoData ? '2px solid var(--accent-gold)' : '1px solid var(--border-glass)'}}>
+          <div style={{display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px'}}>
+            <span style={{fontSize: '32px'}}>🏎️</span>
+            <h3 style={{margin: 0}}>3. 모토아레나 티켓 매출 처리</h3>
+          </div>
+          
+          <div style={{display: 'flex', gap: '12px', marginBottom: '20px'}}>
+            <input 
+              type="month" 
+              value={motoTargetMonth}
+              onChange={e => setMotoTargetMonth(e.target.value)}
+              style={{flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid var(--border-glass)', background: 'rgba(0,0,0,0.3)', color: 'var(--text-main)'}}
+            />
+            <label className="btn-primary" style={{cursor: 'pointer', textAlign: 'center', background: 'var(--accent-gold)', color: 'black', flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'}}>
+              <Upload size={18} /> 모토아레나 엑셀 선택
+              <input type="file" accept=".xlsx" onChange={handleMotoFileUpload} style={{display: 'none'}} />
+            </label>
+          </div>
+
+          {motoData && (
+            <div style={{background: 'rgba(251, 191, 36, 0.1)', padding: '16px', borderRadius: '8px', border: '1px solid var(--accent-gold)'}}>
+              <h4 style={{margin: '0 0 12px 0', color: 'var(--accent-gold)'}}>파싱 결과 ({motoData.yearMonth})</h4>
+              
+              <div style={{marginBottom: '16px', fontSize: '14px', display: 'flex', flexDirection: 'column', gap: '8px'}}>
+                <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                  <span>투숙객 매출:</span> <strong>₩{formatCurrency(motoData.motoGuestRev)}</strong>
+                </div>
+                <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                  <span>일반객 매출:</span> <strong>₩{formatCurrency(motoData.motoGeneralRev)}</strong>
+                </div>
+                <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                  <span>임직원 매출:</span> <strong>₩{formatCurrency(motoData.motoInternalRev)}</strong>
+                </div>
+                <div style={{display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed rgba(255,255,255,0.2)', paddingTop: '8px'}}>
+                  <span style={{color: 'var(--accent-gold)'}}>총 파싱 합계:</span> <strong style={{color: 'var(--accent-gold)'}}>₩{formatCurrency(motoData.motoTotalRev)}</strong>
+                </div>
+              </div>
+
+              <button className="btn-primary" onClick={handleSaveMotoData} style={{width: '100%', background: 'var(--accent-gold)', display: 'flex', justifyContent: 'center', gap: '8px', color: 'black'}}>
+                <Save size={18} /> 해당 월 모토아레나 DB에 저장
               </button>
             </div>
           )}
