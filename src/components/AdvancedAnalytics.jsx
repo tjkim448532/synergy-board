@@ -36,7 +36,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
   const [activeDivision, setActiveDivision] = useState('leisure');
   const [motoLogic, setMotoLogic] = useState('current');
   const [selectedMonthFilter, setSelectedMonthFilter] = useState('all');
-  const [googleTotalVisitors, setGoogleTotalVisitors] = useState(null);
+  const [googleVisitorsData, setGoogleVisitorsData] = useState({ total: null, months: {} });
 
   useEffect(() => {
     const fetchGoogleData = async () => {
@@ -61,11 +61,24 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
             }
             result.push(current);
             if (result.length >= 4) {
-              const rawStr = result[3];
-              const cleanStr = rawStr.replace(/[^0-9]/g, '');
-              if (cleanStr) {
-                setGoogleTotalVisitors(Number(cleanStr));
-              }
+              const cleanStr = (str) => str ? Number(str.replace(/[^0-9]/g, '')) : 0;
+              setGoogleVisitorsData({
+                total: cleanStr(result[3]),
+                months: {
+                  '01': cleanStr(result[6]),
+                  '02': cleanStr(result[9]),
+                  '03': cleanStr(result[12]),
+                  '04': cleanStr(result[15]),
+                  '05': cleanStr(result[18]),
+                  '06': cleanStr(result[21]),
+                  '07': cleanStr(result[24]),
+                  '08': cleanStr(result[27]),
+                  '09': cleanStr(result[30]),
+                  '10': cleanStr(result[33]),
+                  '11': cleanStr(result[36]),
+                  '12': cleanStr(result[39])
+                }
+              });
             }
             break;
           }
@@ -77,16 +90,22 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     fetchGoogleData();
   }, []);
 
+  const displayVisitors = useMemo(() => {
+    if (googleVisitorsData.total === null) return null;
+    if (selectedMonthFilter === 'all') return googleVisitorsData.total;
+    return googleVisitorsData.months[selectedMonthFilter] || 0;
+  }, [googleVisitorsData, selectedMonthFilter]);
+
   const totalHotelGuests = useMemo(() => {
-    if (!monthlyData || monthlyData.length === 0) return 0;
-    return monthlyData.reduce((sum, d) => {
+    if (!filteredProcessedData || filteredProcessedData.length === 0) return 0;
+    return filteredProcessedData.reduce((sum, d) => {
       const sold16 = Number(d.sold16 || d.standardSold || 0);
       const sold35 = Number(d.sold35 || 0);
       const sold51 = Number(d.sold51 || d.connectingSold || 0);
       const sold51Acc = Number(d.sold51Acc || 0);
       return sum + (sold16 * 2) + (sold35 * 4) + ((sold51 + sold51Acc) * 6);
     }, 0);
-  }, [monthlyData]);
+  }, [filteredProcessedData]);
 
   const divisionConfig = {
     all: { title: '전체통합', dataKey: 'totalSales', color: 'var(--accent-emerald)' },
@@ -559,10 +578,10 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
             👥 총 방문객 <span style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.3)', padding: '4px 8px', borderRadius: '4px'}}>Live from Google</span>
           </h2>
           <div style={{fontSize: '56px', fontWeight: '900', color: 'var(--text-main)', textShadow: '0 0 20px rgba(251,191,36,0.5)'}}>
-            {googleTotalVisitors !== null ? <CountUp end={googleTotalVisitors} duration={2} separator="," /> : '...'}
+            {displayVisitors !== null ? <CountUp end={displayVisitors} duration={2} separator="," /> : '...'}
           </div>
           <p style={{margin: 0, color: 'var(--text-muted)', fontSize: '14px'}}>
-            올해 전체 사업장을 방문한 통합 고객 누적 수
+            {selectedMonthFilter === 'all' ? '올해 전체 사업장을 방문한 통합 고객 누적 수' : `${selectedMonthFilter}월 한 달 동안 전체 사업장을 방문한 통합 고객 수`}
           </p>
         </div>
         
