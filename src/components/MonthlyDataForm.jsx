@@ -473,6 +473,16 @@ export default function MonthlyDataForm({ settings }) {
     setMotoFileObj(file);
     setMotoData(null);
     setIsMotoSaved(false);
+
+    // 파일명에서 1~12월 숫자 추출
+    const match = file.name.match(/(\d+)월?/);
+    if (match) {
+      let month = parseInt(match[1], 10);
+      if (month >= 1 && month <= 12) {
+        const year = new Date().getFullYear();
+        setMotoTargetMonth(`${year}-${month.toString().padStart(2, '0')}`);
+      }
+    }
   };
 
   const handleExtractMotoData = () => {
@@ -496,6 +506,8 @@ export default function MonthlyDataForm({ settings }) {
         let internalRev = 0;
         let otherRev = 0;
         let totalRev = 0;
+        
+        const breakdown = { guest: {}, general: {}, internal: {}, other: {} };
 
         for (let i = 2; i < data.length; i++) {
           const row = data[i];
@@ -505,16 +517,23 @@ export default function MonthlyDataForm({ settings }) {
           if (typeof txName === 'string') {
             if (txName.includes('TOTAL') || txName === 'TOTAL') continue;
             
+            let category = 'other';
             if (txName.includes('콘도') || txName.includes('객실')) {
               guestRev += rev;
+              category = 'guest';
             } else if (txName.includes('일반') || txName.includes('증평군민') || txName.includes('MOU') || txName.includes('단체')) {
               generalRev += rev;
+              category = 'general';
             } else if (txName.includes('임직원') || txName.includes('직원동반')) {
               internalRev += rev;
+              category = 'internal';
             } else {
               otherRev += rev;
             }
             totalRev += rev;
+            
+            if (!breakdown[category][txName]) breakdown[category][txName] = 0;
+            breakdown[category][txName] += rev;
           }
         }
         
@@ -524,7 +543,8 @@ export default function MonthlyDataForm({ settings }) {
           motoGeneralRev: generalRev,
           motoInternalRev: internalRev,
           motoOtherRev: otherRev,
-          motoTotalRev: totalRev
+          motoTotalRev: totalRev,
+          breakdown
         });
 
       } catch (err) {
@@ -732,12 +752,29 @@ export default function MonthlyDataForm({ settings }) {
                 <div style={{display: 'flex', justifyContent: 'space-between'}}>
                   <span>투숙객 매출:</span> <strong>₩{formatCurrency(motoData.motoGuestRev)}</strong>
                 </div>
-                <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                {motoData.breakdown && Object.keys(motoData.breakdown.guest).length > 0 && (
+                  <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
+                    {Object.entries(motoData.breakdown.guest).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
+                  </div>
+                )}
+                
+                <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '8px'}}>
                   <span>일반객 매출:</span> <strong>₩{formatCurrency(motoData.motoGeneralRev)}</strong>
                 </div>
-                <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                {motoData.breakdown && Object.keys(motoData.breakdown.general).length > 0 && (
+                  <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
+                    {Object.entries(motoData.breakdown.general).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
+                  </div>
+                )}
+
+                <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '8px'}}>
                   <span>임직원 매출:</span> <strong>₩{formatCurrency(motoData.motoInternalRev)}</strong>
                 </div>
+                {motoData.breakdown && Object.keys(motoData.breakdown.internal).length > 0 && (
+                  <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
+                    {Object.entries(motoData.breakdown.internal).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
+                  </div>
+                )}
                 <div style={{display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed rgba(255,255,255,0.2)', paddingTop: '8px'}}>
                   <span style={{color: 'var(--accent-gold)'}}>총 파싱 합계:</span> <strong style={{color: 'var(--accent-gold)'}}>₩{formatCurrency(motoData.motoTotalRev)}</strong>
                 </div>
