@@ -40,8 +40,9 @@ export default function RevenuePrediction({ monthlyData, settings }) {
       const sold16 = Number(d.sold16 || d.standardSold || 0);
       const sold35 = Number(d.sold35 || 0);
       const sold51 = Number(d.sold51 || d.connectingSold || 0);
+      const sold51Acc = Number(d.sold51Acc || 0);
       
-      const guests = (sold16 * 2) + (sold35 * 4) + (sold51 * 6);
+      const guests = (sold16 * 2) + (sold35 * 4) + ((sold51 + sold51Acc) * 6);
       
       const count51AsTwoRooms = settings.count51AsTwoRooms !== false;
       const physicalRooms = Number(settings.totalRooms) || 175;
@@ -52,7 +53,6 @@ export default function RevenuePrediction({ monthlyData, settings }) {
       const invWd = dailyInventory * daysWd;
       const invWe = dailyInventory * daysWe;
 
-      const sold51Acc = Number(d.sold51Acc || 0);
       const totalSold = sold16 + sold35 + (count51AsTwoRooms ? sold51 * 2 : sold51) + sold51Acc;
       const rawSoldWd = Number(d.soldWeekday || 0);
       const rawSoldWe = Number(d.soldWeekend || 0);

@@ -252,9 +252,8 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     return filteredProcessedData.reduce((sum, d) => {
       const sold16 = Number(d.sold16 || d.standardSold || 0);
       const sold35 = Number(d.sold35 || 0);
-      const sold51 = Number(d.sold51 || d.connectingSold || 0);
-      const sold51Acc = Number(d.sold51Acc || 0);
-      return sum + (sold16 * 2) + (sold35 * 4) + ((sold51 + sold51Acc) * 6);
+      const sold51Combined = Number(d.sold51 || d.connectingSold || 0); // Already includes sold51Acc
+      return sum + (sold16 * 2) + (sold35 * 4) + (sold51Combined * 6);
     }, 0);
   }, [filteredProcessedData]);
 
