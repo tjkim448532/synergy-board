@@ -178,11 +178,13 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     
     const guestRatio = sumTotal > 0 ? (sumGuest / sumTotal) * 100 : 0;
     const generalRatio = sumTotal > 0 ? (sumGeneral / sumTotal) * 100 : 0;
+    const otherRatio = sumTotal > 0 ? Math.max(0, 100 - guestRatio - generalRatio) : 0;
 
     return {
       guest: calculateCorrelation(roomRevArr, guestArr),
       guestRatio: guestRatio,
       generalRatio: generalRatio,
+      otherRatio: otherRatio,
       total: calculateCorrelation(roomRevArr, totalArr),
       guestAvailable: true
     };
@@ -597,6 +599,28 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
 
                       <div style={{fontSize: '13px', padding: '16px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', lineHeight: '1.5', color: 'var(--text-muted)'}}>
                         💡 외부 마케팅 및 지역 수요에 의한 독립적 영업 성과 지표입니다. 객실 변동과 인과관계가 없으므로 연계 상관성을 분석하지 않습니다.
+                      </div>
+                    </div>
+
+                    {/* 기타 매출 패널 */}
+                    <div className="glass-panel" style={{flex: 1, minWidth: '300px', padding: '24px', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255,255,255,0.1)'}}>
+                      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                        <h4 style={{margin: '0', color: 'var(--text-bright)', fontSize: '18px'}}>기타 매출 (미분류)</h4>
+                        <div style={{fontSize: '32px', fontWeight: 'bold', color: 'var(--text-main)'}}>{motoCorrelations.otherRatio !== null ? `${motoCorrelations.otherRatio.toFixed(1)}%` : 'N/A'}</div>
+                      </div>
+                      <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', marginBottom: '16px'}}>
+                        투숙객/일반객 키워드로 분류되지 않은 매출 (임직원/기타 등)
+                      </div>
+                      
+                      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '12px', opacity: 0.5}}>
+                        <span style={{fontSize: '14px', color: 'var(--text-main)'}}>객실 매출과의 상관계수 (r)</span>
+                        <span style={{fontSize: '24px', fontWeight: 'bold', color: 'var(--text-muted)'}}>
+                          해당없음
+                        </span>
+                      </div>
+
+                      <div style={{fontSize: '13px', padding: '16px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', lineHeight: '1.5', color: 'var(--text-muted)'}}>
+                        💡 임직원 복지 티켓이거나 명칭 구분이 불명확한 기타 매출입니다. 분석의 핵심이 아니므로 상관관계에서 제외됩니다.
                       </div>
                     </div>
 
