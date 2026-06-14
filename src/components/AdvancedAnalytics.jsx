@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import CountUpModule from 'react-countup';
 const CountUp = CountUpModule.default || CountUpModule;
+import { isHoliday } from 'korean-holidays';
 
 // 피어슨 상관계수 계산 함수
 function calculateCorrelation(xArray, yArray) {
@@ -142,6 +143,53 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
         leisureSales = Number(d.totalLeisureSales || d.leisureSales || 0);
       }
 
+      // 회원 분석 로직 (rawRoomRecords 기반)
+      let totalMemberRooms = 0;
+      let totalGeneralRooms = 0;
+      let memberWdRooms = 0;
+      let memberWeRooms = 0;
+      let generalWdRooms = 0;
+      let generalWeRooms = 0;
+
+      const customWeekendsStr = settings?.customWeekends || '';
+      const customWeekendsArray = customWeekendsStr.split(',').map(s => s.trim()).filter(s => s);
+
+      if (d.rawRoomRecords && Array.isArray(d.rawRoomRecords)) {
+         d.rawRoomRecords.forEach(record => {
+            const rType = record.rateType || '';
+            const mType = record.marketType || '';
+            const sType = record.sourceType || '';
+            
+            // 회원 식별 키워드: 회원, 기명, 무기명, 멤버
+            const isMember = (
+              rType.includes('회원') || mType.includes('회원') || sType.includes('회원') || 
+              rType.includes('기명') || mType.includes('기명') || sType.includes('기명') ||
+              rType.includes('멤버') || mType.includes('멤버') || sType.includes('멤버')
+            );
+
+            const [yyyy, mm, dd] = record.date.split('-');
+            const dateObj = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+            const day = dateObj.getDay();
+            const nextDay = new Date(dateObj);
+            nextDay.setDate(dateObj.getDate() + 1);
+            
+            const isFriOrSat = (day === 5 || day === 6);
+            const isNextDayHoliday = isHoliday(nextDay);
+            
+            const isWeekend = customWeekendsArray.includes(record.date) || isFriOrSat || isNextDayHoliday;
+
+            if (isMember) {
+               totalMemberRooms += record.count;
+               if (isWeekend) memberWeRooms += record.count;
+               else memberWdRooms += record.count;
+            } else {
+               totalGeneralRooms += record.count;
+               if (isWeekend) generalWeRooms += record.count;
+               else generalWdRooms += record.count;
+            }
+         });
+      }
+
       return {
         ...d,
         sold16, sold35, sold51: sold51 + sold51Acc, totalSold,
@@ -150,7 +198,14 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
         motoSales,
         fnbSales,
         totalSales: leisureSales + motoSales + fnbSales,
-        totalRoomRevenue: Number(d.totalRoomRevenue || 0)
+        totalRoomRevenue: Number(d.totalRoomRevenue || 0),
+        totalMemberRooms,
+        totalGeneralRooms,
+        memberWdRooms,
+        memberWeRooms,
+        generalWdRooms,
+        generalWeRooms,
+        analyzedRoomsCount: totalMemberRooms + totalGeneralRooms
       };
     });
   }, [monthlyData, settings]);
@@ -526,6 +581,87 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
           ))}
         </div>
       </div>
+
+      {/* 객실 투숙객 유형 정밀 분석 (회원 vs 일반) */}
+      {memberStats.available && (
+        <div className="glass-panel" style={{padding: '24px', borderLeft: '4px solid var(--accent-blue)', display: 'flex', flexDirection: 'column', gap: '20px'}}>
+          <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px'}}>
+            <div>
+              <h3 style={{margin: '0 0 8px 0', color: 'var(--accent-blue)', display: 'flex', alignItems: 'center', gap: '8px'}}>
+                👥 객실 투숙객 유형 정밀 분석 (회원 vs 일반)
+              </h3>
+              <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0}}>
+                원본 엑셀 데이터의 마켓코드/요금유형을 기반으로 회원(기명/무기명)과 일반객의 점유 비중을 요일별로 상세 분석합니다.
+              </p>
+            </div>
+          </div>
+          
+          <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px'}}>
+            {/* 전체 비율 */}
+            <div style={{background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)'}}>
+              <div style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '12px'}}>총 판매 객실 중 회원 비중</div>
+              <div style={{display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '16px'}}>
+                <span style={{fontSize: '36px', fontWeight: 'bold', color: 'var(--accent-blue)', lineHeight: 1}}>
+                  {memberStats.memberRatio.toFixed(1)}%
+                </span>
+                <span style={{fontSize: '14px', color: 'var(--text-muted)', paddingBottom: '4px'}}>
+                  ({formatCurrency(memberStats.totMem)} / {formatCurrency(memberStats.totalRooms)}실)
+                </span>
+              </div>
+              <div style={{width: '100%', height: '8px', background: 'var(--border-glass)', borderRadius: '4px', overflow: 'hidden', display: 'flex'}}>
+                <div style={{width: `${memberStats.memberRatio}%`, background: 'var(--accent-blue)'}} />
+                <div style={{width: `${memberStats.generalRatio}%`, background: 'var(--text-muted)'}} />
+              </div>
+              <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginTop: '8px'}}>
+                <span style={{color: 'var(--accent-blue)'}}>회원 {memberStats.memberRatio.toFixed(1)}%</span>
+                <span style={{color: 'var(--text-muted)'}}>일반 {memberStats.generalRatio.toFixed(1)}%</span>
+              </div>
+            </div>
+
+            {/* 주중 비율 */}
+            <div style={{background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)'}}>
+              <div style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '12px'}}>주중(평일) 회원 비중</div>
+              <div style={{display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '16px'}}>
+                <span style={{fontSize: '36px', fontWeight: 'bold', color: 'var(--accent-emerald)', lineHeight: 1}}>
+                  {memberStats.memberWdRatio.toFixed(1)}%
+                </span>
+                <span style={{fontSize: '14px', color: 'var(--text-muted)', paddingBottom: '4px'}}>
+                  ({formatCurrency(memberStats.memWd)}실)
+                </span>
+              </div>
+              <div style={{width: '100%', height: '8px', background: 'var(--border-glass)', borderRadius: '4px', overflow: 'hidden', display: 'flex'}}>
+                <div style={{width: `${memberStats.memberWdRatio}%`, background: 'var(--accent-emerald)'}} />
+                <div style={{width: `${memberStats.generalWdRatio}%`, background: 'var(--text-muted)'}} />
+              </div>
+              <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginTop: '8px'}}>
+                <span style={{color: 'var(--accent-emerald)'}}>회원 {memberStats.memberWdRatio.toFixed(1)}%</span>
+                <span style={{color: 'var(--text-muted)'}}>일반 {memberStats.generalWdRatio.toFixed(1)}%</span>
+              </div>
+            </div>
+
+            {/* 주말 비율 */}
+            <div style={{background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)'}}>
+              <div style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '12px'}}>주말(공휴일 포함) 회원 비중</div>
+              <div style={{display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '16px'}}>
+                <span style={{fontSize: '36px', fontWeight: 'bold', color: 'var(--accent-purple)', lineHeight: 1}}>
+                  {memberStats.memberWeRatio.toFixed(1)}%
+                </span>
+                <span style={{fontSize: '14px', color: 'var(--text-muted)', paddingBottom: '4px'}}>
+                  ({formatCurrency(memberStats.memWe)}실)
+                </span>
+              </div>
+              <div style={{width: '100%', height: '8px', background: 'var(--border-glass)', borderRadius: '4px', overflow: 'hidden', display: 'flex'}}>
+                <div style={{width: `${memberStats.memberWeRatio}%`, background: 'var(--accent-purple)'}} />
+                <div style={{width: `${memberStats.generalWeRatio}%`, background: 'var(--text-muted)'}} />
+              </div>
+              <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginTop: '8px'}}>
+                <span style={{color: 'var(--accent-purple)'}}>회원 {memberStats.memberWeRatio.toFixed(1)}%</span>
+                <span style={{color: 'var(--text-muted)'}}>일반 {memberStats.generalWeRatio.toFixed(1)}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 모토아레나 전용 정밀 분석 토글 */}
       {activeDivision === 'moto' && (
