@@ -41,11 +41,11 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
   useEffect(() => {
     const fetchGoogleData = async () => {
       try {
-        const response = await fetch('https://docs.google.com/spreadsheets/d/1wlNrE_FvXCYNGfyvIYxEidYLKoEas4pidWe0Z9e_2xs/export?format=csv&gid=0');
+        const response = await fetch('https://docs.google.com/spreadsheets/d/1wlNrE_FvXCYNGfyvIYxEidYLKoEas4pidWe0Z9e_2xs/export?format=csv&gid=1933764837');
         const text = await response.text();
         const lines = text.split('\n');
         for (const line of lines) {
-          if (line.includes('전체 방문객')) {
+          if (line.includes('리조트 총 방문객') || line.includes('레저본부 방문객')) {
             let current = '';
             let inQuotes = false;
             const result = [];
