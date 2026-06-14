@@ -366,7 +366,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
     if (selectedRefMonth === 'all') {
       return {
         label: `전체 누적 (${processedData.length}개월)`,
-        totalRev: globalStats.totalRoomRevenue + globalStats.totalLeisureRevenue + globalStats.totalFnbRevenue,
+        totalRev: globalStats.totalRoomRevenue + globalStats.totalLeisureRevenue + globalStats.totalFnbRevenue + globalStats.totalMotoRevenue,
         occRate: globalStats.totalOccupancyRate,
         wdOccRate: globalStats.globalWdOccRate,
         weOccRate: globalStats.globalWeOccRate,
@@ -377,7 +377,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
       const monthRow = processedData.find(d => d.yearMonth === targetMonth) || processedData[processedData.length - 1];
       return {
         label: `선택 마감 실적 (${monthRow.yearMonth})`,
-        totalRev: monthRow.totalRoomRevenue + monthRow.leisureSales + monthRow.fnbSales,
+        totalRev: monthRow.totalRoomRevenue + monthRow.leisureSales + monthRow.fnbSales + monthRow.motoSales,
         occRate: monthRow.occupancyRate,
         wdOccRate: monthRow.occWd,
         weOccRate: monthRow.occWe,
@@ -425,7 +425,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
             <div style={{textAlign: 'center', flex: '1', minWidth: '250px', maxWidth: '100%'}}>
               <div style={{color: 'var(--accent-emerald)', fontSize: '16px', marginBottom: '8px', fontWeight: 'bold'}}>📌 {refData.label}</div>
               <div className="responsive-stat-value">
-                객실+레저+식음 총매출 <span style={{fontSize: '13px', color: 'var(--text-muted)', fontWeight: 'normal', verticalAlign: 'middle'}}>(모토 제외)</span>: <span style={{color: 'var(--accent-gold)'}}>₩ {formatCurrency(refData.totalRev)}</span>
+                총 통합 매출 <span style={{fontSize: '13px', color: 'var(--text-muted)', fontWeight: 'normal', verticalAlign: 'middle'}}>(모든 본부 포함)</span>: <span style={{color: 'var(--accent-gold)'}}>₩ {formatCurrency(refData.totalRev)}</span>
               </div>
             </div>
             <div className="mobile-no-border" style={{textAlign: 'center', flex: '1', minWidth: '150px', maxWidth: '100%', borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '20px'}}>
