@@ -1161,14 +1161,15 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
 
         {/* 채널 ↔ 부대시설 거시적 상관관계 (Macro-Correlation) */}
         <div className="glass-panel" style={{padding: '24px', gridColumn: 'span 2'}}>
-          <h3 style={{marginBottom: '20px'}}>채널 비중 ↔ 부대시설 매출 거시적 상관관계</h3>
-          <p style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '15px'}}>특정 예약 채널(온라인, 세미나 등)의 매출 비중이 높았던 월에 각 영업장(레저, 식음, 모토아레나)의 총매출이 얼마나 함께 상승했는지를 보여주는 상관계수(-1.0 ~ 1.0)입니다. (0.4 이상 뚜렷한 연관, 0.7 이상 매우 강한 연관)</p>
+          <h3 style={{marginBottom: '20px'}}>채널 비중 ↔ 부대시설 및 전체매출 거시적 상관관계</h3>
+          <p style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '15px'}}>특정 예약 채널(온라인, 세미나 등)의 매출 비중이 높았던 월에 각 영업장 및 전체매출이 얼마나 함께 상승했는지를 보여주는 상관계수(-1.0 ~ 1.0)입니다. (0.4 이상 뚜렷한 연관, 0.7 이상 매우 강한 연관)</p>
           
           <div className="table-scroll-container hide-on-mobile" style={{background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid var(--border-glass)'}}>
             <table style={{width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'center'}}>
               <thead>
                 <tr style={{background: 'rgba(255,255,255,0.05)'}}>
                   <th style={{padding: '12px', textAlign: 'left', borderBottom: '1px solid var(--border-glass)'}}>채널명</th>
+                  <th style={{padding: '12px', borderBottom: '1px solid var(--border-glass)'}}>전체매출 (상관도)</th>
                   <th style={{padding: '12px', borderBottom: '1px solid var(--border-glass)'}}>레저본부 (상관도)</th>
                   <th style={{padding: '12px', borderBottom: '1px solid var(--border-glass)'}}>식음본부 (상관도)</th>
                   <th style={{padding: '12px', borderBottom: '1px solid var(--border-glass)'}}>모토아레나 (상관도)</th>
@@ -1192,6 +1193,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                     return total;
                   });
 
+                  const cTotal = calculateCorrelation(channelMonthlyRev, filteredProcessedData.map(d => d.totalSales)) || 0;
                   const cLeisure = calculateCorrelation(channelMonthlyRev, filteredProcessedData.map(d => d.leisureSales)) || 0;
                   const cFnb = calculateCorrelation(channelMonthlyRev, filteredProcessedData.map(d => d.fnbSales)) || 0;
                   const cMoto = calculateCorrelation(channelMonthlyRev, filteredProcessedData.map(d => d.motoSales)) || 0;
@@ -1232,6 +1234,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                 return total;
               });
 
+              const cTotal = calculateCorrelation(channelMonthlyRev, filteredProcessedData.map(d => d.totalSales)) || 0;
               const cLeisure = calculateCorrelation(channelMonthlyRev, filteredProcessedData.map(d => d.leisureSales)) || 0;
               const cFnb = calculateCorrelation(channelMonthlyRev, filteredProcessedData.map(d => d.fnbSales)) || 0;
               const cMoto = calculateCorrelation(channelMonthlyRev, filteredProcessedData.map(d => d.motoSales)) || 0;
@@ -1246,6 +1249,10 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
               return (
                 <div key={channel} className="glass-panel" style={{padding: '16px', borderLeft: '4px solid var(--accent-blue)'}}>
                   <div style={{fontSize: '16px', fontWeight: 'bold', marginBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px'}}>{channel}</div>
+                  <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
+                    <span style={{color: 'var(--text-muted)'}}>전체매출</span>
+                    <span style={{color: getColor(cTotal), fontWeight: cTotal >= 0.4 ? 'bold' : 'normal'}}>{cTotal.toFixed(2)}</span>
+                  </div>
                   <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
                     <span style={{color: 'var(--text-muted)'}}>레저본부</span>
                     <span style={{color: getColor(cLeisure), fontWeight: cLeisure >= 0.4 ? 'bold' : 'normal'}}>{cLeisure.toFixed(2)}</span>

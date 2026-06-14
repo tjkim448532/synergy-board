@@ -296,9 +296,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
     expLeisureWe = Math.max(0, regLeisureWe.slope * targetWeekendOcc + regLeisureWe.intercept);
     expectedLeisureRevenue = expLeisureWd + expLeisureWe;
 
-    expMotoWd = Math.max(0, regMotoWd.slope * targetWeekdayOcc + regMotoWd.intercept);
-    expMotoWe = Math.max(0, regMotoWe.slope * targetWeekendOcc + regMotoWe.intercept);
-    expectedMotoRevenue = expMotoWd + expMotoWe;
+    expectedMotoRevenue = Math.max(0, regMotoTotal.slope * targetTotalOcc + regMotoTotal.intercept);
 
     expFnbWd = Math.max(0, regFnbWd.slope * targetWeekdayOcc + regFnbWd.intercept);
     expFnbWe = Math.max(0, regFnbWe.slope * targetWeekendOcc + regFnbWe.intercept);
@@ -563,9 +561,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
               </div>
             </div>
             <div style={{marginTop: '16px', fontSize: '14px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px'}}>
-              {hasSplitLeisure 
-                ? <><span>주중 ₩{formatCurrency(expMotoWd)}</span><span>주말 ₩{formatCurrency(expMotoWe)}</span></>
-                : <span>(종합 점유율 {targetTotalOcc.toFixed(1)}% 기준 예측)</span>}
+              <span>(종합 점유율 {targetTotalOcc.toFixed(1)}% 기준 예측)</span>
             </div>
           </div>
 
