@@ -448,8 +448,9 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       const fnbGross = d.fnbSales || 0;
       const motoGross = d.motoSales || 0;
 
-      totalGrossTrev += (d.totalRoomRevenue || 0) + leisureGross + fnbGross + motoGross;
-      totalPureTrev += (d.totalRoomRevenue || 0) + (leisureGross * capLeisure) + (fnbGross * capFnb) + (motoGross * capMoto);
+      // 모토아레나 매출은 KPI 산정에서 제외 (사용자 요청)
+      totalGrossTrev += (d.totalRoomRevenue || 0) + leisureGross + fnbGross;
+      totalPureTrev += (d.totalRoomRevenue || 0) + (leisureGross * capLeisure) + (fnbGross * capFnb);
     });
 
     if (totalAvailableRooms === 0) return null;
@@ -610,7 +611,8 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
               <span style={{color: 'var(--accent-gold)'}}>⚡</span> 경영 핵심 KPI (월평균)
             </h3>
             <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: '1.5', wordBreak: 'keep-all'}}>
-              방 1개를 팔았을 때 하루에 창출되는 평균 수익입니다. [설정]에 입력된 '투숙객 비중'을 바탕으로 워크인 매출을 제외한 <strong>순수 객실 연계 가치(Pure TrevPAR)</strong>를 분리하여 측정합니다.
+              방 1개를 팔았을 때 하루에 창출되는 평균 수익입니다. [설정]에 입력된 '투숙객 비중'을 바탕으로 워크인 매출을 제외한 <strong>순수 객실 연계 가치(Pure TrevPAR)</strong>를 분리하여 측정합니다.<br/>
+              <span style={{color: 'var(--accent-red)', fontSize: '12px'}}>* 모토아레나 매출은 성격이 달라 객실 KPI 산정에서 제외되었습니다.</span>
             </p>
           </div>
           
