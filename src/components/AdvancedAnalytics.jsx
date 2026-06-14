@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
   ScatterChart, Scatter, ZAxis, PieChart, Pie, Cell
@@ -34,6 +34,44 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
   const [selectedRoomType, setSelectedRoomType] = useState('all');
   const [activeDivision, setActiveDivision] = useState('leisure');
   const [motoLogic, setMotoLogic] = useState('current');
+  const [googleTotalVisitors, setGoogleTotalVisitors] = useState(null);
+
+  useEffect(() => {
+    const fetchGoogleData = async () => {
+      try {
+        const response = await fetch('https://docs.google.com/spreadsheets/d/1wlNrE_FvXCYNGfyvIYxEidYLKoEas4pidWe0Z9e_2xs/export?format=csv&gid=0');
+        const text = await response.text();
+        const lines = text.split('\n');
+        for (const line of lines) {
+          if (line.includes('전체 방문객')) {
+            const matches = line.match(/(?:^|,)(?:"([^"]*)"|([^,]*))/g);
+            if (matches && matches.length >= 4) {
+              const rawStr = matches[3];
+              const cleanStr = rawStr.replace(/[^0-9]/g, '');
+              if (cleanStr) {
+                setGoogleTotalVisitors(Number(cleanStr));
+              }
+            }
+            break;
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch google sheets data", err);
+      }
+    };
+    fetchGoogleData();
+  }, []);
+
+  const totalHotelGuests = useMemo(() => {
+    if (!monthlyData || monthlyData.length === 0) return 0;
+    return monthlyData.reduce((sum, d) => {
+      const sold16 = Number(d.sold16 || d.standardSold || 0);
+      const sold35 = Number(d.sold35 || 0);
+      const sold51 = Number(d.sold51 || d.connectingSold || 0);
+      const sold51Acc = Number(d.sold51Acc || 0);
+      return sum + (sold16 * 2) + (sold35 * 4) + ((sold51 + sold51Acc) * 6);
+    }, 0);
+  }, [monthlyData]);
 
   const divisionConfig = {
     all: { title: '전체통합', dataKey: 'totalSales', color: 'var(--accent-emerald)' },
@@ -351,6 +389,35 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
 
   return (
     <div style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
+    
+      {/* 🚀 최상단 핵심 지표 대형 배너 */}
+      <div className="glass-panel" style={{display: 'flex', flexWrap: 'wrap', overflow: 'hidden', border: '1px solid var(--accent-gold)'}}>
+        <div style={{flex: 1, minWidth: '300px', padding: '32px 40px', background: 'rgba(251, 191, 36, 0.1)', display: 'flex', flexDirection: 'column', gap: '12px'}}>
+          <h2 style={{margin: 0, color: 'var(--accent-gold)', fontSize: '24px', display: 'flex', alignItems: 'center', gap: '12px'}}>
+            👥 총 방문객 <span style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.3)', padding: '4px 8px', borderRadius: '4px'}}>Live from Google</span>
+          </h2>
+          <div style={{fontSize: '56px', fontWeight: '900', color: 'var(--text-main)', textShadow: '0 0 20px rgba(251,191,36,0.5)'}}>
+            {googleTotalVisitors !== null ? <CountUp end={googleTotalVisitors} duration={2} separator="," /> : '...'}
+          </div>
+          <p style={{margin: 0, color: 'var(--text-muted)', fontSize: '14px'}}>
+            올해 전체 사업장을 방문한 통합 고객 누적 수
+          </p>
+        </div>
+        
+        <div style={{width: '1px', background: 'var(--border-glass)'}} />
+
+        <div style={{flex: 1, minWidth: '300px', padding: '32px 40px', background: 'rgba(52, 211, 153, 0.1)', display: 'flex', flexDirection: 'column', gap: '12px'}}>
+          <h2 style={{margin: 0, color: 'var(--accent-emerald)', fontSize: '24px', display: 'flex', alignItems: 'center', gap: '12px'}}>
+            🛏️ 누적 숙박객 <span style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.3)', padding: '4px 8px', borderRadius: '4px'}}>DB 기반 연산</span>
+          </h2>
+          <div style={{fontSize: '56px', fontWeight: '900', color: 'var(--text-main)', textShadow: '0 0 20px rgba(52,211,153,0.5)'}}>
+            <CountUp end={totalHotelGuests} duration={2} separator="," />
+          </div>
+          <p style={{margin: 0, color: 'var(--text-muted)', fontSize: '14px'}}>
+            (16평×2인) + (35평×4인) + (51평×6인) 누적 합산 결과
+          </p>
+        </div>
+      </div>
 
       {/* KPI Dashboard (TrevPAR & RevPAR) */}
       {kpiData && (
