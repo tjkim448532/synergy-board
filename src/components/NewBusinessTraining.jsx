@@ -97,7 +97,7 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
       
       {/* Header */}
       <div className="glass-panel" style={{borderLeft: '4px solid var(--accent-emerald)', overflow: 'hidden'}}>
-        <div style={{width: '100%', height: '200px', backgroundImage: 'url("/training-center.jpg")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundColor: 'rgba(0,0,0,0.5)', backgroundBlendMode: 'overlay'}}></div>
+        <div style={{width: '100%', height: '200px', backgroundImage: 'url("/training-center.png")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundColor: 'rgba(0,0,0,0.5)', backgroundBlendMode: 'overlay'}}></div>
         <div style={{padding: '24px'}}>
           <h2 style={{margin: '0 0 8px 0', color: 'var(--accent-emerald)', display: 'flex', alignItems: 'center', gap: '12px'}}>
             <Building2 size={28} /> 신규 사업 시뮬레이터 (연수원)
