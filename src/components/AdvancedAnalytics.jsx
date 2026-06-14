@@ -211,11 +211,14 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
             const mType = record.marketType || '';
             const sType = record.sourceType || '';
             
-            // 회원 식별 키워드: 회원, 기명, 무기명, 멤버
+            // 회원 식별 키워드: 요금타입(Rate Type) 만으로 결정
+            // 키워드: 회원, 정회원, 구좌, 기명, 무기명 (단, '비회원'은 제외)
             const isMember = (
-              rType.includes('회원') || mType.includes('회원') || sType.includes('회원') || 
-              rType.includes('기명') || mType.includes('기명') || sType.includes('기명') ||
-              rType.includes('멤버') || mType.includes('멤버') || sType.includes('멤버')
+              (rType.includes('회원') && !rType.includes('비회원')) ||
+              rType.includes('정회원') ||
+              rType.includes('구좌') ||
+              rType.includes('기명') ||
+              rType.includes('무기명')
             );
 
             const [yyyy, mm, dd] = record.date.split('-');
@@ -638,7 +641,8 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                 👥 객실 투숙객 유형 정밀 분석 (회원 vs 일반)
               </h3>
               <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0}}>
-                원본 엑셀 데이터의 마켓코드/요금유형을 기반으로 회원(기명/무기명)과 일반객의 점유 비중을 요일별로 상세 분석합니다.
+                원본 엑셀 데이터의 <b>'요금타입(Rate Type)'</b> 컬럼만을 기준으로 회원과 일반객(비회원)을 분리합니다.<br/>
+                <span style={{color: 'var(--accent-blue)'}}>[회원 판별 기준]</span> '회원', '정회원', '구좌', '기명', '무기명' 키워드 포함 시 회원으로 간주 (단, '비회원' 텍스트 포함 시 비회원으로 처리)
               </p>
             </div>
           </div>
