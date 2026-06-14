@@ -172,9 +172,13 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     const generalArr = filtered.map(d => d.motoGeneralRev || 0);
     const totalArr = filtered.map(d => d.motoTotalRev || 0);
     
+    const sumGeneral = generalArr.reduce((a, b) => a + b, 0);
+    const sumTotal = totalArr.reduce((a, b) => a + b, 0);
+    const generalRatio = sumTotal > 0 ? (sumGeneral / sumTotal) * 100 : 0;
+
     return {
       guest: calculateCorrelation(roomRevArr, guestArr),
-      general: calculateCorrelation(roomRevArr, generalArr),
+      generalRatio: generalRatio,
       total: calculateCorrelation(roomRevArr, totalArr),
       guestAvailable: true
     };
@@ -544,11 +548,11 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                     </div>
                   </div>
                   <div className="glass-panel" style={{flex: 1, minWidth: '250px', padding: '20px', background: 'rgba(251, 191, 36, 0.1)', border: '1px solid var(--accent-gold)'}}>
-                    <h4 style={{margin: '0 0 4px 0', color: 'var(--accent-gold)'}}>일반객 매출 ↔ 객실 매출</h4>
-                    <div style={{fontSize: '11px', color: 'var(--text-muted)', marginBottom: '12px'}}>(일반, 증평군민, MOU, 단체 티켓합계)</div>
-                    <div style={{fontSize: '32px', fontWeight: 'bold'}}>{motoCorrelations.general !== null ? motoCorrelations.general.toFixed(3) : 'N/A'}</div>
+                    <h4 style={{margin: '0 0 4px 0', color: 'var(--accent-gold)'}}>일반객 외부매출 비중</h4>
+                    <div style={{fontSize: '11px', color: 'var(--text-muted)', marginBottom: '12px'}}>(모토 총매출 대비 외부객 비율)</div>
+                    <div style={{fontSize: '32px', fontWeight: 'bold'}}>{motoCorrelations.generalRatio !== null ? `${motoCorrelations.generalRatio.toFixed(1)}%` : 'N/A'}</div>
                     <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px'}}>
-                      {motoCorrelations.general !== null ? getInterpretation(motoCorrelations.general) : '데이터 부족'}
+                      객실과 무관한 순수 외부 유입
                     </div>
                   </div>
                   <div className="glass-panel" style={{flex: 1, minWidth: '250px', padding: '20px', background: 'rgba(255,255,255,0.05)'}}>
