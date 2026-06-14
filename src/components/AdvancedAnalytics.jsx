@@ -258,33 +258,65 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     if (filtered.length === 0) return { guestAvailable: false };
     
     const occArr = filtered.map(d => d.occupancyRate || 0);
-    const guestArr = filtered.map(d => d.motoGuestRev || 0);
-    const generalArr = filtered.map(d => d.motoGeneralRev || 0);
-    const totalArr = filtered.map(d => d.motoTotalRev || 0);
     
-    const sumGuest = guestArr.reduce((a, b) => a + b, 0);
-    const sumGeneral = generalArr.reduce((a, b) => a + b, 0);
-    const sumTotal = totalArr.reduce((a, b) => a + b, 0);
+    let sumGuest = 0;
+    let sumGeneral = 0;
+    let sumOther = 0;
+    let sumTotal = 0;
     
+    const guestArr = [];
+    const generalArr = [];
+    const totalArr = [];
     const aggregatedOther = {};
+    
     filtered.forEach(d => {
-       if (d.motoBreakdown) {
-          if (d.motoBreakdown.internal) {
-             Object.entries(d.motoBreakdown.internal).forEach(([k,v]) => {
-                aggregatedOther[k] = (aggregatedOther[k] || 0) + v;
-             });
+      let gRev = 0;
+      let genRev = 0;
+      let othRev = 0;
+      
+      if (d.motoBreakdown) {
+        Object.keys(d.motoBreakdown).forEach(cat => {
+          if (d.motoBreakdown[cat]) {
+            Object.keys(d.motoBreakdown[cat]).forEach(ticket => {
+              const rev = d.motoBreakdown[cat][ticket];
+              
+              let group = settings.motoTicketGroups?.[ticket];
+              if (!group) {
+                if (ticket.includes('콘도') || ticket.includes('객실')) group = 'guest';
+                else if (ticket.includes('일반') || ticket.includes('증평군민') || ticket.includes('MOU') || ticket.includes('단체')) group = 'general';
+                else group = 'other';
+              }
+              
+              if (group === 'guest') gRev += rev;
+              else if (group === 'general') genRev += rev;
+              else {
+                othRev += rev;
+                aggregatedOther[ticket] = (aggregatedOther[ticket] || 0) + rev;
+              }
+            });
           }
-          if (d.motoBreakdown.other) {
-             Object.entries(d.motoBreakdown.other).forEach(([k,v]) => {
-                aggregatedOther[k] = (aggregatedOther[k] || 0) + v;
-             });
-          }
-       }
+        });
+      } else {
+        gRev = d.motoGuestRev || 0;
+        genRev = d.motoGeneralRev || 0;
+        othRev = (d.motoInternalRev || 0) + (d.motoOtherRev || 0);
+      }
+      
+      const totRev = gRev + genRev + othRev;
+      
+      guestArr.push(gRev);
+      generalArr.push(genRev);
+      totalArr.push(totRev);
+      
+      sumGuest += gRev;
+      sumGeneral += genRev;
+      sumOther += othRev;
+      sumTotal += totRev;
     });
 
     const guestRatio = sumTotal > 0 ? (sumGuest / sumTotal) * 100 : 0;
     const generalRatio = sumTotal > 0 ? (sumGeneral / sumTotal) * 100 : 0;
-    const otherRatio = sumTotal > 0 ? Math.max(0, 100 - guestRatio - generalRatio) : 0;
+    const otherRatio = sumTotal > 0 ? (sumOther / sumTotal) * 100 : 0;
 
     return {
       guest: calculateCorrelation(occArr, guestArr),

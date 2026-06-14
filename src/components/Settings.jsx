@@ -41,6 +41,7 @@ export default function Settings({ monthlyData }) {
 
   useEffect(() => {
     const fetchSettings = async () => {
+      setIsLoading(true);
       try {
         const docRef = doc(db, 'config', 'mainSettings');
         const docSnap = await getDoc(docRef);
@@ -59,11 +60,23 @@ export default function Settings({ monthlyData }) {
   useEffect(() => {
     if (monthlyData && monthlyData.length > 0) {
       const locSet = new Set();
+      const motoSet = new Set();
+      
       monthlyData.forEach(month => {
         if (month.salesByLocation) Object.keys(month.salesByLocation).forEach(loc => locSet.add(loc));
         if (month.leisureSalesByLocation) Object.keys(month.leisureSalesByLocation).forEach(loc => locSet.add(loc)); // legacy
+        
+        if (month.motoBreakdown) {
+          Object.keys(month.motoBreakdown).forEach(category => {
+            if (month.motoBreakdown[category]) {
+              Object.keys(month.motoBreakdown[category]).forEach(ticket => motoSet.add(ticket));
+            }
+          });
+        }
       });
+      
       setUniqueLocations(Array.from(locSet).sort());
+      setUniqueMotoTickets(Array.from(motoSet).sort());
     }
   }, [monthlyData]);
 
@@ -73,6 +86,16 @@ export default function Settings({ monthlyData }) {
       locationGroups: {
         ...(prev.locationGroups || {}),
         [loc]: group
+      }
+    }));
+  };
+
+  const handleMotoTicketGroupChange = (ticket, group) => {
+    setSettings(prev => ({
+      ...prev,
+      motoTicketGroups: {
+        ...(prev.motoTicketGroups || {}),
+        [ticket]: group
       }
     }));
   };
@@ -530,6 +553,68 @@ export default function Settings({ monthlyData }) {
                           onChange={() => handleLocationGroupChange(loc, 'exclude')}
                           style={{accentColor: '#ef4444'}}
                         /> 제외
+                      </label>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* 모토아레나 티켓 그룹핑 설정 */}
+        <div className="glass-panel" style={{padding: '32px'}}>
+          <h3 style={{margin: '0 0 8px 0', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px'}}>
+            모토아레나 티켓 그룹핑 설정 (동적 분리)
+          </h3>
+          <p style={{margin: '0 0 24px 0', color: 'var(--text-muted)', fontSize: '14px', lineHeight: '1.5'}}>
+            데이터베이스에 기록된 모든 모토아레나 티켓 매출을 어떤 분류로 합산할지 결정합니다. <br/>
+            기본적으로 티켓명에 '콘도/객실'이 포함되면 투숙객으로, '일반/단체/군민'이 포함되면 일반객으로 임시 자동 분류됩니다.
+          </p>
+          
+          {uniqueMotoTickets.length === 0 ? (
+            <div style={{color: 'rgba(255,255,255,0.5)'}}>업로드된 모토아레나 티켓 데이터가 없습니다.</div>
+          ) : (
+            <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
+              {uniqueMotoTickets.map(ticket => {
+                // Determine current group. If not explicitly set, use fallback logic to show default selection.
+                let currentGroup = settings.motoTicketGroups?.[ticket];
+                if (!currentGroup) {
+                  if (ticket.includes('콘도') || ticket.includes('객실')) currentGroup = 'guest';
+                  else if (ticket.includes('일반') || ticket.includes('증평군민') || ticket.includes('MOU') || ticket.includes('단체')) currentGroup = 'general';
+                  else currentGroup = 'other';
+                }
+
+                return (
+                  <div key={ticket} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px'}}>
+                    <strong style={{fontSize: '15px', flex: 1, color: 'var(--text-bright)'}}>{ticket}</strong>
+                    <div style={{display: 'flex', gap: '16px'}}>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: currentGroup === 'guest' ? 'var(--accent-emerald)' : 'var(--text-muted)'}}>
+                        <input 
+                          type="radio" 
+                          name={`moto_${ticket}`} 
+                          checked={currentGroup === 'guest'}
+                          onChange={() => handleMotoTicketGroupChange(ticket, 'guest')}
+                          style={{accentColor: 'var(--accent-emerald)'}}
+                        /> 투숙객 매출
+                      </label>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: currentGroup === 'general' ? 'var(--accent-gold)' : 'var(--text-muted)'}}>
+                        <input 
+                          type="radio" 
+                          name={`moto_${ticket}`} 
+                          checked={currentGroup === 'general'}
+                          onChange={() => handleMotoTicketGroupChange(ticket, 'general')}
+                          style={{accentColor: 'var(--accent-gold)'}}
+                        /> 일반객 매출
+                      </label>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: currentGroup === 'other' ? '#ef4444' : 'var(--text-muted)'}}>
+                        <input 
+                          type="radio" 
+                          name={`moto_${ticket}`} 
+                          checked={currentGroup === 'other'}
+                          onChange={() => handleMotoTicketGroupChange(ticket, 'other')}
+                          style={{accentColor: '#ef4444'}}
+                        /> 기타 매출 (임직원 등)
                       </label>
                     </div>
                   </div>
