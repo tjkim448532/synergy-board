@@ -563,7 +563,8 @@ export default function MonthlyDataForm({ settings }) {
         motoGeneralRev: motoData.motoGeneralRev,
         motoInternalRev: motoData.motoInternalRev,
         motoOtherRev: motoData.motoOtherRev,
-        motoTotalRev: motoData.motoTotalRev
+        motoTotalRev: motoData.motoTotalRev,
+        motoBreakdown: motoData.breakdown
       }, { merge: true });
       toast.success(`[${motoData.yearMonth}] 모토아레나 데이터가 성공적으로 저장(병합)되었습니다!`);
       setIsMotoSaved(true);
@@ -853,9 +854,26 @@ export default function MonthlyDataForm({ settings }) {
                       {r.motoTotalRev > 0 && (
                         <div style={{marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '2px'}}>
                           <span style={{color: 'var(--accent-emerald)'}}>투숙: ₩{formatCurrency(r.motoGuestRev || 0)}</span>
-                          <span style={{color: 'var(--accent-gold)'}}>일반: ₩{formatCurrency(r.motoGeneralRev || 0)}</span>
+                          {r.motoBreakdown?.guest && Object.keys(r.motoBreakdown.guest).length > 0 && (
+                            <div style={{fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginLeft: '8px', lineHeight: '1.2'}}>
+                              {Object.keys(r.motoBreakdown.guest).join(', ')}
+                            </div>
+                          )}
+                          <span style={{color: 'var(--accent-gold)', marginTop: '4px'}}>일반: ₩{formatCurrency(r.motoGeneralRev || 0)}</span>
+                          {r.motoBreakdown?.general && Object.keys(r.motoBreakdown.general).length > 0 && (
+                            <div style={{fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginLeft: '8px', lineHeight: '1.2'}}>
+                              {Object.keys(r.motoBreakdown.general).join(', ')}
+                            </div>
+                          )}
                           {(r.motoInternalRev > 0 || r.motoOtherRev > 0) && (
-                            <span style={{color: 'var(--text-muted)'}}>기타: ₩{formatCurrency((r.motoInternalRev || 0) + (r.motoOtherRev || 0))}</span>
+                            <>
+                              <span style={{color: 'var(--text-muted)', marginTop: '4px'}}>기타: ₩{formatCurrency((r.motoInternalRev || 0) + (r.motoOtherRev || 0))}</span>
+                              {(r.motoBreakdown?.internal || r.motoBreakdown?.other) && (
+                                <div style={{fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginLeft: '8px', lineHeight: '1.2'}}>
+                                  {[...(Object.keys(r.motoBreakdown?.internal || {})), ...(Object.keys(r.motoBreakdown?.other || {}))].join(', ')}
+                                </div>
+                              )}
+                            </>
                           )}
                         </div>
                       )}
@@ -909,11 +927,20 @@ export default function MonthlyDataForm({ settings }) {
                       <span style={{fontWeight: 'bold'}}>₩{formatCurrency(r.motoTotalRev || 0)}</span>
                     </div>
                     {r.motoTotalRev > 0 && (
-                      <div style={{display: 'flex', justifyContent: 'flex-end', gap: '8px', fontSize: '11px', marginTop: '2px'}}>
-                         <span style={{color: 'var(--accent-emerald)'}}>투숙: ₩{formatCurrency(r.motoGuestRev || 0)}</span>
-                         <span style={{color: 'var(--accent-gold)'}}>일반: ₩{formatCurrency(r.motoGeneralRev || 0)}</span>
+                      <div style={{display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px', marginTop: '6px', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '6px'}}>
+                         <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                           <span style={{color: 'var(--accent-emerald)'}}>투숙: ₩{formatCurrency(r.motoGuestRev || 0)}</span>
+                           <span style={{color: 'var(--accent-gold)'}}>일반: ₩{formatCurrency(r.motoGeneralRev || 0)}</span>
+                         </div>
+                         {(r.motoBreakdown?.guest || r.motoBreakdown?.general) && (
+                           <div style={{color: 'rgba(255,255,255,0.4)', fontSize: '10px', marginTop: '2px'}}>
+                             {[...(Object.keys(r.motoBreakdown?.guest || {})), ...(Object.keys(r.motoBreakdown?.general || {}))].slice(0, 3).join(', ')}...
+                           </div>
+                         )}
                          {(r.motoInternalRev > 0 || r.motoOtherRev > 0) && (
-                            <span style={{color: 'var(--text-muted)'}}>기타: ₩{formatCurrency((r.motoInternalRev || 0) + (r.motoOtherRev || 0))}</span>
+                            <div style={{display: 'flex', justifyContent: 'flex-start', marginTop: '4px'}}>
+                              <span style={{color: 'var(--text-muted)'}}>기타: ₩{formatCurrency((r.motoInternalRev || 0) + (r.motoOtherRev || 0))}</span>
+                            </div>
                          )}
                       </div>
                     )}

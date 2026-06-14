@@ -176,6 +176,22 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     const sumGeneral = generalArr.reduce((a, b) => a + b, 0);
     const sumTotal = totalArr.reduce((a, b) => a + b, 0);
     
+    const aggregatedOther = {};
+    filtered.forEach(d => {
+       if (d.motoBreakdown) {
+          if (d.motoBreakdown.internal) {
+             Object.entries(d.motoBreakdown.internal).forEach(([k,v]) => {
+                aggregatedOther[k] = (aggregatedOther[k] || 0) + v;
+             });
+          }
+          if (d.motoBreakdown.other) {
+             Object.entries(d.motoBreakdown.other).forEach(([k,v]) => {
+                aggregatedOther[k] = (aggregatedOther[k] || 0) + v;
+             });
+          }
+       }
+    });
+
     const guestRatio = sumTotal > 0 ? (sumGuest / sumTotal) * 100 : 0;
     const generalRatio = sumTotal > 0 ? (sumGeneral / sumTotal) * 100 : 0;
     const otherRatio = sumTotal > 0 ? Math.max(0, 100 - guestRatio - generalRatio) : 0;
@@ -185,6 +201,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       guestRatio: guestRatio,
       generalRatio: generalRatio,
       otherRatio: otherRatio,
+      aggregatedOther: aggregatedOther,
       total: calculateCorrelation(occArr, totalArr),
       guestAvailable: true
     };
@@ -622,6 +639,23 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                       <div style={{fontSize: '13px', padding: '16px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', lineHeight: '1.5', color: 'var(--text-muted)'}}>
                         💡 임직원 복지 티켓이거나 명칭 구분이 불명확한 기타 매출입니다. 분석의 핵심이 아니므로 상관관계에서 제외됩니다.
                       </div>
+                      
+                      {motoCorrelations.aggregatedOther && Object.keys(motoCorrelations.aggregatedOther).length > 0 && (
+                        <div style={{marginTop: '16px', fontSize: '12px', background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '6px', color: 'rgba(255,255,255,0.6)', maxHeight: '120px', overflowY: 'auto'}}>
+                          <div style={{marginBottom: '6px', fontWeight: 'bold', color: 'var(--text-muted)'}}>📌 미분류 티켓 누적 집계 내역</div>
+                          <div style={{display: 'flex', flexDirection: 'column', gap: '4px'}}>
+                            {Object.entries(motoCorrelations.aggregatedOther)
+                              .sort((a,b) => b[1] - a[1])
+                              .map(([k,v]) => (
+                              <div key={k} style={{display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '2px'}}>
+                                <span>{k}</span>
+                                <span>₩{new Intl.NumberFormat('ko-KR').format(Math.round(v))}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
                     </div>
 
                   </div>
