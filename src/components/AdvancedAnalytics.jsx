@@ -167,9 +167,9 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
         }
       } else {
         // Fallback for legacy DB
-        leisureSales = Number(d.totalLeisureSales || d.leisureSales || 0);
-        motoSales = Number(d.motoTotalRev || d.totalMotoSales || d.motoSales || 0);
-        fnbSales = Number(d.totalFnbSales || d.fnbSales || 0);
+        leisureSales = Number(d.leisureSales || d.totalLeisureSales || 0);
+        motoSales = Number(d.motoSales || d.motoTotalRev || d.totalMotoSales || 0);
+        fnbSales = Number(d.fnbSales || d.totalFnbSales || 0);
       }
 
       // 회원 분석 로직 (rawRoomRecords 기반)
@@ -447,9 +447,10 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       const fnbGross = d.fnbSales || 0;
       const motoGross = d.motoSales || 0;
 
-      // 모토아레나 매출은 KPI 산정에서 제외 (사용자 요청)
-      totalGrossTrev += (d.totalRoomRevenue || 0) + leisureGross + fnbGross;
-      totalPureTrev += (d.totalRoomRevenue || 0) + (leisureGross * capLeisure) + (fnbGross * capFnb);
+      // 모토아레나 매출을 KPI 산정에 포함 (최신 통합 요청)
+      totalGrossTrev += (d.totalRoomRevenue || 0) + leisureGross + fnbGross + motoGross;
+      // 모토아레나는 캡쳐율 추정이 아닌 실제 투숙객 데이터(motoGuestRev) 합산 적용
+      totalPureTrev += (d.totalRoomRevenue || 0) + (leisureGross * capLeisure) + (fnbGross * capFnb) + (d.motoGuestRev || 0);
       totalSubsidiaryRev += leisureGross + fnbGross + motoGross;
     });
 
