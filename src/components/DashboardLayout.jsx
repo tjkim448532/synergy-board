@@ -1,9 +1,10 @@
 import React from 'react';
-import { Upload, Settings, PieChart, TrendingUp, BookOpen } from 'lucide-react';
+import { Upload, Settings, PieChart, TrendingUp, BookOpen, Building } from 'lucide-react';
 import './DashboardLayout.css';
 
 const SIDEBAR_MENU = [
   { id: 'prediction', icon: TrendingUp, label: '매출 예측 시뮬레이터' },
+  { id: 'new-business', icon: Building, label: '신규 사업 시뮬레이터' },
   { id: 'analytics', icon: PieChart, label: '상관관계 분석' },
   { id: 'logic', icon: BookOpen, label: '분석 로직 가이드' },
   { id: 'accuracy-tasks', icon: BookOpen, label: '데이터 정확도 핵심과제' },

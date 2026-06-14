@@ -1,0 +1,244 @@
+import React, { useState, useMemo } from 'react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
+import CountUpModule from 'react-countup';
+const CountUp = CountUpModule.default || CountUpModule;
+import { Building2, Calculator, ArrowRight } from 'lucide-react';
+
+const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(Math.round(val || 0));
+
+export default function NewBusinessTraining({ monthlyData, settings }) {
+  // Input states
+  const [newRooms, setNewRooms] = useState(200);
+  const [targetOcc, setTargetOcc] = useState(60);
+  
+  // Base Historical Metrics
+  const baseMetrics = useMemo(() => {
+    let totRev = 0;
+    let totSold = 0;
+    let totLeisure = 0;
+    let totMoto = 0;
+    let totFnb = 0;
+    
+    const locationGroups = settings.locationGroups || {};
+
+    monthlyData.forEach(d => {
+      const sold16 = Number(d.sold16 || d.standardSold || 0);
+      const sold35 = Number(d.sold35 || 0);
+      const sold51 = Number(d.sold51 || d.connectingSold || 0);
+      const sold51Acc = Number(d.sold51Acc || 0);
+      
+      const count51AsTwoRooms = settings.count51AsTwoRooms !== false;
+      const totalSold = sold16 + sold35 + (count51AsTwoRooms ? sold51 * 2 : sold51) + sold51Acc;
+      
+      totSold += totalSold;
+      totRev += Number(d.totalRoomRevenue || 0);
+      
+      let leisureSales = 0;
+      let motoSales = 0;
+      let fnbSales = 0;
+      
+      if (d.salesByLocation) {
+        Object.keys(d.salesByLocation).forEach(loc => {
+          const group = locationGroups[loc] || 'leisure';
+          if (group === 'leisure') leisureSales += d.salesByLocation[loc];
+          else if (group === 'moto') motoSales += d.salesByLocation[loc];
+          else if (group === 'fnb') fnbSales += d.salesByLocation[loc];
+        });
+      } else {
+        leisureSales += Number(d.totalLeisureSales || d.leisureSales || 0);
+      }
+      
+      totLeisure += leisureSales;
+      totMoto += motoSales;
+      totFnb += fnbSales;
+    });
+
+    return {
+      avgAdr: totSold > 0 ? totRev / totSold : 150000,
+      leisurePerRoom: totSold > 0 ? totLeisure / totSold : 0,
+      motoPerRoom: totSold > 0 ? totMoto / totSold : 0,
+      fnbPerRoom: totSold > 0 ? totFnb / totSold : 0
+    };
+  }, [monthlyData, settings]);
+
+  const [customAdr, setCustomAdr] = useState(null);
+  
+  // The actual ADR to use
+  const activeAdr = customAdr !== null ? customAdr : Math.round(baseMetrics.avgAdr);
+
+  // Simulation Calculations
+  // Assuming 365 days a year for annual calculation
+  const annualAvailableRooms = newRooms * 365;
+  const annualSoldRooms = annualAvailableRooms * (targetOcc / 100);
+  
+  const expectedRoomRev = annualSoldRooms * activeAdr;
+  const expectedLeisureRev = annualSoldRooms * baseMetrics.leisurePerRoom;
+  const expectedMotoRev = annualSoldRooms * baseMetrics.motoPerRoom;
+  const expectedFnbRev = annualSoldRooms * baseMetrics.fnbPerRoom;
+  const expectedTotalRev = expectedRoomRev + expectedLeisureRev + expectedMotoRev + expectedFnbRev;
+
+  const chartData = [
+    { name: '객실 매출', value: expectedRoomRev, color: 'var(--accent-blue)' },
+    { name: '식음(F&B)', value: expectedFnbRev, color: '#ef4444' }, // Red-ish for F&B
+    { name: '모토아레나', value: expectedMotoRev, color: 'var(--accent-gold)' },
+    { name: '레저/기타', value: expectedLeisureRev, color: 'var(--accent-emerald)' }
+  ].filter(d => d.value > 0);
+
+  return (
+    <div style={{display: 'flex', flexDirection: 'column', gap: '24px'}}>
+      
+      {/* Header */}
+      <div className="glass-panel" style={{padding: '24px', borderLeft: '4px solid var(--accent-emerald)'}}>
+        <h2 style={{margin: '0 0 8px 0', color: 'var(--accent-emerald)', display: 'flex', alignItems: 'center', gap: '12px'}}>
+          <Building2 size={28} /> 신규 사업 시뮬레이터 (연수원)
+        </h2>
+        <p style={{margin: 0, color: 'var(--text-muted)', fontSize: '14px', lineHeight: '1.6'}}>
+          기존 콘도의 운영 데이터(객단가 및 투숙객당 부대매출 창출액)를 베이스로, 연수원 등 신규 객실이 추가되었을 때 발생하는 <strong>연간 예상 파생 총매출</strong>을 시뮬레이션 합니다. 
+        </p>
+      </div>
+
+      {/* Input Section */}
+      <div className="glass-panel" style={{padding: '32px'}}>
+        <h3 style={{margin: '0 0 20px 0', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-main)'}}>
+          <Calculator size={20} /> 시뮬레이션 설정 (연간 기준)
+        </h3>
+        
+        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '24px'}}>
+          
+          <div style={{background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)'}}>
+            <label style={{display: 'block', marginBottom: '12px', color: 'var(--text-muted)', fontSize: '14px'}}>추가 건립 객실 수</label>
+            <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+              <input 
+                type="number" 
+                value={newRooms === 0 ? '' : newRooms} 
+                onChange={e => setNewRooms(Number(e.target.value))}
+                style={{width: '100px', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-glass)', background: 'rgba(0,0,0,0.3)', color: '#fff', fontSize: '18px', fontWeight: 'bold'}}
+              />
+              <span style={{color: 'var(--text-muted)'}}>실</span>
+            </div>
+          </div>
+
+          <div style={{background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)'}}>
+            <label style={{display: 'block', marginBottom: '12px', color: 'var(--text-muted)', fontSize: '14px'}}>예상 목표 점유율</label>
+            <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+              <input 
+                type="number" 
+                value={targetOcc === 0 ? '' : targetOcc} 
+                onChange={e => setTargetOcc(Number(e.target.value))}
+                style={{width: '100px', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-glass)', background: 'rgba(0,0,0,0.3)', color: '#fff', fontSize: '18px', fontWeight: 'bold'}}
+              />
+              <span style={{color: 'var(--text-muted)'}}>%</span>
+            </div>
+            <div style={{fontSize: '12px', color: 'var(--accent-emerald)', marginTop: '8px'}}>
+              연간 예상 판매 객실: {formatCurrency(annualSoldRooms)}실
+            </div>
+          </div>
+
+          <div style={{background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)'}}>
+            <label style={{display: 'block', marginBottom: '12px', color: 'var(--text-muted)', fontSize: '14px'}}>객단가 (ADR)</label>
+            <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+              <span style={{color: 'var(--text-muted)'}}>₩</span>
+              <input 
+                type="number" 
+                value={activeAdr === 0 ? '' : activeAdr} 
+                onChange={e => setCustomAdr(Number(e.target.value))}
+                style={{width: '140px', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-glass)', background: 'rgba(0,0,0,0.3)', color: 'var(--accent-blue)', fontSize: '18px', fontWeight: 'bold'}}
+              />
+            </div>
+            <div style={{fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '8px', display: 'flex', justifyContent: 'space-between'}}>
+              <span>*기본값: 기존 콘도 평균치</span>
+              {customAdr !== null && (
+                <button 
+                  onClick={() => setCustomAdr(null)}
+                  style={{background: 'none', border: 'none', color: 'var(--accent-gold)', cursor: 'pointer', fontSize: '11px', textDecoration: 'underline'}}
+                >
+                  초기화
+                </button>
+              )}
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* Results Section */}
+      <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '24px'}}>
+        
+        {/* Total Expected Revenue */}
+        <div className="glass-panel" style={{padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
+          <div style={{fontSize: '16px', color: 'var(--text-muted)', marginBottom: '8px'}}>연간 총 예상 파생 매출</div>
+          <div style={{fontSize: '48px', fontWeight: '900', color: 'var(--text-main)', letterSpacing: '-1px'}}>
+            ₩<CountUp end={expectedTotalRev} duration={1} separator="," preserveValue />
+          </div>
+          <div style={{marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '16px'}}>
+            
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '12px', borderBottom: '1px dashed rgba(255,255,255,0.1)'}}>
+              <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                <div style={{width: '12px', height: '12px', borderRadius: '50%', background: 'var(--accent-blue)'}} />
+                <span>객실 매출</span>
+              </div>
+              <strong style={{fontSize: '18px'}}>₩{formatCurrency(expectedRoomRev)}</strong>
+            </div>
+
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '12px', borderBottom: '1px dashed rgba(255,255,255,0.1)'}}>
+              <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                <div style={{width: '12px', height: '12px', borderRadius: '50%', background: '#ef4444'}} />
+                <span>식음(F&B) 매출</span>
+              </div>
+              <strong style={{fontSize: '18px'}}>₩{formatCurrency(expectedFnbRev)}</strong>
+            </div>
+
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '12px', borderBottom: '1px dashed rgba(255,255,255,0.1)'}}>
+              <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                <div style={{width: '12px', height: '12px', borderRadius: '50%', background: 'var(--accent-gold)'}} />
+                <span>모토아레나 매출</span>
+              </div>
+              <strong style={{fontSize: '18px'}}>₩{formatCurrency(expectedMotoRev)}</strong>
+            </div>
+
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+              <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                <div style={{width: '12px', height: '12px', borderRadius: '50%', background: 'var(--accent-emerald)'}} />
+                <span>레저/기타 매출</span>
+              </div>
+              <strong style={{fontSize: '18px'}}>₩{formatCurrency(expectedLeisureRev)}</strong>
+            </div>
+
+          </div>
+        </div>
+
+        {/* Chart */}
+        <div className="glass-panel" style={{padding: '32px'}}>
+          <h3 style={{margin: '0 0 16px 0', fontSize: '16px', color: 'var(--text-muted)'}}>예상 매출 비중</h3>
+          <div style={{width: '100%', height: '350px'}}>
+            <ResponsiveContainer>
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={80}
+                  outerRadius={120}
+                  paddingAngle={5}
+                  dataKey="value"
+                  stroke="none"
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <RechartsTooltip 
+                  formatter={(value) => `₩${formatCurrency(value)}`}
+                  contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)', borderRadius: '8px'}}
+                />
+                <Legend verticalAlign="bottom" height={36}/>
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
