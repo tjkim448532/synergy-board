@@ -39,7 +39,7 @@ export default function LogicGuide() {
           </div>
           <div className="card-body">
             <p>
-              오류를 방지하기 위해 엑셀 데이터나 외부 링크에 의존하지 않고, <strong>가장 정확한 물리적 수치를 시스템 엔진(코드) 자체에 영구적으로 고정</strong>시켰습니다.
+              오류를 방지하기 위해 외부 데이터에 의존하지 않고, <strong>가장 정확한 물리적 수치를 시스템 내부에 고정 설정</strong>하여 기준점으로 삼습니다.
             </p>
             <div className="formula-box">
               <div className="formula-item">
@@ -223,7 +223,7 @@ export default function LogicGuide() {
               <div className="math-step">
                 <span className="step-num">Step 1: 데이터 분리 및 월간 집계</span>
                 <div style={{color: 'var(--text-muted)'}}>
-                  매월 객실 엑셀에서 '마켓타입'을 파싱해 <strong>채널별(온라인, 세미나, 휴양소 등) 월 총매출 배열 X</strong>를 추출하고, 영업장 엑셀에서 <strong>본부별(식음, 레저, 모토) 월 총매출 배열 Y</strong>를 추출합니다.
+                  매월 객실 데이터에서 '마켓타입' 항목을 추출해 <strong>채널별(온라인, 세미나, 휴양소 등) 월 총매출 배열 X</strong>를 생성하고, 영업장 데이터에서 <strong>본부별(식음, 레저, 모토) 월 총매출 배열 Y</strong>를 생성합니다.
                 </div>
               </div>
               <div className="math-step">
@@ -347,18 +347,18 @@ export default function LogicGuide() {
             <div className="icon-circle" style={{background: 'rgba(168, 85, 247, 0.1)'}}>
               <Search size={24} className="text-purple" style={{color: '#a855f7'}} />
             </div>
-            <h3>9. 모토아레나 동적 그룹핑(Dynamic Grouping) 파싱 및 허수 판별 알고리즘</h3>
+            <h3>9. 모토아레나 동적 그룹핑(Dynamic Grouping) 및 분류 알고리즘</h3>
           </div>
           <div className="card-body">
             <p>
-              단일 영업장 중 이질적인 성격을 띄는 '모토아레나'의 엑셀 데이터는 단순 총합계가 아닌, <strong>개별 결제 티켓의 명칭을 바탕으로 한 동적 분류(Dynamic Grouping)</strong>를 거쳐 투숙객 매출과 일반객 매출로 완전 분리됩니다.
+              단일 영업장 중 이질적인 성격을 띄는 '모토아레나'의 데이터는 단순 총합계가 아닌, <strong>개별 결제 티켓의 명칭을 바탕으로 한 동적 분류(Dynamic Grouping)</strong>를 거쳐 투숙객 매출과 일반객 매출로 완전 분리됩니다.
             </p>
             
             <div className="formula-box vertical" style={{marginTop: '16px'}}>
               <div className="math-step">
                 <span className="step-num">Step 1: 설정 화면 커스텀 핀셋 매핑</span>
                 <div style={{color: 'var(--text-muted)'}}>
-                  하드코딩된 규칙에 의존하지 않고, [설정] 화면에서 사용자가 엑셀 내 모든 모토아레나 티켓 종류를 직접 <code>투숙객 매출</code>, <code>일반객 매출</code>, <code>기타 매출</code> 로 클릭하여 영구적으로 분류(매핑)합니다.
+                  고정된 규칙에 의존하지 않고, [설정] 화면에서 사용자가 전체 모토아레나 티켓 종류를 직접 <code>투숙객 매출</code>, <code>일반객 매출</code>, <code>기타 매출</code> 로 지정하여 유연하게 분류할 수 있습니다.
                 </div>
               </div>
               <div className="math-step">
