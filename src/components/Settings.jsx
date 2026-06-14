@@ -20,6 +20,7 @@ export default function Settings({ monthlyData }) {
   });
 
   const [uniqueLocations, setUniqueLocations] = useState([]);
+  const [uniqueMotoTickets, setUniqueMotoTickets] = useState([]);
 
   const [sheetUrl, setSheetUrl] = useState('');
   const [isSaved, setIsSaved] = useState(false);
