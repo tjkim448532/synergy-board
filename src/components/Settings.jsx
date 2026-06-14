@@ -593,6 +593,24 @@ export default function Settings({ monthlyData }) {
                           style={{accentColor: 'var(--accent-gold)'}}
                         /> 모토아레나
                       </label>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: currentGroup === 'golf' ? '#22c55e' : 'var(--text-muted)'}}>
+                        <input 
+                          type="radio" 
+                          name={`group_${loc}`} 
+                          checked={currentGroup === 'golf'}
+                          onChange={() => handleLocationGroupChange(loc, 'golf')}
+                          style={{accentColor: '#22c55e'}}
+                        /> 골프 본부
+                      </label>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: currentGroup === 'other' ? '#64748b' : 'var(--text-muted)'}}>
+                        <input 
+                          type="radio" 
+                          name={`group_${loc}`} 
+                          checked={currentGroup === 'other'}
+                          onChange={() => handleLocationGroupChange(loc, 'other')}
+                          style={{accentColor: '#64748b'}}
+                        /> 기타 본부
+                      </label>
                       <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: currentGroup === 'exclude' ? '#ef4444' : 'var(--text-muted)'}}>
                         <input 
                           type="radio" 

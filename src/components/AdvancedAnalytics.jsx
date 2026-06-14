@@ -106,12 +106,16 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     const predefinedTitles = {
         leisure: '레저본부',
         fnb: '식음본부',
-        moto: '모토아레나'
+        moto: '모토아레나',
+        golf: '골프본부',
+        other: '기타본부'
     };
     const predefinedColors = {
         leisure: 'var(--accent-purple)',
         fnb: 'var(--accent-blue)',
-        moto: 'var(--accent-gold)'
+        moto: 'var(--accent-gold)',
+        golf: '#22c55e',
+        other: '#64748b'
     };
     const colors = ['#f43f5e', '#f97316', '#ef4444', '#14b8a6', '#06b6d4', '#6366f1', '#d946ef'];
     
