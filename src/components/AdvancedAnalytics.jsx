@@ -121,6 +121,9 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     groups.add('fnb');
     groups.add('moto');
     
+    // remove 'exclude' group from creating a tab
+    groups.delete('exclude');
+    
     let colorIdx = 0;
     Array.from(groups).forEach(group => {
       config[group] = {
@@ -168,8 +171,10 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       if (d.salesByLocation) {
         Object.keys(d.salesByLocation).forEach(loc => {
           const group = locationGroups[loc] || 'leisure';
-          groupSales[group] = (groupSales[group] || 0) + d.salesByLocation[loc];
-          totalSales += d.salesByLocation[loc];
+          if (group !== 'exclude') {
+            groupSales[group] = (groupSales[group] || 0) + d.salesByLocation[loc];
+            totalSales += d.salesByLocation[loc];
+          }
         });
       } else {
         // Fallback for legacy DB
