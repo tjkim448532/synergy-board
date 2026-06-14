@@ -273,15 +273,15 @@ export default function LogicGuide() {
               <div className="math-step">
                 <span className="step-num">지표 2: Gross TrevPAR (워크인 포함 전체)</span>
                 <div style={{color: 'var(--text-muted)'}}>
-                  <code>(객실 + 식음 + 레저 + 모토아레나 전체 총매출) ÷ (총 가용 객실 수)</code><br/>
-                  투숙객과 워크인(비투숙 외부 방문객)을 가리지 않고, 리조트라는 거대한 공간 시설 전체가 하루에 뿜어내는 총체적인 '공간 수익성'을 객실 모수로 나누어 직관적으로 보여줍니다.
+                  <code>(객실 + 식음 + 레저 총매출) ÷ (총 가용 객실 수)</code><br/>
+                  투숙객과 워크인(비투숙 외부 방문객)을 가리지 않고, 리조트라는 거대한 공간 시설 전체가 하루에 뿜어내는 총체적인 '공간 수익성'을 객실 모수로 나누어 직관적으로 보여줍니다. <strong>(※ 모토아레나 제외)</strong>
                 </div>
               </div>
               <div className="math-step">
                 <span className="step-num">지표 3: 순수(Pure) TrevPAR (객실 + 투숙객 부대매출)</span>
                 <div style={{color: 'var(--text-muted)'}}>
-                  <code>[ (총 객실 매출) + (레저매출 × 투숙객비중) + (식음매출 × 투숙객비중) + (모토매출 × 투숙객비중) ] ÷ (총 가용 객실 수)</code><br/>
-                  방 1개를 채웠을 때, 오직 <strong>'그 투숙객'</strong>이 식당, 레저 등에서 카드를 긁을 것으로 기대되는 수익을 합친 <strong>진짜 객실 1개의 연계 가치</strong>입니다.
+                  <code>[ (총 객실 매출) + (레저매출 × 투숙객비중) + (식음매출 × 투숙객비중) ] ÷ (총 가용 객실 수)</code><br/>
+                  방 1개를 채웠을 때, 오직 <strong>'그 투숙객'</strong>이 식당, 레저 등에서 카드를 긁을 것으로 기대되는 수익을 합친 <strong>진짜 객실 1개의 연계 가치</strong>입니다. <strong>(※ 모토아레나 제외)</strong>
                 </div>
               </div>
             </div>

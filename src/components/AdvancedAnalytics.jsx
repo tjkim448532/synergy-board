@@ -33,7 +33,7 @@ const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(Math.round
 
 export default function AdvancedAnalytics({ monthlyData, settings }) {
   const [selectedRoomType, setSelectedRoomType] = useState('all');
-  const [activeDivision, setActiveDivision] = useState('leisure');
+  const [activeDivision, setActiveDivision] = useState('all');
   const [motoLogic, setMotoLogic] = useState('current');
   const [selectedMonthFilter, setSelectedMonthFilter] = useState('all');
   const [googleVisitorsData, setGoogleVisitorsData] = useState({ total: null, months: {} });
