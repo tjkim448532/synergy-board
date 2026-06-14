@@ -1,10 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Link as LinkIcon, RefreshCw, Lock } from 'lucide-react';
+import { Save, Link as LinkIcon, RefreshCw, Lock, ChevronDown, ChevronUp } from 'lucide-react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import Papa from 'papaparse';
 import toast from 'react-hot-toast';
 import './Settings.css';
+
+const SectionCard = ({ title, description, isExpanded, onToggle, children, actions }) => (
+  <div className="settings-card glass-panel" style={{marginBottom: '20px', padding: 0}}>
+    <div 
+      style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', padding: '24px'}}
+      onClick={onToggle}
+    >
+      <div>
+        <h3 style={{margin: 0, color: 'var(--text-main)', fontSize: '18px'}}>{title}</h3>
+        {description && <p style={{margin: '8px 0 0 0', color: 'var(--text-muted)', fontSize: '14px', lineHeight: '1.5'}}>{description}</p>}
+      </div>
+      <div style={{display: 'flex', alignItems: 'center', gap: '16px'}}>
+        {actions}
+        {isExpanded ? <ChevronUp size={20} color="var(--text-muted)" /> : <ChevronDown size={20} color="var(--text-muted)" />}
+      </div>
+    </div>
+    {isExpanded && (
+      <div style={{padding: '0 24px 24px 24px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '24px'}}>
+        {children}
+      </div>
+    )}
+  </div>
+);
 
 export default function Settings({ monthlyData }) {
   const [settings, setSettings] = useState({
@@ -29,6 +52,18 @@ export default function Settings({ monthlyData }) {
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pin, setPin] = useState('');
+
+  const [expandedSections, setExpandedSections] = useState({
+    basic: true,
+    weekend: false,
+    capture: false,
+    adr: false,
+    location: false,
+    moto: false,
+    capa: false
+  });
+
+  const toggleSection = (sec) => setExpandedSections(p => ({...p, [sec]: !p[sec]}));
 
   const handlePinSubmit = (e) => {
     e.preventDefault();
@@ -318,15 +353,25 @@ export default function Settings({ monthlyData }) {
 
   return (
     <div className="settings-container">
-      <div className="settings-header">
-        <h2>기본 정보 설정</h2>
-        <p className="settings-desc">콘도의 총 객실 수 등 변동성이 적은 기본 정보를 설정하고 DB 초기값으로 저장합니다.</p>
+      <div className="settings-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+        <div>
+          <h2>기본 정보 설정</h2>
+          <p className="settings-desc">콘도의 총 객실 수 등 분석 기준값을 설정하고 DB에 저장합니다.</p>
+        </div>
+        <div className="settings-actions">
+          <button className="btn-save" onClick={handleSave} style={{padding: '10px 20px', fontSize: '15px'}}>
+            <Save size={18} /> 전체 설정 저장하기
+          </button>
+          {isSaved && <span className="save-message" style={{display: 'block', marginTop: '8px', textAlign: 'right'}}>정상적으로 저장되었습니다.</span>}
+        </div>
       </div>
 
-      <div className="settings-card glass-panel">
-        <h3 style={{marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px'}}>
-          기본 설정
-        </h3>
+      <SectionCard
+        title="기본 설정"
+        description="리조트명, 고정 객실 수 및 51평형 점유율 산정 방식을 설정합니다."
+        isExpanded={expandedSections.basic}
+        onToggle={() => toggleSection('basic')}
+      >
         <div className="form-group">
           <label htmlFor="resortName">리조트 이름</label>
           <input 
@@ -338,16 +383,12 @@ export default function Settings({ monthlyData }) {
             placeholder="예: 시너지 리조트"
           />
         </div>
-
         <div className="form-group">
           <label>객실 인벤토리 고정값</label>
           <div style={{color: 'var(--text-muted)', fontSize: '14px', marginTop: '4px'}}>
             총 객실 수는 <strong>175실</strong>, 51평형(커넥팅) 세트는 <strong>85세트</strong>로 고정되어 있습니다. (장애인 객실 5실 별도)
           </div>
         </div>
-
-
-
         <div className="form-group">
           <label>51평형(커넥팅 룸) 점유율 산정 방식</label>
           <div style={{display: 'flex', gap: '20px', marginTop: '8px'}}>
@@ -377,15 +418,15 @@ export default function Settings({ monthlyData }) {
             * 방 1개로 산정 시: 점유율 분모는 '고정 총 객실 수 - 51평 세트 수'로 줄어들며, 판매 객실 수는 51평 판매량 × 1로 계산합니다.
           </small>
         </div>
+      </SectionCard>
 
-        <h3 style={{marginBottom: '20px', marginTop: '40px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px'}}>
-          휴일 및 특수 주말 설정
-        </h3>
+      <SectionCard
+        title="휴일 및 특수 주말 설정"
+        description="금, 토요일이 아니더라도 주말로 간주하여 점유율을 계산할 날짜를 지정합니다."
+        isExpanded={expandedSections.weekend}
+        onToggle={() => toggleSection('weekend')}
+      >
         <div className="form-group">
-          <label htmlFor="customWeekends">특수 주말 (공휴일 전날 등) 지정</label>
-          <p style={{color: 'var(--text-muted)', fontSize: '12px', marginBottom: '8px'}}>
-            금, 토요일이 아니더라도 주말로 간주하여 점유율을 계산할 날짜를 쉼표(,)로 구분하여 입력하세요. (예: 공휴일 전날)
-          </p>
           <textarea 
             id="customWeekends" 
             name="customWeekends" 
@@ -395,25 +436,24 @@ export default function Settings({ monthlyData }) {
             style={{width: '100%', minHeight: '80px', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-glass)', background: 'rgba(255,255,255,0.05)', color: 'white', resize: 'vertical'}}
           />
         </div>
+      </SectionCard>
 
-        <h3 style={{marginBottom: '20px', marginTop: '40px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px'}}>
-          투숙객 매출 비중 설정 (Capture Rate)
-        </h3>
-        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '16px', flexWrap: 'wrap', gap: '12px'}}>
-          <p className="settings-desc" style={{margin: 0, flex: 1, minWidth: '200px'}}>
-            각 부대시설 총매출 중 '객실 투숙객'이 결제한 비중(%)을 설정합니다. 워크인(비투숙객) 매출을 제외한 <strong>순수 객실 연계 매출(순수 TrevPAR)</strong> 산출에 사용됩니다.
-          </p>
+      <SectionCard
+        title="투숙객 매출 비중 설정 (Capture Rate)"
+        description="각 부대시설 총매출 중 '객실 투숙객'이 결제한 비중(%)을 설정합니다. (순수 TrevPAR 산출용)"
+        isExpanded={expandedSections.capture}
+        onToggle={() => toggleSection('capture')}
+        actions={
           <button 
             type="button" 
-            onClick={handleAiEstimate} 
+            onClick={(e) => { e.stopPropagation(); handleAiEstimate(); }} 
             className="action-button primary" 
-            style={{display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', background: 'var(--accent-purple)', borderColor: 'var(--accent-purple)'}}
+            style={{display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: 'var(--accent-purple)', borderColor: 'var(--accent-purple)', fontSize: '13px'}}
           >
-            <RefreshCw size={16} />
-            데이터 기반 AI 추정
+            <RefreshCw size={14} /> AI 추정
           </button>
-        </div>
-
+        }
+      >
         <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
           <div className="form-group" style={{flex: 1, minWidth: '150px'}}>
             <label htmlFor="captureRateLeisure">레저본부 투숙객 비중 (%)</label>
@@ -452,14 +492,14 @@ export default function Settings({ monthlyData }) {
             />
           </div>
         </div>
+      </SectionCard>
 
-        <h3 style={{marginBottom: '20px', marginTop: '40px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px'}}>
-          목표 객단가(Target ADR) 설정
-        </h3>
-        <p className="settings-desc" style={{marginBottom: '16px'}}>
-          매출 예측(시뮬레이션) 시 사용될 평형별 목표 객단가를 설정합니다. 빈칸이거나 0일 경우 과거 추세선 모델만 사용됩니다.
-        </p>
-
+      <SectionCard
+        title="목표 객단가(Target ADR) 설정"
+        description="매출 예측(시뮬레이션) 시 사용될 평형별 목표 객단가를 설정합니다. 빈칸일 경우 추세선 모델이 자동 적용됩니다."
+        isExpanded={expandedSections.adr}
+        onToggle={() => toggleSection('adr')}
+      >
         <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
           <div className="form-group" style={{flex: 1, minWidth: '150px'}}>
             <label htmlFor="targetAdr16">16평형 목표 객단가</label>
@@ -476,7 +516,6 @@ export default function Settings({ monthlyData }) {
               <span>원</span>
             </div>
           </div>
-
           <div className="form-group" style={{flex: 1, minWidth: '150px'}}>
             <label htmlFor="targetAdr35">35평형 목표 객단가</label>
             <div style={{color: 'var(--text-muted)', fontSize: '12px', marginBottom: '8px'}}>과거 평균: {avgAdr35.toLocaleString()}원</div>
@@ -492,7 +531,6 @@ export default function Settings({ monthlyData }) {
               <span>원</span>
             </div>
           </div>
-
           <div className="form-group" style={{flex: 1, minWidth: '150px'}}>
             <label htmlFor="targetAdr51">51평형 목표 객단가</label>
             <div style={{color: 'var(--text-muted)', fontSize: '12px', marginBottom: '8px'}}>과거 평균: {avgAdr51.toLocaleString()}원</div>
@@ -509,14 +547,14 @@ export default function Settings({ monthlyData }) {
             </div>
           </div>
         </div>
+      </SectionCard>
 
-        <h3 style={{marginBottom: '20px', marginTop: '40px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px'}}>
-          영업장 그룹핑 설정 (동적 분리)
-        </h3>
-        <p className="settings-desc" style={{marginBottom: '16px'}}>
-          데이터베이스에 기록된 모든 영업장을 어떤 본부 매출로 합산할지 결정합니다. '제외'를 선택하면 통계에서 완전히 무시됩니다.
-        </p>
-
+      <SectionCard
+        title="영업장 그룹핑 설정 (동적 분리)"
+        description="데이터베이스에 기록된 모든 영업장을 어떤 본부 매출로 합산할지 결정합니다."
+        isExpanded={expandedSections.location}
+        onToggle={() => toggleSection('location')}
+      >
         <div style={{background: 'rgba(255,255,255,0.05)', borderRadius: '12px', border: '1px solid var(--border-glass)', padding: '20px'}}>
           {uniqueLocations.length === 0 ? (
             <div style={{color: 'var(--text-muted)', textAlign: 'center'}}>데이터가 아직 업로드되지 않았습니다.</div>
@@ -562,30 +600,26 @@ export default function Settings({ monthlyData }) {
             </div>
           )}
         </div>
+      </SectionCard>
 
-        {/* 모토아레나 티켓 그룹핑 설정 */}
-        <div className="glass-panel" style={{padding: '32px'}}>
-          <h3 style={{margin: '0 0 8px 0', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px'}}>
-            모토아레나 티켓 그룹핑 설정 (동적 분리)
-          </h3>
-          <p style={{margin: '0 0 24px 0', color: 'var(--text-muted)', fontSize: '14px', lineHeight: '1.5'}}>
-            데이터베이스에 기록된 모든 모토아레나 티켓 매출을 어떤 분류로 합산할지 결정합니다. <br/>
-            기본적으로 티켓명에 '콘도/객실'이 포함되면 투숙객으로, '일반/단체/군민'이 포함되면 일반객으로 임시 자동 분류됩니다.
-          </p>
-          
+      <SectionCard
+        title="모토아레나 티켓 그룹핑 설정 (동적 분리)"
+        description="모토아레나 티켓 매출을 어떤 분류로 합산할지 결정합니다. (자동 분류 규칙 적용 중)"
+        isExpanded={expandedSections.moto}
+        onToggle={() => toggleSection('moto')}
+      >
+        <div style={{background: 'rgba(255,255,255,0.05)', borderRadius: '12px', border: '1px solid var(--border-glass)', padding: '20px'}}>
           {uniqueMotoTickets.length === 0 ? (
-            <div style={{color: 'rgba(255,255,255,0.5)'}}>업로드된 모토아레나 티켓 데이터가 없습니다.</div>
+            <div style={{color: 'rgba(255,255,255,0.5)', textAlign: 'center'}}>업로드된 모토아레나 티켓 데이터가 없습니다.</div>
           ) : (
             <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
               {uniqueMotoTickets.map(ticket => {
-                // Determine current group. If not explicitly set, use fallback logic to show default selection.
                 let currentGroup = settings.motoTicketGroups?.[ticket];
                 if (!currentGroup) {
                   if (ticket.includes('콘도') || ticket.includes('객실')) currentGroup = 'guest';
                   else if (ticket.includes('일반') || ticket.includes('증평군민') || ticket.includes('MOU') || ticket.includes('단체')) currentGroup = 'general';
                   else currentGroup = 'other';
                 }
-
                 return (
                   <div key={ticket} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px'}}>
                     <strong style={{fontSize: '15px', flex: 1, color: 'var(--text-bright)'}}>{ticket}</strong>
@@ -624,74 +658,63 @@ export default function Settings({ monthlyData }) {
             </div>
           )}
         </div>
+      </SectionCard>
 
-        {/* 시뮬레이터 가동률(Capa) 설정 */}
-        <div className="glass-panel" style={{padding: '32px'}}>
-          <h3 style={{margin: '0 0 8px 0', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px'}}>
-            신규 사업 시뮬레이터 가동률(Capa) 설정
-          </h3>
-          <p style={{margin: '0 0 24px 0', color: 'var(--text-muted)', fontSize: '14px', lineHeight: '1.5'}}>
-            현재 각 시설의 가동률(이용률)을 설정합니다. 100%에 가까울수록 신규 객실이 늘어나도 더 이상 파생 매출이 증가하지 않게(상한선) 제한됩니다. 비워두면 제한이 없는 것으로 간주합니다.
-          </p>
-          
-          <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px'}}>
-            <div style={{background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '8px'}}>
-              <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-muted)'}}>식음(F&B) 본부 가동률</label>
-              <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                <input 
-                  type="number" 
-                  name="capaFnb"
-                  value={settings.capaFnb || ''} 
-                  onChange={handleChange}
-                  placeholder="예: 80"
-                  min="0" max="100"
-                  style={{width: '80px', padding: '8px', borderRadius: '4px', border: '1px solid var(--border-glass)', background: 'rgba(0,0,0,0.3)', color: '#fff'}}
-                />
-                <span style={{color: 'var(--text-muted)'}}>%</span>
-              </div>
+      <SectionCard
+        title="신규 사업 시뮬레이터 가동률(Capa) 설정"
+        description="현재 각 시설의 가동률을 설정하여, 신규 객실 증가에 따른 파생 매출 상한선을 제한합니다."
+        isExpanded={expandedSections.capa}
+        onToggle={() => toggleSection('capa')}
+      >
+        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px'}}>
+          <div style={{background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '8px'}}>
+            <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-muted)'}}>식음(F&B) 본부 가동률</label>
+            <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+              <input 
+                type="number" 
+                name="capaFnb"
+                value={settings.capaFnb || ''} 
+                onChange={handleChange}
+                placeholder="예: 80"
+                min="0" max="100"
+                style={{width: '80px', padding: '8px', borderRadius: '4px', border: '1px solid var(--border-glass)', background: 'rgba(0,0,0,0.3)', color: '#fff'}}
+              />
+              <span style={{color: 'var(--text-muted)'}}>%</span>
             </div>
-
-            <div style={{background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '8px'}}>
-              <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-muted)'}}>레저 본부 가동률</label>
-              <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                <input 
-                  type="number" 
-                  name="capaLeisure"
-                  value={settings.capaLeisure || ''} 
-                  onChange={handleChange}
-                  placeholder="예: 70"
-                  min="0" max="100"
-                  style={{width: '80px', padding: '8px', borderRadius: '4px', border: '1px solid var(--border-glass)', background: 'rgba(0,0,0,0.3)', color: '#fff'}}
-                />
-                <span style={{color: 'var(--text-muted)'}}>%</span>
-              </div>
+          </div>
+          <div style={{background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '8px'}}>
+            <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-muted)'}}>레저 본부 가동률</label>
+            <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+              <input 
+                type="number" 
+                name="capaLeisure"
+                value={settings.capaLeisure || ''} 
+                onChange={handleChange}
+                placeholder="예: 70"
+                min="0" max="100"
+                style={{width: '80px', padding: '8px', borderRadius: '4px', border: '1px solid var(--border-glass)', background: 'rgba(0,0,0,0.3)', color: '#fff'}}
+              />
+              <span style={{color: 'var(--text-muted)'}}>%</span>
             </div>
-
-            <div style={{background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '8px'}}>
-              <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-muted)'}}>모토아레나 가동률</label>
-              <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                <input 
-                  type="number" 
-                  name="capaMoto"
-                  value={settings.capaMoto || ''} 
-                  onChange={handleChange}
-                  placeholder="예: 60"
-                  min="0" max="100"
-                  style={{width: '80px', padding: '8px', borderRadius: '4px', border: '1px solid var(--border-glass)', background: 'rgba(0,0,0,0.3)', color: '#fff'}}
-                />
-                <span style={{color: 'var(--text-muted)'}}>%</span>
-              </div>
+          </div>
+          <div style={{background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '8px'}}>
+            <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-muted)'}}>모토아레나 가동률</label>
+            <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+              <input 
+                type="number" 
+                name="capaMoto"
+                value={settings.capaMoto || ''} 
+                onChange={handleChange}
+                placeholder="예: 60"
+                min="0" max="100"
+                style={{width: '80px', padding: '8px', borderRadius: '4px', border: '1px solid var(--border-glass)', background: 'rgba(0,0,0,0.3)', color: '#fff'}}
+              />
+              <span style={{color: 'var(--text-muted)'}}>%</span>
             </div>
           </div>
         </div>
+      </SectionCard>
 
-        <div className="settings-actions" style={{marginTop: '40px'}}>
-          <button className="btn-save" onClick={handleSave}>
-            <Save size={18} /> 설정 저장하기
-          </button>
-          {isSaved && <span className="save-message">정상적으로 저장되었습니다.</span>}
-        </div>
-      </div>
     </div>
   );
 }
