@@ -481,7 +481,12 @@ export default function MonthlyDataForm({ settings }) {
     if (match) {
       let month = parseInt(match[1], 10);
       if (month >= 1 && month <= 12) {
-        const year = new Date().getFullYear();
+        let year = new Date().getFullYear();
+        const currentMonth = new Date().getMonth() + 1;
+        // 만약 현재 1~3월인데, 올리는 엑셀이 10~12월분이라면 작년 데이터일 확률이 높음!
+        if (currentMonth <= 3 && month >= 10) {
+          year -= 1;
+        }
         setMotoTargetMonth(`${year}-${month.toString().padStart(2, '0')}`);
       }
     }
@@ -515,19 +520,20 @@ export default function MonthlyDataForm({ settings }) {
         let txColIdx = -1;
         let revColIdx = -1;
 
-        // 헤더 행 찾기
+        // 헤더 행 찾기 (더 넓은 범위의 키워드 검색)
         for (let i = 0; i < 15; i++) {
           const r = data[i];
           if (!r) continue;
           const rStr = r.join(' ').replace(/\s+/g, '');
           
-          if (rStr.includes('트랜잭션명')) {
+          if (rStr.includes('트랜잭션명') || rStr.includes('상품명') || rStr.includes('메뉴명') || rStr.includes('매출구분') || rStr.includes('품목명') || rStr.includes('아이템')) {
             headerRowIdx = i;
             for (let j = 0; j < r.length; j++) {
               const cellStr = r[j] ? r[j].toString().replace(/\s+/g, '') : '';
-              if (cellStr.includes('트랜잭션명')) txColIdx = j;
+              if (cellStr.includes('트랜잭션명') || cellStr.includes('상품명') || cellStr.includes('메뉴명') || cellStr.includes('매출구분') || cellStr.includes('품목명') || cellStr.includes('아이템')) {
+                txColIdx = j;
+              }
               if (cellStr.includes('실매출') || cellStr.includes('결제금액') || cellStr.includes('매출') || cellStr.includes('합계')) {
-                // 매출 관련 컬럼을 유연하게 찾음 (마지막에 매칭되는 것이 보통 최종 합계)
                 revColIdx = j;
               }
             }
@@ -535,11 +541,44 @@ export default function MonthlyDataForm({ settings }) {
           }
         }
 
-        // 만약 못 찾았다면 기본값 (기존 하드코딩) 사용
-        if (headerRowIdx === -1) {
-          headerRowIdx = 1;
-          txColIdx = 3;
-          revColIdx = 8;
+        // 만약 정규 헤더를 못 찾았다면, 데이터 행에서 '콘도', '객실', '일반' 등의 키워드가 가장 많이 나오는 컬럼을 찾아 txColIdx로 추정
+        if (txColIdx === -1) {
+          const colScores = {};
+          for (let i = 0; i < Math.min(data.length, 50); i++) {
+            if (!data[i]) continue;
+            for (let j = 0; j < data[i].length; j++) {
+              const val = String(data[i][j] || '');
+              if (val.includes('콘도') || val.includes('객실') || val.includes('일반') || val.includes('단체') || val.includes('MOU')) {
+                colScores[j] = (colScores[j] || 0) + 1;
+              }
+            }
+          }
+          let bestCol = -1;
+          let maxScore = 0;
+          for (const [col, score] of Object.entries(colScores)) {
+            if (score > maxScore) {
+              maxScore = score;
+              bestCol = Number(col);
+            }
+          }
+          
+          if (bestCol !== -1) {
+             txColIdx = bestCol;
+             headerRowIdx = 1; // 대략 두 번째 줄부터 데이터라고 가정
+             // 매출액 컬럼 추정 (맨 마지막의 숫자 컬럼)
+             for(let j = data[1].length - 1; j >= 0; j--) {
+                const testVal = parseInt(String(data[1][j] || '').replace(/,/g, ''), 10);
+                if (!isNaN(testVal)) {
+                   revColIdx = j;
+                   break;
+                }
+             }
+          } else {
+             // 최후의 수단 (기존 하드코딩)
+             headerRowIdx = 1;
+             txColIdx = 3;
+             revColIdx = 8;
+          }
         }
 
         const dataStartIdx = headerRowIdx + 1;

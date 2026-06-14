@@ -150,21 +150,22 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
           }
         });
         
-        // 두 번째 엑셀(모토아레나 전용) 데이터는 오직 투숙객/일반객 비율 산출에만 사용
-        const excel2Total = Number(d.motoTotalRev || 0);
-        if (excel2Total > 0 && motoSales > 0) {
-          const guestRatio = Number(d.motoGuestRev || 0) / excel2Total;
-          d.motoGuestRev = Math.round(motoSales * guestRatio);
-          const generalRatio = Number(d.motoGeneralRev || 0) / excel2Total;
-          d.motoGeneralRev = Math.round(motoSales * generalRatio);
-        } else if (motoSales > 0) {
-          // 두 번째 엑셀 데이터가 없을 경우 임의 추정치 (70% 투숙객)
-          d.motoGuestRev = Math.round(motoSales * 0.7);
-          d.motoGeneralRev = Math.round(motoSales * 0.3);
-        } else {
-          d.motoGuestRev = 0;
-          d.motoGeneralRev = 0;
-        }
+      // 두 번째 엑셀(모토아레나 전용) 데이터는 오직 투숙객/일반객 비율 산출에만 사용
+      let scaledMotoGuestRev = 0;
+      let scaledMotoGeneralRev = 0;
+      const excel2Total = Number(d.motoTotalRev || 0);
+      
+      if (excel2Total > 0 && motoSales > 0) {
+        const guestRatio = Number(d.motoGuestRev || 0) / excel2Total;
+        scaledMotoGuestRev = Math.round(motoSales * guestRatio);
+        const generalRatio = Number(d.motoGeneralRev || 0) / excel2Total;
+        scaledMotoGeneralRev = Math.round(motoSales * generalRatio);
+      } else if (motoSales > 0) {
+        // 두 번째 엑셀 데이터가 없을 경우 임의 추정치 (70% 투숙객)
+        scaledMotoGuestRev = Math.round(motoSales * 0.7);
+        scaledMotoGeneralRev = Math.round(motoSales * 0.3);
+      }
+
       } else {
         // Fallback for legacy DB
         leisureSales = Number(d.leisureSales || d.totalLeisureSales || 0);
@@ -1207,6 +1208,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                   return (
                     <tr key={channel} style={{borderBottom: '1px solid rgba(255,255,255,0.05)'}}>
                       <td style={{padding: '12px', textAlign: 'left', fontWeight: 'bold'}}>{channel}</td>
+                      <td style={{padding: '12px', color: getColor(cTotal), fontWeight: cTotal >= 0.4 ? 'bold' : 'normal'}}>{cTotal.toFixed(2)}</td>
                       <td style={{padding: '12px', color: getColor(cLeisure), fontWeight: cLeisure >= 0.4 ? 'bold' : 'normal'}}>{cLeisure.toFixed(2)}</td>
                       <td style={{padding: '12px', color: getColor(cFnb), fontWeight: cFnb >= 0.4 ? 'bold' : 'normal'}}>{cFnb.toFixed(2)}</td>
                       <td style={{padding: '12px', color: getColor(cMoto), fontWeight: cMoto >= 0.4 ? 'bold' : 'normal'}}>{cMoto.toFixed(2)}</td>
