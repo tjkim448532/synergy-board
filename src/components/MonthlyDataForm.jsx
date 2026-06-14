@@ -97,25 +97,36 @@ export default function MonthlyDataForm({ settings }) {
         const data = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false });
         
         let headerRowIdx = -1;
-        for (let i = 0; i < 10; i++) {
-          if (data[i] && data[i].includes('일자') && data[i].includes('객실타입')) {
+        let dateIdx = -1, typeIdx = -1, countIdx = -1, revIdx = -1;
+        let rateIdx = -1, marketIdx = -1, sourceIdx = -1, agencyIdx = -1;
+
+        for (let i = 0; i < 15; i++) {
+          const row = data[i];
+          if (!row) continue;
+          
+          const rowStr = row.map(c => c ? c.toString().replace(/\s+/g, '') : '').join('');
+          if ((rowStr.includes('일자') || rowStr.includes('날짜') || rowStr.includes('Date')) && 
+              (rowStr.includes('객실타입') || rowStr.includes('룸타입'))) {
             headerRowIdx = i;
+            const headers = row.map(h => h ? h.toString().replace(/\s+/g, '') : '');
+            
+            const findCol = (keywords) => headers.findIndex(h => keywords.some(k => h.includes(k)));
+            
+            dateIdx = findCol(['일자', '날짜', 'Date']);
+            typeIdx = findCol(['객실타입', '룸타입']);
+            countIdx = findCol(['객실수', '판매객실', '객실판매']);
+            revIdx = findCol(['합계', '실매출', '매출액']);
+            rateIdx = findCol(['요금타입', 'RateType']);
+            marketIdx = findCol(['마켓타입', '마켓구분']);
+            sourceIdx = findCol(['소스타입', '소스구분']);
+            agencyIdx = findCol(['거래처', '에이전시']);
             break;
           }
         }
         
-        if (headerRowIdx === -1) return toast.error('객실 엑셀 양식을 인식할 수 없습니다. "일자", "객실타입" 열이 포함된 파일을 올려주세요.');
-        
-        const headers = data[headerRowIdx];
-        const dateIdx = headers.findIndex(h => h === '일자');
-        const typeIdx = headers.findIndex(h => h === '객실타입');
-        const countIdx = headers.findIndex(h => h === '객실수');
-        const revIdx = headers.findIndex(h => h === '합계');
-        
-        const rateIdx = headers.findIndex(h => h === '요금타입');
-        const marketIdx = headers.findIndex(h => h === '마켓타입');
-        const sourceIdx = headers.findIndex(h => h === '소스타입');
-        const agencyIdx = headers.findIndex(h => h === '거래처');
+        if (headerRowIdx === -1 || dateIdx === -1 || typeIdx === -1) {
+          return toast.error('객실 엑셀 양식을 인식할 수 없습니다. "일자", "객실타입" 열이 포함된 파일을 올려주세요.');
+        }
         
         const roomParsedMap = {};
 
@@ -253,29 +264,44 @@ export default function MonthlyDataForm({ settings }) {
         
         let headerRowIdx = -1;
         let dataStartIdx = -1;
+        let dateIdx = -1;
+        let sumIdx = -1;
+        let roomIdx = -1;
+        let roomOtherIdx = -1;
+
         for (let i = 0; i < 15; i++) {
-          if (data[i] && data[i][0] && (data[i][0].toString().includes('일자') || data[i][0].toString().includes('Date'))) {
-            // Find the row that actually has the location names.
-            // Usually it's the row that has 'ROOM' or many columns.
-            if (data[i].includes('ROOM') || data[i].includes('합계')) {
-                headerRowIdx = i;
-                dataStartIdx = i + 1;
-                // If the next row is sub-headers (like Food, Beverage), skip it.
-                if (data[i+1] && data[i+1].includes('합계')) {
-                    dataStartIdx = i + 2;
-                }
-                break;
+          const row = data[i];
+          if (!row) continue;
+          
+          const rowStr = row.map(c => c ? c.toString().replace(/\s+/g, '') : '').join('');
+          if ((rowStr.includes('일자') || rowStr.includes('날짜') || rowStr.includes('Date')) && 
+              (rowStr.includes('ROOM') || rowStr.includes('합계'))) {
+            
+            headerRowIdx = i;
+            dataStartIdx = i + 1;
+            
+            // If the next row is sub-headers (like Food, Beverage), skip it.
+            const nextRowStr = data[i+1] ? data[i+1].map(c => c ? c.toString().replace(/\s+/g, '') : '').join('') : '';
+            if (nextRowStr.includes('합계')) {
+                dataStartIdx = i + 2;
             }
+            
+            const headers = row.map(h => h ? h.toString().replace(/\s+/g, '').toUpperCase() : '');
+            
+            dateIdx = headers.findIndex(h => h.includes('일자') || h.includes('날짜') || h.includes('DATE'));
+            sumIdx = headers.findIndex(h => h.includes('합계') || h.includes('TOTAL'));
+            roomIdx = headers.findIndex(h => h === 'ROOM');
+            roomOtherIdx = headers.findIndex(h => h === 'ROOMOTHER');
+            
+            // If date is not found in header, maybe it's the first column implicitly
+            if (dateIdx === -1) dateIdx = 0;
+            break;
           }
         }
         
         if (headerRowIdx === -1) return toast.error('새로운 레저 엑셀 양식을 인식할 수 없습니다. "영업일자" 및 "ROOM" 열이 포함된 파일을 올려주세요.');
         
         const headers = data[headerRowIdx];
-        const dateIdx = 0;
-        const sumIdx = headers.findIndex(h => h && h.toString().includes('합계'));
-        const roomIdx = headers.findIndex(h => h && h.toString().toUpperCase() === 'ROOM');
-        const roomOtherIdx = headers.findIndex(h => h && h.toString().toUpperCase().replace(/\s/g,'') === 'ROOMOTHER');
         
         const monthlyParsedMap = {};
 

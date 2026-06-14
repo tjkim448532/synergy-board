@@ -98,13 +98,41 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
 
 
 
-  const divisionConfig = {
-    all: { title: '전체통합', dataKey: 'totalSales', color: 'var(--accent-emerald)' },
-    leisure: { title: '레저본부', dataKey: 'leisureSales', color: 'var(--accent-purple)' },
-    fnb: { title: '식음본부', dataKey: 'fnbSales', color: 'var(--accent-blue)' },
-    moto: { title: '모토아레나', dataKey: 'motoSales', color: 'var(--accent-gold)' }
-  };
-  const activeConf = divisionConfig[activeDivision];
+  const divisionConfig = useMemo(() => {
+    const config = {
+      all: { title: '전체통합', dataKey: 'totalSales', color: 'var(--accent-emerald)' }
+    };
+    
+    const predefinedTitles = {
+        leisure: '레저본부',
+        fnb: '식음본부',
+        moto: '모토아레나'
+    };
+    const predefinedColors = {
+        leisure: 'var(--accent-purple)',
+        fnb: 'var(--accent-blue)',
+        moto: 'var(--accent-gold)'
+    };
+    const colors = ['#f43f5e', '#f97316', '#ef4444', '#14b8a6', '#06b6d4', '#6366f1', '#d946ef'];
+    
+    const groups = new Set(Object.values(settings?.locationGroups || {}));
+    // legacy groups
+    groups.add('leisure');
+    groups.add('fnb');
+    groups.add('moto');
+    
+    let colorIdx = 0;
+    Array.from(groups).forEach(group => {
+      config[group] = {
+        title: predefinedTitles[group] || (group + '본부'),
+        dataKey: group + 'Sales',
+        color: predefinedColors[group] || colors[colorIdx++ % colors.length]
+      };
+    });
+    
+    return config;
+  }, [settings?.locationGroups]);
+  const activeConf = divisionConfig[activeDivision] || divisionConfig['all'];
 
   // 데이터 가공
   const processedData = useMemo(() => {
@@ -134,44 +162,26 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
 
       // 동적 매출 합산 로직
       const locationGroups = settings.locationGroups || {};
-      let leisureSales = 0;
-      let motoSales = 0;
-      let fnbSales = 0;
+      const groupSales = { leisure: 0, moto: 0, fnb: 0 };
+      let totalSales = 0;
 
       if (d.salesByLocation) {
         Object.keys(d.salesByLocation).forEach(loc => {
           const group = locationGroups[loc] || 'leisure';
-          if (group === 'leisure') {
-            leisureSales += d.salesByLocation[loc];
-          } else if (group === 'fnb') {
-            fnbSales += d.salesByLocation[loc];
-          } else if (group === 'moto') {
-            motoSales += d.salesByLocation[loc];
-          }
+          groupSales[group] = (groupSales[group] || 0) + d.salesByLocation[loc];
+          totalSales += d.salesByLocation[loc];
         });
-        
-      // 두 번째 엑셀(모토아레나 전용) 데이터는 오직 투숙객/일반객 비율 산출에만 사용
-      let scaledMotoGuestRev = 0;
-      let scaledMotoGeneralRev = 0;
-      const excel2Total = Number(d.motoTotalRev || 0);
-      
-      if (excel2Total > 0 && motoSales > 0) {
-        const guestRatio = Number(d.motoGuestRev || 0) / excel2Total;
-        scaledMotoGuestRev = Math.round(motoSales * guestRatio);
-        const generalRatio = Number(d.motoGeneralRev || 0) / excel2Total;
-        scaledMotoGeneralRev = Math.round(motoSales * generalRatio);
-      } else if (motoSales > 0) {
-        // 두 번째 엑셀 데이터가 없을 경우 임의 추정치 (70% 투숙객)
-        scaledMotoGuestRev = Math.round(motoSales * 0.7);
-        scaledMotoGeneralRev = Math.round(motoSales * 0.3);
-      }
-
       } else {
         // Fallback for legacy DB
-        leisureSales = Number(d.leisureSales || d.totalLeisureSales || 0);
-        motoSales = Number(d.motoSales || d.motoTotalRev || d.totalMotoSales || 0);
-        fnbSales = Number(d.fnbSales || d.totalFnbSales || 0);
+        groupSales.leisure = Number(d.leisureSales || d.totalLeisureSales || 0);
+        groupSales.moto = Number(d.motoSales || d.motoTotalRev || d.totalMotoSales || 0);
+        groupSales.fnb = Number(d.fnbSales || d.totalFnbSales || 0);
+        totalSales = groupSales.leisure + groupSales.moto + groupSales.fnb;
       }
+      
+      const leisureSales = groupSales.leisure || 0;
+      const motoSales = groupSales.moto || 0;
+      const fnbSales = groupSales.fnb || 0;
 
       // 회원 분석 로직 (rawRoomRecords 기반)
       let totalMemberRooms = 0;
@@ -224,10 +234,11 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
         ...d,
         sold16, sold35, sold51: sold51 + sold51Acc, totalSold,
         occupancyRate: occRate,
+        ...Object.keys(groupSales).reduce((acc, g) => ({ ...acc, [`${g}Sales`]: groupSales[g] }), {}),
         leisureSales,
         motoSales,
         fnbSales,
-        totalSales: leisureSales + motoSales + fnbSales,
+        totalSales,
         totalRoomRevenue: Number(d.totalRoomRevenue || 0),
         totalMemberRooms,
         totalGeneralRooms,
@@ -1169,10 +1180,9 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
               <thead>
                 <tr style={{background: 'rgba(255,255,255,0.05)'}}>
                   <th style={{padding: '12px', textAlign: 'left', borderBottom: '1px solid var(--border-glass)'}}>채널명</th>
-                  <th style={{padding: '12px', borderBottom: '1px solid var(--border-glass)'}}>전체매출 (상관도)</th>
-                  <th style={{padding: '12px', borderBottom: '1px solid var(--border-glass)'}}>레저본부 (상관도)</th>
-                  <th style={{padding: '12px', borderBottom: '1px solid var(--border-glass)'}}>식음본부 (상관도)</th>
-                  <th style={{padding: '12px', borderBottom: '1px solid var(--border-glass)'}}>모토아레나 (상관도)</th>
+                  {Object.entries(divisionConfig).map(([key, conf]) => (
+                    <th key={key} style={{padding: '12px', borderBottom: '1px solid var(--border-glass)'}}>{conf.title} (상관도)</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
@@ -1193,10 +1203,10 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                     return total;
                   });
 
-                  const cTotal = calculateCorrelation(channelMonthlyRev, filteredProcessedData.map(d => d.totalSales)) || 0;
-                  const cLeisure = calculateCorrelation(channelMonthlyRev, filteredProcessedData.map(d => d.leisureSales)) || 0;
-                  const cFnb = calculateCorrelation(channelMonthlyRev, filteredProcessedData.map(d => d.fnbSales)) || 0;
-                  const cMoto = calculateCorrelation(channelMonthlyRev, filteredProcessedData.map(d => d.motoSales)) || 0;
+                  const correlations = {};
+                  Object.entries(divisionConfig).forEach(([key, conf]) => {
+                    correlations[key] = calculateCorrelation(channelMonthlyRev, filteredProcessedData.map(d => d[conf.dataKey] || 0)) || 0;
+                  });
 
                   const getColor = (r) => {
                     if (r >= 0.7) return 'var(--accent-emerald)';
@@ -1208,10 +1218,11 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                   return (
                     <tr key={channel} style={{borderBottom: '1px solid rgba(255,255,255,0.05)'}}>
                       <td style={{padding: '12px', textAlign: 'left', fontWeight: 'bold'}}>{channel}</td>
-                      <td style={{padding: '12px', color: getColor(cTotal), fontWeight: cTotal >= 0.4 ? 'bold' : 'normal'}}>{cTotal.toFixed(2)}</td>
-                      <td style={{padding: '12px', color: getColor(cLeisure), fontWeight: cLeisure >= 0.4 ? 'bold' : 'normal'}}>{cLeisure.toFixed(2)}</td>
-                      <td style={{padding: '12px', color: getColor(cFnb), fontWeight: cFnb >= 0.4 ? 'bold' : 'normal'}}>{cFnb.toFixed(2)}</td>
-                      <td style={{padding: '12px', color: getColor(cMoto), fontWeight: cMoto >= 0.4 ? 'bold' : 'normal'}}>{cMoto.toFixed(2)}</td>
+                      {Object.entries(divisionConfig).map(([key, conf]) => (
+                        <td key={key} style={{padding: '12px', color: getColor(correlations[key]), fontWeight: correlations[key] >= 0.4 ? 'bold' : 'normal'}}>
+                          {correlations[key].toFixed(2)}
+                        </td>
+                      ))}
                     </tr>
                   );
                 })}
@@ -1235,10 +1246,10 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                 return total;
               });
 
-              const cTotal = calculateCorrelation(channelMonthlyRev, filteredProcessedData.map(d => d.totalSales)) || 0;
-              const cLeisure = calculateCorrelation(channelMonthlyRev, filteredProcessedData.map(d => d.leisureSales)) || 0;
-              const cFnb = calculateCorrelation(channelMonthlyRev, filteredProcessedData.map(d => d.fnbSales)) || 0;
-              const cMoto = calculateCorrelation(channelMonthlyRev, filteredProcessedData.map(d => d.motoSales)) || 0;
+              const correlations = {};
+              Object.entries(divisionConfig).forEach(([key, conf]) => {
+                correlations[key] = calculateCorrelation(channelMonthlyRev, filteredProcessedData.map(d => d[conf.dataKey] || 0)) || 0;
+              });
 
               const getColor = (r) => {
                 if (r >= 0.7) return 'var(--accent-emerald)';
@@ -1250,22 +1261,12 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
               return (
                 <div key={channel} className="glass-panel" style={{padding: '16px', borderLeft: '4px solid var(--accent-blue)'}}>
                   <div style={{fontSize: '16px', fontWeight: 'bold', marginBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px'}}>{channel}</div>
-                  <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
-                    <span style={{color: 'var(--text-muted)'}}>전체매출</span>
-                    <span style={{color: getColor(cTotal), fontWeight: cTotal >= 0.4 ? 'bold' : 'normal'}}>{cTotal.toFixed(2)}</span>
-                  </div>
-                  <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
-                    <span style={{color: 'var(--text-muted)'}}>레저본부</span>
-                    <span style={{color: getColor(cLeisure), fontWeight: cLeisure >= 0.4 ? 'bold' : 'normal'}}>{cLeisure.toFixed(2)}</span>
-                  </div>
-                  <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
-                    <span style={{color: 'var(--text-muted)'}}>식음본부</span>
-                    <span style={{color: getColor(cFnb), fontWeight: cFnb >= 0.4 ? 'bold' : 'normal'}}>{cFnb.toFixed(2)}</span>
-                  </div>
-                  <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                    <span style={{color: 'var(--text-muted)'}}>모토아레나</span>
-                    <span style={{color: getColor(cMoto), fontWeight: cMoto >= 0.4 ? 'bold' : 'normal'}}>{cMoto.toFixed(2)}</span>
-                  </div>
+                  {Object.entries(divisionConfig).map(([key, conf]) => (
+                    <div key={key} style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
+                      <span style={{color: 'var(--text-muted)'}}>{conf.title}</span>
+                      <span style={{color: getColor(correlations[key]), fontWeight: correlations[key] >= 0.4 ? 'bold' : 'normal'}}>{correlations[key].toFixed(2)}</span>
+                    </div>
+                  ))}
                 </div>
               );
             })}
