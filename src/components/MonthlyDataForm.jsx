@@ -3,6 +3,7 @@ import { Save, Trash2, Upload, Hotel, Ticket, Lock } from 'lucide-react';
 import { collection, onSnapshot, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import * as XLSX from 'xlsx';
+import toast from 'react-hot-toast';
 import './MonthlyDataForm.css';
 
 import { isHoliday } from 'korean-holidays';
