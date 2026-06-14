@@ -490,8 +490,8 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         </div>
 
         <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', maxWidth: '1200px', margin: '0 auto'}}>
-          <div style={{background: 'rgba(0,0,0,0.3)', padding: '30px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)'}}>
-            <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '12px'}}>예상 객실 매출</div>
+          <div style={{background: 'rgba(0,0,0,0.3)', padding: '30px 20px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%'}}>
+            <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '16px'}}>예상 객실 매출</div>
             
             {hasTargetAdr ? (
               <div style={{display: 'flex', gap: '16px', justifyContent: 'center', alignItems: 'center'}}>
@@ -519,7 +519,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
               </div>
             ) : (
               <>
-                <div className="responsive-large-number" style={{color: 'var(--accent-blue)'}}>
+                <div className="responsive-large-number" style={{color: 'var(--accent-blue)', whiteSpace: 'nowrap'}}>
                   ₩ <CountUp end={expectedRoomRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
                 </div>
                 <div style={{fontSize: '14px', color: 'var(--text-muted)', marginTop: '8px'}}>
@@ -532,9 +532,9 @@ export default function RevenuePrediction({ monthlyData, settings }) {
             )}
           </div>
           
-          <div style={{background: 'rgba(0,0,0,0.3)', padding: '30px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)'}}>
-            <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '12px'}}>예상 레저본부 매출</div>
-            <div className="responsive-large-number" style={{color: 'var(--accent-purple)'}}>
+          <div style={{background: 'rgba(0,0,0,0.3)', padding: '30px 20px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%'}}>
+            <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '16px'}}>예상 레저본부 매출</div>
+            <div className="responsive-large-number" style={{color: 'var(--accent-purple)', whiteSpace: 'nowrap'}}>
               ₩ <CountUp end={expectedLeisureRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
             </div>
             <div style={{fontSize: '14px', color: 'var(--text-muted)', marginTop: '8px'}}>
@@ -545,9 +545,9 @@ export default function RevenuePrediction({ monthlyData, settings }) {
           </div>
           
           {/* 예상 모토아레나 매출 */}
-          <div style={{background: 'rgba(0,0,0,0.3)', padding: '30px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)'}}>
-            <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '12px'}}>예상 모토아레나 매출</div>
-            <div className="responsive-large-number" style={{color: 'var(--accent-gold)'}}>
+          <div style={{background: 'rgba(0,0,0,0.3)', padding: '30px 20px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%'}}>
+            <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '16px'}}>예상 모토아레나 매출</div>
+            <div className="responsive-large-number" style={{color: 'var(--accent-gold)', whiteSpace: 'nowrap'}}>
               ₩ <CountUp end={expectedMotoRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
             </div>
             <div style={{fontSize: '14px', color: 'var(--text-muted)', marginTop: '8px'}}>
@@ -558,9 +558,9 @@ export default function RevenuePrediction({ monthlyData, settings }) {
           </div>
 
           {/* 예상 식음본부 매출 */}
-          <div style={{background: 'rgba(0,0,0,0.3)', padding: '30px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)'}}>
-            <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '12px'}}>예상 식음본부 매출</div>
-            <div className="responsive-large-number" style={{color: 'var(--accent-blue)'}}>
+          <div style={{background: 'rgba(0,0,0,0.3)', padding: '30px 20px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%'}}>
+            <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '16px'}}>예상 식음본부 매출</div>
+            <div className="responsive-large-number" style={{color: 'var(--accent-blue)', whiteSpace: 'nowrap'}}>
               ₩ <CountUp end={expectedFnbRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
             </div>
             <div style={{fontSize: '14px', color: 'var(--text-muted)', marginTop: '8px'}}>
