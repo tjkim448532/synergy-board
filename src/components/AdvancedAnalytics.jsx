@@ -463,7 +463,8 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       pureTrevPar: Math.round(totalPureTrev / totalAvailableRooms),
       capLeisure: capLeisure * 100,
       capFnb: capFnb * 100,
-      capMoto: capMoto * 100
+      capMoto: capMoto * 100,
+      totalSubsidiaryRev: totalSubsidiaryRev
     };
   }, [filteredProcessedData, settings]);
 
@@ -591,7 +592,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
           <div style={{marginTop: 'auto', background: 'rgba(255,255,255,0.05)', padding: '12px 16px', borderRadius: '8px', border: '1px solid rgba(251, 191, 36, 0.2)'}}>
             <div style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px'}}>방문객 1인당 평균 소비액 (레저+식음+모토)</div>
             <div style={{fontSize: '20px', fontWeight: 'bold', color: 'var(--accent-gold)'}}>
-              {displayVisitors > 0 ? `₩${Math.round(totalSubsidiaryRev / displayVisitors).toLocaleString()}` : '₩0'}
+              {displayVisitors > 0 && kpiMetrics ? `₩${Math.round(kpiMetrics.totalSubsidiaryRev / displayVisitors).toLocaleString()}` : '₩0'}
             </div>
           </div>
         </div>
