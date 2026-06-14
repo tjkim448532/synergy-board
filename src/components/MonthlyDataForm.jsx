@@ -25,6 +25,7 @@ export default function MonthlyDataForm({ settings }) {
   
   const [motoData, setMotoData] = useState(null);
   const [motoTargetMonth, setMotoTargetMonth] = useState('');
+  const [motoFileObj, setMotoFileObj] = useState(null);
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pin, setPin] = useState('');
@@ -460,13 +461,18 @@ export default function MonthlyDataForm({ settings }) {
     }
   };
 
-  const handleMotoFileUpload = (e) => {
+  const handleMotoFileSelect = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    setMotoFileObj(file);
+    setMotoData(null);
+  };
+
+  const handleExtractMotoData = () => {
+    if (!motoFileObj) return;
 
     if (!motoTargetMonth) {
-      toast.error('업로드 전에 대상 월(연/월)을 먼저 선택해주세요.');
-      e.target.value = null;
+      toast.error('추출 전에 대상 월(연/월)을 먼저 선택해주세요.');
       return;
     }
 
@@ -518,9 +524,8 @@ export default function MonthlyDataForm({ settings }) {
         console.error(err);
         toast.error('모토아레나 엑셀 파일을 파싱하는 중 오류가 발생했습니다.');
       }
-      e.target.value = null;
     };
-    reader.readAsBinaryString(file);
+    reader.readAsBinaryString(motoFileObj);
   };
 
   const handleSaveMotoData = async () => {
@@ -701,10 +706,16 @@ export default function MonthlyDataForm({ settings }) {
               style={{flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid var(--border-glass)', background: 'rgba(0,0,0,0.3)', color: 'var(--text-main)'}}
             />
             <label className="btn-primary" style={{cursor: 'pointer', textAlign: 'center', background: 'var(--accent-gold)', color: 'black', flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'}}>
-              <Upload size={18} /> 모토아레나 엑셀 선택
-              <input type="file" accept=".xlsx" onChange={handleMotoFileUpload} style={{display: 'none'}} />
+              <Upload size={18} /> {motoFileObj ? motoFileObj.name : '모토아레나 엑셀 선택'}
+              <input type="file" accept=".xlsx" onChange={handleMotoFileSelect} style={{display: 'none'}} />
             </label>
           </div>
+
+          {motoFileObj && !motoData && (
+            <button className="btn-primary" onClick={handleExtractMotoData} style={{width: '100%', marginBottom: '20px', background: 'rgba(59, 130, 246, 0.9)', display: 'flex', justifyContent: 'center', gap: '8px'}}>
+              🔍 선택된 엑셀에서 모토아레나 데이터 추출하기
+            </button>
+          )}
 
           {motoData && (
             <div style={{background: 'rgba(251, 191, 36, 0.1)', padding: '16px', borderRadius: '8px', border: '1px solid var(--accent-gold)'}}>

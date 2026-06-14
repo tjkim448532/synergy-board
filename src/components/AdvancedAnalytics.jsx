@@ -44,9 +44,22 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
         const lines = text.split('\n');
         for (const line of lines) {
           if (line.includes('전체 방문객')) {
-            const matches = line.match(/(?:^|,)(?:"([^"]*)"|([^,]*))/g);
-            if (matches && matches.length >= 4) {
-              const rawStr = matches[3];
+            let current = '';
+            let inQuotes = false;
+            const result = [];
+            for (let i = 0; i < line.length; i++) {
+              if (line[i] === '"') {
+                inQuotes = !inQuotes;
+              } else if (line[i] === ',' && !inQuotes) {
+                result.push(current);
+                current = '';
+              } else {
+                current += line[i];
+              }
+            }
+            result.push(current);
+            if (result.length >= 4) {
+              const rawStr = result[3];
               const cleanStr = rawStr.replace(/[^0-9]/g, '');
               if (cleanStr) {
                 setGoogleTotalVisitors(Number(cleanStr));
