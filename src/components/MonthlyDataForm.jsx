@@ -511,11 +511,45 @@ export default function MonthlyDataForm({ settings }) {
         
         const breakdown = { guest: {}, general: {}, internal: {}, other: {} };
 
-        for (let i = 2; i < data.length; i++) {
+        let headerRowIdx = -1;
+        let txColIdx = -1;
+        let revColIdx = -1;
+
+        // 헤더 행 찾기
+        for (let i = 0; i < 15; i++) {
+          const r = data[i];
+          if (!r) continue;
+          const rStr = r.join(' ').replace(/\s+/g, '');
+          
+          if (rStr.includes('트랜잭션명')) {
+            headerRowIdx = i;
+            for (let j = 0; j < r.length; j++) {
+              const cellStr = r[j] ? r[j].toString().replace(/\s+/g, '') : '';
+              if (cellStr.includes('트랜잭션명')) txColIdx = j;
+              if (cellStr.includes('실매출') || cellStr.includes('결제금액') || cellStr.includes('매출') || cellStr.includes('합계')) {
+                // 매출 관련 컬럼을 유연하게 찾음 (마지막에 매칭되는 것이 보통 최종 합계)
+                revColIdx = j;
+              }
+            }
+            break;
+          }
+        }
+
+        // 만약 못 찾았다면 기본값 (기존 하드코딩) 사용
+        if (headerRowIdx === -1) {
+          headerRowIdx = 1;
+          txColIdx = 3;
+          revColIdx = 8;
+        }
+
+        const dataStartIdx = headerRowIdx + 1;
+
+        for (let i = dataStartIdx; i < data.length; i++) {
           const row = data[i];
-          if (!row || row.length < 9) continue;
-          const txName = row[3];
-          const rev = parseSafeInt(row[8]);
+          if (!row) continue;
+          
+          const txName = row[txColIdx];
+          const rev = parseSafeInt(row[revColIdx]);
           if (typeof txName === 'string') {
             if (txName.includes('TOTAL') || txName === 'TOTAL') continue;
             
