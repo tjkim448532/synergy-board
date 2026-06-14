@@ -95,8 +95,8 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }) {
         <header className="glass-panel topbar">
           <h1>{SIDEBAR_MENU.find(m => m.id === activeTab)?.label || '대시보드'}</h1>
           <div className="user-profile">
-            <div className="avatar">D</div>
-            <span>디지탈지원</span>
+            <div className="avatar">L</div>
+            <span>레져본부</span>
           </div>
         </header>
         
