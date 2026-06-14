@@ -167,7 +167,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     const filtered = processedData.filter(d => d.motoGuestRev !== undefined);
     if (filtered.length === 0) return { guestAvailable: false };
     
-    const roomRevArr = filtered.map(d => d.totalRoomRevenue || 0);
+    const occArr = filtered.map(d => d.occupancyRate || 0);
     const guestArr = filtered.map(d => d.motoGuestRev || 0);
     const generalArr = filtered.map(d => d.motoGeneralRev || 0);
     const totalArr = filtered.map(d => d.motoTotalRev || 0);
@@ -181,11 +181,11 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     const otherRatio = sumTotal > 0 ? Math.max(0, 100 - guestRatio - generalRatio) : 0;
 
     return {
-      guest: calculateCorrelation(roomRevArr, guestArr),
+      guest: calculateCorrelation(occArr, guestArr),
       guestRatio: guestRatio,
       generalRatio: generalRatio,
       otherRatio: otherRatio,
-      total: calculateCorrelation(roomRevArr, totalArr),
+      total: calculateCorrelation(occArr, totalArr),
       guestAvailable: true
     };
   }, [processedData, activeDivision, motoLogic]);
@@ -563,7 +563,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                       </div>
                       
                       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '12px'}}>
-                        <span style={{fontSize: '14px', color: 'var(--text-main)'}}>객실 매출과의 상관계수 (r)</span>
+                        <span style={{fontSize: '14px', color: 'var(--text-main)'}}>객실 점유율과의 상관계수 (r)</span>
                         <span style={{fontSize: '24px', fontWeight: 'bold', color: (motoCorrelations.guest !== null && motoCorrelations.guest >= 0.4) ? 'var(--accent-emerald)' : 'var(--text-main)'}}>
                           {motoCorrelations.guest !== null ? motoCorrelations.guest.toFixed(3) : 'N/A'}
                         </span>
@@ -571,11 +571,11 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                       
                       <div style={{fontSize: '13px', padding: '16px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', lineHeight: '1.5'}}>
                         {motoCorrelations.guest !== null && motoCorrelations.guest >= 0.4 && motoCorrelations.guestRatio < 20 ? (
-                          <span>⚠️ <strong style={{color: 'var(--accent-red)'}}>[통계적 착시 주의]</strong> 객실 매출과 흐름은 유사하나, 투숙객 매출이 차지하는 파이가 너무 작아 실질적인 매출 견인 효과는 미미합니다 (허수 가능성).</span>
+                          <span>⚠️ <strong style={{color: 'var(--accent-red)'}}>[통계적 착시 주의]</strong> 객실 점유율과 흐름은 유사하나, 투숙객 매출이 차지하는 파이가 너무 작아 실질적인 매출 견인 효과는 미미합니다 (허수 가능성).</span>
                         ) : motoCorrelations.guest !== null && motoCorrelations.guest >= 0.4 && motoCorrelations.guestRatio >= 20 ? (
-                          <span>✅ <strong style={{color: 'var(--accent-emerald)'}}>[핵심 동력]</strong> 객실 매출 증가 시 뚜렷하게 함께 오르며, 비중 또한 유의미하여 모토아레나 성장을 든든하게 받쳐주고 있습니다.</span>
+                          <span>✅ <strong style={{color: 'var(--accent-emerald)'}}>[핵심 동력]</strong> 객실 점유율 증가 시 뚜렷하게 함께 오르며, 비중 또한 유의미하여 모토아레나 성장을 든든하게 받쳐주고 있습니다.</span>
                         ) : motoCorrelations.guest !== null ? (
-                          <span style={{color: 'var(--text-muted)'}}>📉 객실 매출 증감과 투숙객 티켓 판매량 간의 유의미한 동기화가 확인되지 않습니다.</span>
+                          <span style={{color: 'var(--text-muted)'}}>📉 객실 점유율 증감과 투숙객 티켓 판매량 간의 유의미한 동기화가 확인되지 않습니다.</span>
                         ) : null}
                       </div>
                     </div>
@@ -591,7 +591,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                       </div>
                       
                       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '12px', opacity: 0.5}}>
-                        <span style={{fontSize: '14px', color: 'var(--text-main)'}}>객실 매출과의 상관계수 (r)</span>
+                        <span style={{fontSize: '14px', color: 'var(--text-main)'}}>객실 점유율과의 상관계수 (r)</span>
                         <span style={{fontSize: '24px', fontWeight: 'bold', color: 'var(--text-muted)'}}>
                           해당없음
                         </span>
@@ -613,7 +613,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                       </div>
                       
                       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '12px', opacity: 0.5}}>
-                        <span style={{fontSize: '14px', color: 'var(--text-main)'}}>객실 매출과의 상관계수 (r)</span>
+                        <span style={{fontSize: '14px', color: 'var(--text-main)'}}>객실 점유율과의 상관계수 (r)</span>
                         <span style={{fontSize: '24px', fontWeight: 'bold', color: 'var(--text-muted)'}}>
                           해당없음
                         </span>
