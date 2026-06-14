@@ -67,6 +67,13 @@ function App() {
             <NewBusinessTraining monthlyData={allData} settings={settings} />
           </motion.div>
         )
+      case 'new-business-soccer':
+        return (
+          <motion.div key="new-business-soccer" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{padding: '48px', textAlign: 'center'}}>
+            <h2 style={{fontSize: '24px', marginBottom: '16px'}}>⚽ 축구장 신규 사업 시뮬레이터</h2>
+            <p style={{color: 'var(--text-muted)'}}>현재 축구장 모델링 데이터를 수집 및 분석 중입니다. 향후 업데이트를 기대해 주세요!</p>
+          </motion.div>
+        )
       case 'logic':
         return (
           <motion.div key="logic" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{padding: '32px'}}>

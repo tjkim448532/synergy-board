@@ -1,10 +1,18 @@
-import React from 'react';
-import { Upload, Settings, PieChart, TrendingUp, BookOpen, Building } from 'lucide-react';
+import React, { useState } from 'react';
+import { Upload, Settings, PieChart, TrendingUp, BookOpen, Building, ChevronDown } from 'lucide-react';
 import './DashboardLayout.css';
 
 const SIDEBAR_MENU = [
   { id: 'prediction', icon: TrendingUp, label: '매출 예측 시뮬레이터' },
-  { id: 'new-business', icon: Building, label: '신규 사업 시뮬레이터' },
+  { 
+    id: 'new-business-parent', 
+    icon: Building, 
+    label: '신규 사업 시뮬레이터',
+    subItems: [
+      { id: 'new-business', label: '연수원' },
+      { id: 'new-business-soccer', label: '축구장 (준비중)' }
+    ]
+  },
   { id: 'analytics', icon: PieChart, label: '상관관계 분석' },
   { id: 'logic', icon: BookOpen, label: '분석 로직 가이드' },
   { id: 'accuracy-tasks', icon: BookOpen, label: '데이터 정확도 핵심과제' },
@@ -13,6 +21,14 @@ const SIDEBAR_MENU = [
 ];
 
 export default function DashboardLayout({ children, activeTab, setActiveTab }) {
+  const [expandedMenus, setExpandedMenus] = useState(['new-business-parent']);
+
+  const toggleExpand = (menuId) => {
+    setExpandedMenus(prev => 
+      prev.includes(menuId) ? prev.filter(id => id !== menuId) : [...prev, menuId]
+    );
+  };
+
   return (
     <div className="dashboard-container">
       {/* Sidebar */}
@@ -25,6 +41,41 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }) {
         <nav className="sidebar-nav">
           {SIDEBAR_MENU.map((menu) => {
             const Icon = menu.icon;
+            
+            if (menu.subItems) {
+              const isExpanded = expandedMenus.includes(menu.id);
+              const hasActiveChild = menu.subItems.some(sub => sub.id === activeTab);
+              
+              return (
+                <div key={menu.id} className="nav-item-group">
+                  <button
+                    className={`nav-item-header ${hasActiveChild ? 'active-group' : ''}`}
+                    onClick={() => toggleExpand(menu.id)}
+                  >
+                    <div className="nav-item-header-content">
+                      <Icon size={20} />
+                      <span>{menu.label}</span>
+                    </div>
+                    <ChevronDown size={16} className={`chevron-icon ${isExpanded ? 'expanded' : ''}`} />
+                  </button>
+                  
+                  {isExpanded && (
+                    <div className="sub-nav">
+                      {menu.subItems.map(sub => (
+                        <button
+                          key={sub.id}
+                          className={`sub-nav-item ${activeTab === sub.id ? 'active' : ''}`}
+                          onClick={() => setActiveTab(sub.id)}
+                        >
+                          {sub.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
             return (
               <button
                 key={menu.id}
