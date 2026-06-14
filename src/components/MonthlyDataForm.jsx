@@ -807,6 +807,7 @@ export default function MonthlyDataForm({ settings }) {
                   <th>주말(객실/레저) 실적</th>
                   <th>객실 총매출</th>
                   <th>레저 총매출</th>
+                  <th>모토 총매출<br/><span style={{fontSize:'10px', color:'var(--text-muted)', fontWeight:'normal'}}>(파싱 상세)</span></th>
                   <th>관리</th>
                 </tr>
               </thead>
@@ -847,6 +848,18 @@ export default function MonthlyDataForm({ settings }) {
                     </td>
                     <td style={{color: 'var(--accent-blue)', fontWeight: 'bold'}}>₩ {formatCurrency(r.totalRoomRevenue || 0)}</td>
                     <td style={{color: 'var(--accent-gold)', fontWeight: 'bold'}}>₩ {formatCurrency(r.leisureSales || 0)}</td>
+                    <td style={{color: 'var(--text-main)', fontSize: '12px'}}>
+                      <div style={{fontWeight: 'bold', fontSize: '14px'}}>₩ {formatCurrency(r.motoTotalRev || 0)}</div>
+                      {r.motoTotalRev > 0 && (
+                        <div style={{marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '2px'}}>
+                          <span style={{color: 'var(--accent-emerald)'}}>투숙: ₩{formatCurrency(r.motoGuestRev || 0)}</span>
+                          <span style={{color: 'var(--accent-gold)'}}>일반: ₩{formatCurrency(r.motoGeneralRev || 0)}</span>
+                          {(r.motoInternalRev > 0 || r.motoOtherRev > 0) && (
+                            <span style={{color: 'var(--text-muted)'}}>기타: ₩{formatCurrency((r.motoInternalRev || 0) + (r.motoOtherRev || 0))}</span>
+                          )}
+                        </div>
+                      )}
+                    </td>
                     <td>
                       <button className="btn-delete" onClick={() => handleDelete(r.id)} title="이 달의 객실/레저 데이터 모두 삭제">
                         <Trash2 size={16} />
@@ -891,6 +904,19 @@ export default function MonthlyDataForm({ settings }) {
                       <span style={{color: 'var(--accent-gold)'}}>레저 총매출</span>
                       <span style={{fontWeight: 'bold'}}>₩{formatCurrency(r.leisureSales || 0)}</span>
                     </div>
+                    <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '4px'}}>
+                      <span style={{color: 'var(--text-bright)'}}>모토 총매출</span>
+                      <span style={{fontWeight: 'bold'}}>₩{formatCurrency(r.motoTotalRev || 0)}</span>
+                    </div>
+                    {r.motoTotalRev > 0 && (
+                      <div style={{display: 'flex', justifyContent: 'flex-end', gap: '8px', fontSize: '11px', marginTop: '2px'}}>
+                         <span style={{color: 'var(--accent-emerald)'}}>투숙: ₩{formatCurrency(r.motoGuestRev || 0)}</span>
+                         <span style={{color: 'var(--accent-gold)'}}>일반: ₩{formatCurrency(r.motoGeneralRev || 0)}</span>
+                         {(r.motoInternalRev > 0 || r.motoOtherRev > 0) && (
+                            <span style={{color: 'var(--text-muted)'}}>기타: ₩{formatCurrency((r.motoInternalRev || 0) + (r.motoOtherRev || 0))}</span>
+                         )}
+                      </div>
+                    )}
                   </div>
                 </div>
               );
