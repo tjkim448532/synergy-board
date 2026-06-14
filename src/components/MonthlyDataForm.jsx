@@ -515,7 +515,7 @@ export default function MonthlyDataForm({ settings }) {
           const row = data[i];
           if (!row || row.length < 9) continue;
           const txName = row[3];
-          const rev = Number(row[8]) || 0;
+          const rev = parseSafeInt(row[8]);
           if (typeof txName === 'string') {
             if (txName.includes('TOTAL') || txName === 'TOTAL') continue;
             
