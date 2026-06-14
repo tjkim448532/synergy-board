@@ -302,7 +302,9 @@ export default function RevenuePrediction({ monthlyData, settings }) {
     expLeisureWe = Math.max(0, regLeisureWe.slope * targetWeekendOcc + regLeisureWe.intercept);
     expectedLeisureRevenue = expLeisureWd + expLeisureWe;
 
-    expectedMotoRevenue = Math.max(0, regMotoTotal.slope * targetTotalOcc + regMotoTotal.intercept);
+    expMotoWd = Math.max(0, regMotoWd.slope * targetWeekdayOcc + regMotoWd.intercept);
+    expMotoWe = Math.max(0, regMotoWe.slope * targetWeekendOcc + regMotoWe.intercept);
+    expectedMotoRevenue = expMotoWd + expMotoWe;
 
     expFnbWd = Math.max(0, regFnbWd.slope * targetWeekdayOcc + regFnbWd.intercept);
     expFnbWe = Math.max(0, regFnbWe.slope * targetWeekendOcc + regFnbWe.intercept);

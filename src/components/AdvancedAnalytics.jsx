@@ -312,33 +312,14 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       let genRev = 0;
       let othRev = 0;
       
-      if (d.motoBreakdown) {
-        Object.keys(d.motoBreakdown).forEach(cat => {
-          if (d.motoBreakdown[cat]) {
-            Object.keys(d.motoBreakdown[cat]).forEach(ticket => {
-              const rev = d.motoBreakdown[cat][ticket];
-              
-              let group = settings.motoTicketGroups?.[ticket];
-              if (!group) {
-                if (ticket.includes('콘도') || ticket.includes('객실')) group = 'guest';
-                else if (ticket.includes('일반') || ticket.includes('증평군민') || ticket.includes('MOU') || ticket.includes('단체')) group = 'general';
-                else group = 'other';
-              }
-              
-              if (group === 'guest') gRev += rev;
-              else if (group === 'general') genRev += rev;
-              else {
-                othRev += rev;
-                aggregatedOther[ticket] = (aggregatedOther[ticket] || 0) + rev;
-              }
-            });
-          }
-        });
-      } else {
-        gRev = d.motoGuestRev || 0;
-        genRev = d.motoGeneralRev || 0;
-        othRev = (d.motoInternalRev || 0) + (d.motoOtherRev || 0);
-      }
+      // 항상 비율이 곱해져 보정된 motoGuestRev, motoGeneralRev를 사용함.
+      gRev = d.motoGuestRev || 0;
+      genRev = d.motoGeneralRev || 0;
+      
+      const excel2Total = Number(d.motoTotalRev || 0);
+      const otherRatio = excel2Total > 0 ? (Number(d.motoInternalRev || 0) + Number(d.motoOtherRev || 0)) / excel2Total : 0;
+      othRev = Math.round((d.motoSales || 0) * otherRatio);
+
       
       const totRev = gRev + genRev + othRev;
       

@@ -48,28 +48,25 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
         fnbSales += Number(d.totalFnbSales || d.fnbSales || 0);
       }
       
-      // Calculate Moto Arena Guest Revenue dynamically based on groupings
-      let mGuestRev = 0;
-      let mTotalRev = 0;
-      if (d.motoBreakdown) {
-        Object.keys(d.motoBreakdown).forEach(cat => {
-          if (d.motoBreakdown[cat]) {
-            Object.keys(d.motoBreakdown[cat]).forEach(ticket => {
-              const rev = d.motoBreakdown[cat][ticket];
-              mTotalRev += rev;
-              let group = settings.motoTicketGroups?.[ticket];
-              if (!group) {
-                if (ticket.includes('콘도') || ticket.includes('객실')) group = 'guest';
-                else if (ticket.includes('일반') || ticket.includes('증평군민') || ticket.includes('MOU') || ticket.includes('단체')) group = 'general';
-                else group = 'other';
-              }
-              if (group === 'guest') mGuestRev += rev;
-            });
-          }
+      let motoSales = 0;
+      if (d.salesByLocation) {
+        Object.keys(d.salesByLocation).forEach(loc => {
+          const group = locationGroups[loc] || 'leisure';
+          if (group === 'moto') motoSales += d.salesByLocation[loc];
         });
       } else {
-        mGuestRev = Number(d.motoGuestRev || 0); // fallback to legacy
-        mTotalRev = Number(d.motoTotalRev || d.totalMotoSales || d.motoSales || 0);
+        motoSales = Number(d.motoSales || d.motoTotalRev || d.totalMotoSales || 0);
+      }
+
+      let mGuestRev = 0;
+      let mTotalRev = motoSales;
+
+      const excel2Total = Number(d.motoTotalRev || 0);
+      if (excel2Total > 0 && motoSales > 0) {
+        const guestRatio = Number(d.motoGuestRev || 0) / excel2Total;
+        mGuestRev = Math.round(motoSales * guestRatio);
+      } else if (motoSales > 0) {
+        mGuestRev = Math.round(motoSales * 0.7);
       }
       
       totLeisure += leisureSales;
