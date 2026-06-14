@@ -44,9 +44,11 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
           else if (group === 'moto') motoSales += d.salesByLocation[loc];
           else if (group === 'fnb') fnbSales += d.salesByLocation[loc];
         });
+        // Include standalone Moto Arena data even if salesByLocation is used
+        motoSales += Number(d.motoTotalRev || 0);
       } else {
         leisureSales += Number(d.totalLeisureSales || d.leisureSales || 0);
-        motoSales += Number(d.totalMotoSales || d.motoSales || 0);
+        motoSales += Number(d.motoTotalRev || d.totalMotoSales || d.motoSales || 0);
         fnbSales += Number(d.totalFnbSales || d.fnbSales || 0);
       }
       
@@ -59,7 +61,12 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
       avgAdr: totSold > 0 ? totRev / totSold : 150000,
       leisurePerRoom: totSold > 0 ? totLeisure / totSold : 0,
       motoPerRoom: totSold > 0 ? totMoto / totSold : 0,
-      fnbPerRoom: totSold > 0 ? totFnb / totSold : 0
+      fnbPerRoom: totSold > 0 ? totFnb / totSold : 0,
+      totRev,
+      totLeisure,
+      totMoto,
+      totFnb,
+      monthsCount: monthlyData.length || 1
     };
   }, [monthlyData, settings]);
 
@@ -164,15 +171,42 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
       </div>
 
       {/* Results Section */}
-      <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '24px'}}>
+      <div style={{display: 'flex', flexDirection: 'column', gap: '24px'}}>
         
-        {/* Total Expected Revenue */}
-        <div className="glass-panel" style={{padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
-          <div style={{fontSize: '16px', color: 'var(--text-muted)', marginBottom: '8px'}}>연간 총 예상 파생 매출</div>
-          <div style={{fontSize: '48px', fontWeight: '900', color: 'var(--text-main)', letterSpacing: '-1px'}}>
-            ₩<CountUp end={expectedTotalRev} duration={1} separator="," preserveValue />
+        {/* Top summary cards */}
+        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px'}}>
+          
+          <div className="glass-panel" style={{padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderTop: '4px solid rgba(255,255,255,0.2)'}}>
+            <div style={{fontSize: '16px', color: 'var(--text-muted)', marginBottom: '8px'}}>기존 연간 통합 매출 (과거 평균 기준)</div>
+            <div style={{fontSize: '36px', fontWeight: '900', color: 'var(--text-main)', letterSpacing: '-1px'}}>
+              ₩<CountUp end={(baseMetrics.totRev + baseMetrics.totLeisure + baseMetrics.totMoto + baseMetrics.totFnb) / baseMetrics.monthsCount * 12} duration={1} separator="," preserveValue />
+            </div>
+            <div style={{fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px'}}>업로드된 데이터를 바탕으로 연 환산한 현재 매출 규모</div>
           </div>
-          <div style={{marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '16px'}}>
+
+          <div className="glass-panel" style={{padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderTop: '4px solid var(--accent-gold)'}}>
+            <div style={{fontSize: '16px', color: 'var(--accent-gold)', marginBottom: '8px', fontWeight: 'bold'}}>신규 시설(연수원) 파생 매출</div>
+            <div style={{fontSize: '36px', fontWeight: '900', color: 'var(--accent-gold)', letterSpacing: '-1px'}}>
+              + ₩<CountUp end={expectedTotalRev} duration={1} separator="," preserveValue />
+            </div>
+            <div style={{fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px'}}>신규 객실 추가로 인해 순수하게 증가하는 예상 매출액</div>
+          </div>
+
+          <div className="glass-panel" style={{padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: 'rgba(59, 130, 246, 0.1)', borderTop: '4px solid var(--accent-blue)'}}>
+            <div style={{fontSize: '16px', color: 'var(--accent-blue)', marginBottom: '8px', fontWeight: 'bold'}}>미래 종합 연간 예상 매출</div>
+            <div style={{fontSize: '42px', fontWeight: '900', color: '#fff', letterSpacing: '-1px'}}>
+              ₩<CountUp end={((baseMetrics.totRev + baseMetrics.totLeisure + baseMetrics.totMoto + baseMetrics.totFnb) / baseMetrics.monthsCount * 12) + expectedTotalRev} duration={1} separator="," preserveValue />
+            </div>
+            <div style={{fontSize: '13px', color: 'rgba(255,255,255,0.7)', marginTop: '8px'}}>기존 매출 + 신규 시설 파생 매출</div>
+          </div>
+
+        </div>
+
+        {/* Detailed Breakdown */}
+        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '24px'}}>
+          <div className="glass-panel" style={{padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
+            <h3 style={{margin: '0 0 24px 0', color: 'var(--text-main)'}}>신규 시설(연수원) 파생 매출 세부내역</h3>
+            <div style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>
             
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '12px', borderBottom: '1px dashed rgba(255,255,255,0.1)'}}>
               <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
@@ -239,8 +273,9 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
           </div>
         </div>
 
-      </div>
+        </div>
 
+      </div>
     </div>
   );
 }

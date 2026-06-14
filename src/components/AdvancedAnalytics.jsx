@@ -139,10 +139,11 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
             fnbSales += d.salesByLocation[loc];
           }
         });
+        motoSales += Number(d.motoTotalRev || 0);
       } else {
         // Fallback for legacy DB
         leisureSales = Number(d.totalLeisureSales || d.leisureSales || 0);
-        motoSales = Number(d.totalMotoSales || d.motoSales || 0);
+        motoSales = Number(d.motoTotalRev || d.totalMotoSales || d.motoSales || 0);
         fnbSales = Number(d.totalFnbSales || d.fnbSales || 0);
       }
 
