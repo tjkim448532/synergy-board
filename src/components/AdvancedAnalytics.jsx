@@ -911,7 +911,12 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       {/* 1. 상단 요약 카드 (전체 흐름) */}
       <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px'}}>
         <div className="glass-panel" style={{padding: '24px'}}>
-          <h3 style={{margin: '0 0 10px 0', color: 'var(--text-muted)'}}>통합 상관계수 (r)</h3>
+          <h3 style={{margin: '0 0 10px 0', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px'}}>
+            통합 상관계수 (r)
+            <span style={{fontSize: '12px', padding: '2px 8px', borderRadius: '12px', background: `${activeConf.color}22`, color: activeConf.color}}>
+              {activeConf.title}
+            </span>
+          </h3>
           <div style={{fontSize: '36px', fontWeight: 'bold', color: activeConf.color}}>
             {activeGlobalCorrelation ? activeGlobalCorrelation.toFixed(3) : 'N/A'}
           </div>
