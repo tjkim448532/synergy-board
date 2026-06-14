@@ -624,6 +624,66 @@ export default function Settings({ monthlyData }) {
           )}
         </div>
 
+        {/* 시뮬레이터 가동률(Capa) 설정 */}
+        <div className="glass-panel" style={{padding: '32px'}}>
+          <h3 style={{margin: '0 0 8px 0', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px'}}>
+            신규 사업 시뮬레이터 가동률(Capa) 설정
+          </h3>
+          <p style={{margin: '0 0 24px 0', color: 'var(--text-muted)', fontSize: '14px', lineHeight: '1.5'}}>
+            현재 각 시설의 가동률(이용률)을 설정합니다. 100%에 가까울수록 신규 객실이 늘어나도 더 이상 파생 매출이 증가하지 않게(상한선) 제한됩니다. 비워두면 제한이 없는 것으로 간주합니다.
+          </p>
+          
+          <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px'}}>
+            <div style={{background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '8px'}}>
+              <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-muted)'}}>식음(F&B) 본부 가동률</label>
+              <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                <input 
+                  type="number" 
+                  name="capaFnb"
+                  value={settings.capaFnb || ''} 
+                  onChange={handleChange}
+                  placeholder="예: 80"
+                  min="0" max="100"
+                  style={{width: '80px', padding: '8px', borderRadius: '4px', border: '1px solid var(--border-glass)', background: 'rgba(0,0,0,0.3)', color: '#fff'}}
+                />
+                <span style={{color: 'var(--text-muted)'}}>%</span>
+              </div>
+            </div>
+
+            <div style={{background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '8px'}}>
+              <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-muted)'}}>레저 본부 가동률</label>
+              <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                <input 
+                  type="number" 
+                  name="capaLeisure"
+                  value={settings.capaLeisure || ''} 
+                  onChange={handleChange}
+                  placeholder="예: 70"
+                  min="0" max="100"
+                  style={{width: '80px', padding: '8px', borderRadius: '4px', border: '1px solid var(--border-glass)', background: 'rgba(0,0,0,0.3)', color: '#fff'}}
+                />
+                <span style={{color: 'var(--text-muted)'}}>%</span>
+              </div>
+            </div>
+
+            <div style={{background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '8px'}}>
+              <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-muted)'}}>모토아레나 가동률</label>
+              <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                <input 
+                  type="number" 
+                  name="capaMoto"
+                  value={settings.capaMoto || ''} 
+                  onChange={handleChange}
+                  placeholder="예: 60"
+                  min="0" max="100"
+                  style={{width: '80px', padding: '8px', borderRadius: '4px', border: '1px solid var(--border-glass)', background: 'rgba(0,0,0,0.3)', color: '#fff'}}
+                />
+                <span style={{color: 'var(--text-muted)'}}>%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="settings-actions" style={{marginTop: '40px'}}>
           <button className="btn-save" onClick={handleSave}>
             <Save size={18} /> 설정 저장하기

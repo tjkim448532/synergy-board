@@ -43,13 +43,32 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
           if (group === 'leisure') leisureSales += d.salesByLocation[loc];
           else if (group === 'fnb') fnbSales += d.salesByLocation[loc];
         });
-        // Include standalone Moto Arena data even if salesByLocation is used
-        motoSales = Number(d.motoTotalRev || 0);
       } else {
         leisureSales += Number(d.totalLeisureSales || d.leisureSales || 0);
-        motoSales += Number(d.motoTotalRev || d.totalMotoSales || d.motoSales || 0);
         fnbSales += Number(d.totalFnbSales || d.fnbSales || 0);
       }
+      
+      // Calculate Moto Arena Guest Revenue dynamically based on groupings
+      let mGuestRev = 0;
+      if (d.motoBreakdown) {
+        Object.keys(d.motoBreakdown).forEach(cat => {
+          if (d.motoBreakdown[cat]) {
+            Object.keys(d.motoBreakdown[cat]).forEach(ticket => {
+              const rev = d.motoBreakdown[cat][ticket];
+              let group = settings.motoTicketGroups?.[ticket];
+              if (!group) {
+                if (ticket.includes('콘도') || ticket.includes('객실')) group = 'guest';
+                else if (ticket.includes('일반') || ticket.includes('증평군민') || ticket.includes('MOU') || ticket.includes('단체')) group = 'general';
+                else group = 'other';
+              }
+              if (group === 'guest') mGuestRev += rev;
+            });
+          }
+        });
+      } else {
+        mGuestRev = Number(d.motoGuestRev || 0); // fallback to legacy
+      }
+      motoSales = mGuestRev;
       
       totLeisure += leisureSales;
       totMoto += motoSales;
@@ -80,9 +99,40 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
   const annualSoldRooms = annualAvailableRooms * (targetOcc / 100);
   
   const expectedRoomRev = annualSoldRooms * activeAdr;
-  const expectedLeisureRev = annualSoldRooms * baseMetrics.leisurePerRoom;
-  const expectedMotoRev = annualSoldRooms * baseMetrics.motoPerRoom;
-  const expectedFnbRev = annualSoldRooms * baseMetrics.fnbPerRoom;
+  const rawLeisureRev = annualSoldRooms * baseMetrics.leisurePerRoom;
+  const rawMotoRev = annualSoldRooms * baseMetrics.motoPerRoom;
+  const rawFnbRev = annualSoldRooms * baseMetrics.fnbPerRoom;
+
+  const calculateCapaLimit = (rawExpected, totalHistorical, capaStr) => {
+    if (!capaStr || isNaN(Number(capaStr))) return { value: rawExpected, isCapped: false };
+    const capa = Number(capaStr);
+    if (capa <= 0 || capa >= 100) {
+      if (capa >= 100) return { value: 0, isCapped: true };
+      return { value: rawExpected, isCapped: false };
+    }
+    
+    // Annualized current revenue based on historical data
+    const currentAnnualRev = (totalHistorical / baseMetrics.monthsCount) * 12;
+    if (currentAnnualRev === 0) return { value: rawExpected, isCapped: false };
+
+    const maxAnnualCapacity = currentAnnualRev / (capa / 100);
+    const remainingCapacity = Math.max(0, maxAnnualCapacity - currentAnnualRev);
+    
+    const isCapped = rawExpected > remainingCapacity;
+    return { 
+      value: isCapped ? remainingCapacity : rawExpected, 
+      isCapped
+    };
+  };
+
+  const leisureSim = calculateCapaLimit(rawLeisureRev, baseMetrics.totLeisure, settings.capaLeisure);
+  const motoSim = calculateCapaLimit(rawMotoRev, baseMetrics.totMoto, settings.capaMoto);
+  const fnbSim = calculateCapaLimit(rawFnbRev, baseMetrics.totFnb, settings.capaFnb);
+
+  const expectedLeisureRev = leisureSim.value;
+  const expectedMotoRev = motoSim.value;
+  const expectedFnbRev = fnbSim.value;
+  
   const expectedTotalRev = expectedRoomRev + expectedLeisureRev + expectedMotoRev + expectedFnbRev;
 
   const chartData = [
@@ -224,7 +274,10 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
                 <div style={{width: '12px', height: '12px', borderRadius: '50%', background: '#ef4444'}} />
                 <span>식음(F&B) 매출</span>
               </div>
-              <strong style={{fontSize: '18px'}}>₩{formatCurrency(expectedFnbRev)}</strong>
+              <div style={{textAlign: 'right'}}>
+                <strong style={{fontSize: '18px', color: fnbSim.isCapped ? '#ef4444' : 'inherit'}}>₩{formatCurrency(expectedFnbRev)}</strong>
+                {fnbSim.isCapped && <div style={{fontSize: '11px', color: '#ef4444', marginTop: '4px'}}>*Capa 상한 도달 (초과분 버림)</div>}
+              </div>
             </div>
 
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '12px', borderBottom: '1px dashed rgba(255,255,255,0.1)'}}>
@@ -232,7 +285,10 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
                 <div style={{width: '12px', height: '12px', borderRadius: '50%', background: 'var(--accent-gold)'}} />
                 <span>모토아레나 매출</span>
               </div>
-              <strong style={{fontSize: '18px'}}>₩{formatCurrency(expectedMotoRev)}</strong>
+              <div style={{textAlign: 'right'}}>
+                <strong style={{fontSize: '18px', color: motoSim.isCapped ? 'var(--accent-gold)' : 'inherit'}}>₩{formatCurrency(expectedMotoRev)}</strong>
+                {motoSim.isCapped && <div style={{fontSize: '11px', color: 'var(--accent-gold)', marginTop: '4px'}}>*Capa 상한 도달 (초과분 버림)</div>}
+              </div>
             </div>
 
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
@@ -240,7 +296,10 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
                 <div style={{width: '12px', height: '12px', borderRadius: '50%', background: 'var(--accent-emerald)'}} />
                 <span>레저/기타 매출</span>
               </div>
-              <strong style={{fontSize: '18px'}}>₩{formatCurrency(expectedLeisureRev)}</strong>
+              <div style={{textAlign: 'right'}}>
+                <strong style={{fontSize: '18px', color: leisureSim.isCapped ? 'var(--accent-emerald)' : 'inherit'}}>₩{formatCurrency(expectedLeisureRev)}</strong>
+                {leisureSim.isCapped && <div style={{fontSize: '11px', color: 'var(--accent-emerald)', marginTop: '4px'}}>*Capa 상한 도달 (초과분 버림)</div>}
+              </div>
             </div>
 
           </div>
