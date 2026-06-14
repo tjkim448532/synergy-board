@@ -231,7 +231,7 @@ export default function MonthlyDataForm({ settings }) {
 
       } catch (err) {
         console.error(err);
-        toast.error('객실 엑셀 파일을 파싱하는 중 오류가 발생했습니다.');
+        toast.error('객실 데이터 추출 중 오류가 발생했습니다.');
       }
       e.target.value = null;
     };
@@ -425,7 +425,7 @@ export default function MonthlyDataForm({ settings }) {
 
       } catch (err) {
         console.error(err);
-        toast.error('레저 엑셀 파일을 파싱하는 중 오류가 발생했습니다.');
+        toast.error('레저 데이터 추출 중 오류가 발생했습니다.');
       }
       e.target.value = null;
     };
@@ -585,7 +585,7 @@ export default function MonthlyDataForm({ settings }) {
 
       } catch (err) {
         console.error(err);
-        toast.error('모토아레나 엑셀 파일을 파싱하는 중 오류가 발생했습니다.');
+        toast.error('모토아레나 데이터 추출 중 오류가 발생했습니다.');
       }
     };
     reader.readAsBinaryString(motoFileObj);
@@ -646,7 +646,7 @@ export default function MonthlyDataForm({ settings }) {
     <div className="monthly-data-container">
       <div className="upload-header glass-panel" style={{marginBottom: '20px'}}>
         <h2>엑셀 개별 업로드 시스템</h2>
-        <p style={{color: 'var(--text-muted)', marginBottom: '10px'}}>객실과 레저 엑셀을 완전히 분리하여 각각 독립적으로 파싱하고 개별 저장합니다. (서로 덮어쓰지 않습니다)</p>
+        <p style={{color: 'var(--text-muted)', marginBottom: '10px'}}>티켓 이름 기준으로 자동 분류하여 데이터를 추출합니다. (서버에 저장되지 않습니다)</p>
         <div style={{background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--accent-red)', padding: '12px', borderRadius: '6px', color: 'var(--text-main)', fontSize: '13px'}}>
           <strong>⚠️ 데이터 덮어쓰기 주의:</strong> 동일한 연/월(예: 2026-06)의 데이터를 중복 업로드하면, <span style={{color: 'var(--accent-red)'}}>기존 데이터가 모두 삭제되고 완전히 덮어씌워집니다.</span><br/>
           반드시 1일부터 말일까지 취합된 <strong>'해당 월 전체 통합 엑셀 파일'</strong>을 월말에 한 번만 업로드해 주세요!
@@ -669,7 +669,7 @@ export default function MonthlyDataForm({ settings }) {
 
           {roomData && Array.isArray(roomData) && (
             <div style={{background: 'rgba(52, 211, 153, 0.1)', padding: '16px', borderRadius: '8px', border: '1px solid var(--accent-emerald)'}}>
-              <h4 style={{margin: '0 0 12px 0', color: 'var(--accent-emerald)'}}>파싱 결과 (총 {roomData.length}개월)</h4>
+              <h4 style={{margin: '0 0 12px 0', color: 'var(--accent-emerald)'}}>데이터 추출 결과 (총 {roomData.length}건)</h4>
               <div style={{maxHeight: '300px', overflowY: 'auto', marginBottom: '16px', paddingRight: '8px'}}>
                 {roomData.map(data => (
                   <div key={data.yearMonth} style={{marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px dashed rgba(255,255,255,0.2)'}}>
@@ -710,7 +710,7 @@ export default function MonthlyDataForm({ settings }) {
 
           {leisureData && Array.isArray(leisureData) && (
             <div style={{background: 'rgba(251, 191, 36, 0.1)', padding: '16px', borderRadius: '8px', border: '1px solid var(--accent-gold)'}}>
-              <h4 style={{margin: '0 0 12px 0', color: 'var(--accent-gold)'}}>파싱 결과 (총 {leisureData.length}개월)</h4>
+              <h4 style={{margin: '0 0 12px 0', color: 'var(--accent-gold)'}}>레저 추출 결과 (총 {leisureData.length}건)</h4>
               
               <div style={{maxHeight: '300px', overflowY: 'auto', marginBottom: '16px', paddingRight: '8px'}}>
                 {leisureData.map(data => {
@@ -783,7 +783,7 @@ export default function MonthlyDataForm({ settings }) {
 
           {motoData && (
             <div style={{background: 'rgba(251, 191, 36, 0.1)', padding: '16px', borderRadius: '8px', border: '1px solid var(--accent-gold)'}}>
-              <h4 style={{margin: '0 0 12px 0', color: 'var(--accent-gold)'}}>파싱 결과 ({motoData.yearMonth})</h4>
+              <h4 style={{margin: '0 0 12px 0', color: 'var(--accent-gold)'}}>추출 결과 ({motoData.yearMonth})</h4>
               
               <div style={{marginBottom: '16px', fontSize: '14px', display: 'flex', flexDirection: 'column', gap: '8px'}}>
                 <div style={{display: 'flex', justifyContent: 'space-between'}}>
@@ -813,7 +813,7 @@ export default function MonthlyDataForm({ settings }) {
                   </div>
                 )}
                 <div style={{display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed rgba(255,255,255,0.2)', paddingTop: '8px'}}>
-                  <span style={{color: 'var(--accent-gold)'}}>총 파싱 합계:</span> <strong style={{color: 'var(--accent-gold)'}}>₩{formatCurrency(motoData.motoTotalRev)}</strong>
+                  <span style={{color: 'var(--accent-gold)'}}>총 추출 합계:</span> <strong style={{color: 'var(--accent-gold)'}}>₩{formatCurrency(motoData.motoTotalRev)}</strong>
                 </div>
               </div>
 
@@ -844,7 +844,7 @@ export default function MonthlyDataForm({ settings }) {
                   <th>주말(객실/레저) 실적</th>
                   <th>객실 총매출</th>
                   <th>레저 총매출</th>
-                  <th>모토 총매출<br/><span style={{fontSize:'10px', color:'var(--text-muted)', fontWeight:'normal'}}>(파싱 상세)</span></th>
+                  <th>모토 총매출<br/><span style={{fontSize:'10px', color:'var(--text-muted)', fontWeight:'normal'}}>(상세 분석)</span></th>
                   <th>관리</th>
                 </tr>
               </thead>

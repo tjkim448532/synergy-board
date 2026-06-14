@@ -736,7 +736,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                 onClick={() => setMotoLogic('new')}
                 style={{padding: '8px 16px', borderRadius: '6px', background: motoLogic === 'new' ? 'var(--accent-gold)' : 'transparent', color: motoLogic === 'new' ? '#000' : 'var(--text-main)', border: 'none', cursor: 'pointer', fontWeight: motoLogic === 'new' ? 'bold' : 'normal', transition: 'all 0.2s'}}
               >
-                상세 매출 파싱 (신규)
+                상세 매출 분석 (신규)
               </button>
             </div>
           </div>
@@ -746,7 +746,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
               {!motoCorrelations.guestAvailable ? (
                 <div style={{padding: '24px', textAlign: 'center', color: 'var(--text-muted)'}}>
                   데이터 업로드 페이지에서 <strong>모토아레나 엑셀 파일</strong>을 업로드해 주세요.
-                  <br/>파싱된 데이터가 없어 정밀 분석을 수행할 수 없습니다.
+                  <br/>추출된 데이터가 없어 정밀 분석을 수행할 수 없습니다.
                 </div>
               ) : (
                 <div style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
