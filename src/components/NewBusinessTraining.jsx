@@ -41,11 +41,10 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
         Object.keys(d.salesByLocation).forEach(loc => {
           const group = locationGroups[loc] || 'leisure';
           if (group === 'leisure') leisureSales += d.salesByLocation[loc];
-          else if (group === 'moto') motoSales += d.salesByLocation[loc];
           else if (group === 'fnb') fnbSales += d.salesByLocation[loc];
         });
         // Include standalone Moto Arena data even if salesByLocation is used
-        motoSales += Number(d.motoTotalRev || 0);
+        motoSales = Number(d.motoTotalRev || 0);
       } else {
         leisureSales += Number(d.totalLeisureSales || d.leisureSales || 0);
         motoSales += Number(d.motoTotalRev || d.totalMotoSales || d.motoSales || 0);

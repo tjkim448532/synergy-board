@@ -133,13 +133,11 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
           const group = locationGroups[loc] || 'leisure';
           if (group === 'leisure') {
             leisureSales += d.salesByLocation[loc];
-          } else if (group === 'moto') {
-            motoSales += d.salesByLocation[loc];
           } else if (group === 'fnb') {
             fnbSales += d.salesByLocation[loc];
           }
         });
-        motoSales += Number(d.motoTotalRev || 0);
+        motoSales = Number(d.motoTotalRev || 0);
       } else {
         // Fallback for legacy DB
         leisureSales = Number(d.totalLeisureSales || d.leisureSales || 0);
