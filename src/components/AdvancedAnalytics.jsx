@@ -555,6 +555,10 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                       <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', marginBottom: '16px'}}>
                         객실에 투숙하며 구매한 티켓 비율 (콘도/객실 티켓합계)
                       </div>
+
+                      <div style={{fontSize: '13px', color: 'var(--accent-emerald)', background: 'rgba(52, 211, 153, 0.1)', padding: '10px 12px', borderRadius: '6px', marginBottom: '16px'}}>
+                        💡 <strong>[추천]</strong> 이 수치({motoCorrelations.guestRatio !== null ? motoCorrelations.guestRatio.toFixed(1) : '0'}%)를 <strong>[설정] 탭의 '모토아레나 캡처 레이트'</strong>에 입력하시면, 가장 정확한 투숙객 순수 TrevPAR가 자동 계산됩니다.
+                      </div>
                       
                       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '12px'}}>
                         <span style={{fontSize: '14px', color: 'var(--text-main)'}}>객실 매출과의 상관계수 (r)</span>
