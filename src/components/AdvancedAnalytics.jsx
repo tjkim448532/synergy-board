@@ -1021,7 +1021,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
           
           <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px'}}>
             {/* Pie Chart */}
-            <div style={{width: '100%', height: '300px', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+            <div style={{width: '100%', height: '380px', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
               <h4 style={{margin: '0 0 10px 0', color: 'var(--text-main)'}}>매출 비중</h4>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
