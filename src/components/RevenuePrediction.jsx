@@ -489,84 +489,98 @@ export default function RevenuePrediction({ monthlyData, settings }) {
           <span>해당 점유율 달성 시 예상 투숙객: <strong style={{color: 'white', fontSize: '22px'}}><CountUp end={expectedGuests} formattingFn={formatCurrency} duration={0.6} preserveValue /> 명</strong></span>
         </div>
 
-        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', maxWidth: '1200px', margin: '0 auto'}}>
-          <div style={{background: 'rgba(0,0,0,0.3)', padding: '30px 20px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%'}}>
-            <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '16px'}}>예상 객실 매출</div>
-            
-            {hasTargetAdr ? (
-              <div style={{display: 'flex', gap: '16px', justifyContent: 'center', alignItems: 'center'}}>
-                <div style={{flex: 1, padding: '16px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', border: '1px dashed rgba(255,255,255,0.2)'}}>
-                  <div style={{fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px'}}>과거 추세선 기준</div>
-                  <div style={{fontSize: '24px', fontWeight: 'bold', color: 'var(--text-muted)'}}>
+        <div style={{display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', gap: '20px', maxWidth: '1200px', margin: '0 auto'}}>
+          <div style={{flex: '1 1 240px', background: 'rgba(0,0,0,0.3)', padding: '30px 20px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
+            <div>
+              <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '16px'}}>예상 객실 매출</div>
+              
+              {hasTargetAdr ? (
+                <div style={{display: 'flex', gap: '16px', justifyContent: 'center', alignItems: 'center'}}>
+                  <div style={{flex: 1, padding: '16px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', border: '1px dashed rgba(255,255,255,0.2)'}}>
+                    <div style={{fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px'}}>과거 추세선 기준</div>
+                    <div style={{fontSize: '24px', fontWeight: 'bold', color: 'var(--text-muted)'}}>
+                      ₩ <CountUp end={expectedRoomRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
+                    </div>
+                  </div>
+                  
+                  <div style={{color: 'var(--accent-gold)', fontWeight: 'bold', fontSize: '20px'}}>VS</div>
+                  
+                  <div style={{flex: 1, padding: '16px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px', border: '1px solid var(--accent-emerald)', position: 'relative'}}>
+                    <div style={{position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)', background: 'var(--accent-emerald)', color: 'white', padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: 'bold', whiteSpace: 'nowrap'}}>
+                      목표 객단가 달성 시
+                    </div>
+                    <div style={{fontSize: '13px', color: 'var(--accent-emerald)', marginBottom: '8px', marginTop: '4px'}}>전략 목표 기준</div>
+                    <div style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-gold)'}}>
+                      ₩ <CountUp end={targetAdrRoomRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
+                    </div>
+                    <div style={{fontSize: '12px', color: 'var(--accent-emerald)', marginTop: '8px'}}>
+                      추가수익: +₩{formatCurrency(targetAdrRoomRevenue - expectedRoomRevenue)}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="responsive-large-number" style={{color: 'var(--accent-blue)', whiteSpace: 'nowrap'}}>
                     ₩ <CountUp end={expectedRoomRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
                   </div>
+                </>
+              )}
+            </div>
+            
+            {!hasTargetAdr && (
+              <div style={{marginTop: '16px'}}>
+                <div style={{fontSize: '14px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px'}}>
+                  <span>주중 ₩{formatCurrency(expRevWd)}</span>
+                  <span>주말 ₩{formatCurrency(expRevWe)}</span>
                 </div>
-                
-                <div style={{color: 'var(--accent-gold)', fontWeight: 'bold', fontSize: '20px'}}>VS</div>
-                
-                <div style={{flex: 1, padding: '16px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px', border: '1px solid var(--accent-emerald)', position: 'relative'}}>
-                  <div style={{position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)', background: 'var(--accent-emerald)', color: 'white', padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: 'bold'}}>
-                    목표 객단가 달성 시
-                  </div>
-                  <div style={{fontSize: '13px', color: 'var(--accent-emerald)', marginBottom: '8px', marginTop: '4px'}}>전략 목표 기준</div>
-                  <div style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-gold)'}}>
-                    ₩ <CountUp end={targetAdrRoomRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
-                  </div>
-                  <div style={{fontSize: '12px', color: 'var(--accent-emerald)', marginTop: '8px'}}>
-                    추가수익: +₩{formatCurrency(targetAdrRoomRevenue - expectedRoomRevenue)}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <>
-                <div className="responsive-large-number" style={{color: 'var(--accent-blue)', whiteSpace: 'nowrap'}}>
-                  ₩ <CountUp end={expectedRoomRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
-                </div>
-                <div style={{fontSize: '14px', color: 'var(--text-muted)', marginTop: '8px'}}>
-                  (주중 ₩{formatCurrency(expRevWd)} + 주말 ₩{formatCurrency(expRevWe)})
-                </div>
-                <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px'}}>
+                <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '12px', wordBreak: 'keep-all', lineHeight: '1.4'}}>
                   * 설정에서 목표 객단가를 입력하시면 전략적 시뮬레이션이 가능합니다.
                 </div>
-              </>
+              </div>
             )}
           </div>
           
-          <div style={{background: 'rgba(0,0,0,0.3)', padding: '30px 20px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%'}}>
-            <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '16px'}}>예상 레저본부 매출</div>
-            <div className="responsive-large-number" style={{color: 'var(--accent-purple)', whiteSpace: 'nowrap'}}>
-              ₩ <CountUp end={expectedLeisureRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
+          <div style={{flex: '1 1 240px', background: 'rgba(0,0,0,0.3)', padding: '30px 20px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
+            <div>
+              <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '16px'}}>예상 레저본부 매출</div>
+              <div className="responsive-large-number" style={{color: 'var(--accent-purple)', whiteSpace: 'nowrap'}}>
+                ₩ <CountUp end={expectedLeisureRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
+              </div>
             </div>
-            <div style={{fontSize: '14px', color: 'var(--text-muted)', marginTop: '8px'}}>
+            <div style={{marginTop: '16px', fontSize: '14px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px'}}>
               {hasSplitLeisure 
-                ? `(주중 ₩${formatCurrency(expLeisureWd)} + 주말 ₩${formatCurrency(expLeisureWe)})` 
-                : `(종합 점유율 ${targetTotalOcc.toFixed(1)}% 기준 예측)`}
+                ? <><span>주중 ₩{formatCurrency(expLeisureWd)}</span><span>주말 ₩{formatCurrency(expLeisureWe)}</span></>
+                : <span>(종합 점유율 {targetTotalOcc.toFixed(1)}% 기준 예측)</span>}
             </div>
           </div>
           
           {/* 예상 모토아레나 매출 */}
-          <div style={{background: 'rgba(0,0,0,0.3)', padding: '30px 20px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%'}}>
-            <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '16px'}}>예상 모토아레나 매출</div>
-            <div className="responsive-large-number" style={{color: 'var(--accent-gold)', whiteSpace: 'nowrap'}}>
-              ₩ <CountUp end={expectedMotoRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
+          <div style={{flex: '1 1 240px', background: 'rgba(0,0,0,0.3)', padding: '30px 20px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
+            <div>
+              <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '16px'}}>예상 모토아레나 매출</div>
+              <div className="responsive-large-number" style={{color: 'var(--accent-gold)', whiteSpace: 'nowrap'}}>
+                ₩ <CountUp end={expectedMotoRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
+              </div>
             </div>
-            <div style={{fontSize: '14px', color: 'var(--text-muted)', marginTop: '8px'}}>
+            <div style={{marginTop: '16px', fontSize: '14px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px'}}>
               {hasSplitLeisure 
-                ? `(주중 ₩${formatCurrency(expMotoWd)} + 주말 ₩${formatCurrency(expMotoWe)})` 
-                : `(종합 점유율 ${targetTotalOcc.toFixed(1)}% 기준 예측)`}
+                ? <><span>주중 ₩{formatCurrency(expMotoWd)}</span><span>주말 ₩{formatCurrency(expMotoWe)}</span></>
+                : <span>(종합 점유율 {targetTotalOcc.toFixed(1)}% 기준 예측)</span>}
             </div>
           </div>
 
           {/* 예상 식음본부 매출 */}
-          <div style={{background: 'rgba(0,0,0,0.3)', padding: '30px 20px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%'}}>
-            <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '16px'}}>예상 식음본부 매출</div>
-            <div className="responsive-large-number" style={{color: 'var(--accent-blue)', whiteSpace: 'nowrap'}}>
-              ₩ <CountUp end={expectedFnbRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
+          <div style={{flex: '1 1 240px', background: 'rgba(0,0,0,0.3)', padding: '30px 20px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
+            <div>
+              <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '16px'}}>예상 식음본부 매출</div>
+              <div className="responsive-large-number" style={{color: 'var(--accent-blue)', whiteSpace: 'nowrap'}}>
+                ₩ <CountUp end={expectedFnbRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
+              </div>
             </div>
-            <div style={{fontSize: '14px', color: 'var(--text-muted)', marginTop: '8px'}}>
+            <div style={{marginTop: '16px', fontSize: '14px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px'}}>
               {hasSplitLeisure 
-                ? `(주중 ₩${formatCurrency(expFnbWd)} + 주말 ₩${formatCurrency(expFnbWe)})` 
-                : `(종합 점유율 ${targetTotalOcc.toFixed(1)}% 기준 예측)`}
+                ? <><span>주중 ₩{formatCurrency(expFnbWd)}</span><span>주말 ₩{formatCurrency(expFnbWe)}</span></>
+                : <span>(종합 점유율 {targetTotalOcc.toFixed(1)}% 기준 예측)</span>}
             </div>
           </div>
         </div>
