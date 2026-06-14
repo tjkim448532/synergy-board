@@ -145,9 +145,26 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
             leisureSales += d.salesByLocation[loc];
           } else if (group === 'fnb') {
             fnbSales += d.salesByLocation[loc];
+          } else if (group === 'moto') {
+            motoSales += d.salesByLocation[loc];
           }
         });
-        motoSales = Number(d.motoTotalRev || 0);
+        
+        // 두 번째 엑셀(모토아레나 전용) 데이터는 오직 투숙객/일반객 비율 산출에만 사용
+        const excel2Total = Number(d.motoTotalRev || 0);
+        if (excel2Total > 0 && motoSales > 0) {
+          const guestRatio = Number(d.motoGuestRev || 0) / excel2Total;
+          d.motoGuestRev = Math.round(motoSales * guestRatio);
+          const generalRatio = Number(d.motoGeneralRev || 0) / excel2Total;
+          d.motoGeneralRev = Math.round(motoSales * generalRatio);
+        } else if (motoSales > 0) {
+          // 두 번째 엑셀 데이터가 없을 경우 임의 추정치 (70% 투숙객)
+          d.motoGuestRev = Math.round(motoSales * 0.7);
+          d.motoGeneralRev = Math.round(motoSales * 0.3);
+        } else {
+          d.motoGuestRev = 0;
+          d.motoGeneralRev = 0;
+        }
       } else {
         // Fallback for legacy DB
         leisureSales = Number(d.totalLeisureSales || d.leisureSales || 0);

@@ -101,9 +101,15 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         });
       } else {
         // Fallback for legacy DB
-        leisureSales = Number(d.leisureSales || 0);
+        leisureSales = Number(d.leisureSales || d.totalLeisureSales || 0);
+        motoSales = Number(d.motoSales || d.motoTotalRev || d.totalMotoSales || 0);
+        fnbSales = Number(d.fnbSales || d.totalFnbSales || 0);
         lRevWd = d.leisureRevWd !== undefined ? Number(d.leisureRevWd) : null;
         lRevWe = d.leisureRevWe !== undefined ? Number(d.leisureRevWe) : null;
+        mRevWd = d.motoRevWd !== undefined ? Number(d.motoRevWd) : null;
+        mRevWe = d.motoRevWe !== undefined ? Number(d.motoRevWe) : null;
+        fRevWd = d.fnbRevWd !== undefined ? Number(d.fnbRevWd) : null;
+        fRevWe = d.fnbRevWe !== undefined ? Number(d.fnbRevWe) : null;
       }
       
       const occRate = totalInventory > 0 ? (totalSold / totalInventory) * 100 : 0;
