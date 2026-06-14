@@ -915,7 +915,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       </div>
 
       {/* 2. 메인 트렌드 차트 */}
-      <div className="glass-panel" style={{padding: '24px'}}>
+      <div className="glass-panel" style={{padding: '24px', minWidth: 0}}>
         <div style={{marginBottom: '20px'}}>
           <h3 style={{margin: '0 0 8px 0'}}>월별 추이: 객실 점유율 vs {activeConf.title} 매출</h3>
           <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: '1.4'}}>
@@ -926,7 +926,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
             </span>
           </p>
         </div>
-        <div style={{width: '100%', height: '400px'}}>
+        <div style={{width: '100%', height: '400px', minWidth: 0, minHeight: 0}}>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={filteredProcessedData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
@@ -949,7 +949,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px'}}>
         
         {/* 평형별 산점도 */}
-        <div className="glass-panel" style={{padding: '24px'}}>
+        <div className="glass-panel" style={{padding: '24px', minWidth: 0}}>
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px'}}>
             <div>
               <h3 style={{margin: '0 0 8px 0'}}>평형별 판매량 vs {activeConf.title} 매출 (산점도)</h3>
@@ -969,7 +969,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
             </select>
           </div>
           
-          <div style={{flex: 1, minHeight: 0, width: '100%', height: '300px'}}>
+          <div style={{flex: 1, minHeight: 0, minWidth: 0, width: '100%', height: '300px'}}>
             <ResponsiveContainer width="100%" height="100%">
               <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
@@ -1021,7 +1021,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
           
           <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px'}}>
             {/* Pie Chart */}
-            <div style={{width: '100%', height: '380px', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+            <div style={{width: '100%', height: '380px', display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 0, minHeight: 0}}>
               <h4 style={{margin: '0 0 10px 0', color: 'var(--text-main)'}}>매출 비중</h4>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
