@@ -172,12 +172,16 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     const generalArr = filtered.map(d => d.motoGeneralRev || 0);
     const totalArr = filtered.map(d => d.motoTotalRev || 0);
     
+    const sumGuest = guestArr.reduce((a, b) => a + b, 0);
     const sumGeneral = generalArr.reduce((a, b) => a + b, 0);
     const sumTotal = totalArr.reduce((a, b) => a + b, 0);
+    
+    const guestRatio = sumTotal > 0 ? (sumGuest / sumTotal) * 100 : 0;
     const generalRatio = sumTotal > 0 ? (sumGeneral / sumTotal) * 100 : 0;
 
     return {
       guest: calculateCorrelation(roomRevArr, guestArr),
+      guestRatio: guestRatio,
       generalRatio: generalRatio,
       total: calculateCorrelation(roomRevArr, totalArr),
       guestAvailable: true
@@ -538,29 +542,60 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                   <br/>파싱된 데이터가 없어 정밀 분석을 수행할 수 없습니다.
                 </div>
               ) : (
-                <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
-                  <div className="glass-panel" style={{flex: 1, minWidth: '250px', padding: '20px', background: 'rgba(52, 211, 153, 0.1)', border: '1px solid var(--accent-emerald)'}}>
-                    <h4 style={{margin: '0 0 4px 0', color: 'var(--accent-emerald)'}}>투숙객 매출 ↔ 객실 매출</h4>
-                    <div style={{fontSize: '11px', color: 'var(--text-muted)', marginBottom: '12px'}}>(콘도, 객실 티켓합계)</div>
-                    <div style={{fontSize: '32px', fontWeight: 'bold'}}>{motoCorrelations.guest !== null ? motoCorrelations.guest.toFixed(3) : 'N/A'}</div>
-                    <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px'}}>
-                      {motoCorrelations.guest !== null ? getInterpretation(motoCorrelations.guest) : '데이터 부족'}
+                <div style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
+                  {/* 양대 축 비중 및 상관관계 결합 분석 */}
+                  <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
+                    
+                    {/* 투숙객 패널 */}
+                    <div className="glass-panel" style={{flex: 1, minWidth: '300px', padding: '24px', background: 'rgba(52, 211, 153, 0.05)', border: '1px solid var(--accent-emerald)'}}>
+                      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                        <h4 style={{margin: '0', color: 'var(--accent-emerald)', fontSize: '18px'}}>투숙객 매출 (객실연계)</h4>
+                        <div style={{fontSize: '32px', fontWeight: 'bold'}}>{motoCorrelations.guestRatio !== null ? `${motoCorrelations.guestRatio.toFixed(1)}%` : 'N/A'}</div>
+                      </div>
+                      <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', marginBottom: '16px'}}>
+                        객실에 투숙하며 구매한 티켓 비율 (콘도/객실 티켓합계)
+                      </div>
+                      
+                      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '12px'}}>
+                        <span style={{fontSize: '14px', color: 'var(--text-main)'}}>객실 매출과의 상관계수 (r)</span>
+                        <span style={{fontSize: '24px', fontWeight: 'bold', color: (motoCorrelations.guest !== null && motoCorrelations.guest >= 0.4) ? 'var(--accent-emerald)' : 'var(--text-main)'}}>
+                          {motoCorrelations.guest !== null ? motoCorrelations.guest.toFixed(3) : 'N/A'}
+                        </span>
+                      </div>
+                      
+                      <div style={{fontSize: '13px', padding: '16px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', lineHeight: '1.5'}}>
+                        {motoCorrelations.guest !== null && motoCorrelations.guest >= 0.4 && motoCorrelations.guestRatio < 20 ? (
+                          <span>⚠️ <strong style={{color: 'var(--accent-red)'}}>[통계적 착시 주의]</strong> 객실 매출과 흐름은 유사하나, 투숙객 매출이 차지하는 파이가 너무 작아 실질적인 매출 견인 효과는 미미합니다 (허수 가능성).</span>
+                        ) : motoCorrelations.guest !== null && motoCorrelations.guest >= 0.4 && motoCorrelations.guestRatio >= 20 ? (
+                          <span>✅ <strong style={{color: 'var(--accent-emerald)'}}>[핵심 동력]</strong> 객실 매출 증가 시 뚜렷하게 함께 오르며, 비중 또한 유의미하여 모토아레나 성장을 든든하게 받쳐주고 있습니다.</span>
+                        ) : motoCorrelations.guest !== null ? (
+                          <span style={{color: 'var(--text-muted)'}}>📉 객실 매출 증감과 투숙객 티켓 판매량 간의 유의미한 동기화가 확인되지 않습니다.</span>
+                        ) : null}
+                      </div>
                     </div>
-                  </div>
-                  <div className="glass-panel" style={{flex: 1, minWidth: '250px', padding: '20px', background: 'rgba(251, 191, 36, 0.1)', border: '1px solid var(--accent-gold)'}}>
-                    <h4 style={{margin: '0 0 4px 0', color: 'var(--accent-gold)'}}>일반객 외부매출 비중</h4>
-                    <div style={{fontSize: '11px', color: 'var(--text-muted)', marginBottom: '12px'}}>(모토 총매출 대비 외부객 비율)</div>
-                    <div style={{fontSize: '32px', fontWeight: 'bold'}}>{motoCorrelations.generalRatio !== null ? `${motoCorrelations.generalRatio.toFixed(1)}%` : 'N/A'}</div>
-                    <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px'}}>
-                      객실과 무관한 순수 외부 유입
+
+                    {/* 일반객 패널 */}
+                    <div className="glass-panel" style={{flex: 1, minWidth: '300px', padding: '24px', background: 'rgba(251, 191, 36, 0.05)', border: '1px solid var(--accent-gold)'}}>
+                      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                        <h4 style={{margin: '0', color: 'var(--accent-gold)', fontSize: '18px'}}>일반객 매출 (외부유입)</h4>
+                        <div style={{fontSize: '32px', fontWeight: 'bold'}}>{motoCorrelations.generalRatio !== null ? `${motoCorrelations.generalRatio.toFixed(1)}%` : 'N/A'}</div>
+                      </div>
+                      <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', marginBottom: '16px'}}>
+                        객실과 무관한 순수 외부 유입 비율 (일반/군민/MOU/단체)
+                      </div>
+                      
+                      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '12px', opacity: 0.5}}>
+                        <span style={{fontSize: '14px', color: 'var(--text-main)'}}>객실 매출과의 상관계수 (r)</span>
+                        <span style={{fontSize: '24px', fontWeight: 'bold', color: 'var(--text-muted)'}}>
+                          해당없음
+                        </span>
+                      </div>
+
+                      <div style={{fontSize: '13px', padding: '16px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', lineHeight: '1.5', color: 'var(--text-muted)'}}>
+                        💡 외부 마케팅 및 지역 수요에 의한 독립적 영업 성과 지표입니다. 객실 변동과 인과관계가 없으므로 연계 상관성을 분석하지 않습니다.
+                      </div>
                     </div>
-                  </div>
-                  <div className="glass-panel" style={{flex: 1, minWidth: '250px', padding: '20px', background: 'rgba(255,255,255,0.05)'}}>
-                    <h4 style={{margin: '0 0 8px 0', color: 'var(--text-bright)'}}>총 매출 ↔ 객실 매출</h4>
-                    <div style={{fontSize: '32px', fontWeight: 'bold'}}>{motoCorrelations.total !== null ? motoCorrelations.total.toFixed(3) : 'N/A'}</div>
-                    <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px'}}>
-                      {motoCorrelations.total !== null ? getInterpretation(motoCorrelations.total) : '데이터 부족'}
-                    </div>
+
                   </div>
                 </div>
               )}
