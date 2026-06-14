@@ -570,6 +570,7 @@ export default function Settings({ monthlyData }) {
                         <input 
                           type="radio" 
                           name={`group_${loc}`} 
+                          value="leisure"
                           checked={currentGroup === 'leisure'}
                           onChange={() => handleLocationGroupChange(loc, 'leisure')}
                           style={{accentColor: 'var(--accent-emerald)'}}
