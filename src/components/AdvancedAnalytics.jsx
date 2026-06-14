@@ -431,6 +431,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     let totalRoomRev = 0;
     let totalGrossTrev = 0;
     let totalPureTrev = 0;
+    let totalSubsidiaryRev = 0;
 
     filteredProcessedData.forEach(d => {
       const physicalRooms = Number(settings.totalRooms) || 175;
@@ -451,6 +452,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       // 모토아레나 매출은 KPI 산정에서 제외 (사용자 요청)
       totalGrossTrev += (d.totalRoomRevenue || 0) + leisureGross + fnbGross;
       totalPureTrev += (d.totalRoomRevenue || 0) + (leisureGross * capLeisure) + (fnbGross * capFnb);
+      totalSubsidiaryRev += leisureGross + fnbGross + motoGross;
     });
 
     if (totalAvailableRooms === 0) return null;
@@ -586,6 +588,12 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
           <p style={{margin: 0, color: 'var(--text-muted)', fontSize: '14px'}}>
             {selectedMonthFilter === 'all' ? '올해 전체 사업장을 방문한 통합 고객 누적 수' : `${selectedMonthFilter}월 한 달 동안 전체 사업장을 방문한 통합 고객 수`}
           </p>
+          <div style={{marginTop: 'auto', background: 'rgba(255,255,255,0.05)', padding: '12px 16px', borderRadius: '8px', border: '1px solid rgba(251, 191, 36, 0.2)'}}>
+            <div style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px'}}>방문객 1인당 평균 소비액 (레저+식음+모토)</div>
+            <div style={{fontSize: '20px', fontWeight: 'bold', color: 'var(--accent-gold)'}}>
+              {displayVisitors > 0 ? `₩${Math.round(totalSubsidiaryRev / displayVisitors).toLocaleString()}` : '₩0'}
+            </div>
+          </div>
         </div>
         
         <div style={{width: '1px', background: 'var(--border-glass)'}} />
