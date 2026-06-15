@@ -45,6 +45,8 @@ export default function LeisureTicketManager({ settings, setSettings, uniqueLoca
   const [selectedNameCol, setSelectedNameCol] = useState(1);
   const [selectedQtyCol, setSelectedQtyCol] = useState(2);
   const [selectedDateCol, setSelectedDateCol] = useState(-1);
+  
+  const [autoExtractFlag, setAutoExtractFlag] = useState(false);
 
   // 추출 결과
   const [parsedData, setParsedData] = useState(null);
@@ -91,10 +93,20 @@ export default function LeisureTicketManager({ settings, setSettings, uniqueLoca
 
         const extHeaders = jsonData[foundHeaderIdx].map((h, idx) => h ? String(h).trim() : `(이름 없는 열 ${idx + 1})`);
         
-        let venueIdx = extHeaders.findIndex(h => h.includes('영업장') || h.includes('사업장'));
-        let nameIdx = extHeaders.findIndex(h => h.includes('트랜잭션') || h.includes('상품') || h.includes('티켓') || h.includes('품목'));
-        let qtyIdx = extHeaders.findIndex(h => h === '수량' || h.includes('판매수량') || h.includes('인원'));
-        let dateIdx = extHeaders.findIndex(h => h.includes('일자') || h.includes('날짜'));
+        const savedMapping = settings.leisureColMapping;
+        let venueIdx = -1, nameIdx = -1, qtyIdx = -1, dateIdx = -1;
+
+        if (savedMapping) {
+          venueIdx = savedMapping.venueCol < extHeaders.length ? savedMapping.venueCol : -1;
+          nameIdx = savedMapping.nameCol < extHeaders.length ? savedMapping.nameCol : -1;
+          qtyIdx = savedMapping.qtyCol < extHeaders.length ? savedMapping.qtyCol : -1;
+          dateIdx = savedMapping.dateCol < extHeaders.length ? savedMapping.dateCol : -1;
+        }
+
+        if (venueIdx === -1) venueIdx = extHeaders.findIndex(h => h.includes('영업장') || h.includes('사업장'));
+        if (nameIdx === -1) nameIdx = extHeaders.findIndex(h => h.includes('트랜잭션') || h.includes('상품') || h.includes('티켓') || h.includes('품목'));
+        if (qtyIdx === -1) qtyIdx = extHeaders.findIndex(h => h === '수량' || h.includes('판매수량') || h.includes('인원'));
+        if (dateIdx === -1 && !savedMapping) dateIdx = extHeaders.findIndex(h => h.includes('일자') || h.includes('날짜'));
 
         setHeaderRowIdx(foundHeaderIdx);
         setHeaders(extHeaders);
@@ -105,6 +117,10 @@ export default function LeisureTicketManager({ settings, setSettings, uniqueLoca
         setSelectedQtyCol(qtyIdx !== -1 ? qtyIdx : (extHeaders.length > 2 ? 2 : 0));
         setSelectedDateCol(dateIdx);
 
+        if (savedMapping) {
+          setAutoExtractFlag(true);
+        }
+
       } catch (err) {
         console.error(err);
         toast.error('엑셀 파일을 읽는 중 오류가 발생했습니다.');
@@ -113,6 +129,13 @@ export default function LeisureTicketManager({ settings, setSettings, uniqueLoca
     reader.readAsArrayBuffer(file);
     e.target.value = null; 
   };
+
+  React.useEffect(() => {
+    if (autoExtractFlag && rawJsonData && headers.length > 0) {
+      executeExtraction();
+      setAutoExtractFlag(false);
+    }
+  }, [autoExtractFlag, rawJsonData, headers]);
 
   const executeExtraction = () => {
     if (!rawJsonData || headers.length === 0) return;
@@ -209,9 +232,23 @@ export default function LeisureTicketManager({ settings, setSettings, uniqueLoca
         leisureTicketUsage: venueVisitors
       }, { merge: true });
 
+      const colMapping = {
+        venueCol: selectedVenueCol,
+        nameCol: selectedNameCol,
+        qtyCol: selectedQtyCol,
+        dateCol: selectedDateCol
+      };
+
       await setDoc(doc(db, 'config', 'mainSettings'), {
-        leisureTicketRules: rules
+        leisureTicketRules: rules,
+        leisureColMapping: colMapping
       }, { merge: true });
+
+      setSettings(prev => ({
+        ...prev,
+        leisureTicketRules: rules,
+        leisureColMapping: colMapping
+      }));
 
       toast.success(`${yearMonth} 레저본부 이용객 데이터가 성공적으로 저장되었습니다!`);
       setIsSaved(true);
@@ -301,7 +338,16 @@ export default function LeisureTicketManager({ settings, setSettings, uniqueLoca
         <div style={{marginTop: '24px', display: 'flex', gap: '24px', alignItems: 'flex-start'}}>
           
           <div style={{flex: 2}}>
-            <h4 style={{margin: '0 0 16px 0', color: 'var(--text-main)'}}>트랜잭션 목록 및 룰 설정 ({yearMonth})</h4>
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
+              <h4 style={{margin: 0, color: 'var(--text-main)'}}>트랜잭션 목록 및 룰 설정 ({yearMonth})</h4>
+              <button 
+                className="btn-secondary" 
+                onClick={() => setParsedData(null)}
+                style={{fontSize: '12px', padding: '6px 12px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'var(--text-muted)', borderRadius: '4px', cursor: 'pointer'}}
+              >
+                엑셀 열(Column) 다시 선택하기
+              </button>
+            </div>
             <div style={{background: 'rgba(0,0,0,0.2)', borderRadius: '8px', overflow: 'auto', maxHeight: '600px', border: '1px solid rgba(255,255,255,0.05)'}}>
               <table style={{width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left'}}>
                 <thead style={{position: 'sticky', top: 0, background: 'rgba(15,23,42,0.95)', zIndex: 1}}>
