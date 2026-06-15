@@ -205,7 +205,7 @@ export default function DivisionSales({ monthlyData, settings }) {
               <tr key={idx}>
                 <td>{row.month}</td>
                 <td style={{fontWeight: 'bold', color: 'var(--accent-gold)'}}>
-                  {viewMode === 'monthly' ? formatCurrency(row.grandTotal) : '-'}
+                  {viewMode === 'monthly' ? formatCurrency(row.grandTotal) : formatCurrency(row.cumTotal)}
                 </td>
 
                 <td>{viewMode === 'monthly' ? formatCurrency(row.room) : formatCurrency(row.cumRoom)}</td>

@@ -129,8 +129,23 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     // remove 'exclude' group from creating a tab
     groups.delete('exclude');
     
+    const orderMap = {
+      fnb: 1,
+      leisure: 2,
+      moto: 3,
+      golf: 4,
+      other: 5
+    };
+    
+    const sortedGroups = Array.from(groups).sort((a, b) => {
+      const orderA = orderMap[a] || 99;
+      const orderB = orderMap[b] || 99;
+      if (orderA !== orderB) return orderA - orderB;
+      return a.localeCompare(b);
+    });
+
     let colorIdx = 0;
-    Array.from(groups).forEach(group => {
+    sortedGroups.forEach(group => {
       config[group] = {
         title: groupLabels[group] || `${group.toUpperCase()} 부문`,
         dataKey: group + 'Sales',
