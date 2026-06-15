@@ -29,6 +29,52 @@ export default function LogicGuide() {
 
       <div className="guide-cards">
         
+        {/* Card 0: 엑셀 데이터 파이프라인 */}
+        <div className="guide-card glass-panel" style={{gridColumn: '1 / -1', marginBottom: '12px'}}>
+          <div className="card-top">
+            <div className="icon-circle" style={{background: 'rgba(16, 185, 129, 0.1)'}}>
+              <Search size={24} className="text-emerald" style={{color: '#10b981'}} />
+            </div>
+            <h3>0. 데이터 파이프라인 (엑셀 추출 및 정제 로직)</h3>
+          </div>
+          <div className="card-body">
+            <p>
+              시너지 보드는 정확도 높은 교차 분석을 위해 성격이 다른 <strong>총 2종류의 엑셀 파일</strong>을 업로드받아 병합(Merge)합니다. 각 파일에서 추출하는 항목과 제외되는 항목은 아래와 같습니다.
+            </p>
+            
+            <div className="toggle-explanation" style={{marginTop: '16px', display: 'flex', gap: '16px', flexWrap: 'wrap'}}>
+              <div className="toggle-state active" style={{flex: '1 1 300px', margin: 0}}>
+                <h4 style={{color: 'var(--accent-blue)'}}>A. 객실 엑셀 파일 (상세 데이터)</h4>
+                <ul style={{fontSize: '13px', lineHeight: '1.6'}}>
+                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>스키마:</strong> 예약건 단위 혹은 일자 단위의 상세 리포트 (필수 열: 일자, 객실타입)</li>
+                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>추출 항목:</strong> 일자, 객실타입(16/35/51), 판매객실수, 실매출, 요금제, 마켓/소스타입, 거래처</li>
+                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>활용처:</strong> 
+                    <br/>- 객실당 평균가(ADR) 자동 역산 (매출÷판매객실)
+                    <br/>- 예약 채널, 요금제, 요일별 심층 분석 및 상관관계 모델 뼈대
+                  </li>
+                </ul>
+              </div>
+              
+              <div className="toggle-state active" style={{flex: '1 1 300px', margin: 0}}>
+                <h4 style={{color: 'var(--accent-gold)'}}>B. 전체 영업장 매출 파일 (피벗 형태)</h4>
+                <ul style={{fontSize: '13px', lineHeight: '1.6'}}>
+                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>스키마:</strong> 가로로 넓은 피벗 테이블 형태 (첫 열: 영업일자, 이후 열: 영업장명)</li>
+                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>추출 항목:</strong> 날짜 및 각 부대업장명 열의 실매출</li>
+                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>활용처:</strong> 부대업장을 레저/식음/모토 등으로 분류(동적 그룹핑)하여 부문별 매출 집계</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="alert-box success" style={{marginTop: '16px', borderColor: 'rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.05)'}}>
+              <Info size={16} style={{color: '#ef4444'}} />
+              <span style={{color: 'var(--text-main)'}}>
+                <strong>💡 [B파일]의 ROOM 항목 고의 제외 및 교차 검증 로직:</strong><br/>
+                전체 영업장 파일(B) 안에도 <code>ROOM</code>, <code>ROOM OTHER</code> 열이 존재하지만, 부대업장 분류 목록에서는 <strong>고의로 필터링(제외)</strong>됩니다. 대신, 여기서 추출된 ROOM 합계액은 [A파일]에서 계산된 객실 총매출과 1원 단위까지 일치하는지 비교하는 <strong>'데이터 정합성 자동 검증(Cross-check)'</strong>의 기준 값으로만 백그라운드에서 강력하게 사용됩니다.
+              </span>
+            </div>
+          </div>
+        </div>
+
         {/* Card 1: 물리적 객실 인벤토리 */}
         <div className="guide-card glass-panel">
           <div className="card-top">
