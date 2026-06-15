@@ -199,7 +199,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
   }, [monthlyData, settings]);
 
   // 2. 선형 회귀 알고리즘 (Least Squares)
-  const { regWd, regWe, regLeisureWd, regLeisureWe, regLeisureTotal, regMotoWd, regMotoWe, regMotoTotal, regFnbWd, regFnbWe, regFnbTotal, regOverallRoom } = useMemo(() => {
+  const { regWd, regWe, regLeisureWd, regLeisureWe, regLeisureTotal, regMotoWd, regMotoWe, regMotoTotal, regMotoGuest, regFnbWd, regFnbWe, regFnbTotal, regOverallRoom } = useMemo(() => {
     const calcRegression = (xKey, yKey) => {
       const points = processedData.filter(d => d[yKey] > 0);
       const n = points.length;
