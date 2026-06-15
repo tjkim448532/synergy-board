@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Save, Ticket, Users, AlertCircle, Trash2 } from 'lucide-react';
+import { Upload, Save, Ticket, Users, AlertCircle, Trash2, ArrowRight } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import toast from 'react-hot-toast';
 import { doc, setDoc } from 'firebase/firestore';
@@ -34,6 +34,18 @@ const parseExcelDate = (val) => {
 
 export default function LeisureTicketManager({ settings, setSettings, uniqueLocations }) {
   const [fileObj, setFileObj] = useState(null);
+  
+  // 파싱 단계 상태
+  const [rawJsonData, setRawJsonData] = useState(null);
+  const [headers, setHeaders] = useState([]);
+  const [headerRowIdx, setHeaderRowIdx] = useState(0);
+  
+  // 컬럼 매핑 상태
+  const [selectedNameCol, setSelectedNameCol] = useState(0);
+  const [selectedQtyCol, setSelectedQtyCol] = useState(1);
+  const [selectedDateCol, setSelectedDateCol] = useState(-1);
+
+  // 추출 결과
   const [parsedData, setParsedData] = useState(null);
   const [yearMonth, setYearMonth] = useState('');
   const [isSaved, setIsSaved] = useState(false);
@@ -50,19 +62,17 @@ export default function LeisureTicketManager({ settings, setSettings, uniqueLoca
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    
     setFileObj(file);
+    setRawJsonData(null);
+    setHeaders([]);
     setParsedData(null);
     setIsSaved(false);
-    e.target.value = null; // 초기화
-  };
-
-  const extractData = () => {
-    if (!fileObj) return;
-
+    
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = (ev) => {
       try {
-        const data = new Uint8Array(e.target.result);
+        const data = new Uint8Array(ev.target.result);
         const workbook = XLSX.read(data, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
@@ -73,76 +83,95 @@ export default function LeisureTicketManager({ settings, setSettings, uniqueLoca
         }
 
         // 헤더 로우 찾기
-        let headerRowIdx = -1;
+        let foundHeaderIdx = -1;
         for (let i = 0; i < Math.min(15, jsonData.length); i++) {
           const row = jsonData[i] || [];
           const strRow = row.map(c => String(c || '').trim());
           if (strRow.some(c => c.includes('상품') || c.includes('티켓') || c.includes('품목') || c.includes('영업장'))) {
-            headerRowIdx = i;
+            foundHeaderIdx = i;
             break;
           }
         }
 
-        if (headerRowIdx === -1) {
-          // Fallback: 첫번째 데이터 행을 헤더라고 가정
-          headerRowIdx = 0;
+        if (foundHeaderIdx === -1) {
+          foundHeaderIdx = 0;
         }
 
-        const headers = jsonData[headerRowIdx].map(h => String(h || '').trim());
+        const extHeaders = jsonData[foundHeaderIdx].map((h, idx) => h ? String(h).trim() : `(이름 없는 열 ${idx + 1})`);
         
-        let dateColIdx = headers.findIndex(h => h.includes('일자') || h.includes('날짜'));
-        let nameColIdx = headers.findIndex(h => h.includes('상품') || h.includes('티켓') || h.includes('품목'));
-        let qtyColIdx = headers.findIndex(h => h === '수량' || h.includes('판매수량') || h.includes('인원'));
+        let dateIdx = extHeaders.findIndex(h => h.includes('일자') || h.includes('날짜'));
+        let nameIdx = extHeaders.findIndex(h => h.includes('상품') || h.includes('티켓') || h.includes('품목'));
+        let qtyIdx = extHeaders.findIndex(h => h === '수량' || h.includes('판매수량') || h.includes('인원'));
 
-        if (nameColIdx === -1) nameColIdx = 0; // fallback
-        if (qtyColIdx === -1) qtyColIdx = headers.length > 1 ? 1 : 0; // fallback
-
-        const rawRecords = [];
-        const ticketCounts = {};
-        let detectedMonth = '';
-
-        for (let i = headerRowIdx + 1; i < jsonData.length; i++) {
-          const row = jsonData[i];
-          if (!row || row.length === 0) continue;
-
-          const tName = String(row[nameColIdx] || '').trim();
-          if (!tName || tName === '소계' || tName === '합계' || tName === '총계') continue;
-
-          const qty = parseSafeInt(row[qtyColIdx]);
-          if (qty <= 0) continue;
-
-          let dateStr = null;
-          if (dateColIdx !== -1) {
-            dateStr = parseExcelDate(row[dateColIdx]);
-          }
-
-          if (dateStr && !detectedMonth) {
-            detectedMonth = dateStr.substring(0, 7); // YYYY-MM
-          }
-
-          rawRecords.push({ ticket: tName, qty, date: dateStr });
-          ticketCounts[tName] = (ticketCounts[tName] || 0) + qty;
-        }
-
-        if (!detectedMonth) {
-          // 날짜 컬럼이 없다면 현재 달력을 기준으로 하거나 유저에게 입력받아야 함. 일단 임시로 이번달 사용.
-          const now = new Date();
-          detectedMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-          toast('날짜(영업일자) 열을 찾을 수 없어 이번 달 기준으로 추출합니다.');
-        }
-
-        setYearMonth(detectedMonth);
-        setParsedData({
-          records: rawRecords,
-          summary: ticketCounts
-        });
+        setHeaderRowIdx(foundHeaderIdx);
+        setHeaders(extHeaders);
+        setRawJsonData(jsonData);
+        
+        setSelectedDateCol(dateIdx);
+        setSelectedNameCol(nameIdx !== -1 ? nameIdx : 0);
+        setSelectedQtyCol(qtyIdx !== -1 ? qtyIdx : (extHeaders.length > 1 ? 1 : 0));
 
       } catch (err) {
         console.error(err);
         toast.error('엑셀 파일을 읽는 중 오류가 발생했습니다.');
       }
     };
-    reader.readAsArrayBuffer(fileObj);
+    reader.readAsArrayBuffer(file);
+    e.target.value = null; // 초기화
+  };
+
+  const executeExtraction = () => {
+    if (!rawJsonData || headers.length === 0) return;
+
+    try {
+      const rawRecords = [];
+      const ticketCounts = {};
+      let detectedMonth = '';
+
+      for (let i = headerRowIdx + 1; i < rawJsonData.length; i++) {
+        const row = rawJsonData[i];
+        if (!row || row.length === 0) continue;
+
+        const tName = String(row[selectedNameCol] || '').trim();
+        if (!tName || tName === '소계' || tName === '합계' || tName === '총계') continue;
+
+        const qty = parseSafeInt(row[selectedQtyCol]);
+        if (qty <= 0) continue;
+
+        let dateStr = null;
+        if (selectedDateCol !== -1) {
+          dateStr = parseExcelDate(row[selectedDateCol]);
+        }
+
+        if (dateStr && !detectedMonth) {
+          detectedMonth = dateStr.substring(0, 7); // YYYY-MM
+        }
+
+        rawRecords.push({ ticket: tName, qty, date: dateStr });
+        ticketCounts[tName] = (ticketCounts[tName] || 0) + qty;
+      }
+
+      if (!detectedMonth) {
+        const now = new Date();
+        detectedMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        toast('날짜(영업일자) 열을 찾을 수 없어 이번 달 기준으로 추출합니다.');
+      }
+
+      if (Object.keys(ticketCounts).length === 0) {
+        toast.error('추출된 티켓 데이터가 없습니다. 열 선택이 올바른지 확인해주세요.');
+        return;
+      }
+
+      setYearMonth(detectedMonth);
+      setParsedData({
+        records: rawRecords,
+        summary: ticketCounts
+      });
+
+    } catch (err) {
+      console.error(err);
+      toast.error('데이터 파싱 중 오류가 발생했습니다.');
+    }
   };
 
   const updateRule = (ticket, field, value) => {
@@ -161,24 +190,21 @@ export default function LeisureTicketManager({ settings, setSettings, uniqueLoca
   const handleSave = async () => {
     if (!parsedData || !yearMonth) return;
 
-    // 1. 계산 및 병합
-    const venueVisitors = {}; // { [venueName]: totalVisitors }
+    const venueVisitors = {}; 
 
     parsedData.records.forEach(r => {
       const rule = rules[r.ticket];
-      if (!rule || rule.exclude || !rule.venue) return; // 룰이 없거나 제외된 티켓은 패스
+      if (!rule || rule.exclude || !rule.venue) return;
 
       const peopleCount = r.qty * (Number(rule.count) || 1);
       venueVisitors[rule.venue] = (venueVisitors[rule.venue] || 0) + peopleCount;
     });
 
     try {
-      // 2. 월간 DB에 저장 (merge: true)
       await setDoc(doc(db, 'monthly_records', yearMonth), {
         leisureTicketUsage: venueVisitors
       }, { merge: true });
 
-      // 3. 설정에 저장된 룰 DB 업데이트 (설정 영구 저장)
       await setDoc(doc(db, 'config', 'mainSettings'), {
         leisureTicketRules: rules
       }, { merge: true });
@@ -200,7 +226,7 @@ export default function LeisureTicketManager({ settings, setSettings, uniqueLoca
       </div>
       
       <p style={{color: 'var(--text-muted)', fontSize: '14px', marginBottom: '20px'}}>
-        매월 판매된 레저 티켓 엑셀을 업로드하여, 티켓별 <strong>인정 인원 수</strong>와 <strong>소속 영업장</strong>을 연결(매핑)합니다.
+        매월 판매된 레저 티켓 엑셀을 업로드하여, 엑셀의 구조를 파악하고 티켓명과 수량 데이터를 추출합니다.
       </p>
 
       <div style={{display: 'flex', gap: '12px', marginBottom: '24px'}}>
@@ -208,12 +234,62 @@ export default function LeisureTicketManager({ settings, setSettings, uniqueLoca
           <Upload size={18} /> {fileObj ? fileObj.name : '레저 티켓 엑셀 파일 선택'}
           <input type="file" accept=".xlsx" onChange={handleFileUpload} style={{display: 'none'}} />
         </label>
-        {fileObj && !parsedData && (
-          <button className="btn-primary" onClick={extractData} style={{flex: 1, background: 'var(--accent-blue)'}}>
-            엑셀 파싱 및 티켓 목록 추출
-          </button>
-        )}
       </div>
+
+      {headers.length > 0 && !parsedData && (
+        <div style={{background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '8px', border: '1px dashed var(--accent-emerald)', marginBottom: '24px'}}>
+          <h4 style={{margin: '0 0 16px 0', color: 'var(--accent-emerald)'}}>엑셀 열(Column) 선택</h4>
+          <p style={{color: 'var(--text-muted)', fontSize: '13px', margin: '0 0 16px 0'}}>
+            티켓명과 수량 데이터가 들어있는 엑셀의 열(칸)을 각각 선택해주세요.
+          </p>
+
+          <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '20px'}}>
+            <div>
+              <label style={{display: 'block', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px'}}>티켓명 열</label>
+              <select 
+                value={selectedNameCol} 
+                onChange={(e) => setSelectedNameCol(Number(e.target.value))}
+                style={{width: '100%', padding: '8px', background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px', outline: 'none'}}
+              >
+                {headers.map((h, i) => (
+                  <option key={i} value={i} style={{color: 'black'}}>{i + 1}. {h}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div>
+              <label style={{display: 'block', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px'}}>수량 열</label>
+              <select 
+                value={selectedQtyCol} 
+                onChange={(e) => setSelectedQtyCol(Number(e.target.value))}
+                style={{width: '100%', padding: '8px', background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px', outline: 'none'}}
+              >
+                {headers.map((h, i) => (
+                  <option key={i} value={i} style={{color: 'black'}}>{i + 1}. {h}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label style={{display: 'block', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px'}}>영업일자 열 (선택)</label>
+              <select 
+                value={selectedDateCol} 
+                onChange={(e) => setSelectedDateCol(Number(e.target.value))}
+                style={{width: '100%', padding: '8px', background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px', outline: 'none'}}
+              >
+                <option value={-1} style={{color: 'black'}}>-- 선택 안함 (이번 달로 가정) --</option>
+                {headers.map((h, i) => (
+                  <option key={i} value={i} style={{color: 'black'}}>{i + 1}. {h}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <button className="btn-primary" onClick={executeExtraction} style={{width: '100%', background: 'var(--accent-blue)', display: 'flex', justifyContent: 'center', gap: '8px'}}>
+            <ArrowRight size={18} /> 설정한 열로 데이터 추출하기
+          </button>
+        </div>
+      )}
 
       {parsedData && (
         <div style={{marginTop: '24px'}}>
