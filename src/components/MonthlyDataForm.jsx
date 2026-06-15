@@ -700,8 +700,6 @@ export default function MonthlyDataForm({ settings }) {
                  motoInternalRev: 0,
                  motoOtherRev: 0,
                  motoTotalRev: 0,
-                 motoRevWd: 0,
-                 motoRevWe: 0,
                  breakdown: { guest: {}, general: {}, internal: {}, other: {} }
              };
           }
@@ -728,11 +726,6 @@ export default function MonthlyDataForm({ settings }) {
               mData.motoOtherRev += rev;
             }
             mData.motoTotalRev += rev;
-            if (isWe) {
-              mData.motoRevWe += rev;
-            } else {
-              mData.motoRevWd += rev;
-            }
             
             if (!mData.breakdown[category][txName]) mData.breakdown[category][txName] = 0;
             mData.breakdown[category][txName] += rev;
@@ -765,8 +758,6 @@ export default function MonthlyDataForm({ settings }) {
            motoInternalRev: mData.motoInternalRev,
            motoOtherRev: mData.motoOtherRev,
            motoTotalRev: mData.motoTotalRev,
-           motoRevWd: mData.motoRevWd,
-           motoRevWe: mData.motoRevWe,
            motoBreakdown: mData.breakdown
          }, { merge: true });
       }
