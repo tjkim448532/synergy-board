@@ -244,8 +244,10 @@ body {
 
 .data-table {
   width: 100%;
+  min-width: 1000px;
   border-collapse: collapse;
   white-space: nowrap;
+  table-layout: fixed;
 }
 
 .data-table th, .data-table td {
@@ -259,11 +261,13 @@ body {
   font-weight: 600;
   color: var(--text-main);
   background: rgba(0, 0, 0, 0.2);
+  text-align: right;
 }
 
 .data-table th:first-child,
 .data-table td:first-child {
-  text-align: left;
+  text-align: center;
+  width: 120px;
 }
 
 /* Hover effect for table rows */
