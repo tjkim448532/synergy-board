@@ -723,9 +723,28 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
         <div className="glass-panel" style={{padding: '24px'}}>
           <h3 style={{margin: '0 0 10px 0', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px'}}>
             통합 상관계수 (r)
-            <span style={{fontSize: '12px', padding: '2px 8px', borderRadius: '12px', background: `${activeConf.color}22`, color: activeConf.color}}>
-              {activeConf.title}
-            </span>
+            <select
+              value={activeDivision}
+              onChange={(e) => setActiveDivision(e.target.value)}
+              style={{
+                fontSize: '12px', 
+                padding: '2px 24px 2px 8px', 
+                borderRadius: '12px', 
+                background: `${activeConf.color}22 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="${encodeURIComponent(activeConf.color)}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>') no-repeat right 6px center`,
+                color: activeConf.color,
+                border: 'none',
+                outline: 'none',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                appearance: 'none'
+              }}
+            >
+              {Object.entries(divisionConfig).map(([key, conf]) => (
+                <option key={key} value={key} style={{color: 'black'}}>
+                  {conf.title}
+                </option>
+              ))}
+            </select>
           </h3>
           <div style={{fontSize: '36px', fontWeight: 'bold', color: activeConf.color}}>
             {activeGlobalCorrelation ? activeGlobalCorrelation.toFixed(3) : 'N/A'}
@@ -760,7 +779,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
             💡 <strong>해석 가이드:</strong> 초록색 선(점유율)과 매출 선의 오르내리는 모습이 비슷할수록, 해당 본부의 매출이 투숙객 수에 크게 의존하고 있음을 뜻합니다.
             <br/>
             <span style={{fontSize: '11px', color: 'rgba(255,255,255,0.4)'}}>
-              (※ 좌측 숫자는 점유율(%), 우측 세로축의 'M'은 백만 단위를 뜻합니다. 예: 800M = 8억 원)
+              (※ 좌측 숫자는 리조트 전체 통합 객실 점유율(%)을 의미하며, 우측 세로축의 'M'은 백만 단위를 뜻합니다. 예: 800M = 8억 원)
             </span>
           </p>
         </div>
