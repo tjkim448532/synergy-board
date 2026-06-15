@@ -66,6 +66,73 @@ export default function VisitorCalculation({ monthlyData, settings }) {
   const totalVisitors = Math.max(0, estimatedPeople - numGolfGuests);
   const walkInGuests = Math.max(0, totalVisitors - stayingGuests);
 
+  const getStayingGuestsForDoc = (docData) => {
+    const sold16 = Number(docData.sold16 || docData.standardSold || 0);
+    const sold35 = Number(docData.sold35 || 0);
+    const sold51Combined = Number(docData.sold51 || docData.connectingSold || 0);
+    return Math.round((sold16 * 2.5) + (sold35 * 4.5) + (sold51Combined * 6));
+  };
+
+  const getVisitorStatsForDoc = (docData) => {
+    const sGuests = getStayingGuestsForDoc(docData);
+    let nTotalVehicles = 0;
+    let nEmployeeVehicles = 0;
+    let nGolfGuests = 0;
+    
+    if (docData.visitorCalcData) {
+      nTotalVehicles = Number(docData.visitorCalcData.totalVehicles) || 0;
+      nEmployeeVehicles = Number(docData.visitorCalcData.employeeVehicles) || 0;
+      nGolfGuests = Number(docData.visitorCalcData.golfGuests) || 0;
+    }
+
+    const nVehicles = Math.max(0, nTotalVehicles - nEmployeeVehicles);
+    const estPeople = nVehicles * 3;
+    const tVisitors = Math.max(0, estPeople - nGolfGuests);
+    const wInGuests = Math.max(0, tVisitors - sGuests);
+
+    return {
+      numTotalVehicles: nTotalVehicles,
+      numEmployeeVehicles: nEmployeeVehicles,
+      numGolfGuests: nGolfGuests,
+      stayingGuests: sGuests,
+      netVehicles: nVehicles,
+      estimatedPeople: estPeople,
+      totalVisitors: tVisitors,
+      walkInGuests: wInGuests
+    };
+  };
+
+  const monthlyStats = useMemo(() => {
+    if (!monthlyData) return [];
+    return [...monthlyData].sort((a, b) => b.yearMonth.localeCompare(a.yearMonth)).map(d => ({
+      yearMonth: d.yearMonth,
+      ...getVisitorStatsForDoc(d)
+    }));
+  }, [monthlyData]);
+
+  const totals = useMemo(() => {
+    return monthlyStats.reduce((acc, curr) => {
+      acc.numTotalVehicles += curr.numTotalVehicles;
+      acc.numEmployeeVehicles += curr.numEmployeeVehicles;
+      acc.numGolfGuests += curr.numGolfGuests;
+      acc.stayingGuests += curr.stayingGuests;
+      acc.netVehicles += curr.netVehicles;
+      acc.estimatedPeople += curr.estimatedPeople;
+      acc.totalVisitors += curr.totalVisitors;
+      acc.walkInGuests += curr.walkInGuests;
+      return acc;
+    }, {
+      numTotalVehicles: 0,
+      numEmployeeVehicles: 0,
+      numGolfGuests: 0,
+      stayingGuests: 0,
+      netVehicles: 0,
+      estimatedPeople: 0,
+      totalVisitors: 0,
+      walkInGuests: 0
+    });
+  }, [monthlyStats]);
+
   const handleSave = async () => {
     if (!targetDoc || !targetDoc.id) {
       toast.error('저장할 월별 데이터를 찾을 수 없습니다.');
@@ -266,6 +333,59 @@ export default function VisitorCalculation({ monthlyData, settings }) {
             </div>
           </motion.div>
 
+        </div>
+      </div>
+
+      {/* Monthly Stats Table */}
+      <div className="glass-panel" style={{ padding: '32px', marginTop: '32px' }}>
+        <h3 style={{ fontSize: '20px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--accent-blue)' }}>
+          <FileText size={20} />
+          월별 방문객 현황 및 총 합산 결과
+        </h3>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                <th style={{ padding: '12px', textAlign: 'center', color: 'var(--text-muted)' }}>월(Month)</th>
+                <th style={{ padding: '12px', color: 'var(--text-muted)' }}>전체 차량</th>
+                <th style={{ padding: '12px', color: 'var(--text-muted)' }}>직원 차량</th>
+                <th style={{ padding: '12px', color: 'var(--text-muted)' }}>순수 차량</th>
+                <th style={{ padding: '12px', color: 'var(--accent-purple)' }}>추산 인원</th>
+                <th style={{ padding: '12px', color: 'var(--text-muted)' }}>골프 고객</th>
+                <th style={{ padding: '12px', color: 'var(--text-light)', fontWeight: 'bold' }}>총 방문객</th>
+                <th style={{ padding: '12px', color: 'var(--text-muted)' }}>숙박객</th>
+                <th style={{ padding: '12px', color: 'var(--accent-emerald)', fontWeight: 'bold' }}>순수 워크인</th>
+              </tr>
+            </thead>
+            <tbody>
+              {monthlyStats.map(stat => (
+                <tr key={stat.yearMonth} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <td style={{ padding: '12px', textAlign: 'center' }}>{stat.yearMonth}</td>
+                  <td style={{ padding: '12px' }}>{formatNumber(stat.numTotalVehicles)}</td>
+                  <td style={{ padding: '12px' }}>{formatNumber(stat.numEmployeeVehicles)}</td>
+                  <td style={{ padding: '12px' }}>{formatNumber(stat.netVehicles)}</td>
+                  <td style={{ padding: '12px', color: 'var(--accent-purple)' }}>{formatNumber(stat.estimatedPeople)}</td>
+                  <td style={{ padding: '12px' }}>{formatNumber(stat.numGolfGuests)}</td>
+                  <td style={{ padding: '12px', color: 'var(--text-light)', fontWeight: 'bold' }}>{formatNumber(stat.totalVisitors)}</td>
+                  <td style={{ padding: '12px' }}>{formatNumber(stat.stayingGuests)}</td>
+                  <td style={{ padding: '12px', color: 'var(--accent-emerald)', fontWeight: 'bold' }}>{formatNumber(stat.walkInGuests)}</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr style={{ background: 'rgba(59, 130, 246, 0.1)', fontWeight: 'bold', borderTop: '2px solid rgba(59, 130, 246, 0.3)' }}>
+                <td style={{ padding: '16px 12px', textAlign: 'center', color: 'var(--accent-blue)' }}>총 합산</td>
+                <td style={{ padding: '16px 12px', color: 'var(--text-light)' }}>{formatNumber(totals.numTotalVehicles)}</td>
+                <td style={{ padding: '16px 12px', color: 'var(--text-light)' }}>{formatNumber(totals.numEmployeeVehicles)}</td>
+                <td style={{ padding: '16px 12px', color: 'var(--text-light)' }}>{formatNumber(totals.netVehicles)}</td>
+                <td style={{ padding: '16px 12px', color: 'var(--accent-purple)' }}>{formatNumber(totals.estimatedPeople)}</td>
+                <td style={{ padding: '16px 12px', color: 'var(--text-light)' }}>{formatNumber(totals.numGolfGuests)}</td>
+                <td style={{ padding: '16px 12px', color: 'var(--text-light)', fontSize: '18px' }}>{formatNumber(totals.totalVisitors)}</td>
+                <td style={{ padding: '16px 12px', color: 'var(--text-light)' }}>{formatNumber(totals.stayingGuests)}</td>
+                <td style={{ padding: '16px 12px', color: 'var(--accent-emerald)', fontSize: '18px' }}>{formatNumber(totals.walkInGuests)}</td>
+              </tr>
+            </tfoot>
+          </table>
         </div>
       </div>
     </div>
