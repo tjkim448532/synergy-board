@@ -76,8 +76,8 @@ export default function ChannelAnalysis({ monthlyData, settings }) {
     groups.delete('golf');
     groups.delete('other');
 
-    if (groups.has('leisure')) config.leisure = { title: '레저본부', dataKey: 'leisureSales', color: 'var(--accent-purple)' };
-    if (groups.has('fnb')) config.fnb = { title: '식음본부', dataKey: 'fnbSales', color: 'var(--accent-blue)' };
+    if (groups.has('leisure')) config.leisure = { title: '레저 부문', dataKey: 'leisureSales', color: 'var(--accent-purple)' };
+    if (groups.has('fnb')) config.fnb = { title: '식음 부문', dataKey: 'fnbSales', color: 'var(--accent-blue)' };
     if (groups.has('moto')) config.moto = { title: '모토아레나', dataKey: 'motoSales', color: 'var(--accent-gold)' };
     
     return config;

@@ -8,15 +8,17 @@ const CHART_COLORS = {
   fnb: 'var(--accent-blue)',
   moto: 'var(--accent-gold)',
   golf: 'var(--accent-purple)',
-  other: '#94a3b8'
+  other: '#94a3b8',
+  room: '#ec4899' // Pink color for room sales
 };
 
 const DIVISION_NAMES = {
-  leisure: '레저 본부',
-  fnb: '식음 본부',
+  leisure: '레저 부문',
+  fnb: '식음 부문',
   moto: '모토아레나',
-  golf: '골프 본부',
-  other: '기타 본부'
+  golf: '골프 부문',
+  other: '기타 부문',
+  room: '객실 부문'
 };
 
 export default function DivisionSales({ monthlyData, settings }) {
@@ -34,6 +36,7 @@ export default function DivisionSales({ monthlyData, settings }) {
     let cumMoto = 0;
     let cumGolf = 0;
     let cumOther = 0;
+    let cumRoom = 0;
 
     return sortedData.map(month => {
       let leisureSales = 0;
@@ -68,6 +71,7 @@ export default function DivisionSales({ monthlyData, settings }) {
       cumMoto += motoSales;
       cumGolf += golfSales;
       cumOther += otherSales;
+      cumRoom += roomSales;
 
       return {
         month: month.yearMonth,
@@ -78,7 +82,8 @@ export default function DivisionSales({ monthlyData, settings }) {
         moto: motoSales,
         golf: golfSales,
         other: otherSales,
-        total: leisureSales + fnbSales + motoSales + golfSales + otherSales,
+        room: roomSales,
+        total: leisureSales + fnbSales + motoSales + golfSales + otherSales + roomSales,
         grandTotal: leisureSales + fnbSales + motoSales + golfSales + otherSales + excludeSales + roomSales,
 
         // Cumulative values
@@ -87,7 +92,8 @@ export default function DivisionSales({ monthlyData, settings }) {
         cumMoto,
         cumGolf,
         cumOther,
-        cumTotal: cumLeisure + cumFnb + cumMoto + cumGolf + cumOther
+        cumRoom,
+        cumTotal: cumLeisure + cumFnb + cumMoto + cumGolf + cumOther + cumRoom
       };
     });
   }, [monthlyData, settings.locationGroups]);
@@ -108,8 +114,8 @@ export default function DivisionSales({ monthlyData, settings }) {
       {/* Header and Toggle */}
       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
         <div>
-          <h2 style={{margin: '0 0 8px 0', fontSize: '24px'}}>본부별 매출 분석</h2>
-          <p style={{margin: 0, color: 'var(--text-muted)'}}>설정된 본부 기준에 따라 각 본부의 매출 기여도를 분석합니다.</p>
+          <h2 style={{margin: '0 0 8px 0', fontSize: '24px'}}>부문별 매출 분석</h2>
+          <p style={{margin: 0, color: 'var(--text-muted)'}}>설정된 부문 기준에 따라 각 부문의 매출 기여도를 분석합니다.</p>
         </div>
         <div className="tab-buttons">
           <button 
@@ -130,7 +136,7 @@ export default function DivisionSales({ monthlyData, settings }) {
       {/* Chart Section */}
       <div className="chart-card" style={{padding: '20px', background: 'var(--bg-panel)', borderRadius: '12px', border: '1px solid var(--border-glass)'}}>
         <h3 style={{margin: '0 0 20px 0'}}>
-          {viewMode === 'monthly' ? '월별 본부 매출 추이' : '월 누적 본부 매출 추이'}
+          {viewMode === 'monthly' ? '월별 부문 매출 추이' : '월 누적 부문 매출 추이'}
         </h3>
         <div style={{height: '400px', width: '100%', minWidth: 0, minHeight: 0}}>
           <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
@@ -145,6 +151,7 @@ export default function DivisionSales({ monthlyData, settings }) {
                   contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderRadius: '8px', border: 'none', color: '#000' }}
                 />
                 <Legend />
+                <Bar dataKey="room" stackId="a" fill={CHART_COLORS.room} name={DIVISION_NAMES.room} />
                 <Bar dataKey="leisure" stackId="a" fill={CHART_COLORS.leisure} name={DIVISION_NAMES.leisure} />
                 <Bar dataKey="fnb" stackId="a" fill={CHART_COLORS.fnb} name={DIVISION_NAMES.fnb} />
                 <Bar dataKey="moto" stackId="a" fill={CHART_COLORS.moto} name={DIVISION_NAMES.moto} />
@@ -162,6 +169,7 @@ export default function DivisionSales({ monthlyData, settings }) {
                   contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderRadius: '8px', border: 'none', color: '#000' }}
                 />
                 <Legend />
+                <Area type="monotone" dataKey="cumRoom" stackId="1" stroke={CHART_COLORS.room} fill={CHART_COLORS.room} name={DIVISION_NAMES.room} />
                 <Area type="monotone" dataKey="cumLeisure" stackId="1" stroke={CHART_COLORS.leisure} fill={CHART_COLORS.leisure} name={DIVISION_NAMES.leisure} />
                 <Area type="monotone" dataKey="cumFnb" stackId="1" stroke={CHART_COLORS.fnb} fill={CHART_COLORS.fnb} name={DIVISION_NAMES.fnb} />
                 <Area type="monotone" dataKey="cumMoto" stackId="1" stroke={CHART_COLORS.moto} fill={CHART_COLORS.moto} name={DIVISION_NAMES.moto} />
@@ -184,9 +192,10 @@ export default function DivisionSales({ monthlyData, settings }) {
                 <span style={{fontSize:'11px', color:'var(--text-muted)', fontWeight:'normal', display:'block'}}>(객실+부대+제외)</span>
               </th>
               <th>
-                <div style={{marginBottom: '4px'}}>본부 총매출</div>
-                <span style={{fontSize:'11px', color:'var(--text-muted)', fontWeight:'normal', display:'block'}}>(제외업장 및 객실제외)</span>
+                <div style={{marginBottom: '4px'}}>부문 총매출</div>
+                <span style={{fontSize:'11px', color:'var(--text-muted)', fontWeight:'normal', display:'block'}}>(제외업장 제외)</span>
               </th>
+              <th style={{color: CHART_COLORS.room}}>{DIVISION_NAMES.room}</th>
               <th style={{color: CHART_COLORS.leisure}}>{DIVISION_NAMES.leisure}</th>
               <th style={{color: CHART_COLORS.fnb}}>{DIVISION_NAMES.fnb}</th>
               <th style={{color: CHART_COLORS.moto}}>{DIVISION_NAMES.moto}</th>
@@ -204,6 +213,7 @@ export default function DivisionSales({ monthlyData, settings }) {
                 <td style={{fontWeight: 'bold', color: 'var(--text-main)'}}>
                   {viewMode === 'monthly' ? formatCurrency(row.total) : formatCurrency(row.cumTotal)}
                 </td>
+                <td>{viewMode === 'monthly' ? formatCurrency(row.room) : formatCurrency(row.cumRoom)}</td>
                 <td>{viewMode === 'monthly' ? formatCurrency(row.leisure) : formatCurrency(row.cumLeisure)}</td>
                 <td>{viewMode === 'monthly' ? formatCurrency(row.fnb) : formatCurrency(row.cumFnb)}</td>
                 <td>{viewMode === 'monthly' ? formatCurrency(row.moto) : formatCurrency(row.cumMoto)}</td>

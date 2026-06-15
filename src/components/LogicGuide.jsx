@@ -223,7 +223,7 @@ export default function LogicGuide() {
               <div className="math-step">
                 <span className="step-num">Step 1: 데이터 분리 및 월간 집계</span>
                 <div style={{color: 'var(--text-muted)'}}>
-                  매월 객실 데이터에서 '마켓타입' 항목을 추출해 <strong>채널별(온라인, 세미나, 휴양소 등) 월 총매출 배열 X</strong>를 생성하고, 영업장 데이터에서 <strong>본부별(식음, 레저, 모토) 월 총매출 배열 Y</strong>를 생성합니다.
+                  매월 객실 데이터에서 '마켓타입' 항목을 추출해 <strong>채널별(온라인, 세미나, 휴양소 등) 월 총매출 배열 X</strong>를 생성하고, 영업장 데이터에서 <strong>부문별(식음, 레저, 모토) 월 총매출 배열 Y</strong>를 생성합니다.
                 </div>
               </div>
               <div className="math-step">

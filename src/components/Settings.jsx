@@ -286,7 +286,7 @@ export default function Settings({ monthlyData }) {
       return;
     }
 
-    if (window.confirm(`📊 [AI 데이터 기반 추정 결과]\n\n업로드된 전체 엑셀 데이터를 선형 회귀 분석한 결과, 다음의 투숙객 매출 비중(Capture Rate)이 가장 통계적으로 유력합니다:\n\n- 레저본부 투숙객 비중: ${estLeisure}%\n- 식음본부 투숙객 비중: ${estFnb}%\n- 모토아레나 투숙객 비중: ${estMoto}%\n\n이 추정값을 설정에 덮어쓰고 적용하시겠습니까?`)) {
+    if (window.confirm(`📊 [AI 데이터 기반 추정 결과]\n\n업로드된 전체 엑셀 데이터를 선형 회귀 분석한 결과, 다음의 투숙객 매출 비중(Capture Rate)이 가장 통계적으로 유력합니다:\n\n- 레저 부문 투숙객 비중: ${estLeisure}%\n- 식음 부문 투숙객 비중: ${estFnb}%\n- 모토아레나 투숙객 비중: ${estMoto}%\n\n이 추정값을 설정에 덮어쓰고 적용하시겠습니까?`)) {
       setSettings(prev => ({
         ...prev,
         captureRateLeisure: estLeisure,
@@ -456,7 +456,7 @@ export default function Settings({ monthlyData }) {
       >
         <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
           <div className="form-group" style={{flex: 1, minWidth: '150px'}}>
-            <label htmlFor="captureRateLeisure">레저본부 투숙객 비중 (%)</label>
+            <label htmlFor="captureRateLeisure">레저 부문 투숙객 비중 (%)</label>
             <input 
               type="number" 
               id="captureRateLeisure" 
@@ -468,7 +468,7 @@ export default function Settings({ monthlyData }) {
             />
           </div>
           <div className="form-group" style={{flex: 1, minWidth: '150px'}}>
-            <label htmlFor="captureRateFnb">식음본부 투숙객 비중 (%)</label>
+            <label htmlFor="captureRateFnb">식음 부문 투숙객 비중 (%)</label>
             <input 
               type="number" 
               id="captureRateFnb" 
@@ -551,7 +551,7 @@ export default function Settings({ monthlyData }) {
 
       <SectionCard
         title="영업장 그룹핑 설정 (동적 분리)"
-        description="데이터베이스에 기록된 모든 영업장을 어떤 본부 매출로 합산할지 결정합니다."
+        description="데이터베이스에 기록된 모든 영업장을 어떤 부문 매출로 합산할지 결정합니다."
         isExpanded={expandedSections.location}
         onToggle={() => toggleSection('location')}
       >
@@ -574,7 +574,7 @@ export default function Settings({ monthlyData }) {
                           checked={currentGroup === 'leisure'}
                           onChange={() => handleLocationGroupChange(loc, 'leisure')}
                           style={{accentColor: 'var(--accent-emerald)'}}
-                        /> 레저 본부
+                        /> 레저 부문
                       </label>
                       <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', whiteSpace: 'nowrap', color: currentGroup === 'fnb' ? 'var(--accent-blue)' : 'var(--text-muted)'}}>
                         <input 
@@ -583,7 +583,7 @@ export default function Settings({ monthlyData }) {
                           checked={currentGroup === 'fnb'}
                           onChange={() => handleLocationGroupChange(loc, 'fnb')}
                           style={{accentColor: 'var(--accent-blue)'}}
-                        /> 식음 본부
+                        /> 식음 부문
                       </label>
                       <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', whiteSpace: 'nowrap', color: currentGroup === 'moto' ? 'var(--accent-gold)' : 'var(--text-muted)'}}>
                         <input 
@@ -601,7 +601,7 @@ export default function Settings({ monthlyData }) {
                           checked={currentGroup === 'golf'}
                           onChange={() => handleLocationGroupChange(loc, 'golf')}
                           style={{accentColor: '#22c55e'}}
-                        /> 골프 본부
+                        /> 골프 부문
                       </label>
                       <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', whiteSpace: 'nowrap', color: currentGroup === 'other' ? '#64748b' : 'var(--text-muted)'}}>
                         <input 
@@ -610,7 +610,7 @@ export default function Settings({ monthlyData }) {
                           checked={currentGroup === 'other'}
                           onChange={() => handleLocationGroupChange(loc, 'other')}
                           style={{accentColor: '#64748b'}}
-                        /> 기타 본부
+                        /> 기타 부문
                       </label>
                       <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', whiteSpace: 'nowrap', color: currentGroup === 'exclude' ? '#ef4444' : 'var(--text-muted)'}}>
                         <input 
@@ -696,7 +696,7 @@ export default function Settings({ monthlyData }) {
       >
         <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px'}}>
           <div style={{background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '8px'}}>
-            <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-muted)'}}>식음(F&B) 본부 가동률</label>
+            <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-muted)'}}>식음(F&B) 부문 가동률</label>
             <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
               <input 
                 type="number" 
@@ -711,7 +711,7 @@ export default function Settings({ monthlyData }) {
             </div>
           </div>
           <div style={{background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '8px'}}>
-            <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-muted)'}}>레저 본부 가동률</label>
+            <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-muted)'}}>레저 부문 가동률</label>
             <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
               <input 
                 type="number" 

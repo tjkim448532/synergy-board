@@ -45,7 +45,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
         const text = await response.text();
         const lines = text.split('\n');
         for (const line of lines) {
-          if (line.includes('리조트 총 방문객') || line.includes('레저본부 방문객')) {
+        if (line.includes('리조트 총 방문객') || line.includes('레저 부문 방문객')) {
             let current = '';
             let inQuotes = false;
             const result = [];
@@ -104,11 +104,11 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     };
     
     const predefinedTitles = {
-        leisure: '레저본부',
-        fnb: '식음본부',
+        leisure: '레저 부문',
+        fnb: '식음 부문',
         moto: '모토아레나',
-        golf: '골프본부',
-        other: '기타본부'
+        golf: '골프 부문',
+        other: '기타 부문'
     };
     const predefinedColors = {
         leisure: 'var(--accent-purple)',
@@ -133,7 +133,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     let colorIdx = 0;
     Array.from(groups).forEach(group => {
       config[group] = {
-        title: predefinedTitles[group] || (group + '본부'),
+        title: predefinedTitles[group] || (group + ' 부문'),
         dataKey: group + 'Sales',
         color: predefinedColors[group] || colors[colorIdx++ % colors.length]
       };
@@ -230,7 +230,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
 
   // (회원 통계 계산 로직 삭제됨 - ChannelAnalysis로 이동)
 
-  // 선택된 본부의 전체 상관계수 계산
+  // 선택된 부문의 전체 상관계수 계산
   const activeGlobalCorrelation = useMemo(() => {
     const occArr = filteredProcessedData.map(d => d.occupancyRate);
     const targetArr = filteredProcessedData.map(d => d[activeConf.dataKey]);
@@ -295,7 +295,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     };
   }, [filteredProcessedData, activeDivision, motoLogic]);
 
-  // 선택된 본부의 평형별 상관계수 계산
+  // 선택된 부문의 평형별 상관계수 계산
   const activeRoomTypeCorrelations = useMemo(() => {
     const targetArr = filteredProcessedData.map(d => d[activeConf.dataKey]);
     return {
@@ -436,13 +436,13 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     <div style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
       
       <div>
-        <p style={{margin: 0, color: 'var(--text-muted)', fontSize: '15px'}}>숙박객 유입이 본부별 매출에 미치는 영향 분석</p>
+        <p style={{margin: 0, color: 'var(--text-muted)', fontSize: '15px'}}>숙박객 유입이 부문별 매출에 미치는 영향 분석</p>
       </div>
 
-      {/* 0. 본부 선택기 및 월별 필터 */}
+      {/* 0. 부문 선택기 및 월별 필터 */}
       <div className="glass-panel mobile-wrap" style={{padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap'}}>
         <div style={{display: 'flex', alignItems: 'center', gap: '16px'}}>
-          <h3 style={{margin: 0}}>분석 대상 본부 선택:</h3>
+          <h3 style={{margin: 0}}>분석 대상 부문 선택:</h3>
           <div className="mobile-wrap" style={{display: 'flex', gap: '12px'}}>
             {Object.entries(divisionConfig).map(([key, conf]) => (
               <button
@@ -776,7 +776,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
         <div style={{marginBottom: '20px'}}>
           <h3 style={{margin: '0 0 8px 0'}}>월별 추이: 객실 점유율 vs {activeConf.title} 매출</h3>
           <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: '1.4'}}>
-            💡 <strong>해석 가이드:</strong> 초록색 선(점유율)과 매출 선의 오르내리는 모습이 비슷할수록, 해당 본부의 매출이 투숙객 수에 크게 의존하고 있음을 뜻합니다.
+            💡 <strong>해석 가이드:</strong> 초록색 선(점유율)과 매출 선의 오르내리는 모습이 비슷할수록, 해당 부문의 매출이 투숙객 수에 크게 의존하고 있음을 뜻합니다.
             <br/>
             <span style={{fontSize: '11px', color: 'rgba(255,255,255,0.4)'}}>
               (※ 좌측 숫자는 리조트 전체 통합 객실 점유율(%)을 의미하며, 우측 세로축의 'M'은 백만 단위를 뜻합니다. 예: 800M = 8억 원)
@@ -870,7 +870,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
               </div>
             ))}
             {locationCorrelations.length === 0 && (
-              <div style={{color: 'var(--text-muted)', textAlign: 'center', padding: '20px'}}>해당 본부의 영업장 데이터가 부족합니다.</div>
+              <div style={{color: 'var(--text-muted)', textAlign: 'center', padding: '20px'}}>해당 부문의 영업장 데이터가 부족합니다.</div>
             )}
           </div>
         </div>
