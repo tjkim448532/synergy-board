@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, Settings, PieChart, TrendingUp, BookOpen, Building, ChevronDown, BarChart2 } from 'lucide-react';
+import { Upload, Settings, PieChart, TrendingUp, BookOpen, Building, ChevronDown, BarChart2, Users } from 'lucide-react';
 import './DashboardLayout.css';
 
 const SIDEBAR_MENU = [
@@ -7,6 +7,7 @@ const SIDEBAR_MENU = [
   { id: 'division-sales', icon: BarChart2, label: '부문별 매출 분석' },
   { id: 'channel-analysis', icon: PieChart, label: '객실판매채널 심층분석' },
   { id: 'prediction', icon: TrendingUp, label: '목표 예약률 기반 매출 시뮬레이터' },
+  { id: 'visitor-calc', icon: Users, label: '방문객 수 계산기' },
   { 
     id: 'new-business-parent', 
     icon: Building, 

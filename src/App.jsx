@@ -11,6 +11,7 @@ import RevenuePrediction from './components/RevenuePrediction'
 import LogicGuide from './components/LogicGuide'
 import DataAccuracyTasks from './components/DataAccuracyTasks'
 import NewBusinessTraining from './components/NewBusinessTraining'
+import VisitorCalculation from './components/VisitorCalculation'
 import { collection, onSnapshot, doc } from 'firebase/firestore';
 import { db } from './firebase';
 import './App.css'
@@ -79,6 +80,12 @@ function App() {
         return (
           <motion.div key="new-business" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{padding: '32px'}}>
             <NewBusinessTraining monthlyData={allData} settings={settings} />
+          </motion.div>
+        )
+      case 'visitor-calc':
+        return (
+          <motion.div key="visitor-calc" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{padding: '32px'}}>
+            <VisitorCalculation monthlyData={allData} settings={settings} />
           </motion.div>
         )
       case 'new-business-soccer':

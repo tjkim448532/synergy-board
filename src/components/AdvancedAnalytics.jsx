@@ -37,68 +37,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
   const [activeDivision, setActiveDivision] = useState('all');
   const [motoLogic, setMotoLogic] = useState('new');
   const [selectedMonthFilter, setSelectedMonthFilter] = useState('all');
-  const [googleVisitorsData, setGoogleVisitorsData] = useState({ total: null, months: {} });
-
-  useEffect(() => {
-    const fetchGoogleData = async () => {
-      try {
-        const response = await fetch('https://docs.google.com/spreadsheets/d/1wlNrE_FvXCYNGfyvIYxEidYLKoEas4pidWe0Z9e_2xs/export?format=csv&gid=1933764837');
-        const text = await response.text();
-        const lines = text.split('\n');
-        for (const line of lines) {
-        if (line.includes('리조트 총 방문객') || line.includes('레저 부문 방문객')) {
-            let current = '';
-            let inQuotes = false;
-            const result = [];
-            for (let i = 0; i < line.length; i++) {
-              if (line[i] === '"') {
-                inQuotes = !inQuotes;
-              } else if (line[i] === ',' && !inQuotes) {
-                result.push(current);
-                current = '';
-              } else {
-                current += line[i];
-              }
-            }
-            result.push(current);
-            if (result.length >= 4) {
-              const cleanStr = (str) => str ? Number(str.replace(/[^0-9]/g, '')) : 0;
-              setGoogleVisitorsData({
-                total: cleanStr(result[3]),
-                months: {
-                  '01': cleanStr(result[6]),
-                  '02': cleanStr(result[9]),
-                  '03': cleanStr(result[12]),
-                  '04': cleanStr(result[15]),
-                  '05': cleanStr(result[18]),
-                  '06': cleanStr(result[21]),
-                  '07': cleanStr(result[24]),
-                  '08': cleanStr(result[27]),
-                  '09': cleanStr(result[30]),
-                  '10': cleanStr(result[33]),
-                  '11': cleanStr(result[36]),
-                  '12': cleanStr(result[39])
-                }
-              });
-            }
-            break;
-          }
-        }
-      } catch (err) {
-        console.error("Failed to fetch google sheets data", err);
-      }
-    };
-    fetchGoogleData();
-  }, []);
-
-  const displayVisitors = useMemo(() => {
-    if (googleVisitorsData.total === null) return null;
-    if (selectedMonthFilter === 'all') return googleVisitorsData.total;
-    return googleVisitorsData.months[selectedMonthFilter] || 0;
-  }, [googleVisitorsData, selectedMonthFilter]);
-
-
-
+  // Google Visitors data replaced by visitorCalcData logic
   const divisionConfig = useMemo(() => {
     const config = {
       all: { title: '전체통합', dataKey: 'totalSales', color: 'var(--accent-emerald)' }
@@ -232,6 +171,22 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       return m === selectedMonthFilter;
     });
   }, [processedData, selectedMonthFilter]);
+
+
+  const displayVisitors = useMemo(() => {
+    return filteredProcessedData.reduce((sum, d) => {
+      if (d.visitorCalcData) {
+        const numTotalVehicles = Number(d.visitorCalcData.totalVehicles) || 0;
+        const numEmployeeVehicles = Number(d.visitorCalcData.employeeVehicles) || 0;
+        const numGolfGuests = Number(d.visitorCalcData.golfGuests) || 0;
+        const netVehicles = Math.max(0, numTotalVehicles - numEmployeeVehicles);
+        const estimatedPeople = netVehicles * 3;
+        const totalVisitors = Math.max(0, estimatedPeople - numGolfGuests);
+        return sum + totalVisitors;
+      }
+      return sum;
+    }, 0);
+  }, [filteredProcessedData]);
 
   const totalHotelGuests = useMemo(() => {
     if (!filteredProcessedData || filteredProcessedData.length === 0) return 0;
@@ -521,7 +476,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       <div className="glass-panel" style={{display: 'flex', flexWrap: 'wrap', overflow: 'hidden', border: '1px solid var(--accent-gold)'}}>
         <div style={{flex: 1, minWidth: '300px', padding: '32px 40px', background: 'rgba(251, 191, 36, 0.1)', display: 'flex', flexDirection: 'column', gap: '12px'}}>
           <h2 style={{margin: 0, color: 'var(--accent-gold)', fontSize: '24px', display: 'flex', alignItems: 'center', gap: '12px'}}>
-            👥 총 방문객 <span style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.3)', padding: '4px 8px', borderRadius: '4px'}}>Live from Google</span>
+            👥 총 방문객 <span style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.3)', padding: '4px 8px', borderRadius: '4px'}}>Calculated</span>
           </h2>
           <div style={{fontSize: '56px', fontWeight: '900', color: 'var(--text-main)', textShadow: '0 0 20px rgba(251,191,36,0.5)'}}>
             {displayVisitors !== null ? <CountUp end={displayVisitors} duration={2} separator="," /> : '...'}

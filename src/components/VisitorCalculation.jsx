@@ -1,0 +1,273 @@
+import React, { useState, useMemo, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Users, Car, UserMinus, UserCheck, Save, Calendar, FileText } from 'lucide-react';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '../firebase';
+import toast from 'react-hot-toast';
+
+export default function VisitorCalculation({ monthlyData, settings }) {
+  const [selectedMonth, setSelectedMonth] = useState('');
+  
+  // States for inputs
+  const [totalVehicles, setTotalVehicles] = useState('');
+  const [employeeVehicles, setEmployeeVehicles] = useState('');
+  const [golfGuests, setGolfGuests] = useState('');
+
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Set default month
+  useEffect(() => {
+    if (monthlyData && monthlyData.length > 0 && !selectedMonth) {
+      // Sort by yearMonth descending and pick first
+      const sorted = [...monthlyData].sort((a, b) => b.yearMonth.localeCompare(a.yearMonth));
+      setSelectedMonth(sorted[0].yearMonth);
+    }
+  }, [monthlyData, selectedMonth]);
+
+  // Load saved data when month changes
+  useEffect(() => {
+    if (selectedMonth && monthlyData) {
+      const targetData = monthlyData.find(d => d.yearMonth === selectedMonth);
+      if (targetData && targetData.visitorCalcData) {
+        setTotalVehicles(targetData.visitorCalcData.totalVehicles || '');
+        setEmployeeVehicles(targetData.visitorCalcData.employeeVehicles || '');
+        setGolfGuests(targetData.visitorCalcData.golfGuests || '');
+      } else {
+        setTotalVehicles('');
+        setEmployeeVehicles('');
+        setGolfGuests('');
+      }
+    }
+  }, [selectedMonth, monthlyData]);
+
+  const targetDoc = useMemo(() => {
+    if (!selectedMonth || !monthlyData) return null;
+    return monthlyData.find(d => d.yearMonth === selectedMonth);
+  }, [selectedMonth, monthlyData]);
+
+  // Calculate Staying Guests directly from the monthlyData (just like AdvancedAnalytics)
+  const stayingGuests = useMemo(() => {
+    if (!targetDoc) return 0;
+    
+    const sold16 = Number(targetDoc.sold16 || targetDoc.standardSold || 0);
+    const sold35 = Number(targetDoc.sold35 || 0);
+    const sold51Combined = Number(targetDoc.sold51 || targetDoc.connectingSold || 0);
+    
+    return Math.round((sold16 * 2.5) + (sold35 * 4.5) + (sold51Combined * 6));
+  }, [targetDoc]);
+
+  // Derived calculations
+  const numTotalVehicles = Number(totalVehicles) || 0;
+  const numEmployeeVehicles = Number(employeeVehicles) || 0;
+  const numGolfGuests = Number(golfGuests) || 0;
+
+  const netVehicles = Math.max(0, numTotalVehicles - numEmployeeVehicles);
+  const estimatedPeople = netVehicles * 3;
+  const totalVisitors = Math.max(0, estimatedPeople - numGolfGuests);
+  const walkInGuests = Math.max(0, totalVisitors - stayingGuests);
+
+  const handleSave = async () => {
+    if (!targetDoc || !targetDoc.id) {
+      toast.error('저장할 월별 데이터를 찾을 수 없습니다.');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const docRef = doc(db, 'monthly_records', targetDoc.id);
+      await updateDoc(docRef, {
+        visitorCalcData: {
+          totalVehicles: numTotalVehicles,
+          employeeVehicles: numEmployeeVehicles,
+          golfGuests: numGolfGuests
+        }
+      });
+      toast.success(`${selectedMonth} 방문객 기록이 저장되었습니다!`);
+    } catch (err) {
+      console.error("Save error:", err);
+      toast.error('저장 중 오류가 발생했습니다.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const formatNumber = (num) => new Intl.NumberFormat('ko-KR').format(num);
+
+  return (
+    <div className="visitor-calc-container">
+      <div className="section-header" style={{ marginBottom: '32px' }}>
+        <h2 style={{ fontSize: '28px', color: 'var(--text-light)', display: 'flex', alignItems: 'center', gap: '12px', margin: 0 }}>
+          <Users size={32} color="var(--accent-blue)" />
+          전체 방문객 수 역산 (Walk-in 도출)
+        </h2>
+        <p style={{ color: 'var(--text-muted)', marginTop: '8px' }}>
+          차량 입차 기록과 기숙사/직원 차량, 그리고 골프/숙박 고객 데이터를 역산하여 리조트를 방문한 순수 워크인(Walk-in) 고객을 도출합니다.
+        </p>
+      </div>
+
+      {/* Month Selection */}
+      <div className="glass-panel" style={{ padding: '24px', marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '24px', background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <Calendar size={24} color="var(--accent-blue)" />
+          <span style={{ fontSize: '16px', fontWeight: 'bold' }}>기준 월 선택:</span>
+        </div>
+        <select 
+          className="date-select" 
+          value={selectedMonth} 
+          onChange={(e) => setSelectedMonth(e.target.value)}
+          style={{ width: '200px' }}
+        >
+          {monthlyData && monthlyData.map(d => (
+            <option key={d.yearMonth} value={d.yearMonth}>{d.yearMonth}</option>
+          ))}
+        </select>
+        <button 
+          className="btn btn-primary" 
+          onClick={handleSave} 
+          disabled={isSaving || !selectedMonth}
+          style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}
+        >
+          <Save size={18} />
+          {isSaving ? '저장 중...' : '계산 결과 저장'}
+        </button>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+        {/* Input Section */}
+        <div className="glass-panel" style={{ padding: '32px' }}>
+          <h3 style={{ fontSize: '20px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--accent-blue)' }}>
+            <FileText size={20} />
+            기초 데이터 입력
+          </h3>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)' }}>전체 입차 차량 수 (대)</label>
+              <input 
+                type="number" 
+                className="input-field" 
+                value={totalVehicles} 
+                onChange={e => setTotalVehicles(e.target.value)} 
+                placeholder="예: 5000"
+                style={{ width: '100%', fontSize: '18px', padding: '12px' }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)' }}>직원 및 업무 차량 수 (대)</label>
+              <input 
+                type="number" 
+                className="input-field" 
+                value={employeeVehicles} 
+                onChange={e => setEmployeeVehicles(e.target.value)} 
+                placeholder="예: 800"
+                style={{ width: '100%', fontSize: '18px', padding: '12px' }}
+              />
+            </div>
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)' }}>골프 고객 수 (명)</label>
+              <input 
+                type="number" 
+                className="input-field" 
+                value={golfGuests} 
+                onChange={e => setGolfGuests(e.target.value)} 
+                placeholder="예: 1500"
+                style={{ width: '100%', fontSize: '18px', padding: '12px' }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)' }}>숙박객 수 (명) <span style={{fontSize: '12px', color: 'var(--accent-emerald)'}}>(*자동 연동됨)</span></label>
+              <div style={{ 
+                background: 'rgba(0,0,0,0.3)', 
+                border: '1px dashed rgba(255,255,255,0.2)', 
+                padding: '12px', 
+                borderRadius: '8px',
+                fontSize: '18px',
+                color: 'var(--text-light)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <span>{selectedMonth || '월 미선택'} 숙박객:</span>
+                <strong style={{color: 'var(--accent-emerald)'}}>{formatNumber(stayingGuests)} 명</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Output Section */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          
+          <motion.div 
+            className="glass-panel" 
+            style={{ padding: '24px', background: 'rgba(0,0,0,0.3)' }}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <div style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '8px' }}>1단계: 순수 입차 차량 및 방문 인원 추산</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+              <div>
+                <div style={{ fontSize: '16px', color: 'var(--text-light)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Car size={16} /> 순수 입차 차량
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>(전체 차량 - 직원 차량)</div>
+              </div>
+              <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{formatNumber(netVehicles)} 대</div>
+            </div>
+            <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '16px 0' }} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+              <div>
+                <div style={{ fontSize: '16px', color: 'var(--accent-purple)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Users size={16} /> 차량 탑승 인원 추산
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>(순수 입차 차량 × 3명)</div>
+              </div>
+              <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-purple)' }}>{formatNumber(estimatedPeople)} 명</div>
+            </div>
+          </motion.div>
+
+          <motion.div 
+            className="glass-panel" 
+            style={{ padding: '24px', background: 'rgba(0,0,0,0.3)' }}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '8px' }}>2단계: 복합 리조트 총 방문객 계산</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+              <div>
+                <div style={{ fontSize: '16px', color: 'var(--text-light)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <UserMinus size={16} /> 총 방문객
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>(차량 탑승 인원 - 골프 고객)</div>
+              </div>
+              <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--text-light)' }}>{formatNumber(totalVisitors)} 명</div>
+            </div>
+          </motion.div>
+
+          <motion.div 
+            className="glass-panel" 
+            style={{ padding: '32px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)' }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <div style={{ color: 'var(--accent-emerald)', fontSize: '14px', marginBottom: '8px', fontWeight: 'bold' }}>최종 도출 결과</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: '20px', color: 'var(--text-light)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <UserCheck size={24} color="var(--accent-emerald)" /> 순수 워크인(Walk-in) 고객
+                </div>
+                <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px' }}>총 방문객에서 숙박객({formatNumber(stayingGuests)}명)을 제외한 외부 유입 순수 고객입니다.</div>
+              </div>
+              <div style={{ fontSize: '42px', fontWeight: 'bold', color: 'var(--accent-emerald)', textShadow: '0 0 20px rgba(16, 185, 129, 0.4)' }}>
+                {formatNumber(walkInGuests)} 명
+              </div>
+            </div>
+          </motion.div>
+
+        </div>
+      </div>
+    </div>
+  );
+}
