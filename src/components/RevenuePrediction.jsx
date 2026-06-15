@@ -87,7 +87,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         const salesObj = d.salesByLocation || d.leisureSalesByLocation || {};
         const calculated = calculateGroupedSales(salesObj, locationGroups);
         leisureSales = calculated.leisure;
-        motoSales = Number(d.motoTotalRev || d.motoSales || 0);
+        motoSales = (calculated.moto || 0) + Number(d.motoTotalRev || d.motoSales || 0);
         fnbSales = calculated.fnb;
         
         const wdObj = d.salesWdByLocation || {};
