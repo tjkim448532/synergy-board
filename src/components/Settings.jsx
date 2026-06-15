@@ -4,6 +4,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import Papa from 'papaparse';
 import toast from 'react-hot-toast';
+import LeisureTicketManager from './LeisureTicketManager';
 import './Settings.css';
 
 const SectionCard = ({ title, description, isExpanded, onToggle, children, actions }) => (
@@ -61,7 +62,8 @@ export default function Settings({ monthlyData }) {
     advanced: false,
     moto: false,
     capa: false,
-    report: true
+    report: true,
+    leisureTicket: false
   });
 
   const [promptCopied, setPromptCopied] = useState(false);
@@ -789,6 +791,19 @@ export default function Settings({ monthlyData }) {
             </div>
           </div>
         </div>
+      </SectionCard>
+
+      <SectionCard
+        title="레저본부 이용률 (티켓 인원수 매핑)"
+        description="레저본부 월별 티켓 판매 엑셀을 업로드하여 영업장별 실제 이용객 수를 산출하고 그룹핑합니다."
+        isExpanded={expandedSections.leisureTicket}
+        onToggle={() => toggleSection('leisureTicket')}
+      >
+        <LeisureTicketManager 
+          settings={settings} 
+          setSettings={setSettings} 
+          uniqueLocations={uniqueLocations} 
+        />
       </SectionCard>
 
       <SectionCard

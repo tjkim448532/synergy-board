@@ -12,6 +12,7 @@ import LogicGuide from './components/LogicGuide'
 import DataAccuracyTasks from './components/DataAccuracyTasks'
 import NewBusinessTraining from './components/NewBusinessTraining'
 import VisitorCalculation from './components/VisitorCalculation'
+import LeisureUtilization from './components/LeisureUtilization'
 import { collection, onSnapshot, doc } from 'firebase/firestore';
 import { db } from './firebase';
 import './App.css'
@@ -68,6 +69,12 @@ function App() {
         return (
           <motion.div key="division-sales" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{padding: '32px'}}>
             <DivisionSales monthlyData={allData} settings={settings} />
+          </motion.div>
+        )
+      case 'leisure-utilization':
+        return (
+          <motion.div key="leisure-utilization" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{padding: '32px'}}>
+            <LeisureUtilization monthlyData={allData} settings={settings} />
           </motion.div>
         )
       case 'channel-analysis':
