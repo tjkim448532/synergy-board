@@ -79,6 +79,8 @@ export default function ChannelAnalysis({ monthlyData, settings }) {
     if (groups.has('leisure')) config.leisure = { title: '레저 부문', dataKey: 'leisureSales', color: 'var(--accent-purple)' };
     if (groups.has('fnb')) config.fnb = { title: '식음 부문', dataKey: 'fnbSales', color: 'var(--accent-blue)' };
     if (groups.has('moto')) config.moto = { title: '모토아레나', dataKey: 'motoSales', color: 'var(--accent-gold)' };
+    if (groups.has('golf')) config.golf = { title: '골프 부문', dataKey: 'golfSales', color: 'var(--accent-purple)' };
+    if (groups.has('other')) config.other = { title: '기타 부문', dataKey: 'otherSales', color: '#94a3b8' };
     
     return config;
   }, [settings.locationGroups]);
@@ -86,7 +88,7 @@ export default function ChannelAnalysis({ monthlyData, settings }) {
   // We need to map data to include dataKey sums so correlation works
   const processedDataWithSales = useMemo(() => {
     return filteredProcessedData.map(d => {
-      const groupSales = { leisure: 0, moto: 0, fnb: 0 };
+      const groupSales = { leisure: 0, moto: 0, fnb: 0, golf: 0, other: 0 };
       let totalSales = 0;
       const locationGroups = settings.locationGroups || {};
 
@@ -94,7 +96,7 @@ export default function ChannelAnalysis({ monthlyData, settings }) {
         Object.keys(d.salesByLocation).forEach(loc => {
           const group = locationGroups[loc] || 'leisure';
           groupSales[group] = (groupSales[group] || 0) + d.salesByLocation[loc];
-          if (group !== 'exclude' && group !== 'golf' && group !== 'other') {
+          if (group !== 'exclude') {
             totalSales += d.salesByLocation[loc];
           }
         });
@@ -110,6 +112,8 @@ export default function ChannelAnalysis({ monthlyData, settings }) {
         leisureSales: groupSales.leisure,
         motoSales: groupSales.moto,
         fnbSales: groupSales.fnb,
+        golfSales: groupSales.golf,
+        otherSales: groupSales.other,
         totalSales
       };
     });

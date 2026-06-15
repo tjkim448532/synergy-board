@@ -782,7 +782,7 @@ export default function MonthlyDataForm({ settings }) {
                   const check = crossCheckResult?.[data.yearMonth];
                   return (
                     <div key={data.yearMonth} style={{marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px dashed rgba(255,255,255,0.2)'}}>
-                      <div style={{fontSize: '16px', fontWeight: 'bold', marginBottom: '8px'}}>{data.yearMonth} 레저 매출: ₩{formatCurrency(data.totalLeisureSales)}</div>
+                      <div style={{fontSize: '16px', fontWeight: 'bold', marginBottom: '8px'}}>{data.yearMonth} 부대업장 전체 매출: ₩{formatCurrency(data.totalLeisureSales)}</div>
                       {/* 교차 검증 UI */}
                       {check && (
                           <div style={{
@@ -1020,7 +1020,7 @@ export default function MonthlyDataForm({ settings }) {
                       <span style={{fontWeight: 'bold'}}>₩{formatCurrency(r.totalRoomRevenue || 0)}</span>
                     </div>
                     <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                      <span style={{color: 'var(--accent-gold)'}}>레저 총매출</span>
+                      <span style={{color: 'var(--accent-gold)'}}>부대업장 총매출</span>
                       <span style={{fontWeight: 'bold'}}>₩{formatCurrency(r.leisureSales || 0)}</span>
                     </div>
                     <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '4px'}}>

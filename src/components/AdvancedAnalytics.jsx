@@ -125,10 +125,8 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     groups.add('fnb');
     groups.add('moto');
     
-    // remove 'exclude', 'golf', 'other' group from creating a tab
+    // remove 'exclude' group from creating a tab
     groups.delete('exclude');
-    groups.delete('golf');
-    groups.delete('other');
     
     let colorIdx = 0;
     Array.from(groups).forEach(group => {
@@ -171,14 +169,14 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
 
       // 동적 매출 합산 로직
       const locationGroups = settings.locationGroups || {};
-      const groupSales = { leisure: 0, moto: 0, fnb: 0 };
+      const groupSales = { leisure: 0, moto: 0, fnb: 0, golf: 0, other: 0 };
       let totalSales = 0;
 
       if (d.salesByLocation) {
         Object.keys(d.salesByLocation).forEach(loc => {
           const group = locationGroups[loc] || 'leisure';
           groupSales[group] = (groupSales[group] || 0) + d.salesByLocation[loc];
-          if (group !== 'exclude' && group !== 'golf' && group !== 'other') {
+          if (group !== 'exclude') {
             totalSales += d.salesByLocation[loc];
           }
         });
@@ -193,6 +191,8 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       const leisureSales = groupSales.leisure || 0;
       const motoSales = groupSales.moto || 0;
       const fnbSales = groupSales.fnb || 0;
+      const golfSales = groupSales.golf || 0;
+      const otherSales = groupSales.other || 0;
 
       // (회원 분석 로직 삭제됨 - ChannelAnalysis로 이동)
 
@@ -204,6 +204,8 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
         leisureSales,
         motoSales,
         fnbSales,
+        golfSales,
+        otherSales,
         totalSales,
         totalRoomRevenue: Number(d.totalRoomRevenue || 0)
       };
