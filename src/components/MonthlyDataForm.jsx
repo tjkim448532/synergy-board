@@ -806,9 +806,9 @@ export default function MonthlyDataForm({ settings }) {
       <div className="upload-header glass-panel" style={{marginBottom: '20px'}}>
         <h2>엑셀 개별 업로드 시스템</h2>
         <p style={{color: 'var(--text-muted)', marginBottom: '10px'}}>티켓 이름 기준으로 자동 분류하여 데이터를 추출합니다. (서버에 저장되지 않습니다)</p>
-        <div style={{background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--accent-red)', padding: '12px', borderRadius: '6px', color: 'var(--text-main)', fontSize: '13px'}}>
-          <strong>⚠️ 데이터 덮어쓰기 주의:</strong> 동일한 연/월(예: 2026-06)의 데이터를 중복 업로드하면, <span style={{color: 'var(--accent-red)'}}>기존 데이터가 모두 삭제되고 완전히 덮어씌워집니다.</span><br/>
-          반드시 1일부터 말일까지 취합된 <strong>'해당 월 전체 통합 엑셀 파일'</strong>을 월말에 한 번만 업로드해 주세요!
+        <div style={{background: 'rgba(52, 211, 153, 0.1)', border: '1px solid var(--accent-emerald)', padding: '12px', borderRadius: '6px', color: 'var(--text-main)', fontSize: '13px'}}>
+          <strong>✅ 부분 덮어쓰기 (병합) 지원:</strong> 동일한 연/월의 데이터를 중복 업로드할 경우, <span style={{color: 'var(--accent-emerald)'}}>해당 항목(객실, 레저, 모토 등)만 최신으로 덮어씌워집니다.</span><br/>
+          업로드하지 않은 나머지 항목들은 기존 DB에 안전하게 보존되므로, 수정이 필요한 특정 항목의 엑셀만 다시 업로드해 주시면 됩니다.
         </div>
       </div>
 
