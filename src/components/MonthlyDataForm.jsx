@@ -672,10 +672,23 @@ export default function MonthlyDataForm({ settings }) {
           if (!row) continue;
           
           let monthKey = motoTargetMonth; // 기본값
+          let isWe = false;
           if (dateColIdx !== -1) {
              const dVal = parseExcelDate(row[dateColIdx]);
              if (dVal) {
                  monthKey = dVal.substring(0, 7); // yyyy-mm
+                 
+                 const [yyyy, mm, dd] = dVal.split('-');
+                 const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+                 const day = d.getDay();
+                 const isSatOrSun = (day === 0 || day === 6);
+                 const isTodayHoliday = isHoliday(d);
+                 const customWeekendsStr = settings?.customWeekends || '';
+                 const customWeekendsArray = customWeekendsStr.split(',').map(s => s.trim()).filter(s => s);
+                 
+                 if (customWeekendsArray.includes(dVal) || isSatOrSun || isTodayHoliday) {
+                   isWe = true;
+                 }
              }
           }
 
@@ -687,6 +700,8 @@ export default function MonthlyDataForm({ settings }) {
                  motoInternalRev: 0,
                  motoOtherRev: 0,
                  motoTotalRev: 0,
+                 motoRevWd: 0,
+                 motoRevWe: 0,
                  breakdown: { guest: {}, general: {}, internal: {}, other: {} }
              };
           }
@@ -713,6 +728,11 @@ export default function MonthlyDataForm({ settings }) {
               mData.motoOtherRev += rev;
             }
             mData.motoTotalRev += rev;
+            if (isWe) {
+              mData.motoRevWe += rev;
+            } else {
+              mData.motoRevWd += rev;
+            }
             
             if (!mData.breakdown[category][txName]) mData.breakdown[category][txName] = 0;
             mData.breakdown[category][txName] += rev;
@@ -745,6 +765,8 @@ export default function MonthlyDataForm({ settings }) {
            motoInternalRev: mData.motoInternalRev,
            motoOtherRev: mData.motoOtherRev,
            motoTotalRev: mData.motoTotalRev,
+           motoRevWd: mData.motoRevWd,
+           motoRevWe: mData.motoRevWe,
            motoBreakdown: mData.breakdown
          }, { merge: true });
       }
