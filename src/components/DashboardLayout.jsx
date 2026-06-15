@@ -23,12 +23,12 @@ const SIDEBAR_MENU = [
     label: '설정',
     subItems: [
       { id: 'settings', label: '기본 설정' },
+      { id: 'visitor-calc', label: '방문객 수 계산기' },
       { id: 'logic', label: '분석 로직 및 검증 보고서' },
       { id: 'accuracy-tasks', label: '데이터 정확도 핵심과제' },
       { id: 'upload', label: '데이터 업로드' }
     ]
-  },
-  { id: 'visitor-calc', icon: Users, label: '방문객 수 계산기' }
+  }
 ];
 
 export default function DashboardLayout({ children, activeTab, setActiveTab }) {
