@@ -297,24 +297,32 @@ export default function RevenuePrediction({ monthlyData, settings }) {
   let expFnbWd = 0;
   let expFnbWe = 0;
   
-  // 데이터에 주중/주말 분리 레저 매출이 하나라도 있다면 분리 예측 사용, 아니면 통합 예측 사용
-  const hasSplitLeisure = processedData.some(d => d.lRevWd !== null);
+  // 각 부문별로 주중/주말 분리 데이터가 있는지 확인
+  const hasSplitLeisure = processedData.some(d => d.lRevWd !== null && d.lRevWd > 0);
+  const hasSplitMoto = processedData.some(d => d.mRevWd > 0);
+  const hasSplitFnb = processedData.some(d => d.fRevWd > 0);
   
   if (hasSplitLeisure) {
     expLeisureWd = Math.max(0, regLeisureWd.slope * targetWeekdayOcc + regLeisureWd.intercept);
     expLeisureWe = Math.max(0, regLeisureWe.slope * targetWeekendOcc + regLeisureWe.intercept);
     expectedLeisureRevenue = expLeisureWd + expLeisureWe;
+  } else {
+    expectedLeisureRevenue = Math.max(0, regLeisureTotal.slope * targetTotalOcc + regLeisureTotal.intercept);
+  }
 
+  if (hasSplitMoto) {
     expMotoWd = Math.max(0, regMotoWd.slope * targetWeekdayOcc + regMotoWd.intercept);
     expMotoWe = Math.max(0, regMotoWe.slope * targetWeekendOcc + regMotoWe.intercept);
     expectedMotoRevenue = expMotoWd + expMotoWe;
+  } else {
+    expectedMotoRevenue = Math.max(0, regMotoTotal.slope * targetTotalOcc + regMotoTotal.intercept);
+  }
 
+  if (hasSplitFnb) {
     expFnbWd = Math.max(0, regFnbWd.slope * targetWeekdayOcc + regFnbWd.intercept);
     expFnbWe = Math.max(0, regFnbWe.slope * targetWeekendOcc + regFnbWe.intercept);
     expectedFnbRevenue = expFnbWd + expFnbWe;
   } else {
-    expectedLeisureRevenue = Math.max(0, regLeisureTotal.slope * targetTotalOcc + regLeisureTotal.intercept);
-    expectedMotoRevenue = Math.max(0, regMotoTotal.slope * targetTotalOcc + regMotoTotal.intercept);
     expectedFnbRevenue = Math.max(0, regFnbTotal.slope * targetTotalOcc + regFnbTotal.intercept);
   }
   
@@ -572,7 +580,9 @@ export default function RevenuePrediction({ monthlyData, settings }) {
               </div>
             </div>
             <div style={{marginTop: '16px', fontSize: '14px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px'}}>
-              <span>(종합 점유율 {targetTotalOcc.toFixed(1)}% 기준 예측)</span>
+              {hasSplitMoto 
+                ? <><span>주중 ₩{formatCurrency(expMotoWd)}</span><span>주말 ₩{formatCurrency(expMotoWe)}</span></>
+                : <span>(종합 점유율 {targetTotalOcc.toFixed(1)}% 기준 예측)</span>}
             </div>
           </div>
 
@@ -585,7 +595,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
               </div>
             </div>
             <div style={{marginTop: '16px', fontSize: '14px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px'}}>
-              {hasSplitLeisure 
+              {hasSplitFnb 
                 ? <><span>주중 ₩{formatCurrency(expFnbWd)}</span><span>주말 ₩{formatCurrency(expFnbWe)}</span></>
                 : <span>(종합 점유율 {targetTotalOcc.toFixed(1)}% 기준 예측)</span>}
             </div>
