@@ -483,7 +483,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
             </h3>
             <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: '1.5', wordBreak: 'keep-all'}}>
               방 1개를 팔았을 때 하루에 창출되는 평균 수익입니다. [설정]에 입력된 '투숙객 비중'을 바탕으로 워크인 매출을 제외한 <strong>순수 객실 연계 가치(Pure TrevPAR)</strong>를 분리하여 측정합니다.<br/>
-              <span style={{color: 'var(--accent-gold)', fontSize: '12px'}}>* 모토아레나 매출도 통합 정책에 따라 객실 KPI 산정에 포함됩니다.</span>
+              <span style={{color: 'var(--accent-gold)', fontSize: '12px'}}>* 기타 매출이 포함되었으며, 모토아레나는 판매상품 구분으로 계산된 낮은 상관관계가 반영되었습니다.</span>
             </p>
           </div>
           
