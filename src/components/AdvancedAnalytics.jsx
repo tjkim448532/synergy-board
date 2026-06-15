@@ -398,7 +398,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       // 모토아레나 및 기타 매출을 KPI 산정에 포함
       totalGrossTrev += (d.totalRoomRevenue || 0) + leisureGross + fnbGross + motoGross + otherGross;
       // 모토아레나는 캡쳐율 추정이 아닌 실제 투숙객 데이터(motoGuestRev)가 우선이나, 없을 경우 capMoto 적용
-      totalPureTrev += (d.totalRoomRevenue || 0) + (leisureGross * capLeisure) + (fnbGross * capFnb) + (d.motoGuestRev || (motoGross * capMoto));
+      totalPureTrev += (d.totalRoomRevenue || 0) + (leisureGross * capLeisure) + (fnbGross * capFnb) + (d.motoGuestRev || (motoGross * capMoto)) + otherGross;
       totalSubsidiaryRev += leisureGross + fnbGross + motoGross + otherGross;
     });
 
