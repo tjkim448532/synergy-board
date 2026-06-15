@@ -302,9 +302,9 @@ export default function LeisureTicketManager({ settings, setSettings, uniqueLoca
       )}
 
       {parsedData && (
-        <div style={{marginTop: '24px', display: 'flex', gap: '24px', alignItems: 'flex-start'}}>
+        <div style={{marginTop: '24px', display: 'flex', gap: '24px', alignItems: 'flex-start', flexWrap: 'wrap'}}>
           
-          <div style={{flex: 2}}>
+          <div style={{flex: '1 1 500px'}}>
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
               <h4 style={{margin: 0, color: 'var(--text-main)'}}>트랜잭션 목록 및 룰 설정 ({yearMonth})</h4>
               <button 
@@ -370,7 +370,7 @@ export default function LeisureTicketManager({ settings, setSettings, uniqueLoca
             </div>
           </div>
 
-          <div style={{flex: 1, minWidth: '300px', position: 'sticky', top: '24px'}}>
+          <div style={{flex: '1 1 300px', position: 'sticky', top: '24px'}}>
             <div style={{background: 'rgba(52, 211, 153, 0.05)', padding: '20px', borderRadius: '8px', border: '1px solid var(--accent-emerald)'}}>
               <h4 style={{margin: '0 0 16px 0', color: 'var(--accent-emerald)', display: 'flex', alignItems: 'center', gap: '8px'}}>
                 <Users size={18} /> 그룹별 최종 집계 ({yearMonth})
