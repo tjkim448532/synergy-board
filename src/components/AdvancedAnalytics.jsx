@@ -194,55 +194,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       const motoSales = groupSales.moto || 0;
       const fnbSales = groupSales.fnb || 0;
 
-      // 회원 분석 로직 (rawRoomRecords 기반)
-      let totalMemberRooms = 0;
-      let totalGeneralRooms = 0;
-      let memberWdRooms = 0;
-      let memberWeRooms = 0;
-      let generalWdRooms = 0;
-      let generalWeRooms = 0;
-
-      const customWeekendsStr = settings?.customWeekends || '';
-      const customWeekendsArray = customWeekendsStr.split(',').map(s => s.trim()).filter(s => s);
-
-      if (d.rawRoomRecords && Array.isArray(d.rawRoomRecords)) {
-         d.rawRoomRecords.forEach(record => {
-            const rType = record.rateType || '';
-            const mType = record.marketType || '';
-            const sType = record.sourceType || '';
-            
-            // 회원 식별 키워드: 요금타입(Rate Type) 만으로 결정
-            // 키워드: 회원, 정회원, 구좌, 기명, 무기명 (단, '비회원'은 제외)
-            const isMember = (
-              (rType.includes('회원') && !rType.includes('비회원')) ||
-              rType.includes('정회원') ||
-              rType.includes('구좌') ||
-              rType.includes('기명') ||
-              rType.includes('무기명')
-            );
-
-            const [yyyy, mm, dd] = record.date.split('-');
-            const dateObj = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
-            const day = dateObj.getDay();
-            const nextDay = new Date(dateObj);
-            nextDay.setDate(dateObj.getDate() + 1);
-            
-            const isFriOrSat = (day === 5 || day === 6);
-            const isNextDayHoliday = isHoliday(nextDay);
-            
-            const isWeekend = customWeekendsArray.includes(record.date) || isFriOrSat || isNextDayHoliday;
-
-            if (isMember) {
-               totalMemberRooms += record.count;
-               if (isWeekend) memberWeRooms += record.count;
-               else memberWdRooms += record.count;
-            } else {
-               totalGeneralRooms += record.count;
-               if (isWeekend) generalWeRooms += record.count;
-               else generalWdRooms += record.count;
-            }
-         });
-      }
+      // (회원 분석 로직 삭제됨 - ChannelAnalysis로 이동)
 
       return {
         ...d,
@@ -253,14 +205,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
         motoSales,
         fnbSales,
         totalSales,
-        totalRoomRevenue: Number(d.totalRoomRevenue || 0),
-        totalMemberRooms,
-        totalGeneralRooms,
-        memberWdRooms,
-        memberWeRooms,
-        generalWdRooms,
-        generalWeRooms,
-        analyzedRoomsCount: totalMemberRooms + totalGeneralRooms
+        totalRoomRevenue: Number(d.totalRoomRevenue || 0)
       };
     });
   }, [monthlyData, settings]);
@@ -283,30 +228,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     }, 0);
   }, [filteredProcessedData]);
 
-  // 회원 통계
-  const memberStats = useMemo(() => {
-    const totMem = filteredProcessedData.reduce((a, b) => a + b.totalMemberRooms, 0);
-    const totGen = filteredProcessedData.reduce((a, b) => a + b.totalGeneralRooms, 0);
-    const totalRooms = totMem + totGen;
-    
-    const memWd = filteredProcessedData.reduce((a, b) => a + b.memberWdRooms, 0);
-    const memWe = filteredProcessedData.reduce((a, b) => a + b.memberWeRooms, 0);
-    const genWd = filteredProcessedData.reduce((a, b) => a + b.generalWdRooms, 0);
-    const genWe = filteredProcessedData.reduce((a, b) => a + b.generalWeRooms, 0);
-
-    return {
-      available: totalRooms > 0,
-      totMem,
-      totalRooms,
-      memberRatio: totalRooms > 0 ? (totMem / totalRooms) * 100 : 0,
-      generalRatio: totalRooms > 0 ? (totGen / totalRooms) * 100 : 0,
-      memberWdRatio: (memWd + genWd) > 0 ? (memWd / (memWd + genWd)) * 100 : 0,
-      generalWdRatio: (memWd + genWd) > 0 ? (genWd / (memWd + genWd)) * 100 : 0,
-      memberWeRatio: (memWe + genWe) > 0 ? (memWe / (memWe + genWe)) * 100 : 0,
-      generalWeRatio: (memWe + genWe) > 0 ? (genWe / (memWe + genWe)) * 100 : 0,
-      memWd, memWe
-    };
-  }, [filteredProcessedData]);
+  // (회원 통계 계산 로직 삭제됨 - ChannelAnalysis로 이동)
 
   // 선택된 본부의 전체 상관계수 계산
   const activeGlobalCorrelation = useMemo(() => {
@@ -632,87 +554,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
         </div>
       </div>
 
-      {/* 객실 투숙객 유형 정밀 분석 (회원 vs 일반) */}
-      {memberStats.available && (
-        <div className="glass-panel" style={{padding: '24px', borderLeft: '4px solid var(--accent-blue)', display: 'flex', flexDirection: 'column', gap: '20px'}}>
-          <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px'}}>
-            <div>
-              <h3 style={{margin: '0 0 8px 0', color: 'var(--accent-blue)', display: 'flex', alignItems: 'center', gap: '8px'}}>
-                👥 객실 투숙객 유형 정밀 분석 (회원 vs 일반)
-              </h3>
-              <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0}}>
-                원본 엑셀 데이터의 <b>'요금타입(Rate Type)'</b> 컬럼만을 기준으로 회원과 일반객(비회원)을 분리합니다.<br/>
-                <span style={{color: 'var(--accent-blue)'}}>[회원 판별 기준]</span> '회원', '정회원', '구좌', '기명', '무기명' 키워드 포함 시 회원으로 간주 (단, '비회원' 텍스트 포함 시 비회원으로 처리)
-              </p>
-            </div>
-          </div>
-          
-          <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px'}}>
-            {/* 전체 비율 */}
-            <div style={{background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)'}}>
-              <div style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '12px'}}>총 판매 객실 중 회원 비중</div>
-              <div style={{display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '16px'}}>
-                <span style={{fontSize: '36px', fontWeight: 'bold', color: 'var(--accent-blue)', lineHeight: 1}}>
-                  {memberStats.memberRatio.toFixed(1)}%
-                </span>
-                <span style={{fontSize: '14px', color: 'var(--text-muted)', paddingBottom: '4px'}}>
-                  ({formatCurrency(memberStats.totMem)} / {formatCurrency(memberStats.totalRooms)}실)
-                </span>
-              </div>
-              <div style={{width: '100%', height: '8px', background: 'var(--border-glass)', borderRadius: '4px', overflow: 'hidden', display: 'flex'}}>
-                <div style={{width: `${memberStats.memberRatio}%`, background: 'var(--accent-blue)'}} />
-                <div style={{width: `${memberStats.generalRatio}%`, background: 'var(--text-muted)'}} />
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginTop: '8px'}}>
-                <span style={{color: 'var(--accent-blue)'}}>회원 {memberStats.memberRatio.toFixed(1)}%</span>
-                <span style={{color: 'var(--text-muted)'}}>일반 {memberStats.generalRatio.toFixed(1)}%</span>
-              </div>
-            </div>
-
-            {/* 주중 비율 */}
-            <div style={{background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)'}}>
-              <div style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '12px'}}>주중(평일) 회원 비중</div>
-              <div style={{display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '16px'}}>
-                <span style={{fontSize: '36px', fontWeight: 'bold', color: 'var(--accent-emerald)', lineHeight: 1}}>
-                  {memberStats.memberWdRatio.toFixed(1)}%
-                </span>
-                <span style={{fontSize: '14px', color: 'var(--text-muted)', paddingBottom: '4px'}}>
-                  ({formatCurrency(memberStats.memWd)}실)
-                </span>
-              </div>
-              <div style={{width: '100%', height: '8px', background: 'var(--border-glass)', borderRadius: '4px', overflow: 'hidden', display: 'flex'}}>
-                <div style={{width: `${memberStats.memberWdRatio}%`, background: 'var(--accent-emerald)'}} />
-                <div style={{width: `${memberStats.generalWdRatio}%`, background: 'var(--text-muted)'}} />
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginTop: '8px'}}>
-                <span style={{color: 'var(--accent-emerald)'}}>회원 {memberStats.memberWdRatio.toFixed(1)}%</span>
-                <span style={{color: 'var(--text-muted)'}}>일반 {memberStats.generalWdRatio.toFixed(1)}%</span>
-              </div>
-            </div>
-
-            {/* 주말 비율 */}
-            <div style={{background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)'}}>
-              <div style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '12px'}}>주말(공휴일 포함) 회원 비중</div>
-              <div style={{display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '16px'}}>
-                <span style={{fontSize: '36px', fontWeight: 'bold', color: 'var(--accent-purple)', lineHeight: 1}}>
-                  {memberStats.memberWeRatio.toFixed(1)}%
-                </span>
-                <span style={{fontSize: '14px', color: 'var(--text-muted)', paddingBottom: '4px'}}>
-                  ({formatCurrency(memberStats.memWe)}실)
-                </span>
-              </div>
-              <div style={{width: '100%', height: '8px', background: 'var(--border-glass)', borderRadius: '4px', overflow: 'hidden', display: 'flex'}}>
-                <div style={{width: `${memberStats.memberWeRatio}%`, background: 'var(--accent-purple)'}} />
-                <div style={{width: `${memberStats.generalWeRatio}%`, background: 'var(--text-muted)'}} />
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginTop: '8px'}}>
-                <span style={{color: 'var(--accent-purple)'}}>회원 {memberStats.memberWeRatio.toFixed(1)}%</span>
-                <span style={{color: 'var(--text-muted)'}}>일반 {memberStats.generalWeRatio.toFixed(1)}%</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* 회원 유형 정밀 분석 UI (ChannelAnalysis로 이동됨) */}
 
       {/* 모토아레나 전용 정밀 분석 토글 */}
       {activeDivision === 'moto' && (

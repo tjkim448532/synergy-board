@@ -51,14 +51,19 @@ const normalizeRoomType = (type) => {
 
 export default function ChannelAnalysis({ monthlyData, settings }) {
   const [activeTab, setActiveTab] = useState('overview');
+  const [selectedMonthFilter, setSelectedMonthFilter] = useState('all');
 
   // Filter out recent months like AdvancedAnalytics does
   const filteredProcessedData = useMemo(() => {
     return monthlyData.filter(d => {
       if (d.yearMonth === '2024-11' || d.yearMonth === '2024-12') return false;
+      if (selectedMonthFilter !== 'all') {
+        const monthStr = d.yearMonth.split('-')[1];
+        if (monthStr !== selectedMonthFilter) return false;
+      }
       return true;
     }).sort((a, b) => a.yearMonth.localeCompare(b.yearMonth));
-  }, [monthlyData]);
+  }, [monthlyData, selectedMonthFilter]);
 
   const divisionConfig = useMemo(() => {
     const config = {
@@ -449,6 +454,88 @@ export default function ChannelAnalysis({ monthlyData, settings }) {
                 </table>
               </div>
             </div>
+
+            {/* 객실 투숙객 유형 정밀 분석 (회원 vs 일반) */}
+            {memberStats.available && (
+              <div className="glass-panel" style={{padding: '24px', borderLeft: '4px solid var(--accent-blue)', display: 'flex', flexDirection: 'column', gap: '20px', gridColumn: '1 / -1'}}>
+                <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px'}}>
+                  <div>
+                    <h3 style={{margin: '0 0 8px 0', color: 'var(--accent-blue)', display: 'flex', alignItems: 'center', gap: '8px'}}>
+                      👥 객실 투숙객 유형 정밀 분석 (회원 vs 일반)
+                    </h3>
+                    <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0}}>
+                      원본 엑셀 데이터의 <b>'요금타입(Rate Type)'</b> 컬럼만을 기준으로 회원과 일반객(비회원)을 분리합니다.<br/>
+                      <span style={{color: 'var(--accent-blue)'}}>[회원 판별 기준]</span> '회원', '정회원', '구좌', '기명', '무기명' 키워드 포함 시 회원으로 간주 (단, '비회원' 텍스트 포함 시 비회원으로 처리)
+                    </p>
+                  </div>
+                </div>
+                
+                <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px'}}>
+                  {/* 전체 비율 */}
+                  <div style={{background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)'}}>
+                    <div style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '12px'}}>총 판매 객실 중 회원 비중</div>
+                    <div style={{display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '16px'}}>
+                      <span style={{fontSize: '36px', fontWeight: 'bold', color: 'var(--accent-blue)', lineHeight: 1}}>
+                        {memberStats.memberRatio.toFixed(1)}%
+                      </span>
+                      <span style={{fontSize: '14px', color: 'var(--text-muted)', paddingBottom: '4px'}}>
+                        ({formatCurrency(memberStats.totMem)} / {formatCurrency(memberStats.totalRooms)}실)
+                      </span>
+                    </div>
+                    <div style={{width: '100%', height: '8px', background: 'var(--border-glass)', borderRadius: '4px', overflow: 'hidden', display: 'flex'}}>
+                      <div style={{width: `${memberStats.memberRatio}%`, background: 'var(--accent-blue)'}} />
+                      <div style={{width: `${memberStats.generalRatio}%`, background: 'var(--text-muted)'}} />
+                    </div>
+                    <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginTop: '8px'}}>
+                      <span style={{color: 'var(--accent-blue)'}}>회원 {memberStats.memberRatio.toFixed(1)}%</span>
+                      <span style={{color: 'var(--text-muted)'}}>일반 {memberStats.generalRatio.toFixed(1)}%</span>
+                    </div>
+                  </div>
+
+                  {/* 주중 비율 */}
+                  <div style={{background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)'}}>
+                    <div style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '12px'}}>주중(평일) 회원 비중</div>
+                    <div style={{display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '16px'}}>
+                      <span style={{fontSize: '36px', fontWeight: 'bold', color: 'var(--accent-emerald)', lineHeight: 1}}>
+                        {memberStats.memberWdRatio.toFixed(1)}%
+                      </span>
+                      <span style={{fontSize: '14px', color: 'var(--text-muted)', paddingBottom: '4px'}}>
+                        ({formatCurrency(memberStats.memWd)}실)
+                      </span>
+                    </div>
+                    <div style={{width: '100%', height: '8px', background: 'var(--border-glass)', borderRadius: '4px', overflow: 'hidden', display: 'flex'}}>
+                      <div style={{width: `${memberStats.memberWdRatio}%`, background: 'var(--accent-emerald)'}} />
+                      <div style={{width: `${memberStats.generalWdRatio}%`, background: 'var(--text-muted)'}} />
+                    </div>
+                    <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginTop: '8px'}}>
+                      <span style={{color: 'var(--accent-emerald)'}}>회원 {memberStats.memberWdRatio.toFixed(1)}%</span>
+                      <span style={{color: 'var(--text-muted)'}}>일반 {memberStats.generalWdRatio.toFixed(1)}%</span>
+                    </div>
+                  </div>
+
+                  {/* 주말 비율 */}
+                  <div style={{background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)'}}>
+                    <div style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '12px'}}>주말(공휴일 포함) 회원 비중</div>
+                    <div style={{display: 'flex', alignItems: 'flex-end', gap: '8px', marginBottom: '16px'}}>
+                      <span style={{fontSize: '36px', fontWeight: 'bold', color: 'var(--accent-purple)', lineHeight: 1}}>
+                        {memberStats.memberWeRatio.toFixed(1)}%
+                      </span>
+                      <span style={{fontSize: '14px', color: 'var(--text-muted)', paddingBottom: '4px'}}>
+                        ({formatCurrency(memberStats.memWe)}실)
+                      </span>
+                    </div>
+                    <div style={{width: '100%', height: '8px', background: 'var(--border-glass)', borderRadius: '4px', overflow: 'hidden', display: 'flex'}}>
+                      <div style={{width: `${memberStats.memberWeRatio}%`, background: 'var(--accent-purple)'}} />
+                      <div style={{width: `${memberStats.generalWeRatio}%`, background: 'var(--text-muted)'}} />
+                    </div>
+                    <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginTop: '8px'}}>
+                      <span style={{color: 'var(--accent-purple)'}}>회원 {memberStats.memberWeRatio.toFixed(1)}%</span>
+                      <span style={{color: 'var(--text-muted)'}}>일반 {memberStats.generalWeRatio.toFixed(1)}%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </>
         );
 
@@ -657,9 +744,24 @@ export default function ChannelAnalysis({ monthlyData, settings }) {
     <div style={{display: 'flex', flexDirection: 'column', gap: '20px', width: '100%', maxWidth: '100vw'}}>
       <div className="glass-panel" style={{padding: '24px'}}>
         <h2 style={{marginTop: '0', color: 'var(--accent-blue)', fontSize: '24px', marginBottom: '8px'}}>객실 판매채널 심층 분석</h2>
-        <p style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '24px'}}>
-          업로드된 객실 로데이터의 Agency, Rate Type, 예약 일자 등을 활용하여 다각도 채널 분석을 제공합니다.
-        </p>
+        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '15px'}}>
+          <p style={{fontSize: '14px', color: 'var(--text-muted)', margin: 0}}>
+            업로드된 객실 로데이터의 Agency, Rate Type, 예약 일자 등을 활용하여 다각도 채널 분석을 제공합니다.
+          </p>
+          <div style={{display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(0,0,0,0.2)', padding: '6px 12px', borderRadius: '8px'}}>
+            <span style={{fontSize: '14px', color: 'var(--text-muted)'}}>월별 필터:</span>
+            <select 
+              value={selectedMonthFilter}
+              onChange={(e) => setSelectedMonthFilter(e.target.value)}
+              style={{background: 'rgba(255,255,255,0.1)', color: 'var(--text-main)', border: 'none', padding: '6px 12px', borderRadius: '4px', outline: 'none', fontWeight: 'bold'}}
+            >
+              <option value="all" style={{color: 'black'}}>전월 종합 분석</option>
+              {['01','02','03','04','05','06','07','08','09','10','11','12'].map(m => (
+                <option key={m} value={m} style={{color: 'black'}}>{m}월만 분석</option>
+              ))}
+            </select>
+          </div>
+        </div>
 
         {/* 탭 메뉴 */}
         <div style={{display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '30px', borderBottom: '1px solid var(--border-glass)', paddingBottom: '15px'}}>
