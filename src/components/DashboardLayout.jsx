@@ -4,6 +4,9 @@ import './DashboardLayout.css';
 
 const SIDEBAR_MENU = [
   { id: 'prediction', icon: TrendingUp, label: '매출 예측 시뮬레이터' },
+  { id: 'analytics', icon: PieChart, label: '상관관계 분석' },
+  { id: 'division-sales', icon: BarChart2, label: '부문별 매출 분석' },
+  { id: 'channel-analysis', icon: PieChart, label: '객실판매채널 심층분석' },
   { 
     id: 'new-business-parent', 
     icon: Building, 
@@ -13,13 +16,17 @@ const SIDEBAR_MENU = [
       { id: 'new-business-soccer', label: '축구장(준비중)' }
     ]
   },
-  { id: 'analytics', icon: PieChart, label: '상관관계 분석' },
-  { id: 'division-sales', icon: BarChart2, label: '부문별 매출 분석' },
-  { id: 'channel-analysis', icon: PieChart, label: '객실판매채널 심층분석' },
-  { id: 'logic', icon: BookOpen, label: '분석 로직 및 검증 보고서' },
-  { id: 'accuracy-tasks', icon: BookOpen, label: '데이터 정확도 핵심과제' },
-  { id: 'upload', icon: Upload, label: '데이터 업로드' },
-  { id: 'settings', icon: Settings, label: '설정' }
+  { 
+    id: 'settings-parent', 
+    icon: Settings, 
+    label: '설정',
+    subItems: [
+      { id: 'settings', label: '기본 설정' },
+      { id: 'logic', label: '분석 로직 및 검증 보고서' },
+      { id: 'accuracy-tasks', label: '데이터 정확도 핵심과제' },
+      { id: 'upload', label: '데이터 업로드' }
+    ]
+  }
 ];
 
 export default function DashboardLayout({ children, activeTab, setActiveTab }) {
@@ -95,7 +102,11 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }) {
       {/* Main Content Area */}
       <main className="main-content">
         <header className="glass-panel topbar">
-          <h1>{SIDEBAR_MENU.find(m => m.id === activeTab)?.label || '대시보드'}</h1>
+          <h1>{
+            SIDEBAR_MENU.find(m => m.id === activeTab)?.label || 
+            SIDEBAR_MENU.flatMap(m => m.subItems || []).find(sub => sub.id === activeTab)?.label || 
+            '대시보드'
+          }</h1>
           <div className="user-profile">
             <div className="avatar">L</div>
             <span>레저 부문</span>
