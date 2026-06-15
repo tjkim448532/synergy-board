@@ -98,7 +98,7 @@ export default function LeisureUtilization({ monthlyData, settings }) {
         </div>
       </div>
 
-      <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', marginBottom: '32px'}}>
+      <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '32px'}}>
         <div className="glass-panel" style={{padding: '24px', borderLeft: '4px solid var(--accent-blue)'}}>
           <div style={{color: 'var(--text-muted)', fontSize: '14px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px'}}>
             <UserCheck size={16} /> 총 리조트 방문객 (이용 가능 모수)
@@ -108,15 +108,6 @@ export default function LeisureUtilization({ monthlyData, settings }) {
           </div>
           <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px'}}>
             * 골프장 이용객 제외
-          </div>
-        </div>
-
-        <div className="glass-panel" style={{padding: '24px'}}>
-          <div style={{color: 'var(--text-muted)', fontSize: '14px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px'}}>
-            <Users size={16} /> 레저본부 총 이용 건수(연인원)
-          </div>
-          <div style={{fontSize: '32px', fontWeight: 'bold', color: 'var(--text-main)'}}>
-            {totalLeisureVisitors.toLocaleString()}건
           </div>
         </div>
 
