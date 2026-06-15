@@ -36,6 +36,8 @@ export const calculateGroupedSales = (salesObj, locationGroups = {}) => {
       other += val;
     } else if (loc.includes('식당') || loc.includes('BBQ') || loc.includes('조식') || loc.includes('바베큐') || loc.includes('카페') || loc.includes('식음')) {
       fnb += val;
+    } else if (loc.includes('모토아레나') || loc.includes('핏스탑')) {
+      moto += val;
     } else {
       leisure += val;
     }
