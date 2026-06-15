@@ -238,7 +238,7 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
           </div>
 
           <div className="glass-panel" style={{padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderTop: '4px solid var(--accent-gold)'}}>
-            <div style={{fontSize: '16px', color: 'var(--accent-gold)', marginBottom: '8px', fontWeight: 'bold'}}>신규 시설(연수원) 파생 매출</div>
+            <div style={{fontSize: '16px', color: 'var(--accent-gold)', marginBottom: '8px', fontWeight: 'bold'}}>신규 창출 매출 (Newly Generated Revenue)</div>
             <div style={{fontSize: '36px', fontWeight: '900', color: 'var(--accent-gold)', letterSpacing: '-1px'}}>
               + ₩<CountUp end={expectedTotalRev} duration={1} separator="," preserveValue />
             </div>
@@ -258,7 +258,7 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
         {/* Detailed Breakdown */}
         <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '24px'}}>
           <div className="glass-panel" style={{padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
-            <h3 style={{margin: '0 0 24px 0', color: 'var(--text-main)'}}>신규 시설(연수원) 파생 매출 세부내역</h3>
+            <h3 style={{margin: '0 0 24px 0', color: 'var(--text-main)'}}>신규 창출 매출 (Newly Generated Revenue) 세부내역</h3>
             <div style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>
             
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '12px', borderBottom: '1px dashed rgba(255,255,255,0.1)'}}>
