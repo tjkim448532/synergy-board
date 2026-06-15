@@ -7,7 +7,6 @@ const SIDEBAR_MENU = [
   { id: 'division-sales', icon: BarChart2, label: '부문별 매출 분석' },
   { id: 'channel-analysis', icon: PieChart, label: '객실판매채널 심층분석' },
   { id: 'prediction', icon: TrendingUp, label: '목표 예약률 기반 매출 시뮬레이터' },
-  { id: 'visitor-calc', icon: Users, label: '방문객 수 계산기' },
   { 
     id: 'new-business-parent', 
     icon: Building, 
@@ -27,7 +26,8 @@ const SIDEBAR_MENU = [
       { id: 'accuracy-tasks', label: '데이터 정확도 핵심과제' },
       { id: 'upload', label: '데이터 업로드' }
     ]
-  }
+  },
+  { id: 'visitor-calc', icon: Users, label: '방문객 수 계산기' }
 ];
 
 export default function DashboardLayout({ children, activeTab, setActiveTab }) {
