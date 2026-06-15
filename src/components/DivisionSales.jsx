@@ -191,10 +191,7 @@ export default function DivisionSales({ monthlyData, settings }) {
                 <div style={{marginBottom: '4px'}}>총매출</div>
                 <span style={{fontSize:'11px', color:'var(--text-muted)', fontWeight:'normal', display:'block'}}>(골프포함)</span>
               </th>
-              <th>
-                <div style={{marginBottom: '4px'}}>부문 총매출</div>
-                <span style={{fontSize:'11px', color:'var(--text-muted)', fontWeight:'normal', display:'block'}}>(제외업장 제외)</span>
-              </th>
+
               <th style={{color: CHART_COLORS.room}}>{DIVISION_NAMES.room}</th>
               <th style={{color: CHART_COLORS.leisure}}>{DIVISION_NAMES.leisure}</th>
               <th style={{color: CHART_COLORS.fnb}}>{DIVISION_NAMES.fnb}</th>
@@ -210,9 +207,7 @@ export default function DivisionSales({ monthlyData, settings }) {
                 <td style={{fontWeight: 'bold', color: 'var(--accent-gold)'}}>
                   {viewMode === 'monthly' ? formatCurrency(row.grandTotal) : '-'}
                 </td>
-                <td style={{fontWeight: 'bold', color: 'var(--text-main)'}}>
-                  {viewMode === 'monthly' ? formatCurrency(row.total) : formatCurrency(row.cumTotal)}
-                </td>
+
                 <td>{viewMode === 'monthly' ? formatCurrency(row.room) : formatCurrency(row.cumRoom)}</td>
                 <td>{viewMode === 'monthly' ? formatCurrency(row.leisure) : formatCurrency(row.cumLeisure)}</td>
                 <td>{viewMode === 'monthly' ? formatCurrency(row.fnb) : formatCurrency(row.cumFnb)}</td>
