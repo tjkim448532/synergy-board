@@ -499,7 +499,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px dashed rgba(255,255,255,0.1)'}}>
               <div>
                 <div style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '2px'}}>방문객 1인당 평균 소비액</div>
-                <div style={{fontSize:'10px', color: 'var(--text-muted)', opacity: 0.7}}>(골프 제외/전체 매출 합산)</div>
+                <div style={{fontSize:'10px', color: 'var(--text-muted)', opacity: 0.7}}>(골프 및 숙박비 제외 / 부대매출 합산)</div>
               </div>
               <div style={{fontSize: '20px', fontWeight: 'bold', color: 'var(--accent-gold)'}}>
                 {displayVisitors > 0 && kpiData ? `₩${Math.round(kpiData.totalSubsidiaryRev / displayVisitors).toLocaleString()}` : '₩0'}
