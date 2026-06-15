@@ -490,7 +490,11 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
           <div style={{flex: '2 1 500px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '20px', alignItems: 'start'}}>
             <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
               <div style={{fontSize: '12px', color: 'var(--text-muted)', minHeight: '36px', wordBreak: 'keep-all', display: 'flex', alignItems: 'flex-end'}}>
-                RevPAR (객실 수익만)
+                RevPAR<br/>
+                <span style={{fontSize: '10px', color: 'var(--text-muted)', lineHeight: '1.2', display: 'inline-block', marginTop: '2px'}}>
+                  Revenue Per Available Room<br/>
+                  (객실 판매로만 거둔 객실당 수익)
+                </span>
               </div>
               <div style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--text-main)', letterSpacing: '-0.5px'}}>
                 ₩<CountUp end={kpiData.revPar} formattingFn={formatCurrency} duration={1} preserveValue />
@@ -499,7 +503,13 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
 
             <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
               <div style={{fontSize: '12px', color: 'var(--text-muted)', minHeight: '36px', wordBreak: 'keep-all', display: 'flex', alignItems: 'flex-end'}}>
-                <span><span style={{color: 'var(--accent-emerald)'}}>●</span> 순수 TrevPAR (객실+투숙객 부대매출)</span>
+                <span>
+                  <span style={{color: 'var(--accent-emerald)'}}>●</span> 순수 TrevPAR<br/>
+                  <span style={{fontSize: '10px', color: 'var(--text-muted)', lineHeight: '1.2', display: 'inline-block', marginTop: '2px'}}>
+                    Total Revenue Per Available Room<br/>
+                    (투숙객이 지출한 객실당 총수익)
+                  </span>
+                </span>
               </div>
               <div style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-emerald)', letterSpacing: '-0.5px'}}>
                 ₩<CountUp end={kpiData.pureTrevPar} formattingFn={formatCurrency} duration={1} preserveValue />
@@ -508,7 +518,11 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
 
             <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
               <div style={{fontSize: '12px', color: 'var(--text-muted)', minHeight: '36px', wordBreak: 'keep-all', display: 'flex', alignItems: 'flex-end'}}>
-                Gross TrevPAR (워크인 포함 전체)
+                Gross TrevPAR<br/>
+                <span style={{fontSize: '10px', color: 'var(--text-muted)', lineHeight: '1.2', display: 'inline-block', marginTop: '2px'}}>
+                  Gross Total Revenue Per Available Room<br/>
+                  (비투숙객 포함 호텔 전체 객실당 총수익)
+                </span>
               </div>
               <div style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--text-main)', letterSpacing: '-0.5px'}}>
                 ₩<CountUp end={kpiData.grossTrevPar} formattingFn={formatCurrency} duration={1} preserveValue />
