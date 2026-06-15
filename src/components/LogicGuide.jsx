@@ -39,38 +39,56 @@ export default function LogicGuide() {
           </div>
           <div className="card-body">
             <p>
-              시너지 보드는 정확도 높은 교차 분석을 위해 성격이 다른 <strong>총 2종류의 엑셀 파일</strong>을 업로드받아 병합(Merge)합니다. 각 파일에서 추출하는 항목과 제외되는 항목은 아래와 같습니다.
+              시너지 보드는 정확도 높은 교차 분석을 위해 성격이 다른 <strong>총 3종류의 엑셀 파일</strong>을 업로드받아 병합(Merge)합니다. 각 파일의 스키마 구조와 어떤 데이터를 어떻게 긁어와서 이용하는지 명확히 정의합니다.
             </p>
             
             <div className="toggle-explanation" style={{marginTop: '16px', display: 'flex', gap: '16px', flexWrap: 'wrap'}}>
-              <div className="toggle-state active" style={{flex: '1 1 300px', margin: 0}}>
-                <h4 style={{color: 'var(--accent-blue)'}}>A. 객실 엑셀 파일 (상세 데이터)</h4>
+              
+              {/* File A */}
+              <div className="toggle-state active" style={{flex: '1 1 100%', margin: 0}}>
+                <h4 style={{color: 'var(--accent-blue)', marginBottom: '8px'}}>A. 객실 판매 엑셀 (상세 데이터)</h4>
                 <ul style={{fontSize: '13px', lineHeight: '1.6'}}>
-                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>스키마:</strong> 예약건 단위 혹은 일자 단위의 상세 리포트 (필수 열: 일자, 객실타입)</li>
-                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>추출 항목:</strong> 일자, 객실타입(16/35/51), 판매객실수, 실매출, 요금제, 마켓/소스타입, 거래처</li>
-                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>활용처:</strong> 
-                    <br/>- 객실당 평균가(ADR) 자동 역산 (매출÷판매객실)
-                    <br/>- 예약 채널, 요금제, 요일별 심층 분석 및 상관관계 모델 뼈대
+                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>원본 스키마:</strong> 예약건 단위 혹은 일자 단위로 기록된 세로형 리포트 (필수 열: 일자, 객실타입, 수량, 실매출 등)</li>
+                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>추출 로직:</strong> '일자'를 기준으로 행을 찾고, '객실타입(16평/35평/51평)', '판매객실수', '실매출(Net Revenue)', '요금제', '마켓/소스타입(채널)'을 긁어옵니다.</li>
+                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>시스템 내 활용처:</strong> 
+                    <br/>- 전체 대시보드의 '객실당 평균가(ADR)', '가용객실당 매출(RevPAR)' 자동 역산 및 시계열 분석 기준점
+                    <br/>- 예약 채널별(OTA, 홈페이지 등), 요일별 심층 판매 분석
                   </li>
                 </ul>
               </div>
               
-              <div className="toggle-state active" style={{flex: '1 1 300px', margin: 0}}>
-                <h4 style={{color: 'var(--accent-gold)'}}>B. 전체 영업장 매출 파일 (피벗 형태)</h4>
+              {/* File B */}
+              <div className="toggle-state active" style={{flex: '1 1 100%', margin: 0}}>
+                <h4 style={{color: 'var(--accent-gold)', marginBottom: '8px'}}>B. 전체 영업장 총매출 파일 (부대업장/POS 데이터)</h4>
                 <ul style={{fontSize: '13px', lineHeight: '1.6'}}>
-                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>스키마:</strong> 가로로 넓은 피벗 테이블 형태 (첫 열: 영업일자, 이후 열: 영업장명)</li>
-                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>추출 항목:</strong> 날짜 및 각 부대업장명 열의 실매출</li>
-                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>활용처:</strong> 부대업장을 레저/식음/모토 등으로 분류(동적 그룹핑)하여 부문별 매출 집계</li>
+                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>원본 스키마:</strong> 가로로 넓게 퍼진 피벗 테이블 형태 (좌측 첫 열: 영업일자 / 이후 우측으로 수십 개의 영업장명 열 나열)</li>
+                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>추출 로직:</strong> 첫 열에서 '날짜(yyyy-mm-dd)'를 파싱한 뒤, 가로로 쭉 읽어가며 각 부대업장(수십 개) 열에 적힌 '실매출액'을 수집합니다. <code>ROOM</code>, <code>ROOM OTHER</code>, <code>합계</code> 열은 제외합니다.</li>
+                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>시스템 내 활용처:</strong> 
+                    <br/>- 추출된 수십 개의 영업장 매출을 [설정] 탭의 매핑 로직에 따라 <strong>'레저', '식음', '모토아레나', '골프', '기타', '제외업장'</strong> 6개 그룹으로 동적 병합(Grouping)합니다.
+                    <br/>- 이 그룹화된 데이터를 바탕으로 부문별 매출 분석, 상관관계 교차 분석(객실 매출과 어떤 부대가 함께 오르는지), 예측 모델링(Pacing)에 투입합니다.
+                  </li>
+                </ul>
+                <div className="alert-box success" style={{marginTop: '12px', borderColor: 'rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.05)', padding: '10px'}}>
+                  <Info size={14} style={{color: '#ef4444', flexShrink: 0}} />
+                  <span style={{color: 'var(--text-main)', fontSize: '12.5px', lineHeight: '1.5'}}>
+                    <strong>💡 [중요] [B파일] 안의 객실 매출 취급 로직:</strong><br/>
+                    이 엑셀 안에도 <code>ROOM</code> 매출이 찍혀 나오지만 실적 합산에서는 <strong>고의로 버립니다(필터링).</strong> 대신 여기서 뽑아낸 ROOM 총액은, 앞서 올린 <strong>[A. 객실 엑셀]의 합계액과 1원 단위까지 일치하는지 백그라운드에서 교차 대조(Cross-check)</strong>하여 엑셀 추출 누락이나 조작이 없었는지 판별하는 '정합성 검증용 잣대'로만 강력하게 쓰입니다.
+                  </span>
+                </div>
+              </div>
+
+              {/* File C */}
+              <div className="toggle-state active" style={{flex: '1 1 100%', margin: 0}}>
+                <h4 style={{color: 'var(--accent-purple)', marginBottom: '8px'}}>C. 모토아레나 티켓 판매 엑셀 (고객군 상세 데이터)</h4>
+                <ul style={{fontSize: '13px', lineHeight: '1.6'}}>
+                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>원본 스키마:</strong> 모토아레나에서 팔린 티켓별/고객유형별 거래 내역 리포트 (필수 열: 상품명/트랜잭션명, 실매출액)</li>
+                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>추출 로직:</strong> '상품명' 열에 적힌 텍스트를 파싱하여 키워드 매칭을 수행합니다. (예: '객실', '콘도' 키워드 → 투숙객 / '일반', '단체' → 일반객 / '임직원', '회원' → 내부객 / 나머지 → 기타)</li>
+                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>시스템 내 활용처:</strong> 
+                    <br/>- 모토아레나 전체 매출 중, <strong>실제로 리조트에 숙박하면서 모토아레나를 이용한 '투숙객 비중(Captive Rate)'</strong>을 발라내어 별도의 전환율(Conversion Rate) 심층 분석 화면에 뿌려줍니다.
+                  </li>
                 </ul>
               </div>
-            </div>
 
-            <div className="alert-box success" style={{marginTop: '16px', borderColor: 'rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.05)'}}>
-              <Info size={16} style={{color: '#ef4444'}} />
-              <span style={{color: 'var(--text-main)'}}>
-                <strong>💡 [B파일]의 ROOM 항목 고의 제외 및 교차 검증 로직:</strong><br/>
-                전체 영업장 파일(B) 안에도 <code>ROOM</code>, <code>ROOM OTHER</code> 열이 존재하지만, 부대업장 분류 목록에서는 <strong>고의로 필터링(제외)</strong>됩니다. 대신, 여기서 추출된 ROOM 합계액은 [A파일]에서 계산된 객실 총매출과 1원 단위까지 일치하는지 비교하는 <strong>'데이터 정합성 자동 검증(Cross-check)'</strong>의 기준 값으로만 백그라운드에서 강력하게 사용됩니다.
-              </span>
             </div>
           </div>
         </div>
