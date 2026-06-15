@@ -812,6 +812,10 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
               <h3 style={{margin: '0 0 8px 0'}}>평형별 판매량 vs {activeConf.title} 매출 (산점도)</h3>
               <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: '1.4'}}>
                 💡 <strong>해석 가이드:</strong> 점들이 우측 상단(↗)으로 좁게 뭉쳐서 뻗어나갈수록, 해당 평형의 투숙객이 돈을 많이 쓴다는 증거입니다.
+                <br/>
+                <span style={{fontSize: '11px', color: 'rgba(255,255,255,0.4)'}}>
+                  (※ 가로축(X)은 객실 판매량(실)을 나타내며, 세로축(Y)의 'M'은 백만 단위의 매출을 뜻합니다. 예: 800M = 8억 원)
+                </span>
               </p>
             </div>
             <select 
