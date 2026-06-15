@@ -41,6 +41,8 @@ export default function DivisionSales({ monthlyData, settings }) {
       let motoSales = 0;
       let golfSales = 0;
       let otherSales = 0;
+      let excludeSales = 0;
+      let roomSales = month.totalRoomRevenue || month.roomRevenue || 0;
 
       // Group sales by location
       if (month.salesByLocation) {
@@ -53,7 +55,7 @@ export default function DivisionSales({ monthlyData, settings }) {
           else if (group === 'moto') motoSales += sales;
           else if (group === 'golf') golfSales += sales;
           else if (group === 'other') otherSales += sales;
-          // 'exclude' is ignored
+          else if (group === 'exclude') excludeSales += sales;
         });
       } else {
         // Fallback for old data structure if needed
@@ -77,6 +79,7 @@ export default function DivisionSales({ monthlyData, settings }) {
         golf: golfSales,
         other: otherSales,
         total: leisureSales + fnbSales + motoSales + golfSales + otherSales,
+        grandTotal: leisureSales + fnbSales + motoSales + golfSales + otherSales + excludeSales + roomSales,
 
         // Cumulative values
         cumLeisure,
@@ -176,7 +179,8 @@ export default function DivisionSales({ monthlyData, settings }) {
           <thead>
             <tr>
               <th>월 (Month)</th>
-              <th>총 매출액</th>
+              <th>리조트 총매출<br/><span style={{fontSize:'10px', color:'var(--text-muted)'}}>(객실+부대+제외)</span></th>
+              <th>본부 총매출<br/><span style={{fontSize:'10px', color:'var(--text-muted)'}}>(제외업장 및 객실제외)</span></th>
               <th style={{color: CHART_COLORS.leisure}}>{DIVISION_NAMES.leisure}</th>
               <th style={{color: CHART_COLORS.fnb}}>{DIVISION_NAMES.fnb}</th>
               <th style={{color: CHART_COLORS.moto}}>{DIVISION_NAMES.moto}</th>
@@ -188,6 +192,9 @@ export default function DivisionSales({ monthlyData, settings }) {
             {processedData.map((row, idx) => (
               <tr key={idx}>
                 <td>{row.month}</td>
+                <td style={{fontWeight: 'bold', color: 'var(--accent-gold)'}}>
+                  {viewMode === 'monthly' ? formatCurrency(row.grandTotal) : '-'}
+                </td>
                 <td style={{fontWeight: 'bold', color: 'var(--text-main)'}}>
                   {viewMode === 'monthly' ? formatCurrency(row.total) : formatCurrency(row.cumTotal)}
                 </td>
