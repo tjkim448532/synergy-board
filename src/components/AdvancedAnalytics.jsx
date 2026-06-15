@@ -433,7 +433,11 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
 
   return (
     <div style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
-    
+      
+      <div>
+        <p style={{margin: 0, color: 'var(--text-muted)', fontSize: '15px'}}>숙박객 유입이 본부별 매출에 미치는 영향 분석</p>
+      </div>
+
       {/* 🚀 최상단 핵심 지표 대형 배너 */}
       <div className="glass-panel" style={{display: 'flex', flexWrap: 'wrap', overflow: 'hidden', border: '1px solid var(--accent-gold)'}}>
         <div style={{flex: 1, minWidth: '300px', padding: '32px 40px', background: 'rgba(251, 191, 36, 0.1)', display: 'flex', flexDirection: 'column', gap: '12px'}}>
