@@ -7,8 +7,8 @@ const CHART_COLORS = {
   leisure: 'var(--accent-emerald)',
   fnb: 'var(--accent-blue)',
   moto: 'var(--accent-gold)',
-  golf: '#22c55e',
-  other: '#64748b'
+  golf: 'var(--accent-purple)',
+  other: '#94a3b8'
 };
 
 const DIVISION_NAMES = {
@@ -179,8 +179,14 @@ export default function DivisionSales({ monthlyData, settings }) {
           <thead>
             <tr>
               <th>월 (Month)</th>
-              <th>리조트 총매출<br/><span style={{fontSize:'10px', color:'var(--text-muted)'}}>(객실+부대+제외)</span></th>
-              <th>본부 총매출<br/><span style={{fontSize:'10px', color:'var(--text-muted)'}}>(제외업장 및 객실제외)</span></th>
+              <th>
+                <div style={{marginBottom: '4px'}}>리조트 총매출</div>
+                <span style={{fontSize:'11px', color:'var(--text-muted)', fontWeight:'normal', display:'block'}}>(객실+부대+제외)</span>
+              </th>
+              <th>
+                <div style={{marginBottom: '4px'}}>본부 총매출</div>
+                <span style={{fontSize:'11px', color:'var(--text-muted)', fontWeight:'normal', display:'block'}}>(제외업장 및 객실제외)</span>
+              </th>
               <th style={{color: CHART_COLORS.leisure}}>{DIVISION_NAMES.leisure}</th>
               <th style={{color: CHART_COLORS.fnb}}>{DIVISION_NAMES.fnb}</th>
               <th style={{color: CHART_COLORS.moto}}>{DIVISION_NAMES.moto}</th>
