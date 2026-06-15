@@ -146,6 +146,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         revWe,
         leisureSales,
         motoSales,
+        motoGuestRev: d.motoGuestRev,
         fnbSales,
         lRevWd,
         lRevWe,
@@ -224,12 +225,13 @@ export default function RevenuePrediction({ monthlyData, settings }) {
       const denominator = (n * sumX2 - sumX * sumX);
       const intercept = denominator === 0 ? sumY / n : (sumY - ((n * sumXY - sumX * sumY) / denominator) * sumX) / n;
       const slope = denominator === 0 ? 0 : (n * sumXY - sumX * sumY) / denominator;
+      const avgYPerX = sumX > 0 ? sumY / sumX : 0;
       
       const numerator = (n * sumXY) - (sumX * sumY);
       const denomInside = (n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY);
       const r = denomInside > 0 ? numerator / Math.sqrt(denomInside) : 0;
 
-      return { slope, intercept, r };
+      return { slope, intercept, r, avgYPerX };
     };
 
     return {
@@ -241,6 +243,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
       regMotoWd: calcRegression('occWd', 'mRevWd'),
       regMotoWe: calcRegression('occWe', 'mRevWe'),
       regMotoTotal: calcRegression('occupancyRate', 'motoSales'),
+      regMotoGuest: calcRegression('occupancyRate', 'motoGuestRev'),
       regFnbWd: calcRegression('occWd', 'fRevWd'),
       regFnbWe: calcRegression('occWe', 'fRevWe'),
       regFnbTotal: calcRegression('occupancyRate', 'fnbSales'),
@@ -258,8 +261,15 @@ export default function RevenuePrediction({ monthlyData, settings }) {
   }, [processedData, globalStats, initialized]);
 
   // 1. 기존 선형 회귀 목표 매출 (과거 추세선)
-  const expRevWd = Math.max(0, regWd.slope * targetWeekdayOcc + regWd.intercept);
-  const expRevWe = Math.max(0, regWe.slope * targetWeekendOcc + regWe.intercept);
+  const calcExp = (reg, occ) => {
+    if (!reg) return 0;
+    const proportional = reg.avgYPerX * occ;
+    const linear = reg.slope * occ + reg.intercept;
+    return Math.max(proportional, linear);
+  };
+
+  const expRevWd = calcExp(regWd, targetWeekdayOcc);
+  const expRevWe = calcExp(regWe, targetWeekendOcc);
   const expectedRoomRevenue = expRevWd + expRevWe;
 
   // 2. 평형별 목표 객단가(Target ADR) 반영 매출
@@ -308,31 +318,40 @@ export default function RevenuePrediction({ monthlyData, settings }) {
   const hasSplitFnb = processedData.some(d => d.fRevWd > 0);
   
   if (hasSplitLeisure) {
-    expLeisureWd = Math.max(0, regLeisureWd.slope * targetWeekdayOcc + regLeisureWd.intercept);
-    expLeisureWe = Math.max(0, regLeisureWe.slope * targetWeekendOcc + regLeisureWe.intercept);
+    expLeisureWd = calcExp(regLeisureWd, targetWeekdayOcc);
+    expLeisureWe = calcExp(regLeisureWe, targetWeekendOcc);
     expectedLeisureRevenue = expLeisureWd + expLeisureWe;
   } else {
-    expectedLeisureRevenue = Math.max(0, regLeisureTotal.slope * targetTotalOcc + regLeisureTotal.intercept);
+    expectedLeisureRevenue = calcExp(regLeisureTotal, targetTotalOcc);
   }
 
   if (hasSplitMoto) {
-    expMotoWd = Math.max(0, regMotoWd.slope * targetWeekdayOcc + regMotoWd.intercept);
-    expMotoWe = Math.max(0, regMotoWe.slope * targetWeekendOcc + regMotoWe.intercept);
+    expMotoWd = calcExp(regMotoWd, targetWeekdayOcc);
+    expMotoWe = calcExp(regMotoWe, targetWeekendOcc);
     expectedMotoRevenue = expMotoWd + expMotoWe;
   } else {
-    expectedMotoRevenue = Math.max(0, regMotoTotal.slope * targetTotalOcc + regMotoTotal.intercept);
+    expectedMotoRevenue = calcExp(regMotoTotal, targetTotalOcc);
   }
 
   if (hasSplitFnb) {
-    expFnbWd = Math.max(0, regFnbWd.slope * targetWeekdayOcc + regFnbWd.intercept);
-    expFnbWe = Math.max(0, regFnbWe.slope * targetWeekendOcc + regFnbWe.intercept);
+    expFnbWd = calcExp(regFnbWd, targetWeekdayOcc);
+    expFnbWe = calcExp(regFnbWe, targetWeekendOcc);
     expectedFnbRevenue = expFnbWd + expFnbWe;
   } else {
-    expectedFnbRevenue = Math.max(0, regFnbTotal.slope * targetTotalOcc + regFnbTotal.intercept);
+    expectedFnbRevenue = calcExp(regFnbTotal, targetTotalOcc);
   }
   
-  const expectedTotalRevenue = expectedRoomRevenue + expectedLeisureRevenue + expectedMotoRevenue + expectedFnbRevenue;
-  const targetAdrTotalRevenue = targetAdrRoomRevenue + expectedLeisureRevenue + expectedMotoRevenue + expectedFnbRevenue;
+  const isValidReg = (reg) => reg && reg.r >= 0.5;
+  const validLeisure = isValidReg(regLeisureTotal);
+  const validMoto = isValidReg(regMotoGuest);
+  const validFnb = isValidReg(regFnbTotal);
+
+  const finalLeisureRev = validLeisure ? expectedLeisureRevenue : 0;
+  const finalMotoRev = validMoto ? expectedMotoRevenue : 0;
+  const finalFnbRev = validFnb ? expectedFnbRevenue : 0;
+
+  const expectedTotalRevenue = expectedRoomRevenue + finalLeisureRev + finalMotoRev + finalFnbRev;
+  const targetAdrTotalRevenue = targetAdrRoomRevenue + finalLeisureRev + finalMotoRev + finalFnbRev;
 
   const expectedGuests = totalExpectedSoldRooms * globalStats.avgGuestsPerSoldRoom;
 
@@ -579,15 +598,27 @@ export default function RevenuePrediction({ monthlyData, settings }) {
                   </span>
                 )}
               </div>
-              <div className="responsive-large-number" style={{color: 'var(--accent-purple)', whiteSpace: 'nowrap'}}>
-                ₩ <CountUp end={expectedLeisureRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
+              {validLeisure ? (
+                <div className="responsive-large-number" style={{color: 'var(--accent-purple)', whiteSpace: 'nowrap'}}>
+                  ₩ <CountUp end={expectedLeisureRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
+                </div>
+              ) : (
+                <div style={{color: 'var(--text-muted)', fontSize: '13px', padding: '8px 0', wordBreak: 'keep-all', lineHeight: '1.4'}}>
+                  상관관계가 낮아 (r &lt; 0.5)<br/><span style={{color: '#ef4444'}}>객실 연계 예측 및 총액에서 제외</span>됨
+                </div>
+              )}
+            </div>
+            {validLeisure ? (
+              <div style={{marginTop: '16px', fontSize: '14px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px'}}>
+                {hasSplitLeisure 
+                  ? <><span>주중 ₩{formatCurrency(expLeisureWd)}</span><span>주말 ₩{formatCurrency(expLeisureWe)}</span></>
+                  : <span>(종합 점유율 {targetTotalOcc.toFixed(1)}% 기준 예측)</span>}
               </div>
-            </div>
-            <div style={{marginTop: '16px', fontSize: '14px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px'}}>
-              {hasSplitLeisure 
-                ? <><span>주중 ₩{formatCurrency(expLeisureWd)}</span><span>주말 ₩{formatCurrency(expLeisureWe)}</span></>
-                : <span>(종합 점유율 {targetTotalOcc.toFixed(1)}% 기준 예측)</span>}
-            </div>
+            ) : (
+              <div style={{marginTop: '16px', fontSize: '12px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px'}}>
+                독립적 영업 지표를 참고하세요.
+              </div>
+            )}
           </div>
           
           {/* 예상 모토아레나 매출 */}
@@ -595,21 +626,33 @@ export default function RevenuePrediction({ monthlyData, settings }) {
             <div>
               <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '16px'}}>
                 예상 모토아레나 매출
-                {regMotoTotal && regMotoTotal.r !== undefined && (
-                  <span style={{fontSize: '12px', marginLeft: '8px', opacity: 0.7}} title="상관관계지수 (1에 가까울수록 예측 신뢰도 높음)">
-                    (r={regMotoTotal.r.toFixed(2)})
+                {regMotoGuest && regMotoGuest.r !== undefined && (
+                  <span style={{fontSize: '12px', marginLeft: '8px', opacity: 0.7}} title="상관관계지수 (투숙객 전용 매출 기준)">
+                    (r={regMotoGuest.r.toFixed(2)})
                   </span>
                 )}
               </div>
-              <div className="responsive-large-number" style={{color: 'var(--accent-gold)', whiteSpace: 'nowrap'}}>
-                ₩ <CountUp end={expectedMotoRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
+              {validMoto ? (
+                <div className="responsive-large-number" style={{color: 'var(--accent-gold)', whiteSpace: 'nowrap'}}>
+                  ₩ <CountUp end={expectedMotoRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
+                </div>
+              ) : (
+                <div style={{color: 'var(--text-muted)', fontSize: '13px', padding: '8px 0', wordBreak: 'keep-all', lineHeight: '1.4'}}>
+                  상관관계가 낮아 (r &lt; 0.5)<br/><span style={{color: '#ef4444'}}>객실 연계 예측 및 총액에서 제외</span>됨
+                </div>
+              )}
+            </div>
+            {validMoto ? (
+              <div style={{marginTop: '16px', fontSize: '14px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px'}}>
+                {hasSplitMoto 
+                  ? <><span>주중 ₩{formatCurrency(expMotoWd)}</span><span>주말 ₩{formatCurrency(expMotoWe)}</span></>
+                  : <span>(종합 점유율 {targetTotalOcc.toFixed(1)}% 기준 예측)</span>}
               </div>
-            </div>
-            <div style={{marginTop: '16px', fontSize: '14px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px'}}>
-              {hasSplitMoto 
-                ? <><span>주중 ₩{formatCurrency(expMotoWd)}</span><span>주말 ₩{formatCurrency(expMotoWe)}</span></>
-                : <span>(종합 점유율 {targetTotalOcc.toFixed(1)}% 기준 예측)</span>}
-            </div>
+            ) : (
+              <div style={{marginTop: '16px', fontSize: '12px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px'}}>
+                독립적 영업 지표를 참고하세요.
+              </div>
+            )}
           </div>
 
           {/* 예상 식음 부문 매출 */}
@@ -623,15 +666,27 @@ export default function RevenuePrediction({ monthlyData, settings }) {
                   </span>
                 )}
               </div>
-              <div className="responsive-large-number" style={{color: 'var(--accent-blue)', whiteSpace: 'nowrap'}}>
-                ₩ <CountUp end={expectedFnbRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
+              {validFnb ? (
+                <div className="responsive-large-number" style={{color: 'var(--accent-blue)', whiteSpace: 'nowrap'}}>
+                  ₩ <CountUp end={expectedFnbRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
+                </div>
+              ) : (
+                <div style={{color: 'var(--text-muted)', fontSize: '13px', padding: '8px 0', wordBreak: 'keep-all', lineHeight: '1.4'}}>
+                  상관관계가 낮아 (r &lt; 0.5)<br/><span style={{color: '#ef4444'}}>객실 연계 예측 및 총액에서 제외</span>됨
+                </div>
+              )}
+            </div>
+            {validFnb ? (
+              <div style={{marginTop: '16px', fontSize: '14px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px'}}>
+                {hasSplitFnb 
+                  ? <><span>주중 ₩{formatCurrency(expFnbWd)}</span><span>주말 ₩{formatCurrency(expFnbWe)}</span></>
+                  : <span>(종합 점유율 {targetTotalOcc.toFixed(1)}% 기준 예측)</span>}
               </div>
-            </div>
-            <div style={{marginTop: '16px', fontSize: '14px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px'}}>
-              {hasSplitFnb 
-                ? <><span>주중 ₩{formatCurrency(expFnbWd)}</span><span>주말 ₩{formatCurrency(expFnbWe)}</span></>
-                : <span>(종합 점유율 {targetTotalOcc.toFixed(1)}% 기준 예측)</span>}
-            </div>
+            ) : (
+              <div style={{marginTop: '16px', fontSize: '12px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px'}}>
+                독립적 영업 지표를 참고하세요.
+              </div>
+            )}
           </div>
         </div>
 

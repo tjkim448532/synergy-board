@@ -35,7 +35,7 @@ const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(Math.round
 export default function AdvancedAnalytics({ monthlyData, settings }) {
   const [selectedRoomType, setSelectedRoomType] = useState('all');
   const [activeDivision, setActiveDivision] = useState('all');
-  const [motoLogic, setMotoLogic] = useState('current');
+  const [motoLogic, setMotoLogic] = useState('new');
   const [selectedMonthFilter, setSelectedMonthFilter] = useState('all');
   const [googleVisitorsData, setGoogleVisitorsData] = useState({ total: null, months: {} });
 
@@ -239,7 +239,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       const sold16 = Number(d.sold16 || d.standardSold || 0);
       const sold35 = Number(d.sold35 || 0);
       const sold51Combined = Number(d.sold51 || d.connectingSold || 0); // Already includes sold51Acc
-      return sum + (sold16 * 2) + (sold35 * 4) + (sold51Combined * 6);
+      return sum + (sold16 * 2.5) + (sold35 * 4.5) + (sold51Combined * 6);
     }, 0);
   }, [filteredProcessedData]);
 
@@ -253,8 +253,8 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
           if (mType.includes('단체영업') || mType.includes('세미나')) {
             const count = Number(record.count || 0);
             const rType = String(record.roomType || '');
-            if (rType.includes('16평')) seminar += count * 2;
-            else if (rType.includes('35평')) seminar += count * 4;
+            if (rType.includes('16평')) seminar += count * 2.5;
+            else if (rType.includes('35평')) seminar += count * 4.5;
             else if (rType.includes('51평')) seminar += count * 6;
           }
         });
@@ -481,7 +481,10 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
             {Object.entries(divisionConfig).map(([key, conf]) => (
               <button
                 key={key}
-                onClick={() => setActiveDivision(key)}
+                onClick={() => {
+                  setActiveDivision(key);
+                  if (key === 'moto') setMotoLogic('new');
+                }}
                 style={{
                   background: activeDivision === key ? conf.color : 'rgba(255,255,255,0.05)',
                   color: activeDivision === key ? '#000' : 'var(--text-main)',
@@ -544,7 +547,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
             <CountUp end={totalHotelGuests} duration={2} separator="," />
           </div>
           <p style={{margin: 0, color: 'var(--text-muted)', fontSize: '14px'}}>
-            (16평×2인) + (35평×4인) + (51평×6인) 누적 합산 결과
+            (16평×2.5인) + (35평×4.5인) + (51평×6인) 누적 합산 결과
           </p>
 
           <div style={{position: 'absolute', right: '40px', bottom: '32px', background: 'rgba(0,0,0,0.4)', padding: '12px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end'}}>
@@ -641,7 +644,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
                 onClick={() => setMotoLogic('new')}
                 style={{padding: '8px 16px', borderRadius: '6px', background: motoLogic === 'new' ? 'var(--accent-gold)' : 'transparent', color: motoLogic === 'new' ? '#000' : 'var(--text-main)', border: 'none', cursor: 'pointer', fontWeight: motoLogic === 'new' ? 'bold' : 'normal', transition: 'all 0.2s'}}
               >
-                상세 매출 분석 (신규)
+                상세 매출 분석
               </button>
             </div>
           </div>

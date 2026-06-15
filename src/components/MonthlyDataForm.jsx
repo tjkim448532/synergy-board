@@ -843,7 +843,7 @@ export default function MonthlyDataForm({ settings }) {
                       <span>16/35/51평 판매량</span> <strong>{data.sold16} / {data.sold35} / {data.sold51} 실</strong>
                     </div>
                     <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
-                      <span>예상 투숙객</span> <strong style={{color: 'var(--accent-emerald)'}}>{formatCurrency((data.sold16 * 2) + (data.sold35 * 4) + (data.sold51 * 6))} 명</strong>
+                      <span>예상 투숙객</span> <strong style={{color: 'var(--accent-emerald)'}}>{formatCurrency((data.sold16 * 2.5) + (data.sold35 * 4.5) + (data.sold51 * 6))} 명</strong>
                     </div>
                   </div>
                 ))}
@@ -1072,7 +1072,7 @@ export default function MonthlyDataForm({ settings }) {
                     </td>
                     <td>
                       <div style={{fontWeight: 'bold', color: 'var(--accent-emerald)'}}>{formatCurrency(estimatedGuests)}명</div>
-                      <div style={{fontSize: '10px', color: 'var(--text-muted)'}}>16평x2, 35평x4, 51평x6</div>
+                      <div style={{fontSize: '10px', color: 'var(--text-muted)'}}>16평x2.5, 35평x4.5, 51평x6</div>
                     </td>
                     <td>
                       <div style={{fontWeight: 'bold', color: 'var(--text-main)'}}>객: {formatCurrency(r.soldWeekday || 0)}실</div>
