@@ -393,7 +393,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
   }, [processedData, regOverallRoom, regLeisureTotal, regMotoTotal, targetTotalOcc, expectedRoomRevenue, expectedLeisureRevenue, expectedMotoRevenue]);
 
   const monthOptions = useMemo(() => {
-    return [...processedData].map(d => d.yearMonth).sort((a, b) => b.localeCompare(a));
+    return [...processedData].map(d => d.yearMonth).sort((a, b) => (b || '').localeCompare(a || ''));
   }, [processedData]);
 
   const refData = useMemo(() => {

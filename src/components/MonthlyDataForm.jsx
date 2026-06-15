@@ -994,7 +994,7 @@ export default function MonthlyDataForm({ settings }) {
           {records.length === 0 ? (
             <div style={{color: 'var(--text-muted)'}}>등록된 데이터가 없습니다.</div>
           ) : (
-            [...records].sort((a,b) => b.id.localeCompare(a.id)).map(r => {
+            [...records].sort((a,b) => (b.id || '').localeCompare(a.id || '')).map(r => {
                const hasA = r.daysCount > 0;
                const hasB = r.leisureSales > 0 || r.leisureRevWd > 0;
                const hasC = r.motoTotalRev > 0;

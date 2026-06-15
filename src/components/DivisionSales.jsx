@@ -29,8 +29,13 @@ export default function DivisionSales({ monthlyData, settings }) {
   const processedData = useMemo(() => {
     if (!monthlyData || monthlyData.length === 0) return [];
 
-    // Sort chronologically
-    const sortedData = [...monthlyData].sort((a, b) => (a.id || a.yearMonth || '').localeCompare(b.id || b.yearMonth || ''));
+    // Sort chronologically and filter out invalid rows
+    const sortedData = [...monthlyData]
+      .filter(m => {
+        const idStr = String(m.id || m.yearMonth || '');
+        return idStr.match(/^\d{4}-\d{2}$/);
+      })
+      .sort((a, b) => (a.id || a.yearMonth || '').localeCompare(b.id || b.yearMonth || ''));
     
     let cumLeisure = 0;
     let cumFnb = 0;
@@ -74,7 +79,7 @@ export default function DivisionSales({ monthlyData, settings }) {
       cumRoom += roomSales;
 
       return {
-        month: month.yearMonth,
+        month: month.yearMonth || month.id,
         
         // Monthly values
         leisure: leisureSales,

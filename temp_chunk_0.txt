@@ -1,0 +1,138 @@
+import React, { useState } from 'react';
+import { Upload, Save, Ticket, Users, ArrowRight } from 'lucide-react';
+import * as XLSX from 'xlsx';
+import toast from 'react-hot-toast';
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '../firebase';
+import './Settings.css';
+
+const parseSafeInt = (val) => {
+  if (val === undefined || val === null) return 0;
+  if (typeof val === 'number') return Math.floor(val);
+  const str = val.toString().replace(/,/g, '').trim();
+  const parsed = parseInt(str, 10);
+  return isNaN(parsed) ? 0 : parsed;
+};
+
+// Removed parseExcelDate
+
+export default function LeisureTicketManager({ settings, setSettings, uniqueLocations }) {
+  const [fileObj, setFileObj] = useState(null);
+  
+  // 파싱 단계 상태
+  const [rawJsonData, setRawJsonData] = useState(null);
+  const [headers, setHeaders] = useState([]);
+  const [headerRowIdx, setHeaderRowIdx] = useState(0);
+  
+  // 컬럼 매핑 상태
+  const [selectedVenueCol, setSelectedVenueCol] = useState(0);
+  const [selectedNameCol, setSelectedNameCol] = useState(1);
+  const [selectedQtyCol, setSelectedQtyCol] = useState(2);
+  
+  const [autoExtractFlag, setAutoExtractFlag] = useState(false);
+
+  // 추출 결과
+  const [parsedData, setParsedData] = useState(null);
+  const [yearMonth, setYearMonth] = useState(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - 1); // 기본적으로 전월
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  });
+  const [isSaved, setIsSaved] = useState(false);
+
+  // 현재 설정에 저장된 레저 티켓 룰
+  const rules = settings.leisureTicketRules || {};
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    setFileObj(file);
+    setRawJsonData(null);
+    setHeaders([]);
+    setParsedData(null);
+    setIsSaved(false);
+    
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = new Uint8Array(ev.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+        if (jsonData.length < 2) {
+          return toast.error('데이터가 비어있습니다.');
+        }
+
+        let foundHeaderIdx = -1;
+        for (let i = 0; i < Math.min(15, jsonData.length); i++) {
+          const row = jsonData[i] || [];
+          const strRow = row.map(c => String(c || '').trim());
+          if (strRow.some(c => c.includes('트랜잭션') || c.includes('상품') || c.includes('티켓') || c.includes('영업장'))) {
+            foundHeaderIdx = i;
+            break;
+          }
+        }
+
+        if (foundHeaderIdx === -1) foundHeaderIdx = 0;
+
+        const extHeaders = jsonData[foundHeaderIdx].map((h, idx) => h ? String(h).trim() : `(이름 없는 열 ${idx + 1})`);
+        
+        const savedMapping = settings.leisureColMapping;
+        let venueIdx = -1, nameIdx = -1, qtyIdx = -1;
+
+        if (savedMapping) {
+          venueIdx = savedMapping.venueCol < extHeaders.length ? savedMapping.venueCol : -1;
+          nameIdx = savedMapping.nameCol < extHeaders.length ? savedMapping.nameCol : -1;
+          qtyIdx = savedMapping.qtyCol < extHeaders.length ? savedMapping.qtyCol : -1;
+        }
+
+        if (venueIdx === -1) venueIdx = extHeaders.findIndex(h => h.includes('영업장') || h.includes('사업장'));
+        if (nameIdx === -1) nameIdx = extHeaders.findIndex(h => h.includes('트랜잭션') || h.includes('상품') || h.includes('티켓') || h.includes('품목'));
+        if (qtyIdx === -1) qtyIdx = extHeaders.findIndex(h => h === '수량' || h.includes('판매수량') || h.includes('인원'));
+
+        setHeaderRowIdx(foundHeaderIdx);
+        setHeaders(extHeaders);
+        setRawJsonData(jsonData);
+        
+        setSelectedVenueCol(venueIdx !== -1 ? venueIdx : 0);
+        setSelectedNameCol(nameIdx !== -1 ? nameIdx : (extHeaders.length > 1 ? 1 : 0));
+        setSelectedQtyCol(qtyIdx !== -1 ? qtyIdx : (extHeaders.length > 2 ? 2 : 0));
+
+        if (savedMapping) {
+          setAutoExtractFlag(true);
+        }
+
+      } catch (err) {
+        console.error(err);
+        toast.error('엑셀 파일을 읽는 중 오류가 발생했습니다.');
+      }
+    };
+    reader.readAsArrayBuffer(file);
+    e.target.value = null; 
+  };
+
+  React.useEffect(() => {
+    if (autoExtractFlag && rawJsonData && headers.length > 0) {
+      executeExtraction();
+      setAutoExtractFlag(false);
+    }
+  }, [autoExtractFlag, rawJsonData, headers]);
+
+  const executeExtraction = () => {
+    if (!rawJsonData || headers.length === 0) return;
+
+    try {
+      const rawRecords = [];
+      const ticketCounts = {}; // { [venue___ticketName]: { venue, ticket, qty } }
+
+      for (let i = headerRowIdx + 1; i < rawJsonData.length; i++) {
+        const row = rawJsonData[i];
+        if (!row || row.length === 0) continue;
+
+        const vName = String(row[selectedVenueCol] || '').trim();
+        const tName = String(row[selectedNameCol] || '').trim();
+        
+        if (!vName || vName === '소계' || vName === '합계' || vName =

@@ -1,0 +1,128 @@
+== '총계' || vName.includes('TOTAL')) continue;
+        if (!tName || tName === '소계' || tName === '합계' || tName === '총계') continue;
+
+        const qty = parseSafeInt(row[selectedQtyCol]);
+        if (qty === 0) continue; // 수량이 0인 경우는 패스하지만, 마이너스는 취소표일수도 있으므로 일단 포함(절대값 처리 안함)
+
+        const compositeKey = `${vName}___${tName}`;
+
+        rawRecords.push({ venue: vName, ticket: tName, qty });
+        
+        if (!ticketCounts[compositeKey]) {
+          ticketCounts[compositeKey] = { venue: vName, ticket: tName, qty: 0 };
+        }
+        ticketCounts[compositeKey].qty += qty;
+      }
+
+      if (Object.keys(ticketCounts).length === 0) {
+        toast.error('추출된 데이터가 없습니다. 열 선택이 올바른지 확인해주세요.');
+        return;
+      }
+
+      setParsedData({
+        records: rawRecords,
+        summary: ticketCounts
+      });
+
+    } catch (err) {
+      console.error(err);
+      toast.error('데이터 파싱 중 오류가 발생했습니다.');
+    }
+  };
+
+  const updateRule = (compositeKey, field, value) => {
+    setSettings(prev => ({
+      ...prev,
+      leisureTicketRules: {
+        ...(prev.leisureTicketRules || {}),
+        [compositeKey]: {
+          ...((prev.leisureTicketRules && prev.leisureTicketRules[compositeKey]) || { count: 1, exclude: false }),
+          [field]: value
+        }
+      }
+    }));
+  };
+
+  const handleSave = async () => {
+    if (!parsedData || !yearMonth) return;
+
+    const venueVisitors = {}; 
+
+    parsedData.records.forEach(r => {
+      const compositeKey = `${r.venue}___${r.ticket}`;
+      const rule = rules[compositeKey] || { count: 1, exclude: false };
+      
+      if (rule.exclude) return;
+
+      const peopleCount = r.qty * (Number(rule.count) || 1);
+      venueVisitors[r.venue] = (venueVisitors[r.venue] || 0) + peopleCount;
+    });
+
+    try {
+      await setDoc(doc(db, 'monthly_records', yearMonth), {
+        leisureTicketUsage: venueVisitors
+      }, { merge: true });
+
+      const colMapping = {
+        venueCol: selectedVenueCol,
+        nameCol: selectedNameCol,
+        qtyCol: selectedQtyCol
+      };
+
+      await setDoc(doc(db, 'config', 'mainSettings'), {
+        leisureTicketRules: rules,
+        leisureColMapping: colMapping
+      }, { merge: true });
+
+      setSettings(prev => ({
+        ...prev,
+        leisureTicketRules: rules,
+        leisureColMapping: colMapping
+      }));
+
+      toast.success(`${yearMonth} 레저본부 이용객 데이터가 성공적으로 저장되었습니다!`);
+      setIsSaved(true);
+    } catch (e) {
+      console.error(e);
+      toast.error('저장 중 오류가 발생했습니다.');
+    }
+  };
+
+  return (
+    <div style={{background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '24px', marginTop: '16px'}}>
+      
+      <div style={{display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px'}}>
+        <Ticket color="var(--accent-emerald)" size={24} />
+        <h3 style={{margin: 0, fontSize: '18px', color: 'var(--text-main)'}}>매월 레저본부 티켓 이용객 엑셀 업로드</h3>
+      </div>
+      
+      <p style={{color: 'var(--text-muted)', fontSize: '14px', marginBottom: '20px'}}>
+        매월 다운로드하신 레저본부 엑셀 파일을 업로드하여 영업장과 트랜잭션명(티켓명), 수량을 추출합니다.
+      </p>
+
+      <div style={{display: 'flex', gap: '12px', marginBottom: '24px', alignItems: 'flex-end'}}>
+        <div style={{flex: 1}}>
+          <label style={{display: 'block', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px'}}>적용 월 선택</label>
+          <input 
+            type="month" 
+            value={yearMonth} 
+            onChange={(e) => setYearMonth(e.target.value)} 
+            style={{width: '100%', padding: '10px', background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px', outline: 'none', height: '42px', boxSizing: 'border-box'}} 
+          />
+        </div>
+        <div style={{flex: 2}}>
+          <label style={{display: 'block', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px'}}>엑셀 파일 업로드</label>
+          <label className="btn-primary" style={{cursor: 'pointer', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', height: '42px', margin: 0, boxSizing: 'border-box'}}>
+            <Upload size={18} /> {fileObj ? fileObj.name : '레저 엑셀 파일 선택'}
+            <input type="file" accept=".xlsx,.xls,.csv" onChange={handleFileUpload} style={{display: 'none'}} />
+          </label>
+        </div>
+      </div>
+
+      {headers.length > 0 && !parsedData && (
+        <div style={{background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '8px', border: '1px dashed var(--accent-emerald)', marginBottom: '24px'}}>
+          <h4 style={{margin: '0 0 16px 0', color: 'var(--accent-emerald)'}}>엑셀 열(Column) 선택</h4>
+          
+          <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '20px', alignItems: 'flex-end'}}>
+            <div>
+              <label style={{display: 'block', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px', whiteSpace: 'nowrap', overflow: 'hidden',
