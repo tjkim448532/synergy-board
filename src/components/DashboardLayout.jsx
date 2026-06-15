@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, Settings, PieChart, TrendingUp, BookOpen, Building, ChevronDown } from 'lucide-react';
+import { Upload, Settings, PieChart, TrendingUp, BookOpen, Building, ChevronDown, BarChart2 } from 'lucide-react';
 import './DashboardLayout.css';
 
 const SIDEBAR_MENU = [
@@ -14,6 +14,7 @@ const SIDEBAR_MENU = [
     ]
   },
   { id: 'analytics', icon: PieChart, label: '상관관계 분석' },
+  { id: 'division-sales', icon: BarChart2, label: '본부별 매출 분석' },
   { id: 'channel-analysis', icon: PieChart, label: '객실판매채널 심층분석' },
   { id: 'logic', icon: BookOpen, label: '분석 로직 및 검증 보고서' },
   { id: 'accuracy-tasks', icon: BookOpen, label: '데이터 정확도 핵심과제' },
