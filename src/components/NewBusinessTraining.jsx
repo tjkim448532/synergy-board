@@ -21,6 +21,10 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
     let totMotoTotal = 0;
     let totFnb = 0;
     
+    const pointsLeisure = [];
+    const pointsMoto = [];
+    const pointsFnb = [];
+    
     const locationGroups = settings.locationGroups || {};
 
     monthlyData.forEach(d => {
