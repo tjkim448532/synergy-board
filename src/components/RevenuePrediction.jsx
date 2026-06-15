@@ -100,8 +100,8 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         fRevWd = calcWd.fnb;
         fRevWe = calcWe.fnb;
         
-        mRevWd = Number(d.motoRevWd || 0);
-        mRevWe = Number(d.motoRevWe || 0);
+        mRevWd = Number(d.motoRevWd || 0) + (calcWd.moto || 0);
+        mRevWe = Number(d.motoRevWe || 0) + (calcWe.moto || 0);
       } else {
         // Fallback for legacy DB
         leisureSales = Number(d.leisureSales || d.totalLeisureSales || 0);
