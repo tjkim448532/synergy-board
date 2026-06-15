@@ -439,6 +439,47 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
         <p style={{margin: 0, color: 'var(--text-muted)', fontSize: '15px'}}>숙박객 유입이 본부별 매출에 미치는 영향 분석</p>
       </div>
 
+      {/* 0. 본부 선택기 및 월별 필터 */}
+      <div className="glass-panel mobile-wrap" style={{padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap'}}>
+        <div style={{display: 'flex', alignItems: 'center', gap: '16px'}}>
+          <h3 style={{margin: 0}}>분석 대상 본부 선택:</h3>
+          <div className="mobile-wrap" style={{display: 'flex', gap: '12px'}}>
+            {Object.entries(divisionConfig).map(([key, conf]) => (
+              <button
+                key={key}
+                onClick={() => setActiveDivision(key)}
+                style={{
+                  background: activeDivision === key ? conf.color : 'rgba(255,255,255,0.05)',
+                  color: activeDivision === key ? '#000' : 'var(--text-main)',
+                  border: `1px solid ${activeDivision === key ? 'transparent' : 'rgba(255,255,255,0.2)'}`,
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: activeDivision === key ? 'bold' : 'normal',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {conf.title}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(0,0,0,0.2)', padding: '6px 12px', borderRadius: '8px'}}>
+          <span style={{fontSize: '14px', color: 'var(--text-muted)'}}>월별 필터:</span>
+          <select 
+            value={selectedMonthFilter}
+            onChange={(e) => setSelectedMonthFilter(e.target.value)}
+            style={{background: 'rgba(255,255,255,0.1)', color: 'var(--text-main)', border: 'none', padding: '6px 12px', borderRadius: '4px', outline: 'none', fontWeight: 'bold'}}
+          >
+            <option value="all" style={{color: 'black'}}>전월 종합 분석</option>
+            {['01','02','03','04','05','06','07','08','09','10','11','12'].map(m => (
+              <option key={m} value={m} style={{color: 'black'}}>{m}월만 분석</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       {/* 🚀 최상단 핵심 지표 대형 배너 */}
       <div className="glass-panel" style={{display: 'flex', flexWrap: 'wrap', overflow: 'hidden', border: '1px solid var(--accent-gold)'}}>
         <div style={{flex: 1, minWidth: '300px', padding: '32px 40px', background: 'rgba(251, 191, 36, 0.1)', display: 'flex', flexDirection: 'column', gap: '12px'}}>
@@ -532,47 +573,6 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
         </div>
       )}
       
-      {/* 0. 본부 선택기 및 월별 필터 */}
-      <div className="glass-panel mobile-wrap" style={{padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap'}}>
-        <div style={{display: 'flex', alignItems: 'center', gap: '16px'}}>
-          <h3 style={{margin: 0}}>분석 대상 본부 선택:</h3>
-          <div className="mobile-wrap" style={{display: 'flex', gap: '12px'}}>
-            {Object.entries(divisionConfig).map(([key, conf]) => (
-              <button
-                key={key}
-                onClick={() => setActiveDivision(key)}
-                style={{
-                  background: activeDivision === key ? conf.color : 'rgba(255,255,255,0.05)',
-                  color: activeDivision === key ? '#000' : 'var(--text-main)',
-                  border: `1px solid ${activeDivision === key ? 'transparent' : 'rgba(255,255,255,0.2)'}`,
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontWeight: activeDivision === key ? 'bold' : 'normal',
-                  transition: 'all 0.2s'
-                }}
-              >
-                {conf.title}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div style={{display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(0,0,0,0.2)', padding: '6px 12px', borderRadius: '8px'}}>
-          <span style={{fontSize: '14px', color: 'var(--text-muted)'}}>월별 필터:</span>
-          <select 
-            value={selectedMonthFilter}
-            onChange={(e) => setSelectedMonthFilter(e.target.value)}
-            style={{background: 'rgba(255,255,255,0.1)', color: 'var(--text-main)', border: 'none', padding: '6px 12px', borderRadius: '4px', outline: 'none', fontWeight: 'bold'}}
-          >
-            <option value="all" style={{color: 'black'}}>전월 종합 분석</option>
-            {['01','02','03','04','05','06','07','08','09','10','11','12'].map(m => (
-              <option key={m} value={m} style={{color: 'black'}}>{m}월만 분석</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
       {/* 회원 유형 정밀 분석 UI (ChannelAnalysis로 이동됨) */}
 
       {/* 모토아레나 전용 정밀 분석 토글 */}
