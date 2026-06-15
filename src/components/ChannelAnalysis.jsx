@@ -312,6 +312,82 @@ export default function ChannelAnalysis({ monthlyData, settings }) {
     });
   }, [processedDataWithSales]);
 
+  // 7. 회원 vs 일반 (회원 비율 분석)
+  const memberStats = useMemo(() => {
+    let totMem = 0;
+    let totGen = 0;
+    let memWd = 0;
+    let memWe = 0;
+    let genWd = 0;
+    let genWe = 0;
+
+    const customWeekendsStr = settings?.customWeekends || '';
+    const customWeekendsArray = customWeekendsStr.split(',').map(s => s.trim()).filter(s => s);
+
+    processedDataWithSales.forEach(month => {
+      if (month.rawRoomRecords) {
+        month.rawRoomRecords.forEach(record => {
+          if (!record.date) return;
+          const cnt = record.count || 0;
+          if (cnt <= 0) return;
+
+          const rateType = record.rateType || '';
+          const isNonMember = rateType.includes('비회원');
+          const isMember = !isNonMember && (
+            rateType.includes('회원') || 
+            rateType.includes('정회원') || 
+            rateType.includes('구좌') || 
+            rateType.includes('기명') || 
+            rateType.includes('무기명')
+          );
+
+          let isWeekend = false;
+          try {
+            const dateObj = new Date(record.date);
+            const dayOfWeek = dateObj.getDay();
+            const isFriOrSat = dayOfWeek === 5 || dayOfWeek === 6;
+            
+            const nextDay = new Date(dateObj);
+            nextDay.setDate(dateObj.getDate() + 1);
+            const isNextDayHoliday = isHoliday(nextDay);
+
+            if (customWeekendsArray.includes(record.date) || isFriOrSat || isNextDayHoliday) {
+              isWeekend = true;
+            }
+          } catch(e) {}
+
+          if (isMember) {
+            totMem += cnt;
+            if (isWeekend) memWe += cnt;
+            else memWd += cnt;
+          } else {
+            totGen += cnt;
+            if (isWeekend) genWe += cnt;
+            else genWd += cnt;
+          }
+        });
+      }
+    });
+
+    const totalRooms = totMem + totGen;
+    const totalWd = memWd + genWd;
+    const totalWe = memWe + genWe;
+
+    return {
+      available: totalRooms > 0,
+      totalRooms,
+      totMem,
+      memberRatio: totalRooms > 0 ? (totMem / totalRooms) * 100 : 0,
+      generalRatio: totalRooms > 0 ? (totGen / totalRooms) * 100 : 0,
+      memWd,
+      memberWdRatio: totalWd > 0 ? (memWd / totalWd) * 100 : 0,
+      generalWdRatio: totalWd > 0 ? (genWd / totalWd) * 100 : 0,
+      memWe,
+      memberWeRatio: totalWe > 0 ? (memWe / totalWe) * 100 : 0,
+      generalWeRatio: totalWe > 0 ? (genWe / totalWe) * 100 : 0,
+    };
+  }, [processedDataWithSales, settings]);
+
   // Render Tabs
   const TABS = [
     { id: 'overview', label: '📊 전체 개요' },
@@ -547,7 +623,7 @@ export default function ChannelAnalysis({ monthlyData, settings }) {
               B2B 및 OTA 대행사별 실제 매출 기여도를 상세히 파악합니다. '미지정/직접예약'은 워크인이나 자사 홈페이지 예약일 확률이 높습니다.
             </p>
             <div style={{height: '500px', width: '100%', minWidth: 0, minHeight: 0}}>
-              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+              <ResponsiveContainer width="99%" height="100%" minWidth={0} minHeight={0}>
                 <BarChart data={agencyData} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" horizontal={false} />
                   <XAxis type="number" tickFormatter={(val) => `₩${(val/10000).toFixed(0)}만`} stroke="#94a3b8" />
@@ -576,7 +652,7 @@ export default function ChannelAnalysis({ monthlyData, settings }) {
               채널별로 주중과 주말 매출 발생 비율을 비교하여, 주말 의존도가 높은 채널과 주중 방어율이 높은 채널을 구분합니다.
             </p>
             <div style={{height: '400px', width: '100%', minWidth: 0, minHeight: 0}}>
-              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+              <ResponsiveContainer width="99%" height="100%" minWidth={0} minHeight={0}>
                 <BarChart data={weekendData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
                   <XAxis dataKey="channel" stroke="#94a3b8" />
@@ -657,7 +733,7 @@ export default function ChannelAnalysis({ monthlyData, settings }) {
               특정 평형을 가장 많이 팔아치우는 1등 공신 채널을 확인합니다. 남아도는 평형을 채우기 위해 어떤 채널을 공략할지 결정할 수 있습니다.
             </p>
             <div style={{height: '400px', width: '100%', minWidth: 0, minHeight: 0}}>
-              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+              <ResponsiveContainer width="99%" height="100%" minWidth={0} minHeight={0}>
                 <BarChart data={roomToChannelData} layout="vertical" margin={{ top: 20, right: 30, left: 60, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" horizontal={false} />
                   <XAxis type="number" tickFormatter={(val) => `₩${(val/10000).toFixed(0)}만`} stroke="#94a3b8" />
@@ -695,7 +771,7 @@ export default function ChannelAnalysis({ monthlyData, settings }) {
             ) : (
               <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px'}}>
                 <div style={{height: '300px', width: '100%', minWidth: 0, minHeight: 0}}>
-                  <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                  <ResponsiveContainer width="99%" height="100%" minWidth={0} minHeight={0}>
                     <BarChart data={cancelData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
                       <XAxis dataKey="channel" stroke="#94a3b8" />
