@@ -33,7 +33,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
     let total51ConnVirtualAll = 0;
     let total51AccVirtualAll = 0;
 
-    const data = [...monthlyData].sort((a, b) => (a.yearMonth || '').localeCompare(b.yearMonth || '')).map(d => {
+    const data = [...monthlyData].sort((a, b) => (a.id || a.yearMonth || '').localeCompare(b.id || b.yearMonth || '')).map(d => {
       const days = d.daysCount || 30;
       const daysWd = d.daysCountWeekday || 22;
       const daysWe = d.daysCountWeekend || 8;

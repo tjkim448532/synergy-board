@@ -62,7 +62,7 @@ export default function ChannelAnalysis({ monthlyData, settings }) {
         if (monthStr !== selectedMonthFilter) return false;
       }
       return true;
-    }).sort((a, b) => a.yearMonth.localeCompare(b.yearMonth));
+    }).sort((a, b) => (a.id || a.yearMonth || '').localeCompare(b.id || b.yearMonth || ''));
   }, [monthlyData, selectedMonthFilter]);
 
   const divisionConfig = useMemo(() => {

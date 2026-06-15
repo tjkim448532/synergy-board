@@ -19,7 +19,7 @@ export default function VisitorCalculation({ monthlyData, settings }) {
   useEffect(() => {
     if (monthlyData && monthlyData.length > 0 && !selectedMonth) {
       // Sort by yearMonth descending and pick first
-      const sorted = [...monthlyData].sort((a, b) => b.yearMonth.localeCompare(a.yearMonth));
+      const sorted = [...monthlyData].sort((a, b) => (b.id || b.yearMonth || '').localeCompare(a.id || a.yearMonth || ''));
       setSelectedMonth(sorted[0].yearMonth);
     }
   }, [monthlyData, selectedMonth]);
@@ -104,7 +104,7 @@ export default function VisitorCalculation({ monthlyData, settings }) {
 
   const monthlyStats = useMemo(() => {
     if (!monthlyData) return [];
-    return [...monthlyData].sort((a, b) => b.yearMonth.localeCompare(a.yearMonth)).map(d => ({
+    return [...monthlyData].sort((a, b) => (b.id || b.yearMonth || '').localeCompare(a.id || a.yearMonth || '')).map(d => ({
       yearMonth: d.yearMonth,
       ...getVisitorStatsForDoc(d)
     }));

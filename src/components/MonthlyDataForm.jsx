@@ -70,7 +70,7 @@ export default function MonthlyDataForm({ settings }) {
       snapshot.forEach(doc => {
         data.push({ id: doc.id, ...doc.data() });
       });
-      data.sort((a, b) => (b.yearMonth || '').localeCompare(a.yearMonth || '')); // sort desc
+      data.sort((a, b) => (b.id || b.yearMonth || '').localeCompare(a.id || a.yearMonth || '')); // sort desc
       setRecords(data);
     });
     return () => unsub();
@@ -439,7 +439,7 @@ export default function MonthlyDataForm({ settings }) {
           }
         }
         
-        const parsedMonthsArray = Object.values(monthlyParsedMap).sort((a, b) => b.yearMonth.localeCompare(a.yearMonth));
+        const parsedMonthsArray = Object.values(monthlyParsedMap).sort((a, b) => (b.id || b.yearMonth || '').localeCompare(a.id || a.yearMonth || ''));
         if (parsedMonthsArray.length === 0) {
             toast.error('유효한 날짜 데이터를 찾을 수 없습니다.');
             return;

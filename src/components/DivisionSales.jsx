@@ -30,7 +30,7 @@ export default function DivisionSales({ monthlyData, settings }) {
     if (!monthlyData || monthlyData.length === 0) return [];
 
     // Sort chronologically
-    const sortedData = [...monthlyData].sort((a, b) => a.yearMonth.localeCompare(b.yearMonth));
+    const sortedData = [...monthlyData].sort((a, b) => (a.id || a.yearMonth || '').localeCompare(b.id || b.yearMonth || ''));
     
     let cumLeisure = 0;
     let cumFnb = 0;

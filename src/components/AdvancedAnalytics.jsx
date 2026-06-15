@@ -99,7 +99,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
   // 데이터 가공
   const processedData = useMemo(() => {
     // 오래된 순으로 정렬 (그래프용)
-    const sorted = [...monthlyData].sort((a, b) => (a.yearMonth || '').localeCompare(b.yearMonth || ''));
+    const sorted = [...monthlyData].sort((a, b) => (a.id || a.yearMonth || '').localeCompare(b.id || b.yearMonth || ''));
     
     return sorted.map(d => {
       // 영업일수 fallback

@@ -329,7 +329,7 @@ export default function LeisureTicketManager({ settings, setSettings, uniqueLoca
                 <tbody>
                   {Object.entries(parsedData.summary).sort((a,b) => {
                     if (a[1].venue === b[1].venue) return b[1].qty - a[1].qty;
-                    return a[1].venue.localeCompare(b[1].venue);
+                    return (a[1].venue || '').localeCompare(b[1].venue || '');
                   }).map(([compositeKey, data]) => {
                     const rule = rules[compositeKey] || { count: 1, exclude: false };
                     const isExcluded = rule.exclude;
