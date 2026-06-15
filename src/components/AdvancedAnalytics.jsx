@@ -366,6 +366,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     let totalGrossTrev = 0;
     let totalPureTrev = 0;
     let totalSubsidiaryRev = 0;
+    let totalFnbAndPitstopRev = 0;
 
     filteredProcessedData.forEach(d => {
       const physicalRooms = Number(settings.totalRooms) || 175;
@@ -384,11 +385,20 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       const motoGross = d.motoSales || 0;
       const otherGross = d.otherSales || 0;
 
+      let pitstopRev = 0;
+      if (d.salesByLocation || d.leisureSalesByLocation) {
+        const salesObj = d.salesByLocation || d.leisureSalesByLocation || {};
+        Object.entries(salesObj).forEach(([loc, amt]) => {
+          if (loc.includes('핏스탑')) pitstopRev += (Number(amt) || 0);
+        });
+      }
+
       // 모토아레나 및 기타 매출을 KPI 산정에 포함
       totalGrossTrev += (d.totalRoomRevenue || 0) + leisureGross + fnbGross + motoGross + otherGross;
       // 모토아레나는 캡쳐율 추정이 아닌 실제 투숙객 데이터(motoGuestRev)가 우선이나, 없을 경우 capMoto 적용
       totalPureTrev += (d.totalRoomRevenue || 0) + (leisureGross * capLeisure) + (fnbGross * capFnb) + (d.motoGuestRev || (motoGross * capMoto)) + otherGross;
       totalSubsidiaryRev += leisureGross + fnbGross + motoGross + otherGross;
+      totalFnbAndPitstopRev += fnbGross + pitstopRev;
     });
 
     if (totalAvailableRooms === 0) return null;
@@ -400,7 +410,8 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       capLeisure: capLeisure * 100,
       capFnb: capFnb * 100,
       capMoto: capMoto * 100,
-      totalSubsidiaryRev: totalSubsidiaryRev
+      totalSubsidiaryRev: totalSubsidiaryRev,
+      totalFnbAndPitstopRev: totalFnbAndPitstopRev
     };
   }, [filteredProcessedData, settings]);
 
@@ -485,9 +496,23 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
             {selectedMonthFilter === 'all' ? '올해 리조트 전체 통합 고객 수 (골프장 제외)' : `${selectedMonthFilter}월 리조트 방문 통합 고객 수 (골프장 제외)`}
           </p>
           <div style={{marginTop: 'auto', background: 'rgba(255,255,255,0.05)', padding: '12px 16px', borderRadius: '8px', border: '1px solid rgba(251, 191, 36, 0.2)'}}>
-            <div style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px'}}>방문객 1인당 평균 소비액 <span style={{fontSize:'10px', opacity: 0.7}}>(골프 제외/레저+식음+모토+기타 매출 합산)</span></div>
-            <div style={{fontSize: '20px', fontWeight: 'bold', color: 'var(--accent-gold)'}}>
-              {displayVisitors > 0 && kpiData ? `₩${Math.round(kpiData.totalSubsidiaryRev / displayVisitors).toLocaleString()}` : '₩0'}
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px dashed rgba(255,255,255,0.1)'}}>
+              <div>
+                <div style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '2px'}}>방문객 1인당 평균 소비액</div>
+                <div style={{fontSize:'10px', color: 'var(--text-muted)', opacity: 0.7}}>(골프 제외/전체 매출 합산)</div>
+              </div>
+              <div style={{fontSize: '20px', fontWeight: 'bold', color: 'var(--accent-gold)'}}>
+                {displayVisitors > 0 && kpiData ? `₩${Math.round(kpiData.totalSubsidiaryRev / displayVisitors).toLocaleString()}` : '₩0'}
+              </div>
+            </div>
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+              <div>
+                <div style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '2px'}}>1인당 식음비</div>
+                <div style={{fontSize:'10px', color: 'var(--text-muted)', opacity: 0.7}}>(식음 + 핏스탑 특별 합산 기준)</div>
+              </div>
+              <div style={{fontSize: '18px', fontWeight: 'bold', color: 'var(--accent-emerald)'}}>
+                {displayVisitors > 0 && kpiData ? `₩${Math.round(kpiData.totalFnbAndPitstopRev / displayVisitors).toLocaleString()}` : '₩0'}
+              </div>
             </div>
           </div>
         </div>
