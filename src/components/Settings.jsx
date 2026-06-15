@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Link as LinkIcon, RefreshCw, Lock, ChevronDown, ChevronUp } from 'lucide-react';
+import { Save, Link as LinkIcon, RefreshCw, Lock, ChevronDown, ChevronUp, AlertCircle, TrendingUp, Key, ArrowRight, Shield, DownloadCloud, UploadCloud, PieChart, Activity, Briefcase, Copy, FileText, CheckCircle2 } from 'lucide-react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import Papa from 'papaparse';
@@ -58,10 +58,13 @@ export default function Settings({ monthlyData }) {
     weekend: false,
     capture: false,
     adr: false,
-    location: false,
+    advanced: false,
     moto: false,
-    capa: false
+    capa: false,
+    report: true
   });
+
+  const [promptCopied, setPromptCopied] = useState(false);
 
   const toggleSection = (sec) => setExpandedSections(p => ({...p, [sec]: !p[sec]}));
 
@@ -784,6 +787,78 @@ export default function Settings({ monthlyData }) {
               />
               <span style={{color: 'var(--text-muted)'}}>%</span>
             </div>
+          </div>
+        </div>
+      </SectionCard>
+
+      <SectionCard
+        title="AI 경영 보고서 프롬프트 추출 (PPT 생성용)"
+        description="현재 데이터를 기반으로 ChatGPT, Claude, Gamma(PPT) 등에 붙여넣을 수 있는 맥킨지 스타일의 프롬프트를 복사합니다."
+        isExpanded={expandedSections.report}
+        onToggle={() => toggleSection('report')}
+      >
+        <div style={{background: 'rgba(255,255,255,0.05)', borderRadius: '12px', border: '1px solid var(--border-glass)', padding: '20px'}}>
+          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
+            <p style={{color: 'var(--text-muted)', fontSize: '14px', margin: 0}}>
+              아래 버튼을 클릭하여 전체 실적과 맥킨지 스타일 전략 제안이 결합된 프롬프트를 복사하세요.<br/>
+              복사한 텍스트를 AI 툴에 붙여넣으면 즉시 5장짜리 경영 보고서용 슬라이드를 생성할 수 있습니다.
+            </p>
+            <button 
+              onClick={() => {
+                const totalRooms = monthlyData.reduce((acc, m) => acc + (Number(m.totalRoomRevenue) || 0), 0);
+                const avgOcc = (monthlyData.reduce((acc, m) => acc + (Number(m.occupancyRate) || 0), 0) / (monthlyData.length || 1)).toFixed(1);
+                const lCap = settings.captureRateLeisure || 0;
+                const fCap = settings.captureRateFnb || 0;
+                const mCap = settings.captureRateMoto || 0;
+
+                const prompt = `당신은 세계 최고의 전략 컨설팅 펌(맥킨지)의 수석 경영 컨설턴트입니다. 
+아래 제공된 우리 리조트의 실제 경영 데이터와 분석 인사이트를 바탕으로, 경영진 보고용 5슬라이드짜리 전략 프레젠테이션(PPT) 대본과 슬라이드 구성을 작성해 주세요. 
+전문적이고 단호한 어조로, 데이터에 근거한 인사이트를 제시해야 합니다.
+
+[1. 핵심 실적 요약 데이터]
+- 최근 누적 평균 객실 가동률: ${avgOcc}%
+- 최근 총 객실 매출액: ${totalRooms.toLocaleString()}원
+
+[2. 투숙객 캡쳐율 (Capture Rate) 데이터]
+- 레져본부 투숙객 캡쳐율: ${lCap}%
+- 식음(F&B) 부문 투숙객 캡쳐율: ${fCap}%
+- 모토아레나 투숙객 캡쳐율: ${mCap}%
+
+[3. 구글 및 맥킨지 관점의 경영진 제안 및 전략 방향성]
+- 포트폴리오 믹스 최적화 제안: "레져본부의 점유율이 80%를 넘어서는 병목 구간(주말)에서, 식음(F&B) 및 모토아레나로의 전환율 추세를 보았을 때 투숙객의 추가 지출(Share of Wallet)을 유도하기 위한 패키징 전략 재설계가 시급합니다."
+- 신사업(연수원 등) 타당성: "기존 데이터의 주중/주말 매출 상관관계를 통해 볼 때, 신사업(B2B 연수원)의 도입은 주중 공실률을 채우는 핵심 '캐시카우' 역할을 할 것이며, 이는 전체 리조트의 BEP(손익분기점) 달성 시기를 앞당길 가장 강력한 레버리지입니다."
+- 디지털 트랜스포메이션 방향: "현재의 인메모리 대시보드 구조에서 나아가, 구글 Cloud Functions 기반의 서버리스 데이터 파이프라인(ETL)을 구축하여 예측 모델의 정확도를 BigQuery ML 수준으로 고도화해야 합니다."
+
+[요청 사항]
+1. 위 내용을 바탕으로 Gamma(AI PPT 서비스)에 바로 붙여넣을 수 있는 마크다운 형태의 슬라이드 구성을 짜주세요.
+2. 슬라이드는 1) Executive Summary 2) 실적 현황 3) 부문별 캡쳐율 분석 4) 맥킨지 전략 제안 5) Next Steps 로 구성해주세요.
+`;
+                navigator.clipboard.writeText(prompt);
+                setPromptCopied(true);
+                setTimeout(() => setPromptCopied(false), 2000);
+                toast.success('AI 보고서 프롬프트가 복사되었습니다!');
+              }}
+              style={{
+                background: promptCopied ? '#22c55e' : 'var(--accent-blue)', 
+                color: '#fff', 
+                border: 'none', 
+                padding: '10px 20px', 
+                borderRadius: '8px', 
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontWeight: 'bold',
+                transition: 'all 0.2s'
+              }}
+            >
+              {promptCopied ? <CheckCircle2 size={18} /> : <Copy size={18} />}
+              {promptCopied ? '복사 완료!' : 'AI 프롬프트 복사하기'}
+            </button>
+          </div>
+          
+          <div style={{background: 'rgba(0,0,0,0.3)', padding: '16px', borderRadius: '8px', fontSize: '13px', color: 'rgba(255,255,255,0.7)', whiteSpace: 'pre-wrap', fontFamily: 'monospace'}}>
+            {`[미리보기]\n당신은 세계 최고의 전략 컨설팅 펌(맥킨지)의 수석 경영 컨설턴트입니다. 아래 제공된 우리 리조트의 실제 경영 데이터와 분석 인사이트를 바탕으로... (클릭 시 전체 텍스트 복사)`}
           </div>
         </div>
       </SectionCard>
