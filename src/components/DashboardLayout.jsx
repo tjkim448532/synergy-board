@@ -3,10 +3,10 @@ import { Upload, Settings, PieChart, TrendingUp, BookOpen, Building, ChevronDown
 import './DashboardLayout.css';
 
 const SIDEBAR_MENU = [
-  { id: 'prediction', icon: TrendingUp, label: '매출 예측 시뮬레이터' },
   { id: 'analytics', icon: PieChart, label: '상관관계 분석' },
   { id: 'division-sales', icon: BarChart2, label: '부문별 매출 분석' },
   { id: 'channel-analysis', icon: PieChart, label: '객실판매채널 심층분석' },
+  { id: 'prediction', icon: TrendingUp, label: '매출 예측 시뮬레이터' },
   { 
     id: 'new-business-parent', 
     icon: Building, 
