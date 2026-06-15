@@ -203,14 +203,14 @@ export default function RevenuePrediction({ monthlyData, settings }) {
       const points = processedData.filter(d => d[yKey] > 0);
       const n = points.length;
       
-      if (n === 0) return { slope: 0, intercept: 0 };
+      if (n === 0) return { slope: 0, intercept: 0, r: 0 };
       if (n === 1) {
         const p = points[0];
         const slope = p[xKey] > 0 ? p[yKey] / p[xKey] : 0;
-        return { slope, intercept: 0 };
+        return { slope, intercept: 0, r: 1 };
       }
 
-      let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+      let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0, sumY2 = 0;
       points.forEach(p => {
         const x = p[xKey];
         const y = p[yKey];
@@ -218,13 +218,18 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         sumY += y;
         sumXY += x * y;
         sumX2 += x * x;
+        sumY2 += y * y;
       });
 
       const denominator = (n * sumX2 - sumX * sumX);
-      if (denominator === 0) return { slope: 0, intercept: sumY / n };
-      const slope = (n * sumXY - sumX * sumY) / denominator;
-      const intercept = (sumY - slope * sumX) / n;
-      return { slope, intercept };
+      const intercept = denominator === 0 ? sumY / n : (sumY - ((n * sumXY - sumX * sumY) / denominator) * sumX) / n;
+      const slope = denominator === 0 ? 0 : (n * sumXY - sumX * sumY) / denominator;
+      
+      const numerator = (n * sumXY) - (sumX * sumY);
+      const denomInside = (n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY);
+      const r = denomInside > 0 ? numerator / Math.sqrt(denomInside) : 0;
+
+      return { slope, intercept, r };
     };
 
     return {
@@ -444,12 +449,12 @@ export default function RevenuePrediction({ monthlyData, settings }) {
               <div className="responsive-stat-value">
                 {refData.occRate.toFixed(1)}%
               </div>
-              <div style={{display: 'flex', justifyContent: 'center', gap: '16px', marginTop: '12px'}}>
-                <div style={{fontSize: '14px'}}>
+              <div style={{display: 'flex', justifyContent: 'center', gap: '24px', marginTop: '12px'}}>
+                <div style={{fontSize: '28px'}}>
                   <span style={{color: 'var(--text-muted)'}}>주중: </span>
                   <span style={{color: 'var(--accent-blue)', fontWeight: 'bold'}}>{refData.wdOccRate.toFixed(1)}%</span>
                 </div>
-                <div style={{fontSize: '14px'}}>
+                <div style={{fontSize: '28px'}}>
                   <span style={{color: 'var(--text-muted)'}}>주말: </span>
                   <span style={{color: 'var(--accent-purple)', fontWeight: 'bold'}}>{refData.weOccRate.toFixed(1)}%</span>
                 </div>
@@ -509,7 +514,14 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         <div style={{display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', gap: '20px', maxWidth: '1200px', margin: '0 auto'}}>
           <div style={{flex: '1 1 240px', background: 'rgba(0,0,0,0.3)', padding: '30px 20px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
             <div>
-              <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '16px'}}>예상 객실 매출</div>
+              <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '16px'}}>
+                예상 객실 매출
+                {regOverallRoom && regOverallRoom.r !== undefined && (
+                  <span style={{fontSize: '12px', marginLeft: '8px', opacity: 0.7}} title="상관관계지수 (1에 가까울수록 예측 신뢰도 높음)">
+                    (r={regOverallRoom.r.toFixed(2)})
+                  </span>
+                )}
+              </div>
               
               {hasTargetAdr ? (
                 <div style={{display: 'flex', gap: '16px', justifyContent: 'center', alignItems: 'center'}}>
@@ -559,7 +571,14 @@ export default function RevenuePrediction({ monthlyData, settings }) {
           
           <div style={{flex: '1 1 240px', background: 'rgba(0,0,0,0.3)', padding: '30px 20px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
             <div>
-              <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '16px'}}>예상 레져본부 매출</div>
+              <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '16px'}}>
+                예상 레져본부 매출
+                {regLeisureTotal && regLeisureTotal.r !== undefined && (
+                  <span style={{fontSize: '12px', marginLeft: '8px', opacity: 0.7}} title="상관관계지수 (1에 가까울수록 예측 신뢰도 높음)">
+                    (r={regLeisureTotal.r.toFixed(2)})
+                  </span>
+                )}
+              </div>
               <div className="responsive-large-number" style={{color: 'var(--accent-purple)', whiteSpace: 'nowrap'}}>
                 ₩ <CountUp end={expectedLeisureRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
               </div>
@@ -574,7 +593,14 @@ export default function RevenuePrediction({ monthlyData, settings }) {
           {/* 예상 모토아레나 매출 */}
           <div style={{flex: '1 1 240px', background: 'rgba(0,0,0,0.3)', padding: '30px 20px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
             <div>
-              <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '16px'}}>예상 모토아레나 매출</div>
+              <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '16px'}}>
+                예상 모토아레나 매출
+                {regMotoTotal && regMotoTotal.r !== undefined && (
+                  <span style={{fontSize: '12px', marginLeft: '8px', opacity: 0.7}} title="상관관계지수 (1에 가까울수록 예측 신뢰도 높음)">
+                    (r={regMotoTotal.r.toFixed(2)})
+                  </span>
+                )}
+              </div>
               <div className="responsive-large-number" style={{color: 'var(--accent-gold)', whiteSpace: 'nowrap'}}>
                 ₩ <CountUp end={expectedMotoRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
               </div>
@@ -589,7 +615,14 @@ export default function RevenuePrediction({ monthlyData, settings }) {
           {/* 예상 식음 부문 매출 */}
           <div style={{flex: '1 1 240px', background: 'rgba(0,0,0,0.3)', padding: '30px 20px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
             <div>
-              <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '16px'}}>예상 식음 부문 매출</div>
+              <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '16px'}}>
+                예상 식음 부문 매출
+                {regFnbTotal && regFnbTotal.r !== undefined && (
+                  <span style={{fontSize: '12px', marginLeft: '8px', opacity: 0.7}} title="상관관계지수 (1에 가까울수록 예측 신뢰도 높음)">
+                    (r={regFnbTotal.r.toFixed(2)})
+                  </span>
+                )}
+              </div>
               <div className="responsive-large-number" style={{color: 'var(--accent-blue)', whiteSpace: 'nowrap'}}>
                 ₩ <CountUp end={expectedFnbRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
               </div>

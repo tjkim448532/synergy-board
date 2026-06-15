@@ -243,6 +243,26 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     }, 0);
   }, [filteredProcessedData]);
 
+  const seminarGuests = useMemo(() => {
+    if (!filteredProcessedData || filteredProcessedData.length === 0) return 0;
+    let seminar = 0;
+    filteredProcessedData.forEach(d => {
+      if (d.rawRoomRecords && Array.isArray(d.rawRoomRecords)) {
+        d.rawRoomRecords.forEach(record => {
+          const mType = String(record.marketType || '');
+          if (mType.includes('단체영업') || mType.includes('세미나')) {
+            const count = Number(record.count || 0);
+            const rType = String(record.roomType || '');
+            if (rType.includes('16평')) seminar += count * 2;
+            else if (rType.includes('35평')) seminar += count * 4;
+            else if (rType.includes('51평')) seminar += count * 6;
+          }
+        });
+      }
+    });
+    return seminar;
+  }, [filteredProcessedData]);
+
 
   // 선택된 부문의 전체 상관계수 계산
   const activeGlobalCorrelation = useMemo(() => {
@@ -516,7 +536,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
         
         <div style={{width: '1px', background: 'var(--border-glass)'}} />
 
-        <div style={{flex: 1, minWidth: '300px', padding: '32px 40px', background: 'rgba(52, 211, 153, 0.1)', display: 'flex', flexDirection: 'column', gap: '12px'}}>
+        <div style={{flex: 1, minWidth: '300px', padding: '32px 40px', background: 'rgba(52, 211, 153, 0.1)', display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative'}}>
           <h2 style={{margin: 0, color: 'var(--accent-emerald)', fontSize: '24px', display: 'flex', alignItems: 'center', gap: '12px'}}>
             🛏️ 누적 숙박객 <span style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.3)', padding: '4px 8px', borderRadius: '4px'}}>DB 기반 연산</span>
           </h2>
@@ -526,6 +546,13 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
           <p style={{margin: 0, color: 'var(--text-muted)', fontSize: '14px'}}>
             (16평×2인) + (35평×4인) + (51평×6인) 누적 합산 결과
           </p>
+
+          <div style={{position: 'absolute', right: '40px', bottom: '32px', background: 'rgba(0,0,0,0.4)', padding: '12px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end'}}>
+            <div style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px'}}>이 중 단체/세미나 고객</div>
+            <div style={{fontSize: '24px', fontWeight: 'bold', color: 'var(--accent-blue)'}}>
+              <CountUp end={seminarGuests} duration={2} separator="," /> <span style={{fontSize: '14px', color: 'var(--text-muted)', fontWeight: 'normal'}}>명</span>
+            </div>
+          </div>
         </div>
       </div>
 
