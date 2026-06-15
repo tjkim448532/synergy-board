@@ -2,12 +2,12 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  projectId: "synergy-board",
-  appId: "1:1090826952361:web:8ad8a33583b985c9a793b8",
-  storageBucket: "synergy-board.firebasestorage.app",
-  apiKey: "AIzaSyB3BlR6iCy11R49FbYss7OkhFxOQZYzcIY",
-  authDomain: "synergy-board.firebaseapp.com",
-  messagingSenderId: "1090826952361"
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID
 };
 
 // Initialize Firebase
