@@ -57,7 +57,7 @@ export default function DivisionSales({ monthlyData, settings }) {
         fnbSales = calculated.fnb || 0;
         golfSales = calculated.golf || 0;
         otherSales = calculated.other || 0;
-        motoSales = calculated.moto || 0;
+        motoSales = (calculated.moto || 0) + Number(month.motoTotalRev || month.motoSales || 0);
       } else {
         // Fallback for legacy DB
         leisureSales = Number(month.leisureSales || month.totalLeisureSales || 0);

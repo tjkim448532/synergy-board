@@ -87,7 +87,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         const salesObj = d.salesByLocation || d.leisureSalesByLocation || {};
         const calculated = calculateGroupedSales(salesObj, locationGroups);
         leisureSales = calculated.leisure;
-        motoSales = calculated.moto || 0;
+        motoSales = (calculated.moto || 0) + Number(d.motoTotalRev || d.motoSales || 0);
         fnbSales = calculated.fnb;
         
         const wdObj = d.salesWdByLocation || {};
@@ -100,8 +100,8 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         fRevWd = calcWd.fnb;
         fRevWe = calcWe.fnb;
         
-        mRevWd = calcWd.moto || 0;
-        mRevWe = calcWe.moto || 0;
+        mRevWd = (calcWd.moto || 0) + Number(d.motoRevWd || 0);
+        mRevWe = (calcWe.moto || 0) + Number(d.motoRevWe || 0);
       } else {
         // Fallback for legacy DB
         leisureSales = Number(d.leisureSales || d.totalLeisureSales || 0);

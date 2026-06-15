@@ -192,7 +192,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
         const salesObj = d.salesByLocation || d.leisureSalesByLocation || {};
         const calculated = calculateGroupedSales(salesObj, locationGroups);
         groupSales = { ...calculated };
-        groupSales.moto = calculated.moto || 0;
+        groupSales.moto = (calculated.moto || 0) + Number(d.motoTotalRev || d.motoSales || 0);
         totalSales = groupSales.leisure + groupSales.moto + groupSales.fnb;
       } else {
         // Fallback for legacy DB
