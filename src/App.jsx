@@ -41,7 +41,11 @@ function App() {
 
     const unsubData = onSnapshot(collection(db, 'monthly_records'), (snapshot) => {
       const data = [];
-      snapshot.forEach(doc => data.push({ id: doc.id, ...doc.data() }));
+      snapshot.forEach(doc => {
+        if (doc.id && String(doc.id).match(/^\d{4}-\d{2}$/)) {
+          data.push({ id: doc.id, ...doc.data() });
+        }
+      });
       setAllData(data);
     });
 
