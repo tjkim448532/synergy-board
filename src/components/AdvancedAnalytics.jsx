@@ -393,12 +393,13 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       const leisureGross = d.leisureSales || 0;
       const fnbGross = d.fnbSales || 0;
       const motoGross = d.motoSales || 0;
+      const otherGross = d.otherSales || 0;
 
-      // 모토아레나 매출을 KPI 산정에 포함 (최신 통합 요청)
-      totalGrossTrev += (d.totalRoomRevenue || 0) + leisureGross + fnbGross + motoGross;
+      // 모토아레나 및 기타 매출을 KPI 산정에 포함
+      totalGrossTrev += (d.totalRoomRevenue || 0) + leisureGross + fnbGross + motoGross + otherGross;
       // 모토아레나는 캡쳐율 추정이 아닌 실제 투숙객 데이터(motoGuestRev)가 우선이나, 없을 경우 capMoto 적용
       totalPureTrev += (d.totalRoomRevenue || 0) + (leisureGross * capLeisure) + (fnbGross * capFnb) + (d.motoGuestRev || (motoGross * capMoto));
-      totalSubsidiaryRev += leisureGross + fnbGross + motoGross;
+      totalSubsidiaryRev += leisureGross + fnbGross + motoGross + otherGross;
     });
 
     if (totalAvailableRooms === 0) return null;
@@ -451,7 +452,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
             {selectedMonthFilter === 'all' ? '올해 리조트 전체 통합 고객 수 (골프장 제외)' : `${selectedMonthFilter}월 리조트 방문 통합 고객 수 (골프장 제외)`}
           </p>
           <div style={{marginTop: 'auto', background: 'rgba(255,255,255,0.05)', padding: '12px 16px', borderRadius: '8px', border: '1px solid rgba(251, 191, 36, 0.2)'}}>
-            <div style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px'}}>방문객 1인당 평균 소비액 <span style={{fontSize:'10px', opacity: 0.7}}>(골프 제외/레저+식음+모토 매출 합산)</span></div>
+            <div style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px'}}>방문객 1인당 평균 소비액 <span style={{fontSize:'10px', opacity: 0.7}}>(골프 제외/레저+식음+모토+기타 매출 합산)</span></div>
             <div style={{fontSize: '20px', fontWeight: 'bold', color: 'var(--accent-gold)'}}>
               {displayVisitors > 0 && kpiData ? `₩${Math.round(kpiData.totalSubsidiaryRev / displayVisitors).toLocaleString()}` : '₩0'}
             </div>
