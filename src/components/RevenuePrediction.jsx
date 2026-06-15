@@ -3,6 +3,7 @@ import {
   ComposedChart, Scatter, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend 
 } from 'recharts';
 import CountUpModule from 'react-countup';
+import { calculateGroupedSales } from '../utils/revenueUtils';
 const CountUp = CountUpModule.default || CountUpModule;
 
 const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(Math.round(val || 0));
@@ -82,23 +83,25 @@ export default function RevenuePrediction({ monthlyData, settings }) {
       let fRevWd = 0;
       let fRevWe = 0;
 
-      if (d.salesByLocation) {
-        Object.keys(d.salesByLocation).forEach(loc => {
-          const group = locationGroups[loc] || 'leisure';
-          if (group === 'leisure') {
-            leisureSales += d.salesByLocation[loc];
-            if (d.salesWdByLocation && d.salesWdByLocation[loc]) lRevWd += d.salesWdByLocation[loc];
-            if (d.salesWeByLocation && d.salesWeByLocation[loc]) lRevWe += d.salesWeByLocation[loc];
-          } else if (group === 'moto') {
-            motoSales += d.salesByLocation[loc];
-            if (d.salesWdByLocation && d.salesWdByLocation[loc]) mRevWd += d.salesWdByLocation[loc];
-            if (d.salesWeByLocation && d.salesWeByLocation[loc]) mRevWe += d.salesWeByLocation[loc];
-          } else if (group === 'fnb') {
-            fnbSales += d.salesByLocation[loc];
-            if (d.salesWdByLocation && d.salesWdByLocation[loc]) fRevWd += d.salesWdByLocation[loc];
-            if (d.salesWeByLocation && d.salesWeByLocation[loc]) fRevWe += d.salesWeByLocation[loc];
-          }
-        });
+      if (d.salesByLocation || d.leisureSalesByLocation) {
+        const salesObj = d.salesByLocation || d.leisureSalesByLocation || {};
+        const calculated = calculateGroupedSales(salesObj, locationGroups);
+        leisureSales = calculated.leisure;
+        motoSales = Number(d.motoTotalRev || d.motoSales || 0);
+        fnbSales = calculated.fnb;
+        
+        const wdObj = d.salesWdByLocation || {};
+        const weObj = d.salesWeByLocation || {};
+        const calcWd = calculateGroupedSales(wdObj, locationGroups);
+        const calcWe = calculateGroupedSales(weObj, locationGroups);
+        
+        lRevWd = calcWd.leisure;
+        lRevWe = calcWe.leisure;
+        fRevWd = calcWd.fnb;
+        fRevWe = calcWe.fnb;
+        
+        mRevWd = Number(d.motoRevWd || 0);
+        mRevWe = Number(d.motoRevWe || 0);
       } else {
         // Fallback for legacy DB
         leisureSales = Number(d.leisureSales || d.totalLeisureSales || 0);
@@ -548,7 +551,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
           
           <div style={{flex: '1 1 240px', background: 'rgba(0,0,0,0.3)', padding: '30px 20px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
             <div>
-              <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '16px'}}>예상 레저 부문 매출</div>
+              <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '16px'}}>예상 레져본부 매출</div>
               <div className="responsive-large-number" style={{color: 'var(--accent-purple)', whiteSpace: 'nowrap'}}>
                 ₩ <CountUp end={expectedLeisureRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
               </div>

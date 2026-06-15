@@ -6,7 +6,7 @@ const SIDEBAR_MENU = [
   { id: 'analytics', icon: PieChart, label: '상관관계 분석' },
   { id: 'division-sales', icon: BarChart2, label: '부문별 매출 분석' },
   { id: 'channel-analysis', icon: PieChart, label: '객실판매채널 심층분석' },
-  { id: 'prediction', icon: TrendingUp, label: '매출 예측 시뮬레이터' },
+  { id: 'prediction', icon: TrendingUp, label: '목표 예약률 기반 매출 시뮬레이터' },
   { 
     id: 'new-business-parent', 
     icon: Building, 
@@ -44,7 +44,7 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }) {
       <aside className="glass-panel sidebar">
         <div className="sidebar-header">
           <div className="logo-icon">S</div>
-          <h2>시너지 리포트</h2>
+          <h2>시너지</h2>
         </div>
         
         <nav className="sidebar-nav">
@@ -109,7 +109,7 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }) {
           }</h1>
           <div className="user-profile">
             <div className="avatar">L</div>
-            <span>레저 부문</span>
+            <span>레져본부</span>
           </div>
         </header>
         

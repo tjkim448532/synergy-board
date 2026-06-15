@@ -16,6 +16,25 @@ const parseSafeInt = (val) => {
   return isNaN(parsed) ? 0 : parsed;
 };
 
+const parseExcelDate = (val) => {
+  if (!val) return null;
+  if (typeof val === 'number') {
+    // 엑셀 시리얼 넘버 (1900년 1월 1일 기준)
+    const d = new Date(Math.round((val - 25569) * 86400 * 1000));
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+  let str = val.toString().trim();
+  // 지원: 2024-05-01, 24. 5. 1, 2024/5/1 등
+  const dateRegex = /^\d{2,4}[-./]\s*\d{1,2}\s*[-./]\s*\d{1,2}$/;
+  if (dateRegex.test(str)) {
+    str = str.replace(/[-./\s]+/g, '-');
+    let [y, m, d] = str.split('-');
+    if (y.length === 2) y = `20${y}`; // 24 -> 2024
+    return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+  }
+  return null;
+};
+
 export default function MonthlyDataForm({ settings }) {
   const [records, setRecords] = useState([]);
   
@@ -134,11 +153,9 @@ export default function MonthlyDataForm({ settings }) {
           const row = data[i];
           if (!row || !row[dateIdx]) continue;
           
-          let dateVal = row[dateIdx].toString().trim();
-          const dateRegex = /^\d{4}[-./]\d{2}[-./]\d{2}$/;
+          let dateVal = parseExcelDate(row[dateIdx]);
           
-          if (dateRegex.test(dateVal)) {
-            dateVal = dateVal.replace(/[./]/g, '-');
+          if (dateVal) {
             const [yyyy, mm, dd] = dateVal.split('-');
             const monthKey = `${yyyy}-${mm}`;
             
@@ -238,6 +255,12 @@ export default function MonthlyDataForm({ settings }) {
            return toast.error('유효한 날짜가 포함된 행을 찾을 수 없습니다.');
         }
 
+        parsedMonthsArray.forEach(m => {
+           if (m.daysCount < 28) {
+              toast.warning(`[${m.yearMonth}] 총 영업일수가 ${m.daysCount}일 입니다. 누락된 행이 없는지 확인하세요.`);
+           }
+        });
+
         setRoomData(parsedMonthsArray);
 
       } catch (err) {
@@ -273,9 +296,9 @@ export default function MonthlyDataForm({ settings }) {
           const row = data[i];
           if (!row) continue;
           
-          const rowStr = row.map(c => c ? c.toString().replace(/\s+/g, '') : '').join('');
-          if ((rowStr.includes('일자') || rowStr.includes('날짜') || rowStr.includes('Date')) && 
-              (rowStr.includes('ROOM') || rowStr.includes('합계'))) {
+          const rowStr = row.map(c => c ? c.toString().replace(/\s+/g, '') : '').join('').toUpperCase();
+          if ((rowStr.includes('일자') || rowStr.includes('날짜') || rowStr.includes('DATE')) && 
+              (rowStr.includes('ROOM') || rowStr.includes('합계') || rowStr.includes('객실'))) {
             
             headerRowIdx = i;
             dataStartIdx = i + 1;
@@ -290,8 +313,8 @@ export default function MonthlyDataForm({ settings }) {
             
             dateIdx = headers.findIndex(h => h.includes('일자') || h.includes('날짜') || h.includes('DATE'));
             sumIdx = headers.findIndex(h => h.includes('합계') || h.includes('TOTAL'));
-            roomIdx = headers.findIndex(h => h === 'ROOM');
-            roomOtherIdx = headers.findIndex(h => h === 'ROOMOTHER');
+            roomIdx = headers.findIndex(h => h === 'ROOM' || h === 'ROOMS' || h.includes('객실'));
+            roomOtherIdx = headers.findIndex(h => h === 'ROOMOTHER' || h.includes('객실수입'));
             
             // If date is not found in header, maybe it's the first column implicitly
             if (dateIdx === -1) dateIdx = 0;
@@ -344,11 +367,9 @@ export default function MonthlyDataForm({ settings }) {
           const row = data[i];
           if (!row || !row[dateIdx]) continue;
           
-          let dateVal = row[dateIdx].toString().trim();
-          const dateRegex = /^\d{4}[-./]\d{2}[-./]\d{2}$/;
+          let dateVal = parseExcelDate(row[dateIdx]);
           
-          if (dateRegex.test(dateVal)) {
-            dateVal = dateVal.replace(/[./]/g, '-');
+          if (dateVal) {
             if (!firstDateStr) firstDateStr = dateVal;
             const [yyyy, mm, dd] = dateVal.split('-');
             const monthKey = `${yyyy}-${mm}`;
@@ -462,7 +483,22 @@ export default function MonthlyDataForm({ settings }) {
     if (!roomData || !Array.isArray(roomData)) return;
     try {
       for (const data of roomData) {
-        await setDoc(doc(db, 'monthly_records', data.yearMonth), data, { merge: true });
+         const existingRecord = records.find(r => r.id === data.yearMonth);
+         let dataToSave = { ...data };
+         
+         if (existingRecord?.crossCheckResult) {
+            const parsedRoom = existingRecord.crossCheckResult.parsedRoom;
+            const dbRoom = data.totalRoomRevenue;
+            const isMatch = Math.abs(dbRoom - parsedRoom) < 1000;
+            dataToSave.crossCheckResult = {
+               ...existingRecord.crossCheckResult,
+               dbRoom,
+               isMatch,
+               hasRecord: true
+            };
+         }
+         
+         await setDoc(doc(db, 'monthly_records', data.yearMonth), dataToSave, { merge: true });
       }
       toast.success(`[${roomData.map(d => d.yearMonth).join(', ')}] 객실 데이터가 성공적으로 저장(병합)되었습니다!`);
       setIsRoomSaved(true);
@@ -475,7 +511,10 @@ export default function MonthlyDataForm({ settings }) {
     if (!leisureData || !Array.isArray(leisureData)) return;
     try {
       for (const data of leisureData) {
-         // monthData object includes crossCheckRoomSum which we don't strictly need in DB, but it's fine.
+         const existingRecord = records.find(r => r.id === data.yearMonth);
+         const dbRoom = existingRecord?.totalRoomRevenue || 0;
+         const isMatch = Math.abs(dbRoom - data.crossCheckRoomSum) < 1000;
+
          const dataToSave = {
             yearMonth: data.yearMonth,
             leisureSales: data.totalLeisureSales,
@@ -484,7 +523,13 @@ export default function MonthlyDataForm({ settings }) {
             leisureSalesByLocation: data.leisureSalesByLocation,
             salesByLocation: data.salesByLocation,
             salesWdByLocation: data.salesWdByLocation,
-            salesWeByLocation: data.salesWeByLocation
+            salesWeByLocation: data.salesWeByLocation,
+            crossCheckResult: {
+               dbRoom: dbRoom,
+               parsedRoom: data.crossCheckRoomSum,
+               isMatch: isMatch,
+               hasRecord: !!existingRecord
+            }
          };
          await setDoc(doc(db, 'monthly_records', data.yearMonth), dataToSave, { merge: true });
       }
@@ -545,6 +590,7 @@ export default function MonthlyDataForm({ settings }) {
         let headerRowIdx = -1;
         let txColIdx = -1;
         let revColIdx = -1;
+        let dateColIdx = -1;
 
         // 헤더 행 찾기 (더 넓은 범위의 키워드 검색)
         for (let i = 0; i < 15; i++) {
@@ -561,6 +607,9 @@ export default function MonthlyDataForm({ settings }) {
               }
               if (cellStr.includes('실매출') || cellStr.includes('결제금액') || cellStr.includes('매출') || cellStr.includes('합계')) {
                 revColIdx = j;
+              }
+              if (cellStr.includes('일자') || cellStr.includes('날짜') || cellStr.includes('DATE')) {
+                dateColIdx = j;
               }
             }
             break;
@@ -591,10 +640,17 @@ export default function MonthlyDataForm({ settings }) {
           if (bestCol !== -1) {
              txColIdx = bestCol;
              headerRowIdx = 1; // 대략 두 번째 줄부터 데이터라고 가정
-             // 매출액 컬럼 추정 (맨 마지막의 숫자 컬럼)
+             // 매출액 컬럼 추정 (맨 마지막의 숫자 컬럼) - 상위 5줄 검사하여 안전하게
              for(let j = data[1].length - 1; j >= 0; j--) {
-                const testVal = parseInt(String(data[1][j] || '').replace(/,/g, ''), 10);
-                if (!isNaN(testVal)) {
+                let valid = false;
+                for(let k=1; k<=5 && k<data.length; k++) {
+                   const testVal = parseInt(String(data[k][j] || '').replace(/,/g, ''), 10);
+                   if (!isNaN(testVal) && testVal > 0) {
+                      valid = true;
+                      break;
+                   }
+                }
+                if (valid) {
                    revColIdx = j;
                    break;
                 }
@@ -608,45 +664,68 @@ export default function MonthlyDataForm({ settings }) {
         }
 
         const dataStartIdx = headerRowIdx + 1;
+        
+        const motoParsedMap = {};
 
         for (let i = dataStartIdx; i < data.length; i++) {
           const row = data[i];
           if (!row) continue;
           
+          let monthKey = motoTargetMonth; // 기본값
+          if (dateColIdx !== -1) {
+             const dVal = parseExcelDate(row[dateColIdx]);
+             if (dVal) {
+                 monthKey = dVal.substring(0, 7); // yyyy-mm
+             }
+          }
+
+          if (!motoParsedMap[monthKey]) {
+             motoParsedMap[monthKey] = {
+                 yearMonth: monthKey,
+                 motoGuestRev: 0,
+                 motoGeneralRev: 0,
+                 motoInternalRev: 0,
+                 motoOtherRev: 0,
+                 motoTotalRev: 0,
+                 breakdown: { guest: {}, general: {}, internal: {}, other: {} }
+             };
+          }
+
+          const mData = motoParsedMap[monthKey];
           const txName = row[txColIdx];
           const rev = parseSafeInt(row[revColIdx]);
+          
           if (typeof txName === 'string') {
-            if (txName.includes('TOTAL') || txName === 'TOTAL') continue;
+            const upperTx = txName.toUpperCase();
+            if (upperTx.includes('TOTAL') || txName.includes('소계') || txName.includes('합계')) continue;
             
             let category = 'other';
             if (txName.includes('콘도') || txName.includes('객실')) {
-              guestRev += rev;
+              mData.motoGuestRev += rev;
               category = 'guest';
             } else if (txName.includes('일반') || txName.includes('증평군민') || txName.includes('MOU') || txName.includes('단체')) {
-              generalRev += rev;
+              mData.motoGeneralRev += rev;
               category = 'general';
             } else if (txName.includes('임직원') || txName.includes('직원동반')) {
-              internalRev += rev;
+              mData.motoInternalRev += rev;
               category = 'internal';
             } else {
-              otherRev += rev;
+              mData.motoOtherRev += rev;
             }
-            totalRev += rev;
+            mData.motoTotalRev += rev;
             
-            if (!breakdown[category][txName]) breakdown[category][txName] = 0;
-            breakdown[category][txName] += rev;
+            if (!mData.breakdown[category][txName]) mData.breakdown[category][txName] = 0;
+            mData.breakdown[category][txName] += rev;
           }
         }
         
-        setMotoData({
-          yearMonth: motoTargetMonth,
-          motoGuestRev: guestRev,
-          motoGeneralRev: generalRev,
-          motoInternalRev: internalRev,
-          motoOtherRev: otherRev,
-          motoTotalRev: totalRev,
-          breakdown
-        });
+        const parsedMonthsArray = Object.values(motoParsedMap);
+        if (parsedMonthsArray.length === 0) {
+            toast.error('유효한 데이터를 찾을 수 없습니다.');
+            return;
+        }
+
+        setMotoData(parsedMonthsArray);
 
       } catch (err) {
         console.error(err);
@@ -657,17 +736,19 @@ export default function MonthlyDataForm({ settings }) {
   };
 
   const handleSaveMotoData = async () => {
-    if (!motoData) return;
+    if (!motoData || !Array.isArray(motoData)) return;
     try {
-      await setDoc(doc(db, 'monthly_records', motoData.yearMonth), {
-        motoGuestRev: motoData.motoGuestRev,
-        motoGeneralRev: motoData.motoGeneralRev,
-        motoInternalRev: motoData.motoInternalRev,
-        motoOtherRev: motoData.motoOtherRev,
-        motoTotalRev: motoData.motoTotalRev,
-        motoBreakdown: motoData.breakdown
-      }, { merge: true });
-      toast.success(`[${motoData.yearMonth}] 모토아레나 데이터가 성공적으로 저장(병합)되었습니다!`);
+      for (const mData of motoData) {
+         await setDoc(doc(db, 'monthly_records', mData.yearMonth), {
+           motoGuestRev: mData.motoGuestRev,
+           motoGeneralRev: mData.motoGeneralRev,
+           motoInternalRev: mData.motoInternalRev,
+           motoOtherRev: mData.motoOtherRev,
+           motoTotalRev: mData.motoTotalRev,
+           motoBreakdown: mData.breakdown
+         }, { merge: true });
+      }
+      toast.success(`총 ${motoData.length}개월의 모토아레나 데이터가 성공적으로 저장(병합)되었습니다!`);
       setIsMotoSaved(true);
     } catch (e) {
       toast.error('저장 실패: ' + e.message);
@@ -889,6 +970,52 @@ export default function MonthlyDataForm({ settings }) {
           )}
         </div>
 
+      </div>
+
+      {/* Health Check 관제탑 */}
+      <div className="glass-panel" style={{marginBottom: '20px', padding: '24px', border: '1px solid var(--accent-blue)'}}>
+        <h3 style={{marginBottom: '16px', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px'}}>
+          📊 월별 데이터 무결성 검증 (Health Check)
+        </h3>
+        <div style={{display: 'flex', gap: '12px', flexWrap: 'wrap'}}>
+          {records.length === 0 ? (
+            <div style={{color: 'var(--text-muted)'}}>등록된 데이터가 없습니다.</div>
+          ) : (
+            [...records].sort((a,b) => b.id.localeCompare(a.id)).map(r => {
+               const hasA = r.daysCount > 0;
+               const hasB = r.leisureSales > 0 || r.leisureRevWd > 0;
+               const hasC = r.motoTotalRev > 0;
+               const check = r.crossCheckResult;
+               const isMatch = check?.isMatch;
+               
+               let statusColor = 'var(--accent-red)';
+               if (hasA && hasB && hasC && isMatch) statusColor = 'var(--accent-emerald)';
+               else if (hasA && hasB && hasC && !isMatch) statusColor = 'var(--accent-gold)';
+               else if (hasA || hasB || hasC) statusColor = 'var(--accent-gold)';
+               
+               return (
+                 <div key={r.id} style={{background: 'rgba(0,0,0,0.3)', padding: '12px', borderRadius: '8px', borderLeft: `4px solid ${statusColor}`, width: '220px'}}>
+                   <div style={{fontWeight: 'bold', marginBottom: '8px'}}>{r.id}</div>
+                   <div style={{fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '4px'}}>
+                     <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                       <span>A(객실):</span> <span>{hasA ? '🟢' : '🔴'}</span>
+                     </div>
+                     <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                       <span>B(부대):</span> <span>{hasB ? '🟢' : '🔴'}</span>
+                     </div>
+                     <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                       <span>C(모토):</span> <span>{hasC ? '🟢' : '🔴'}</span>
+                     </div>
+                     <div style={{display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '4px', marginTop: '2px'}}>
+                       <span>Cross-check:</span> 
+                       <span>{!hasB ? '➖' : (isMatch ? '🟢 일치' : '🔴 오차')}</span>
+                     </div>
+                   </div>
+                 </div>
+               );
+            })
+          )}
+        </div>
       </div>
 
       {/* History Table */}

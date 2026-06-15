@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { 
   BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer 
 } from 'recharts';
+import { calculateGroupedSales } from '../utils/revenueUtils';
 
 const CHART_COLORS = {
   leisure: 'var(--accent-emerald)',
@@ -13,7 +14,7 @@ const CHART_COLORS = {
 };
 
 const DIVISION_NAMES = {
-  leisure: '레저 부문',
+  leisure: '레져본부',
   fnb: '식음 부문',
   moto: '모토아레나',
   golf: '골프 부문',
@@ -47,22 +48,21 @@ export default function DivisionSales({ monthlyData, settings }) {
       let excludeSales = 0;
       let roomSales = month.totalRoomRevenue || month.roomRevenue || 0;
 
-      // Group sales by location
-      if (month.salesByLocation) {
-        Object.keys(month.salesByLocation).forEach(loc => {
-          const group = (settings.locationGroups && settings.locationGroups[loc]) || 'leisure';
-          const sales = month.salesByLocation[loc] || 0;
-          
-          if (group === 'leisure') leisureSales += sales;
-          else if (group === 'fnb') fnbSales += sales;
-          else if (group === 'moto') motoSales += sales;
-          else if (group === 'golf') golfSales += sales;
-          else if (group === 'other') otherSales += sales;
-          else if (group === 'exclude') excludeSales += sales;
-        });
+      // Group sales by location using unified logic
+      if (month.salesByLocation || month.leisureSalesByLocation) {
+        const salesObj = month.salesByLocation || month.leisureSalesByLocation || {};
+        const calculated = calculateGroupedSales(salesObj, settings.locationGroups || {});
+        
+        leisureSales = calculated.leisure || 0;
+        fnbSales = calculated.fnb || 0;
+        golfSales = calculated.golf || 0;
+        otherSales = calculated.other || 0;
+        motoSales = Number(month.motoTotalRev || month.motoSales || 0); // Override Moto
       } else {
-        // Fallback for old data structure if needed
-        leisureSales = Number(month.totalLeisureSales || month.leisureSales || 0);
+        // Fallback for legacy DB
+        leisureSales = Number(month.leisureSales || month.totalLeisureSales || 0);
+        fnbSales = Number(month.fnbSales || month.totalFnbSales || 0);
+        motoSales = Number(month.motoSales || month.motoTotalRev || month.totalMotoSales || 0);
       }
 
       // Add to cumulative totals

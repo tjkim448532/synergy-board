@@ -76,7 +76,7 @@ export default function ChannelAnalysis({ monthlyData, settings }) {
     groups.delete('golf');
     groups.delete('other');
 
-    if (groups.has('leisure')) config.leisure = { title: '레저 부문', dataKey: 'leisureSales', color: 'var(--accent-purple)' };
+    if (groups.has('leisure')) config.leisure = { title: '레져본부', dataKey: 'leisureSales', color: 'var(--accent-purple)' };
     if (groups.has('fnb')) config.fnb = { title: '식음 부문', dataKey: 'fnbSales', color: 'var(--accent-blue)' };
     if (groups.has('moto')) config.moto = { title: '모토아레나', dataKey: 'motoSales', color: 'var(--accent-gold)' };
     if (groups.has('golf')) config.golf = { title: '골프 부문', dataKey: 'golfSales', color: 'var(--accent-purple)' };
@@ -407,137 +407,9 @@ export default function ChannelAnalysis({ monthlyData, settings }) {
       case 'overview':
         return (
           <>
-            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px'}}>
-              {/* Pie Chart */}
-              <div style={{width: '100%', height: '380px', display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 0, minHeight: 0}}>
-                <h4 style={{margin: '0 0 10px 0', color: 'var(--text-main)'}}>매출 비중</h4>
-                <ResponsiveContainer width="99%" height="100%" minWidth={1} minHeight={1}>
-                  <PieChart>
-                    <Pie
-                      data={channelData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
-                        if (percent < 0.05) return null; // 5% 미만은 라벨 숨김
-                        const RADIAN = Math.PI / 180;
-                        const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-                        const x = cx + radius * Math.cos(-midAngle * RADIAN);
-                        const y = cy + radius * Math.sin(-midAngle * RADIAN);
-                        return (
-                          <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize="12px" fontWeight="bold" style={{ textShadow: '0px 0px 4px rgba(0,0,0,0.8)' }}>
-                            {`${(percent * 100).toFixed(0)}%`}
-                          </text>
-                        );
-                      }}
-                      outerRadius={120}
-                      innerRadius={70}
-                      cy="45%"
-                      dataKey="value"
-                      stroke="rgba(255,255,255,0.1)"
-                    >
-                      {channelData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <RechartsTooltip 
-                      contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)'}}
-                      formatter={(val) => `₩${formatCurrency(val)}`} 
-                    />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-
-              {/* ADR Table */}
-              <div style={{width: '100%', display: 'flex', flexDirection: 'column'}}>
-                <h4 style={{margin: '0 0 10px 0', color: 'var(--text-main)', textAlign: 'center'}}>채널별 평형 객단가(ADR)</h4>
-                <div className="table-scroll-container hide-on-mobile" style={{background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid var(--border-glass)'}}>
-                  <table style={{width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'right'}}>
-                    <thead>
-                      <tr style={{background: 'rgba(255,255,255,0.05)'}}>
-                        <th style={{padding: '12px', textAlign: 'left', borderBottom: '1px solid var(--border-glass)'}}>채널명</th>
-                        <th style={{padding: '12px', borderBottom: '1px solid var(--border-glass)'}}>16평</th>
-                        <th style={{padding: '12px', borderBottom: '1px solid var(--border-glass)'}}>35평</th>
-                        <th style={{padding: '12px', borderBottom: '1px solid var(--border-glass)'}}>51평</th>
-                        <th style={{padding: '12px', color: 'var(--accent-gold)', borderBottom: '1px solid var(--border-glass)'}}>종합(평균)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {channelAdrData.map((row) => (
-                        <tr key={row.channel} style={{borderBottom: '1px solid rgba(255,255,255,0.05)'}}>
-                          <td style={{padding: '12px', textAlign: 'left', fontWeight: 'bold'}}>{row.channel}</td>
-                          <td style={{padding: '12px'}}>{row['16평'] ? `₩${formatCurrency(row['16평'])}` : '-'}</td>
-                          <td style={{padding: '12px'}}>{row['35평'] ? `₩${formatCurrency(row['35평'])}` : '-'}</td>
-                          <td style={{padding: '12px'}}>{row['51평'] ? `₩${formatCurrency(row['51평'])}` : '-'}</td>
-                          <td style={{padding: '12px', color: 'var(--accent-gold)', fontWeight: 'bold'}}>
-                            {row['전체'] ? `₩${formatCurrency(row['전체'])}` : '-'}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-            {/* 거시적 상관관계 */}
-            <div style={{marginTop: '40px'}}>
-              <h3 style={{marginBottom: '20px'}}>채널 비중 ↔ 부대시설 및 전체매출 거시적 상관관계</h3>
-              <p style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '15px'}}>특정 예약 채널의 매출 비중이 높았던 월에 각 영업장 및 전체매출이 얼마나 함께 상승했는지를 보여주는 상관계수입니다. (0.4 이상 뚜렷한 연관, 0.7 이상 매우 강한 연관)</p>
-              <div className="table-scroll-container hide-on-mobile" style={{background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid var(--border-glass)'}}>
-                <table style={{width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'center'}}>
-                  <thead>
-                    <tr style={{background: 'rgba(255,255,255,0.05)'}}>
-                      <th style={{padding: '12px', textAlign: 'left', borderBottom: '1px solid var(--border-glass)'}}>채널명</th>
-                      {Object.entries(divisionConfig).map(([key, conf]) => (
-                        <th key={key} style={{padding: '12px', borderBottom: '1px solid var(--border-glass)'}}>{conf.title} (상관도)</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {['온라인', '세미나', '휴양소', '예약실', '홈페이지'].map((channel, idx) => {
-                      const channelMonthlyRev = processedDataWithSales.map(d => {
-                        let total = 0;
-                        if (d.rawRoomRecords) {
-                          d.rawRoomRecords.forEach(r => {
-                            if (normalizeMarketType(r.marketType) === channel) total += r.revenue || 0;
-                          });
-                        }
-                        return total;
-                      });
-
-                      const correlations = {};
-                      Object.entries(divisionConfig).forEach(([key, conf]) => {
-                        correlations[key] = calculateCorrelation(channelMonthlyRev, processedDataWithSales.map(d => d[conf.dataKey] || 0)) || 0;
-                      });
-
-                      const getColor = (r) => {
-                        if (r >= 0.7) return 'var(--accent-emerald)';
-                        if (r >= 0.4) return 'var(--accent-gold)';
-                        if (r <= -0.4) return 'var(--accent-red)';
-                        return 'var(--text-main)';
-                      };
-
-                      return (
-                        <tr key={channel} style={{borderBottom: '1px solid rgba(255,255,255,0.05)'}}>
-                          <td style={{padding: '12px', textAlign: 'left', fontWeight: 'bold'}}>{channel}</td>
-                          {Object.entries(divisionConfig).map(([key, conf]) => (
-                            <td key={key} style={{padding: '12px', color: getColor(correlations[key]), fontWeight: correlations[key] >= 0.4 ? 'bold' : 'normal'}}>
-                              {correlations[key].toFixed(2)}
-                            </td>
-                          ))}
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
             {/* 객실 투숙객 유형 정밀 분석 (회원 vs 일반) */}
             {memberStats.available && (
-              <div className="glass-panel" style={{padding: '24px', borderLeft: '4px solid var(--accent-blue)', display: 'flex', flexDirection: 'column', gap: '20px', gridColumn: '1 / -1'}}>
+              <div className="glass-panel" style={{marginBottom: '40px', padding: '24px', borderLeft: '4px solid var(--accent-blue)', display: 'flex', flexDirection: 'column', gap: '20px', gridColumn: '1 / -1'}}>
                 <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px'}}>
                   <div>
                     <h3 style={{margin: '0 0 8px 0', color: 'var(--accent-blue)', display: 'flex', alignItems: 'center', gap: '8px'}}>
@@ -616,6 +488,134 @@ export default function ChannelAnalysis({ monthlyData, settings }) {
                 </div>
               </div>
             )}
+            {/* 거시적 상관관계 */}
+            <div style={{marginBottom: '40px'}}>
+              <h3 style={{marginBottom: '20px'}}>채널 비중 ↔ 부대시설 및 전체매출 거시적 상관관계</h3>
+              <p style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '15px'}}>특정 예약 채널의 매출 비중이 높았던 월에 각 영업장 및 전체매출이 얼마나 함께 상승했는지를 보여주는 상관계수입니다. (0.4 이상 뚜렷한 연관, 0.7 이상 매우 강한 연관)</p>
+              <div className="table-scroll-container hide-on-mobile" style={{background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid var(--border-glass)'}}>
+                <table style={{width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'center'}}>
+                  <thead>
+                    <tr style={{background: 'rgba(255,255,255,0.05)'}}>
+                      <th style={{padding: '12px', textAlign: 'left', borderBottom: '1px solid var(--border-glass)'}}>채널명</th>
+                      {Object.entries(divisionConfig).map(([key, conf]) => (
+                        <th key={key} style={{padding: '12px', borderBottom: '1px solid var(--border-glass)'}}>{conf.title} (상관도)</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {['온라인', '세미나', '휴양소', '예약실', '홈페이지'].map((channel, idx) => {
+                      const channelMonthlyRev = processedDataWithSales.map(d => {
+                        let total = 0;
+                        if (d.rawRoomRecords) {
+                          d.rawRoomRecords.forEach(r => {
+                            if (normalizeMarketType(r.marketType) === channel) total += r.revenue || 0;
+                          });
+                        }
+                        return total;
+                      });
+
+                      const correlations = {};
+                      Object.entries(divisionConfig).forEach(([key, conf]) => {
+                        correlations[key] = calculateCorrelation(channelMonthlyRev, processedDataWithSales.map(d => d[conf.dataKey] || 0)) || 0;
+                      });
+
+                      const getColor = (r) => {
+                        if (r >= 0.7) return 'var(--accent-emerald)';
+                        if (r >= 0.4) return 'var(--accent-gold)';
+                        if (r <= -0.4) return 'var(--accent-red)';
+                        return 'var(--text-main)';
+                      };
+
+                      return (
+                        <tr key={channel} style={{borderBottom: '1px solid rgba(255,255,255,0.05)'}}>
+                          <td style={{padding: '12px', textAlign: 'left', fontWeight: 'bold'}}>{channel}</td>
+                          {Object.entries(divisionConfig).map(([key, conf]) => (
+                            <td key={key} style={{padding: '12px', color: getColor(correlations[key]), fontWeight: correlations[key] >= 0.4 ? 'bold' : 'normal'}}>
+                              {correlations[key].toFixed(2)}
+                            </td>
+                          ))}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px'}}>
+              {/* Pie Chart */}
+              <div style={{width: '100%', height: '380px', display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 0, minHeight: 0}}>
+                <h4 style={{margin: '0 0 10px 0', color: 'var(--text-main)'}}>매출 비중</h4>
+                <ResponsiveContainer width="99%" height="100%" minWidth={1} minHeight={1}>
+                  <PieChart>
+                    <Pie
+                      data={channelData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+                        if (percent < 0.05) return null; // 5% 미만은 라벨 숨김
+                        const RADIAN = Math.PI / 180;
+                        const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+                        const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                        const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                        return (
+                          <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize="12px" fontWeight="bold" style={{ textShadow: '0px 0px 4px rgba(0,0,0,0.8)' }}>
+                            {`${(percent * 100).toFixed(0)}%`}
+                          </text>
+                        );
+                      }}
+                      outerRadius={120}
+                      innerRadius={70}
+                      cy="45%"
+                      dataKey="value"
+                      stroke="rgba(255,255,255,0.1)"
+                    >
+                      {channelData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <RechartsTooltip 
+                      contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)'}}
+                      formatter={(val) => `₩${formatCurrency(val)}`} 
+                    />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* ADR Table */}
+              <div style={{width: '100%', display: 'flex', flexDirection: 'column'}}>
+                <h4 style={{margin: '0 0 10px 0', color: 'var(--text-main)', textAlign: 'center'}}>채널별 평형 객단가(ADR)</h4>
+                <div className="table-scroll-container hide-on-mobile" style={{background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid var(--border-glass)'}}>
+                  <table style={{width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'right'}}>
+                    <thead>
+                      <tr style={{background: 'rgba(255,255,255,0.05)'}}>
+                        <th style={{padding: '12px', textAlign: 'left', borderBottom: '1px solid var(--border-glass)'}}>채널명</th>
+                        <th style={{padding: '12px', borderBottom: '1px solid var(--border-glass)'}}>16평</th>
+                        <th style={{padding: '12px', borderBottom: '1px solid var(--border-glass)'}}>35평</th>
+                        <th style={{padding: '12px', borderBottom: '1px solid var(--border-glass)'}}>51평</th>
+                        <th style={{padding: '12px', color: 'var(--accent-gold)', borderBottom: '1px solid var(--border-glass)'}}>종합(평균)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {channelAdrData.map((row) => (
+                        <tr key={row.channel} style={{borderBottom: '1px solid rgba(255,255,255,0.05)'}}>
+                          <td style={{padding: '12px', textAlign: 'left', fontWeight: 'bold'}}>{row.channel}</td>
+                          <td style={{padding: '12px'}}>{row['16평'] ? `₩${formatCurrency(row['16평'])}` : '-'}</td>
+                          <td style={{padding: '12px'}}>{row['35평'] ? `₩${formatCurrency(row['35평'])}` : '-'}</td>
+                          <td style={{padding: '12px'}}>{row['51평'] ? `₩${formatCurrency(row['51평'])}` : '-'}</td>
+                          <td style={{padding: '12px', color: 'var(--accent-gold)', fontWeight: 'bold'}}>
+                            {row['전체'] ? `₩${formatCurrency(row['전체'])}` : '-'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
           </>
         );
 

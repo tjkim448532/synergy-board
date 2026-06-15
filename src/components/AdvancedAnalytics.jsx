@@ -6,6 +6,7 @@ import {
 import CountUpModule from 'react-countup';
 const CountUp = CountUpModule.default || CountUpModule;
 import { isHoliday } from 'korean-holidays';
+import { calculateGroupedSales } from '../utils/revenueUtils';
 
 // 피어슨 상관계수 계산 함수
 function calculateCorrelation(xArray, yArray) {
@@ -103,8 +104,8 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       all: { title: '전체통합', dataKey: 'totalSales', color: 'var(--accent-emerald)' }
     };
     
-    const predefinedTitles = {
-        leisure: '레저 부문',
+    const groupLabels = {
+        leisure: '레져본부',
         fnb: '식음 부문',
         moto: '모토아레나',
         golf: '골프 부문',
@@ -131,7 +132,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     let colorIdx = 0;
     Array.from(groups).forEach(group => {
       config[group] = {
-        title: predefinedTitles[group] || (group + ' 부문'),
+        title: groupLabels[group] || `${group.toUpperCase()} 부문`,
         dataKey: group + 'Sales',
         color: predefinedColors[group] || colors[colorIdx++ % colors.length]
       };
@@ -169,17 +170,15 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
 
       // 동적 매출 합산 로직
       const locationGroups = settings.locationGroups || {};
-      const groupSales = { leisure: 0, moto: 0, fnb: 0, golf: 0, other: 0 };
+      let groupSales = { leisure: 0, moto: 0, fnb: 0, golf: 0, other: 0 };
       let totalSales = 0;
 
-      if (d.salesByLocation) {
-        Object.keys(d.salesByLocation).forEach(loc => {
-          const group = locationGroups[loc] || 'leisure';
-          groupSales[group] = (groupSales[group] || 0) + d.salesByLocation[loc];
-          if (group !== 'exclude') {
-            totalSales += d.salesByLocation[loc];
-          }
-        });
+      if (d.salesByLocation || d.leisureSalesByLocation) {
+        const salesObj = d.salesByLocation || d.leisureSalesByLocation || {};
+        const calculated = calculateGroupedSales(salesObj, locationGroups);
+        groupSales = { ...calculated };
+        groupSales.moto = Number(d.motoTotalRev || d.motoSales || 0);
+        totalSales = groupSales.leisure + groupSales.moto + groupSales.fnb;
       } else {
         // Fallback for legacy DB
         groupSales.leisure = Number(d.leisureSales || d.totalLeisureSales || 0);
@@ -194,7 +193,6 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       const golfSales = groupSales.golf || 0;
       const otherSales = groupSales.other || 0;
 
-      // (회원 분석 로직 삭제됨 - ChannelAnalysis로 이동)
 
       return {
         ...d,
@@ -230,7 +228,6 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     }, 0);
   }, [filteredProcessedData]);
 
-  // (회원 통계 계산 로직 삭제됨 - ChannelAnalysis로 이동)
 
   // 선택된 부문의 전체 상관계수 계산
   const activeGlobalCorrelation = useMemo(() => {

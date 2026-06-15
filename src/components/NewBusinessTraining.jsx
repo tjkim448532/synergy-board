@@ -3,6 +3,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, L
 import CountUpModule from 'react-countup';
 const CountUp = CountUpModule.default || CountUpModule;
 import { Building2, Calculator, ArrowRight } from 'lucide-react';
+import { calculateGroupedSales } from '../utils/revenueUtils';
 
 const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(Math.round(val || 0));
 
@@ -36,25 +37,17 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
       
       let leisureSales = 0;
       let fnbSales = 0;
-      
-      if (d.salesByLocation) {
-        Object.keys(d.salesByLocation).forEach(loc => {
-          const group = locationGroups[loc] || 'leisure';
-          if (group === 'leisure') leisureSales += d.salesByLocation[loc];
-          else if (group === 'fnb') fnbSales += d.salesByLocation[loc];
-        });
-      } else {
-        leisureSales += Number(d.totalLeisureSales || d.leisureSales || 0);
-        fnbSales += Number(d.totalFnbSales || d.fnbSales || 0);
-      }
-      
       let motoSales = 0;
-      if (d.salesByLocation) {
-        Object.keys(d.salesByLocation).forEach(loc => {
-          const group = locationGroups[loc] || 'leisure';
-          if (group === 'moto') motoSales += d.salesByLocation[loc];
-        });
+      
+      if (d.salesByLocation || d.leisureSalesByLocation) {
+        const salesObj = d.salesByLocation || d.leisureSalesByLocation || {};
+        const calculated = calculateGroupedSales(salesObj, locationGroups);
+        leisureSales = calculated.leisure || 0;
+        fnbSales = calculated.fnb || 0;
+        motoSales = calculated.moto || 0;
       } else {
+        leisureSales = Number(d.leisureSales || d.totalLeisureSales || 0);
+        fnbSales = Number(d.fnbSales || d.totalFnbSales || 0);
         motoSales = Number(d.motoSales || d.motoTotalRev || d.totalMotoSales || 0);
       }
 

@@ -286,7 +286,7 @@ export default function Settings({ monthlyData }) {
       return;
     }
 
-    if (window.confirm(`📊 [AI 데이터 기반 추정 결과]\n\n업로드된 전체 엑셀 데이터를 선형 회귀 분석한 결과, 다음의 투숙객 매출 비중(Capture Rate)이 가장 통계적으로 유력합니다:\n\n- 레저 부문 투숙객 비중: ${estLeisure}%\n- 식음 부문 투숙객 비중: ${estFnb}%\n- 모토아레나 투숙객 비중: ${estMoto}%\n\n이 추정값을 설정에 덮어쓰고 적용하시겠습니까?`)) {
+    if (window.confirm(`📊 [AI 데이터 기반 추정 결과]\n\n업로드된 전체 엑셀 데이터를 선형 회귀 분석한 결과, 다음의 투숙객 매출 비중(Capture Rate)이 가장 통계적으로 유력합니다:\n\n- 레져본부 투숙객 비중: ${estLeisure}%\n- 식음 부문 투숙객 비중: ${estFnb}%\n- 모토아레나 투숙객 비중: ${estMoto}%\n\n이 추정값을 설정에 덮어쓰고 적용하시겠습니까?`)) {
       setSettings(prev => ({
         ...prev,
         captureRateLeisure: estLeisure,
@@ -456,7 +456,7 @@ export default function Settings({ monthlyData }) {
       >
         <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
           <div className="form-group" style={{flex: 1, minWidth: '150px'}}>
-            <label htmlFor="captureRateLeisure">레저 부문 투숙객 비중 (%)</label>
+            <label htmlFor="captureRateLeisure">레져본부 투숙객 비중 (%)</label>
             <input 
               type="number" 
               id="captureRateLeisure" 
@@ -576,7 +576,7 @@ export default function Settings({ monthlyData }) {
                           checked={currentGroup === 'leisure'}
                           onChange={() => handleLocationGroupChange(loc, 'leisure')}
                           style={{accentColor: 'var(--accent-emerald)'}}
-                        /> 레저 부문
+                        /> 레져본부
                       </label>
                       <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', whiteSpace: 'nowrap', color: currentGroup === 'fnb' ? 'var(--accent-blue)' : 'var(--text-muted)'}}>
                         <input 
@@ -639,7 +639,7 @@ export default function Settings({ monthlyData }) {
               </h4>
               <div style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>
                 {[
-                  { id: 'leisure', title: '레저 부문', color: 'var(--accent-emerald)' },
+                  { id: 'leisure', title: '레져본부', color: 'var(--accent-emerald)' },
                   { id: 'fnb', title: '식음 부문', color: 'var(--accent-blue)' },
                   { id: 'moto', title: '모토아레나', color: 'var(--accent-gold)' },
                   { id: 'golf', title: '골프 부문', color: '#22c55e' },
@@ -756,7 +756,7 @@ export default function Settings({ monthlyData }) {
             </div>
           </div>
           <div style={{background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '8px'}}>
-            <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-muted)'}}>레저 부문 가동률</label>
+            <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-muted)'}}>레져본부 가동률</label>
             <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
               <input 
                 type="number" 
