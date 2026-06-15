@@ -309,7 +309,7 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
         <div className="glass-panel" style={{padding: '32px', minWidth: 0}}>
           <h3 style={{margin: '0 0 16px 0', fontSize: '16px', color: 'var(--text-muted)'}}>예상 매출 비중</h3>
           <div style={{width: '100%', height: '350px', minWidth: 0, minHeight: 0}}>
-            <ResponsiveContainer width="99%" height="100%" minWidth={0} minHeight={0}>
+            <ResponsiveContainer width="99%" height="100%" minWidth={1} minHeight={1}>
               <PieChart>
                 <Pie
                   data={chartData}

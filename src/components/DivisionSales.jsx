@@ -139,7 +139,7 @@ export default function DivisionSales({ monthlyData, settings }) {
           {viewMode === 'monthly' ? '월별 부문 매출 추이' : '월 누적 부문 매출 추이'}
         </h3>
         <div style={{height: '400px', width: '100%', minWidth: 0, minHeight: 0}}>
-          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+          <ResponsiveContainer width="99%" height="100%" minWidth={1} minHeight={1}>
             {viewMode === 'monthly' ? (
               <BarChart data={processedData} margin={{ top: 20, right: 30, left: 60, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />

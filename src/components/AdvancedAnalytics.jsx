@@ -784,7 +784,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
           </p>
         </div>
         <div style={{width: '100%', height: '400px', minWidth: 0, minHeight: 0}}>
-          <ResponsiveContainer width="99%" height="100%" minWidth={0} minHeight={0}>
+          <ResponsiveContainer width="99%" height="100%" minWidth={1} minHeight={1}>
             <LineChart data={filteredProcessedData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
               <XAxis dataKey="yearMonth" stroke="var(--text-muted)" />
@@ -831,7 +831,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
           </div>
           
           <div style={{flex: 1, minHeight: 0, minWidth: 0, width: '100%', height: '300px'}}>
-            <ResponsiveContainer width="99%" height="100%" minWidth={0} minHeight={0}>
+            <ResponsiveContainer width="99%" height="100%" minWidth={1} minHeight={1}>
               <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                 <XAxis type="number" dataKey={selectedRoomType === 'all' ? 'totalSold' : selectedRoomType} name="객실 판매(실)" stroke="var(--text-muted)" />

@@ -555,7 +555,9 @@ export default function Settings({ monthlyData }) {
         isExpanded={expandedSections.location}
         onToggle={() => toggleSection('location')}
       >
-        <div style={{background: 'rgba(255,255,255,0.05)', borderRadius: '12px', border: '1px solid var(--border-glass)', padding: '20px'}}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '24px', alignItems: 'start' }}>
+          {/* Left: Editor */}
+          <div style={{background: 'rgba(255,255,255,0.05)', borderRadius: '12px', border: '1px solid var(--border-glass)', padding: '20px'}}>
           {uniqueLocations.length === 0 ? (
             <div style={{color: 'var(--text-muted)', textAlign: 'center'}}>데이터가 아직 업로드되지 않았습니다.</div>
           ) : (
@@ -625,6 +627,49 @@ export default function Settings({ monthlyData }) {
                   </div>
                 );
               })}
+            </div>
+          )}
+          </div>
+
+          {/* Right: Preview Pane */}
+          {uniqueLocations.length > 0 && (
+            <div style={{background: 'rgba(0,0,0,0.3)', borderRadius: '12px', border: '1px solid var(--border-glass)', padding: '20px', position: 'sticky', top: '20px'}}>
+              <h4 style={{marginTop: 0, marginBottom: '16px', color: 'var(--text-bright)', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '8px'}}>
+                👁️ 그룹핑 결과 미리보기
+              </h4>
+              <div style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>
+                {[
+                  { id: 'leisure', title: '레저 부문', color: 'var(--accent-emerald)' },
+                  { id: 'fnb', title: '식음 부문', color: 'var(--accent-blue)' },
+                  { id: 'moto', title: '모토아레나', color: 'var(--accent-gold)' },
+                  { id: 'golf', title: '골프 부문', color: '#22c55e' },
+                  { id: 'other', title: '기타 부문', color: '#64748b' },
+                  { id: 'exclude', title: '제외됨', color: '#ef4444' }
+                ].map(group => {
+                  const items = uniqueLocations.filter(loc => {
+                    const g = (settings.locationGroups && settings.locationGroups[loc]) || 'leisure';
+                    return g === group.id;
+                  });
+                  
+                  if (items.length === 0) return null;
+                  
+                  return (
+                    <div key={group.id}>
+                      <div style={{fontSize: '13px', color: group.color, fontWeight: 'bold', marginBottom: '8px', display: 'flex', justifyContent: 'space-between'}}>
+                        <span>{group.title}</span>
+                        <span style={{background: `${group.color}20`, padding: '2px 8px', borderRadius: '10px', fontSize: '11px'}}>{items.length}곳</span>
+                      </div>
+                      <div style={{display: 'flex', flexWrap: 'wrap', gap: '6px'}}>
+                        {items.map(item => (
+                          <span key={item} style={{background: 'rgba(255,255,255,0.05)', border: `1px solid ${group.color}40`, padding: '4px 8px', borderRadius: '4px', fontSize: '12px', color: 'var(--text-main)'}}>
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>

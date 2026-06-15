@@ -235,3 +235,42 @@ body {
   color: white;
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
 }
+
+/* Data Table (Division Sales & Others) */
+.table-scroll-container {
+  overflow-x: auto;
+  margin-top: 10px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+
+.data-table th, .data-table td {
+  padding: 16px 20px; /* Increased padding for better spacing */
+  text-align: right;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.data-table th {
+  padding-bottom: 20px;
+  font-weight: 600;
+  color: var(--text-main);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.data-table th:first-child,
+.data-table td:first-child {
+  text-align: left;
+}
+
+/* Hover effect for table rows */
+.data-table tbody tr {
+  transition: background 0.2s;
+}
+
+.data-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
