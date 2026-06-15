@@ -99,7 +99,7 @@ export default function LeisureUtilization({ monthlyData, settings }) {
       <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', marginBottom: '32px'}}>
         <div className="glass-panel" style={{padding: '24px'}}>
           <div style={{color: 'var(--text-muted)', fontSize: '14px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px'}}>
-            <Users size={16} /> 총 레저본부 이용객
+            <Users size={16} /> 레저본부 누적 이용 횟수(연인원)
           </div>
           <div style={{fontSize: '32px', fontWeight: 'bold', color: 'var(--text-main)'}}>
             {totalLeisureVisitors.toLocaleString()}명
