@@ -66,18 +66,45 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
       totMotoGuest += mGuestRev;
       totMotoTotal += mTotalRev;
       totFnb += fnbSales;
+
+      if (totalSold > 0) {
+         if (leisureSales > 0) pointsLeisure.push({ x: totalSold, y: leisureSales });
+         if (mGuestRev > 0) pointsMoto.push({ x: totalSold, y: mGuestRev });
+         if (fnbSales > 0) pointsFnb.push({ x: totalSold, y: fnbSales });
+      }
     });
+
+    const calcR = (points) => {
+      const n = points.length;
+      if (n < 2) return 0;
+      const sumX = points.reduce((acc, p) => acc + p.x, 0);
+      const sumY = points.reduce((acc, p) => acc + p.y, 0);
+      const sumXY = points.reduce((acc, p) => acc + (p.x * p.y), 0);
+      const sumX2 = points.reduce((acc, p) => acc + (p.x * p.x), 0);
+      const sumY2 = points.reduce((acc, p) => acc + (p.y * p.y), 0);
+      const numerator = (n * sumXY) - (sumX * sumY);
+      const denomInside = (n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY);
+      if (denomInside <= 0) return 0;
+      return numerator / Math.sqrt(denomInside);
+    };
+
+    const validLeisure = calcR(pointsLeisure) >= 0.5;
+    const validMoto = calcR(pointsMoto) >= 0.5;
+    const validFnb = calcR(pointsFnb) >= 0.5;
 
     return {
       avgAdr: totSold > 0 ? totRev / totSold : 150000,
-      leisurePerRoom: totSold > 0 ? totLeisure / totSold : 0,
-      motoPerRoom: totSold > 0 ? totMotoGuest / totSold : 0,
-      fnbPerRoom: totSold > 0 ? totFnb / totSold : 0,
+      leisurePerRoom: (totSold > 0 && validLeisure) ? totLeisure / totSold : 0,
+      motoPerRoom: (totSold > 0 && validMoto) ? totMotoGuest / totSold : 0,
+      fnbPerRoom: (totSold > 0 && validFnb) ? totFnb / totSold : 0,
       totRev,
       totLeisure,
       totMoto: totMotoTotal,
       totFnb,
-      monthsCount: monthlyData.length || 1
+      monthsCount: monthlyData.length || 1,
+      validLeisure,
+      validMoto,
+      validFnb
     };
   }, [monthlyData, settings]);
 
@@ -268,8 +295,9 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
                 <span>식음(F&B) 매출</span>
               </div>
               <div style={{textAlign: 'right'}}>
-                <strong style={{fontSize: '18px', color: fnbSim.isCapped ? '#ef4444' : 'inherit'}}>₩{formatCurrency(expectedFnbRev)}</strong>
-                {fnbSim.isCapped && <div style={{fontSize: '11px', color: '#ef4444', marginTop: '4px'}}>*Capa 상한 도달 (초과분 버림)</div>}
+                <strong style={{fontSize: '18px', color: !baseMetrics.validFnb ? 'var(--text-muted)' : fnbSim.isCapped ? '#ef4444' : 'inherit'}}>₩{formatCurrency(expectedFnbRev)}</strong>
+                {!baseMetrics.validFnb && <div style={{fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px'}}>*상관관계 지수 미달 (제외됨)</div>}
+                {baseMetrics.validFnb && fnbSim.isCapped && <div style={{fontSize: '11px', color: '#ef4444', marginTop: '4px'}}>*Capa 상한 도달 (초과분 버림)</div>}
               </div>
             </div>
 
@@ -279,8 +307,9 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
                 <span>모토아레나 매출</span>
               </div>
               <div style={{textAlign: 'right'}}>
-                <strong style={{fontSize: '18px', color: motoSim.isCapped ? 'var(--accent-gold)' : 'inherit'}}>₩{formatCurrency(expectedMotoRev)}</strong>
-                {motoSim.isCapped && <div style={{fontSize: '11px', color: 'var(--accent-gold)', marginTop: '4px'}}>*Capa 상한 도달 (초과분 버림)</div>}
+                <strong style={{fontSize: '18px', color: !baseMetrics.validMoto ? 'var(--text-muted)' : motoSim.isCapped ? 'var(--accent-gold)' : 'inherit'}}>₩{formatCurrency(expectedMotoRev)}</strong>
+                {!baseMetrics.validMoto && <div style={{fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px'}}>*상관관계 지수 미달 (제외됨)</div>}
+                {baseMetrics.validMoto && motoSim.isCapped && <div style={{fontSize: '11px', color: 'var(--accent-gold)', marginTop: '4px'}}>*Capa 상한 도달 (초과분 버림)</div>}
               </div>
             </div>
 
@@ -290,8 +319,9 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
                 <span>레저/기타 매출</span>
               </div>
               <div style={{textAlign: 'right'}}>
-                <strong style={{fontSize: '18px', color: leisureSim.isCapped ? 'var(--accent-emerald)' : 'inherit'}}>₩{formatCurrency(expectedLeisureRev)}</strong>
-                {leisureSim.isCapped && <div style={{fontSize: '11px', color: 'var(--accent-emerald)', marginTop: '4px'}}>*Capa 상한 도달 (초과분 버림)</div>}
+                <strong style={{fontSize: '18px', color: !baseMetrics.validLeisure ? 'var(--text-muted)' : leisureSim.isCapped ? 'var(--accent-emerald)' : 'inherit'}}>₩{formatCurrency(expectedLeisureRev)}</strong>
+                {!baseMetrics.validLeisure && <div style={{fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px'}}>*상관관계 지수 미달 (제외됨)</div>}
+                {baseMetrics.validLeisure && leisureSim.isCapped && <div style={{fontSize: '11px', color: 'var(--accent-emerald)', marginTop: '4px'}}>*Capa 상한 도달 (초과분 버림)</div>}
               </div>
             </div>
 
