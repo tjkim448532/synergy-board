@@ -188,8 +188,8 @@ export default function DivisionSales({ monthlyData, settings }) {
             <tr>
               <th>월 (Month)</th>
               <th>
-                <div style={{marginBottom: '4px'}}>리조트 총매출</div>
-                <span style={{fontSize:'11px', color:'var(--text-muted)', fontWeight:'normal', display:'block'}}>(객실+부대+제외)</span>
+                <div style={{marginBottom: '4px'}}>총매출</div>
+                <span style={{fontSize:'11px', color:'var(--text-muted)', fontWeight:'normal', display:'block'}}>(골프포함)</span>
               </th>
               <th>
                 <div style={{marginBottom: '4px'}}>부문 총매출</div>
