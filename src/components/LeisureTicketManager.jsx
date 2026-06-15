@@ -14,23 +14,7 @@ const parseSafeInt = (val) => {
   return isNaN(parsed) ? 0 : parsed;
 };
 
-// 엑셀 날짜 파싱
-const parseExcelDate = (val) => {
-  if (!val) return null;
-  if (typeof val === 'number') {
-    const d = new Date(Math.round((val - 25569) * 86400 * 1000));
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  }
-  let str = val.toString().trim();
-  const dateRegex = /^\d{2,4}[-./]\s*\d{1,2}\s*[-./]\s*\d{1,2}$/;
-  if (dateRegex.test(str)) {
-    str = str.replace(/[-./\s]+/g, '-');
-    let [y, m, d] = str.split('-');
-    if (y.length === 2) y = `20${y}`;
-    return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
-  }
-  return null;
-};
+// Removed parseExcelDate
 
 export default function LeisureTicketManager({ settings, setSettings, uniqueLocations }) {
   const [fileObj, setFileObj] = useState(null);
@@ -44,13 +28,16 @@ export default function LeisureTicketManager({ settings, setSettings, uniqueLoca
   const [selectedVenueCol, setSelectedVenueCol] = useState(0);
   const [selectedNameCol, setSelectedNameCol] = useState(1);
   const [selectedQtyCol, setSelectedQtyCol] = useState(2);
-  const [selectedDateCol, setSelectedDateCol] = useState(-1);
   
   const [autoExtractFlag, setAutoExtractFlag] = useState(false);
 
   // 추출 결과
   const [parsedData, setParsedData] = useState(null);
-  const [yearMonth, setYearMonth] = useState('');
+  const [yearMonth, setYearMonth] = useState(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - 1); // 기본적으로 전월
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  });
   const [isSaved, setIsSaved] = useState(false);
 
   // 현재 설정에 저장된 레저 티켓 룰
@@ -94,19 +81,17 @@ export default function LeisureTicketManager({ settings, setSettings, uniqueLoca
         const extHeaders = jsonData[foundHeaderIdx].map((h, idx) => h ? String(h).trim() : `(이름 없는 열 ${idx + 1})`);
         
         const savedMapping = settings.leisureColMapping;
-        let venueIdx = -1, nameIdx = -1, qtyIdx = -1, dateIdx = -1;
+        let venueIdx = -1, nameIdx = -1, qtyIdx = -1;
 
         if (savedMapping) {
           venueIdx = savedMapping.venueCol < extHeaders.length ? savedMapping.venueCol : -1;
           nameIdx = savedMapping.nameCol < extHeaders.length ? savedMapping.nameCol : -1;
           qtyIdx = savedMapping.qtyCol < extHeaders.length ? savedMapping.qtyCol : -1;
-          dateIdx = savedMapping.dateCol < extHeaders.length ? savedMapping.dateCol : -1;
         }
 
         if (venueIdx === -1) venueIdx = extHeaders.findIndex(h => h.includes('영업장') || h.includes('사업장'));
         if (nameIdx === -1) nameIdx = extHeaders.findIndex(h => h.includes('트랜잭션') || h.includes('상품') || h.includes('티켓') || h.includes('품목'));
         if (qtyIdx === -1) qtyIdx = extHeaders.findIndex(h => h === '수량' || h.includes('판매수량') || h.includes('인원'));
-        if (dateIdx === -1 && !savedMapping) dateIdx = extHeaders.findIndex(h => h.includes('일자') || h.includes('날짜'));
 
         setHeaderRowIdx(foundHeaderIdx);
         setHeaders(extHeaders);
@@ -115,7 +100,6 @@ export default function LeisureTicketManager({ settings, setSettings, uniqueLoca
         setSelectedVenueCol(venueIdx !== -1 ? venueIdx : 0);
         setSelectedNameCol(nameIdx !== -1 ? nameIdx : (extHeaders.length > 1 ? 1 : 0));
         setSelectedQtyCol(qtyIdx !== -1 ? qtyIdx : (extHeaders.length > 2 ? 2 : 0));
-        setSelectedDateCol(dateIdx);
 
         if (savedMapping) {
           setAutoExtractFlag(true);
@@ -143,7 +127,6 @@ export default function LeisureTicketManager({ settings, setSettings, uniqueLoca
     try {
       const rawRecords = [];
       const ticketCounts = {}; // { [venue___ticketName]: { venue, ticket, qty } }
-      let detectedMonth = '';
 
       for (let i = headerRowIdx + 1; i < rawJsonData.length; i++) {
         const row = rawJsonData[i];
@@ -158,18 +141,9 @@ export default function LeisureTicketManager({ settings, setSettings, uniqueLoca
         const qty = parseSafeInt(row[selectedQtyCol]);
         if (qty === 0) continue; // 수량이 0인 경우는 패스하지만, 마이너스는 취소표일수도 있으므로 일단 포함(절대값 처리 안함)
 
-        let dateStr = null;
-        if (selectedDateCol !== -1) {
-          dateStr = parseExcelDate(row[selectedDateCol]);
-        }
-
-        if (dateStr && !detectedMonth) {
-          detectedMonth = dateStr.substring(0, 7); 
-        }
-
         const compositeKey = `${vName}___${tName}`;
 
-        rawRecords.push({ venue: vName, ticket: tName, qty, date: dateStr });
+        rawRecords.push({ venue: vName, ticket: tName, qty });
         
         if (!ticketCounts[compositeKey]) {
           ticketCounts[compositeKey] = { venue: vName, ticket: tName, qty: 0 };
@@ -177,17 +151,11 @@ export default function LeisureTicketManager({ settings, setSettings, uniqueLoca
         ticketCounts[compositeKey].qty += qty;
       }
 
-      if (!detectedMonth) {
-        const now = new Date();
-        detectedMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-      }
-
       if (Object.keys(ticketCounts).length === 0) {
         toast.error('추출된 데이터가 없습니다. 열 선택이 올바른지 확인해주세요.');
         return;
       }
 
-      setYearMonth(detectedMonth);
       setParsedData({
         records: rawRecords,
         summary: ticketCounts
@@ -235,8 +203,7 @@ export default function LeisureTicketManager({ settings, setSettings, uniqueLoca
       const colMapping = {
         venueCol: selectedVenueCol,
         nameCol: selectedNameCol,
-        qtyCol: selectedQtyCol,
-        dateCol: selectedDateCol
+        qtyCol: selectedQtyCol
       };
 
       await setDoc(doc(db, 'config', 'mainSettings'), {
@@ -270,20 +237,32 @@ export default function LeisureTicketManager({ settings, setSettings, uniqueLoca
         매월 다운로드하신 레저본부 엑셀 파일을 업로드하여 영업장과 트랜잭션명(티켓명), 수량을 추출합니다.
       </p>
 
-      <div style={{display: 'flex', gap: '12px', marginBottom: '24px'}}>
-        <label className="btn-primary" style={{cursor: 'pointer', flex: 1, textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px'}}>
-          <Upload size={18} /> {fileObj ? fileObj.name : '레저 엑셀 파일 선택'}
-          <input type="file" accept=".xlsx,.xls,.csv" onChange={handleFileUpload} style={{display: 'none'}} />
-        </label>
+      <div style={{display: 'flex', gap: '12px', marginBottom: '24px', alignItems: 'flex-end'}}>
+        <div style={{flex: 1}}>
+          <label style={{display: 'block', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px'}}>적용 월 선택</label>
+          <input 
+            type="month" 
+            value={yearMonth} 
+            onChange={(e) => setYearMonth(e.target.value)} 
+            style={{width: '100%', padding: '10px', background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px', outline: 'none', height: '42px', boxSizing: 'border-box'}} 
+          />
+        </div>
+        <div style={{flex: 2}}>
+          <label style={{display: 'block', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px'}}>엑셀 파일 업로드</label>
+          <label className="btn-primary" style={{cursor: 'pointer', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', height: '42px', margin: 0, boxSizing: 'border-box'}}>
+            <Upload size={18} /> {fileObj ? fileObj.name : '레저 엑셀 파일 선택'}
+            <input type="file" accept=".xlsx,.xls,.csv" onChange={handleFileUpload} style={{display: 'none'}} />
+          </label>
+        </div>
       </div>
 
       {headers.length > 0 && !parsedData && (
         <div style={{background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '8px', border: '1px dashed var(--accent-emerald)', marginBottom: '24px'}}>
           <h4 style={{margin: '0 0 16px 0', color: 'var(--accent-emerald)'}}>엑셀 열(Column) 선택</h4>
           
-          <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '16px', marginBottom: '20px'}}>
+          <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '20px', alignItems: 'flex-end'}}>
             <div>
-              <label style={{display: 'block', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px'}}>영업장 열</label>
+              <label style={{display: 'block', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>영업장 열</label>
               <select 
                 value={selectedVenueCol} 
                 onChange={(e) => setSelectedVenueCol(Number(e.target.value))}
@@ -294,7 +273,7 @@ export default function LeisureTicketManager({ settings, setSettings, uniqueLoca
             </div>
 
             <div>
-              <label style={{display: 'block', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px'}}>트랜잭션명(티켓) 열</label>
+              <label style={{display: 'block', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>트랜잭션명(티켓) 열</label>
               <select 
                 value={selectedNameCol} 
                 onChange={(e) => setSelectedNameCol(Number(e.target.value))}
@@ -305,24 +284,12 @@ export default function LeisureTicketManager({ settings, setSettings, uniqueLoca
             </div>
             
             <div>
-              <label style={{display: 'block', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px'}}>수량 열</label>
+              <label style={{display: 'block', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>수량 열</label>
               <select 
                 value={selectedQtyCol} 
                 onChange={(e) => setSelectedQtyCol(Number(e.target.value))}
                 style={{width: '100%', padding: '8px', background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px', outline: 'none'}}
               >
-                {headers.map((h, i) => <option key={i} value={i} style={{color: 'black'}}>{i + 1}. {h}</option>)}
-              </select>
-            </div>
-
-            <div>
-              <label style={{display: 'block', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px'}}>영업일자 열 (선택)</label>
-              <select 
-                value={selectedDateCol} 
-                onChange={(e) => setSelectedDateCol(Number(e.target.value))}
-                style={{width: '100%', padding: '8px', background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '4px', outline: 'none'}}
-              >
-                <option value={-1} style={{color: 'black'}}>-- 선택 안함 --</option>
                 {headers.map((h, i) => <option key={i} value={i} style={{color: 'black'}}>{i + 1}. {h}</option>)}
               </select>
             </div>
@@ -403,12 +370,12 @@ export default function LeisureTicketManager({ settings, setSettings, uniqueLoca
             </div>
           </div>
 
-          <div style={{flex: 1, position: 'sticky', top: '24px'}}>
+          <div style={{flex: 1, minWidth: '300px', position: 'sticky', top: '24px'}}>
             <div style={{background: 'rgba(52, 211, 153, 0.05)', padding: '20px', borderRadius: '8px', border: '1px solid var(--accent-emerald)'}}>
               <h4 style={{margin: '0 0 16px 0', color: 'var(--accent-emerald)', display: 'flex', alignItems: 'center', gap: '8px'}}>
                 <Users size={18} /> 그룹별 최종 집계 ({yearMonth})
               </h4>
-              <p style={{fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px'}}>
+              <p style={{fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px', wordBreak: 'keep-all'}}>
                 왼쪽 표에서 설정한 룰에 따라 각 영업장별 실제 사람 수가 실시간으로 집계됩니다.
               </p>
               
@@ -421,9 +388,9 @@ export default function LeisureTicketManager({ settings, setSettings, uniqueLoca
                   }
                   return acc;
                 }, {})).sort((a,b) => b[1] - a[1]).map(([vName, total]) => (
-                  <div key={vName} style={{background: 'rgba(0,0,0,0.3)', padding: '12px 16px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                    <div style={{fontSize: '13px', color: 'var(--text-main)'}}>{vName}</div>
-                    <strong style={{fontSize: '16px', color: 'var(--accent-emerald)'}}>{total.toLocaleString()}명</strong>
+                  <div key={vName} style={{background: 'rgba(0,0,0,0.3)', padding: '12px 16px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px'}}>
+                    <div style={{fontSize: '13px', color: 'var(--text-main)', wordBreak: 'keep-all'}}>{vName}</div>
+                    <strong style={{fontSize: '16px', color: 'var(--accent-emerald)', whiteSpace: 'nowrap'}}>{total.toLocaleString()}명</strong>
                   </div>
                 ))}
               </div>
