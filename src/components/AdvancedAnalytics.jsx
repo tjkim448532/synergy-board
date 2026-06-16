@@ -164,11 +164,37 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     });
   }, [monthlyData, settings]);
 
+  // 동적 필터 옵션 생성
+  const monthOptions = useMemo(() => {
+    const options = [];
+    const years = [...new Set(processedData.map(d => (d.yearMonth || '').split('-')[0]))].filter(y => y);
+    years.sort((a,b) => b.localeCompare(a)); // 최신 연도부터
+    
+    years.forEach(year => {
+      const yearMonths = processedData.filter(d => (d.yearMonth || '').startsWith(year));
+      if (yearMonths.length > 0) {
+        options.push({ value: `${year}-all`, label: `${year}년 종합 분석` });
+        for (let m = 1; m <= 12; m++) {
+          const mm = String(m).padStart(2, '0');
+          // 데이터가 있는 월까지만 (미래 달력 제외)
+          if (yearMonths.some(d => (d.yearMonth || '').split('-')[1] === mm)) {
+            options.push({ value: `${year}-${mm}`, label: `${year}년 ${m}월 누적 (1~${m}월)` });
+          }
+        }
+      }
+    });
+    return options;
+  }, [processedData]);
+
   const filteredProcessedData = useMemo(() => {
     if (selectedMonthFilter === 'all') return processedData;
+    const [selYear, selMonth] = selectedMonthFilter.split('-');
+    
     return processedData.filter(d => {
-      const m = d.yearMonth.split('-')[1];
-      return m === selectedMonthFilter;
+      const [y, m] = (d.yearMonth || '').split('-');
+      if (y !== selYear) return false;
+      if (selMonth === 'all') return true;
+      return parseInt(m) <= parseInt(selMonth);
     });
   }, [processedData, selectedMonthFilter]);
 
@@ -475,9 +501,9 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
             onChange={(e) => setSelectedMonthFilter(e.target.value)}
             style={{background: 'rgba(255,255,255,0.1)', color: 'var(--text-main)', border: 'none', padding: '6px 12px', borderRadius: '4px', outline: 'none', fontWeight: 'bold'}}
           >
-            <option value="all" style={{color: 'black'}}>전월 종합 분석</option>
-            {['01','02','03','04','05','06','07','08','09','10','11','12'].map(m => (
-              <option key={m} value={m} style={{color: 'black'}}>{m}월만 분석</option>
+            <option value="all" style={{color: 'black'}}>전체 연도 종합 분석</option>
+            {monthOptions.map(opt => (
+              <option key={opt.value} value={opt.value} style={{color: 'black'}}>{opt.label}</option>
             ))}
           </select>
         </div>
@@ -493,7 +519,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
             {displayVisitors !== null ? <CountUp end={displayVisitors} duration={2} separator="," /> : '...'}
           </div>
           <p style={{margin: 0, color: 'var(--text-muted)', fontSize: '14px'}}>
-            {selectedMonthFilter === 'all' ? '올해 리조트 전체 통합 고객 수 (골프장 제외)' : `${selectedMonthFilter}월 리조트 방문 통합 고객 수 (골프장 제외)`}
+            {selectedMonthFilter === 'all' ? '전체 기간 리조트 통합 고객 수 (골프장 제외)' : (selectedMonthFilter.endsWith('-all') ? `${selectedMonthFilter.split('-')[0]}년 리조트 통합 고객 수` : `${selectedMonthFilter.split('-')[0]}년 1~${parseInt(selectedMonthFilter.split('-')[1])}월 누적 리조트 고객 수`)}
           </p>
           <div style={{marginTop: 'auto', background: 'rgba(255,255,255,0.05)', padding: '12px 16px', borderRadius: '8px', border: '1px solid rgba(251, 191, 36, 0.2)'}}>
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px dashed rgba(255,255,255,0.1)'}}>

@@ -53,13 +53,37 @@ export default function ChannelAnalysis({ monthlyData, settings }) {
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedMonthFilter, setSelectedMonthFilter] = useState('all');
 
+  // 동적 필터 옵션 생성
+  const monthOptions = useMemo(() => {
+    const options = [];
+    const validData = monthlyData.filter(d => d.yearMonth !== '2024-11' && d.yearMonth !== '2024-12');
+    const years = [...new Set(validData.map(d => (d.yearMonth || '').split('-')[0]))].filter(y => y);
+    years.sort((a,b) => b.localeCompare(a));
+    
+    years.forEach(year => {
+      const yearMonths = validData.filter(d => (d.yearMonth || '').startsWith(year));
+      if (yearMonths.length > 0) {
+        options.push({ value: `${year}-all`, label: `${year}년 종합 분석` });
+        for (let m = 1; m <= 12; m++) {
+          const mm = String(m).padStart(2, '0');
+          if (yearMonths.some(d => (d.yearMonth || '').split('-')[1] === mm)) {
+            options.push({ value: `${year}-${mm}`, label: `${year}년 ${m}월 누적 (1~${m}월)` });
+          }
+        }
+      }
+    });
+    return options;
+  }, [monthlyData]);
+
   // Filter out recent months like AdvancedAnalytics does
   const filteredProcessedData = useMemo(() => {
     return monthlyData.filter(d => {
       if (d.yearMonth === '2024-11' || d.yearMonth === '2024-12') return false;
       if (selectedMonthFilter !== 'all') {
-        const monthStr = d.yearMonth.split('-')[1];
-        if (monthStr !== selectedMonthFilter) return false;
+        const [selYear, selMonth] = selectedMonthFilter.split('-');
+        const [y, m] = (d.yearMonth || '').split('-');
+        if (y !== selYear) return false;
+        if (selMonth !== 'all' && parseInt(m) > parseInt(selMonth)) return false;
       }
       return true;
     }).sort((a, b) => (a.id || a.yearMonth || '').localeCompare(b.id || b.yearMonth || ''));
@@ -835,9 +859,9 @@ export default function ChannelAnalysis({ monthlyData, settings }) {
               onChange={(e) => setSelectedMonthFilter(e.target.value)}
               style={{background: 'rgba(255,255,255,0.1)', color: 'var(--text-main)', border: 'none', padding: '6px 12px', borderRadius: '4px', outline: 'none', fontWeight: 'bold'}}
             >
-              <option value="all" style={{color: 'black'}}>전월 종합 분석</option>
-              {['01','02','03','04','05','06','07','08','09','10','11','12'].map(m => (
-                <option key={m} value={m} style={{color: 'black'}}>{m}월만 분석</option>
+              <option value="all" style={{color: 'black'}}>전체 연도 종합 분석</option>
+              {monthOptions.map(opt => (
+                <option key={opt.value} value={opt.value} style={{color: 'black'}}>{opt.label}</option>
               ))}
             </select>
           </div>
