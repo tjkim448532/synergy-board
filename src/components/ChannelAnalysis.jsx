@@ -53,6 +53,13 @@ export default function ChannelAnalysis({ monthlyData, settings }) {
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedMonthFilter, setSelectedMonthFilter] = useState('all');
 
+  // fallback for legacy cached state like '05'
+  useEffect(() => {
+    if (selectedMonthFilter !== 'all' && !selectedMonthFilter.includes('-')) {
+      setSelectedMonthFilter('all');
+    }
+  }, [selectedMonthFilter]);
+
   // 동적 필터 옵션 생성
   const monthOptions = useMemo(() => {
     const options = [];

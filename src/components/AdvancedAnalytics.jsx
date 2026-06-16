@@ -37,6 +37,14 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
   const [activeDivision, setActiveDivision] = useState('all');
   const [motoLogic, setMotoLogic] = useState('new');
   const [selectedMonthFilter, setSelectedMonthFilter] = useState('all');
+
+  // fallback for legacy cached state like '05'
+  useEffect(() => {
+    if (selectedMonthFilter !== 'all' && !selectedMonthFilter.includes('-')) {
+      setSelectedMonthFilter('all');
+    }
+  }, [selectedMonthFilter]);
+
   // Google Visitors data replaced by visitorCalcData logic
   const divisionConfig = useMemo(() => {
     const config = {
