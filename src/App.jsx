@@ -43,7 +43,7 @@ function App() {
       const data = [];
       snapshot.forEach(doc => {
         if (doc.id && String(doc.id).match(/^\d{4}-\d{2}$/)) {
-          data.push({ id: doc.id, ...doc.data() });
+          data.push({ id: doc.id, yearMonth: doc.id, ...doc.data() });
         }
       });
       setAllData(data);
