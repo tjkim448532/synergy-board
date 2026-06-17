@@ -37,6 +37,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
   const [activeDivision, setActiveDivision] = useState('all');
   const [motoLogic, setMotoLogic] = useState('new');
   const [selectedMonthFilter, setSelectedMonthFilter] = useState('all');
+  const [isCumulative, setIsCumulative] = useState(false);
 
   // fallback for legacy cached state like '05'
   useEffect(() => {
@@ -184,9 +185,8 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
         options.push({ value: `${year}-all`, label: `${year}년 종합 분석` });
         for (let m = 1; m <= 12; m++) {
           const mm = String(m).padStart(2, '0');
-          // 데이터가 있는 월까지만 (미래 달력 제외)
           if (yearMonths.some(d => (d.yearMonth || '').split('-')[1] === mm)) {
-            options.push({ value: `${year}-${mm}`, label: `${year}년 ${m}월 누적 (1~${m}월)` });
+            options.push({ value: `${year}-${mm}`, label: `${year}년 ${m}월` });
           }
         }
       }
@@ -202,9 +202,13 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       const [y, m] = (d.yearMonth || '').split('-');
       if (y !== selYear) return false;
       if (selMonth === 'all') return true;
-      return parseInt(m) <= parseInt(selMonth);
+      if (isCumulative) {
+        return parseInt(m) <= parseInt(selMonth);
+      } else {
+        return parseInt(m) === parseInt(selMonth);
+      }
     });
-  }, [processedData, selectedMonthFilter]);
+  }, [processedData, selectedMonthFilter, isCumulative]);
 
 
   const displayVisitors = useMemo(() => {
@@ -502,18 +506,29 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
           </div>
         </div>
 
-        <div style={{display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(0,0,0,0.2)', padding: '6px 12px', borderRadius: '8px'}}>
-          <span style={{fontSize: '14px', color: 'var(--text-muted)'}}>월별 필터:</span>
-          <select 
-            value={selectedMonthFilter}
-            onChange={(e) => setSelectedMonthFilter(e.target.value)}
-            style={{background: 'rgba(255,255,255,0.1)', color: 'var(--text-main)', border: 'none', padding: '6px 12px', borderRadius: '4px', outline: 'none', fontWeight: 'bold'}}
-          >
-            <option value="all" style={{color: 'black'}}>전체 연도 종합 분석</option>
-            {monthOptions.map(opt => (
-              <option key={opt.value} value={opt.value} style={{color: 'black'}}>{opt.label}</option>
-            ))}
-          </select>
+        <div style={{display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(0,0,0,0.2)', padding: '6px 12px', borderRadius: '8px', flexWrap: 'wrap'}}>
+          <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
+            <span style={{fontSize: '14px', color: 'var(--text-muted)'}}>월별 필터:</span>
+            <select 
+              value={selectedMonthFilter}
+              onChange={(e) => setSelectedMonthFilter(e.target.value)}
+              style={{background: 'rgba(255,255,255,0.1)', color: 'var(--text-main)', border: 'none', padding: '6px 12px', borderRadius: '4px', outline: 'none', fontWeight: 'bold'}}
+            >
+              <option value="all" style={{color: 'black'}}>전체 연도 종합 분석</option>
+              {monthOptions.map(opt => (
+                <option key={opt.value} value={opt.value} style={{color: 'black'}}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+
+          {selectedMonthFilter !== 'all' && !selectedMonthFilter.endsWith('-all') && (
+            <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginLeft: '8px'}}>
+              <div style={{position: 'relative', width: '40px', height: '20px', background: isCumulative ? 'var(--accent-emerald)' : 'rgba(255,255,255,0.2)', borderRadius: '10px', transition: '0.3s'}}>
+                <div style={{position: 'absolute', top: '2px', left: isCumulative ? '22px' : '2px', width: '16px', height: '16px', background: 'white', borderRadius: '50%', transition: '0.3s'}} />
+              </div>
+              <span style={{fontSize: '13px', color: isCumulative ? 'var(--accent-emerald)' : 'var(--text-muted)'}}>누적 데이터 보기 (1월부터 합산)</span>
+            </label>
+          )}
         </div>
       </div>
 
@@ -527,7 +542,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
             {displayVisitors !== null ? <CountUp end={displayVisitors} duration={2} separator="," /> : '...'}
           </div>
           <p style={{margin: 0, color: 'var(--text-muted)', fontSize: '14px'}}>
-            {selectedMonthFilter === 'all' ? '전체 기간 리조트 통합 고객 수 (골프장 제외)' : (selectedMonthFilter.endsWith('-all') ? `${selectedMonthFilter.split('-')[0]}년 리조트 통합 고객 수` : `${selectedMonthFilter.split('-')[0]}년 1~${parseInt(selectedMonthFilter.split('-')[1])}월 누적 리조트 고객 수`)}
+            {selectedMonthFilter === 'all' ? '전체 기간 리조트 통합 고객 수 (골프장 제외)' : (selectedMonthFilter.endsWith('-all') ? `${selectedMonthFilter.split('-')[0]}년 리조트 통합 고객 수` : `${selectedMonthFilter.split('-')[0]}년 ${isCumulative ? `1~${parseInt(selectedMonthFilter.split('-')[1])}월 누적` : `${parseInt(selectedMonthFilter.split('-')[1])}월`} 리조트 고객 수`)}
           </p>
           <div style={{marginTop: 'auto', background: 'rgba(255,255,255,0.05)', padding: '12px 16px', borderRadius: '8px', border: '1px solid rgba(251, 191, 36, 0.2)'}}>
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px dashed rgba(255,255,255,0.1)'}}>
@@ -555,13 +570,13 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
 
         <div style={{flex: 1, minWidth: '300px', padding: '32px 40px', background: 'rgba(52, 211, 153, 0.1)', display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative'}}>
           <h2 style={{margin: 0, color: 'var(--accent-emerald)', fontSize: '24px', display: 'flex', alignItems: 'center', gap: '12px'}}>
-            🛏️ 누적 숙박객 <span style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.3)', padding: '4px 8px', borderRadius: '4px'}}>DB 기반 연산</span>
+            🛏️ {isCumulative || selectedMonthFilter === 'all' || selectedMonthFilter.endsWith('-all') ? '누적 숙박객' : '월간 숙박객'} <span style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.3)', padding: '4px 8px', borderRadius: '4px'}}>DB 기반 연산</span>
           </h2>
           <div style={{fontSize: '56px', fontWeight: '900', color: 'var(--text-main)', textShadow: '0 0 20px rgba(52,211,153,0.5)'}}>
             <CountUp end={totalHotelGuests} duration={2} separator="," />
           </div>
           <p style={{margin: 0, color: 'var(--text-muted)', fontSize: '14px'}}>
-            (16평×2.5인) + (35평×4.5인) + (51평×6인) 누적 합산 결과
+            (16평×2.5인) + (35평×4.5인) + (51평×6인) {isCumulative || selectedMonthFilter === 'all' || selectedMonthFilter.endsWith('-all') ? '누적' : '당월'} 합산 결과
           </p>
 
           <div style={{position: 'absolute', right: '40px', bottom: '32px', background: 'rgba(0,0,0,0.4)', padding: '12px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end'}}>
