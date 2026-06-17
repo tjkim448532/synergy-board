@@ -38,6 +38,51 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
   const [motoLogic, setMotoLogic] = useState('new');
   const [selectedMonthFilter, setSelectedMonthFilter] = useState('all');
   const [isCumulative, setIsCumulative] = useState(false);
+  const [useGoogleSheetVisitors, setUseGoogleSheetVisitors] = useState(false);
+  const [googleSheetData, setGoogleSheetData] = useState(null);
+
+  useEffect(() => {
+    const fetchGoogleSheet = async () => {
+      try {
+        const url = 'https://docs.google.com/spreadsheets/d/1wlNrE_FvXCYNGfyvIYxEidYLKoEas4pidWe0Z9e_2xs/export?format=csv&gid=1933764837';
+        const response = await fetch(url);
+        const csvText = await response.text();
+        const lines = csvText.split('\n');
+        const targetLine = lines.find(line => line.includes('리조트 총 방문객'));
+        if (targetLine) {
+          const cells = [];
+          let currentCell = '';
+          let inQuotes = false;
+          for(let i=0; i<targetLine.length; i++){
+            const char = targetLine[i];
+            if(char === '"'){
+              inQuotes = !inQuotes;
+            } else if(char === ',' && !inQuotes){
+              cells.push(currentCell.trim());
+              currentCell = '';
+            } else {
+              currentCell += char;
+            }
+          }
+          cells.push(currentCell.trim());
+
+          const monthlyData = {};
+          for(let m=1; m<=12; m++) {
+            const idx = 6 + (m - 1) * 3;
+            if (cells[idx]) {
+              monthlyData[m] = parseInt(cells[idx].replace(/,/g, ''), 10) || 0;
+            } else {
+              monthlyData[m] = 0;
+            }
+          }
+          setGoogleSheetData(monthlyData);
+        }
+      } catch (error) {
+        console.error('Failed to fetch Google Sheet data', error);
+      }
+    };
+    fetchGoogleSheet();
+  }, []);
 
   // fallback for legacy cached state like '05'
   useEffect(() => {
@@ -212,6 +257,22 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
 
 
   const displayVisitors = useMemo(() => {
+    if (useGoogleSheetVisitors && googleSheetData) {
+      if (selectedMonthFilter === 'all' || selectedMonthFilter.endsWith('-all')) {
+        return Object.values(googleSheetData).reduce((a, b) => a + b, 0);
+      } else {
+        const mStr = selectedMonthFilter.split('-')[1];
+        const selM = parseInt(mStr, 10);
+        if (isCumulative) {
+          let sum = 0;
+          for(let i=1; i<=selM; i++) sum += (googleSheetData[i] || 0);
+          return sum;
+        } else {
+          return googleSheetData[selM] || 0;
+        }
+      }
+    }
+
     return filteredProcessedData.reduce((sum, d) => {
       if (d.visitorCalcData) {
         const numTotalVehicles = Number(d.visitorCalcData.totalVehicles) || 0;
@@ -224,7 +285,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       }
       return sum;
     }, 0);
-  }, [filteredProcessedData]);
+  }, [filteredProcessedData, useGoogleSheetVisitors, googleSheetData, selectedMonthFilter, isCumulative]);
 
   const totalHotelGuests = useMemo(() => {
     if (!filteredProcessedData || filteredProcessedData.length === 0) return 0;
@@ -523,6 +584,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
 
           {selectedMonthFilter !== 'all' && !selectedMonthFilter.endsWith('-all') && (
             <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginLeft: '8px'}}>
+              <input type="checkbox" checked={isCumulative} onChange={(e) => setIsCumulative(e.target.checked)} style={{display: 'none'}} />
               <div style={{position: 'relative', width: '40px', height: '20px', background: isCumulative ? 'var(--accent-emerald)' : 'rgba(255,255,255,0.2)', borderRadius: '10px', transition: '0.3s'}}>
                 <div style={{position: 'absolute', top: '2px', left: isCumulative ? '22px' : '2px', width: '16px', height: '16px', background: 'white', borderRadius: '50%', transition: '0.3s'}} />
               </div>
@@ -535,9 +597,20 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       {/* 🚀 최상단 핵심 지표 대형 배너 */}
       <div className="glass-panel" style={{display: 'flex', flexWrap: 'wrap', overflow: 'hidden', border: '1px solid var(--accent-gold)'}}>
         <div style={{flex: 1, minWidth: '300px', padding: '32px 40px', background: 'rgba(251, 191, 36, 0.1)', display: 'flex', flexDirection: 'column', gap: '12px'}}>
-          <h2 style={{margin: 0, color: 'var(--accent-gold)', fontSize: '24px', display: 'flex', alignItems: 'center', gap: '12px'}}>
-            👥 총 방문객 <span style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.3)', padding: '4px 8px', borderRadius: '4px'}}>Calculated</span>
-          </h2>
+          <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px'}}>
+            <h2 style={{margin: 0, color: 'var(--accent-gold)', fontSize: '24px', display: 'flex', alignItems: 'center', gap: '12px'}}>
+              👥 총 방문객 <span style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.3)', padding: '4px 8px', borderRadius: '4px'}}>
+                {useGoogleSheetVisitors ? 'Google Sheet 연동' : 'Calculated'}
+              </span>
+            </h2>
+            <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px'}}>
+              <input type="checkbox" checked={useGoogleSheetVisitors} onChange={(e) => setUseGoogleSheetVisitors(e.target.checked)} style={{display: 'none'}} />
+              <span style={{fontSize: '12px', color: useGoogleSheetVisitors ? 'var(--accent-emerald)' : 'var(--text-muted)'}}>구글 시트 연동</span>
+              <div style={{position: 'relative', width: '32px', height: '16px', background: useGoogleSheetVisitors ? 'var(--accent-emerald)' : 'rgba(255,255,255,0.2)', borderRadius: '8px', transition: '0.3s'}}>
+                <div style={{position: 'absolute', top: '2px', left: useGoogleSheetVisitors ? '18px' : '2px', width: '12px', height: '12px', background: 'white', borderRadius: '50%', transition: '0.3s'}} />
+              </div>
+            </label>
+          </div>
           <div style={{fontSize: '56px', fontWeight: '900', color: 'var(--text-main)', textShadow: '0 0 20px rgba(251,191,36,0.5)'}}>
             {displayVisitors !== null ? <CountUp end={displayVisitors} duration={2} separator="," /> : '...'}
           </div>
