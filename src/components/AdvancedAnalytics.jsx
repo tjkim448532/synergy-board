@@ -38,7 +38,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
   const [motoLogic, setMotoLogic] = useState('new');
   const [selectedMonthFilter, setSelectedMonthFilter] = useState('all');
   const [isCumulative, setIsCumulative] = useState(false);
-  const [useGoogleSheetVisitors, setUseGoogleSheetVisitors] = useState(false);
+  const [useGoogleSheetVisitors, setUseGoogleSheetVisitors] = useState(true);
   const [googleSheetData, setGoogleSheetData] = useState(null);
 
   useEffect(() => {
