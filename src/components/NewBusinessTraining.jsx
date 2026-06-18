@@ -61,6 +61,23 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
       }
     });
 
+    const calcR = (points) => {
+      const n = points.length;
+      if (n < 2) return 0;
+      const sumX = points.reduce((acc, p) => acc + p.x, 0);
+      const sumY = points.reduce((acc, p) => acc + p.y, 0);
+      const sumXY = points.reduce((acc, p) => acc + (p.x * p.y), 0);
+      const sumX2 = points.reduce((acc, p) => acc + (p.x * p.x), 0);
+      const sumY2 = points.reduce((acc, p) => acc + (p.y * p.y), 0);
+      const numerator = (n * sumXY) - (sumX * sumY);
+      const denomInside = (n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY);
+      if (denomInside <= 0) return 0;
+      return numerator / Math.sqrt(denomInside);
+    };
+
+    const validLeisure = calcR(pointsLeisure) >= 0.5;
+    const validMoto = calcR(pointsMoto) >= 0.5;
+    const validFnb = calcR(pointsFnb) >= 0.5;
 
     return {
       avgAdr: totSold > 0 ? totRev / totSold : 150000,
