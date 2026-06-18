@@ -742,7 +742,7 @@ export default function Settings({ monthlyData }) {
 
       <SectionCard
         title="신규 사업 시뮬레이터 가동률(Capa) 설정"
-        description="현재 각 시설의 가동률을 설정하여, 신규 객실 증가에 따른 파생 매출 상한선을 제한합니다."
+        description="현재 각 시설의 가동률을 설정하여, 신규 객실 증가에 따른 창출 매출 상한선을 제한합니다."
         isExpanded={expandedSections.capa}
         onToggle={() => toggleSection('capa')}
       >

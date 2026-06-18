@@ -337,15 +337,15 @@ export default function LogicGuide() {
               <div className="math-step">
                 <span className="step-num">지표 2: Gross TrevPAR (워크인 포함 전체)</span>
                 <div style={{color: 'var(--text-muted)'}}>
-                  <code>(객실 + 식음 + 레저 총매출) ÷ (총 가용 객실 수)</code><br/>
-                  투숙객과 워크인(비투숙 외부 방문객)을 가리지 않고, 리조트라는 거대한 공간 시설 전체가 하루에 뿜어내는 총체적인 '공간 수익성'을 객실 모수로 나누어 직관적으로 보여줍니다. <strong>(※ 모토아레나 제외)</strong>
+                  <code>(객실 + 식음 + 레저 + 모토아레나 + 기타 총매출) ÷ (총 가용 객실 수)</code><br/>
+                  투숙객과 워크인(비투숙 외부 방문객)을 가리지 않고, 리조트라는 거대한 공간 시설 전체가 하루에 뿜어내는 총체적인 '공간 수익성'을 객실 모수로 나누어 직관적으로 보여줍니다.
                 </div>
               </div>
               <div className="math-step">
                 <span className="step-num">지표 3: 순수(Pure) TrevPAR (객실 + 투숙객 부대매출)</span>
                 <div style={{color: 'var(--text-muted)'}}>
-                  <code>[ (총 객실 매출) + (레저매출 × 투숙객비중) + (식음매출 × 투숙객비중) ] ÷ (총 가용 객실 수)</code><br/>
-                  방 1개를 채웠을 때, 오직 <strong>'그 투숙객'</strong>이 식당, 레저 등에서 카드를 긁을 것으로 기대되는 수익을 합친 <strong>진짜 객실 1개의 연계 가치</strong>입니다. <strong>(※ 모토아레나 제외)</strong>
+                  <code>[ (총 객실 매출) + (레저매출 × 비중) + (식음매출 × 비중) + (모토 투숙객매출) ] ÷ (총 가용 객실 수)</code><br/>
+                  방 1개를 채웠을 때, 오직 <strong>'그 투숙객'</strong>이 식당, 레저, 모토아레나 등에서 카드를 긁을 것으로 기대되는 수익을 합친 <strong>진짜 객실 1개의 연계 가치</strong>입니다.
                 </div>
               </div>
             </div>
@@ -428,7 +428,7 @@ export default function LogicGuide() {
               <div className="math-step">
                 <span className="step-num">Step 2: 일반객 매출 뻥튀기 방지</span>
                 <div style={{color: 'var(--text-muted)'}}>
-                  신규 객실에 따른 모토아레나 파생 매출을 예측할 때, 무식하게 총매출을 사용하지 않고 오직 <strong>Step 1에서 투숙객으로 분류된 매출액의 합계</strong>만을 추출하여 객단가 분모로 사용합니다. 이를 통해 일반객 비중이 객실 수익으로 뻥튀기되는 치명적인 오류를 원천 차단합니다.
+                  신규 객실에 따른 모토아레나 창출 매출을 예측할 때, 무식하게 총매출을 사용하지 않고 오직 <strong>Step 1에서 투숙객으로 분류된 매출액의 합계</strong>만을 추출하여 객단가 분모로 사용합니다. 이를 통해 일반객 비중이 객실 수익으로 뻥튀기되는 치명적인 오류를 원천 차단합니다.
                 </div>
               </div>
               <div className="math-step">
@@ -455,7 +455,7 @@ export default function LogicGuide() {
             <div className="icon-circle" style={{background: 'rgba(244, 63, 94, 0.1)'}}>
               <Building2 size={24} className="text-rose" style={{color: '#f43f5e'}} />
             </div>
-            <h3>10. 미래 파생 매출 가동률 상한선(Capa Ceiling Limit) 알고리즘</h3>
+            <h3>10. 미래 창출 매출 가동률 상한선(Capa Ceiling Limit) 알고리즘</h3>
           </div>
           <div className="card-body">
             <p>
@@ -486,8 +486,8 @@ export default function LogicGuide() {
               <div className="math-step">
                 <span className="step-num">Step 4: 매출 증가량 방어(Cap) 적용</span>
                 <div style={{color: 'var(--text-muted)'}}>
-                  <code>실제 파생 매출 = MIN (객실 증가에 따른 단순 기대 파생매출, 남은 성장 여력)</code><br/>
-                  아무리 객실을 많이 지어도 파생 매출은 2억에서 멈추며(버려짐), 시뮬레이터 화면에는 <strong>*Capa 상한 도달 (초과분 버림)</strong>이라는 강력한 알림이 표시됩니다.
+                  <code>실제 창출 매출 = MIN (객실 증가에 따른 단순 기대 창출 매출, 남은 성장 여력)</code><br/>
+                  아무리 객실을 많이 지어도 창출 매출은 2억에서 멈추며(버려짐), 시뮬레이터 화면에는 <strong>*Capa 상한 도달 (초과분 버림)</strong>이라는 강력한 알림이 표시됩니다.
                 </div>
               </div>
             </div>
@@ -495,7 +495,7 @@ export default function LogicGuide() {
             <div className="alert-box success" style={{marginTop: '16px', borderColor: 'rgba(244, 63, 94, 0.3)', background: 'rgba(244, 63, 94, 0.05)'}}>
               <CheckCircle2 size={16} style={{color: '#f43f5e'}} />
               <span style={{color: 'var(--text-main)'}}>
-                <strong>💡 이 방어벽의 가치:</strong> 신규 사업(연수원) 건립 타당성을 검토할 때, 과도하게 부풀려진 장밋빛 파생 매출에 속아 잘못된 투자를 결정하는 리스크를 시스템이 선제적으로 완벽하게 막아줍니다.
+                <strong>💡 이 방어벽의 가치:</strong> 신규 사업(연수원) 건립 타당성을 검토할 때, 과도하게 부풀려진 장밋빛 창출 매출에 속아 잘못된 투자를 결정하는 리스크를 시스템이 선제적으로 완벽하게 막아줍니다.
               </span>
             </div>
           </div>
