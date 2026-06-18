@@ -327,7 +327,7 @@ export default function VisitorCalculation({ processedData, globalStats, setting
                 </div>
                 <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px' }}>총 방문객에서 숙박객({formatNumber(stayingGuests)}명)을 제외한 외부 유입 순수 고객입니다.</div>
               </div>
-              <div style={{ fontSize: '42px', fontWeight: 'bold', color: 'var(--accent-emerald)', textShadow: '0 0 20px rgba(16, 185, 129, 0.4)' }}>
+              <div style={{ fontSize: '40px', fontWeight: 'bold', color: 'var(--accent-emerald)', textShadow: '0 0 20px rgba(16, 185, 129, 0.4)' }}>
                 {formatNumber(walkInGuests)} 명
               </div>
             </div>

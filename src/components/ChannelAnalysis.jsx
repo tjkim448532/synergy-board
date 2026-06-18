@@ -107,7 +107,7 @@ export default function ChannelAnalysis({ processedData, globalStats, settings }
     groups.delete('golf');
     groups.delete('other');
 
-    if (groups.has('leisure')) config.leisure = { title: '레져본부', dataKey: 'leisureSales', color: 'var(--accent-purple)' };
+    if (groups.has('leisure')) config.leisure = { title: '레저본부', dataKey: 'leisureSales', color: 'var(--accent-purple)' };
     if (groups.has('fnb')) config.fnb = { title: '식음 부문', dataKey: 'fnbSales', color: 'var(--accent-blue)' };
     if (groups.has('moto')) config.moto = { title: '모토아레나', dataKey: 'motoSales', color: 'var(--accent-gold)' };
     if (groups.has('golf')) config.golf = { title: '골프 부문', dataKey: 'golfSales', color: 'var(--accent-purple)' };

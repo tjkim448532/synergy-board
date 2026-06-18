@@ -293,7 +293,7 @@ export default function Settings({ monthlyData }) {
       return;
     }
 
-    if (window.confirm(`📊 [AI 데이터 기반 추정 결과]\n\n업로드된 전체 엑셀 데이터를 선형 회귀 분석한 결과, 다음의 투숙객 매출 비중(Capture Rate)이 가장 통계적으로 유력합니다:\n\n- 레져본부 투숙객 비중: ${estLeisure}%\n- 식음 부문 투숙객 비중: ${estFnb}%\n- 모토아레나 투숙객 비중: ${estMoto}%\n\n이 추정값을 설정에 덮어쓰고 적용하시겠습니까?`)) {
+    if (window.confirm(`📊 [AI 데이터 기반 추정 결과]\n\n업로드된 전체 엑셀 데이터를 선형 회귀 분석한 결과, 다음의 투숙객 매출 비중(Capture Rate)이 가장 통계적으로 유력합니다:\n\n- 레저본부 투숙객 비중: ${estLeisure}%\n- 식음 부문 투숙객 비중: ${estFnb}%\n- 모토아레나 투숙객 비중: ${estMoto}%\n\n이 추정값을 설정에 덮어쓰고 적용하시겠습니까?`)) {
       setSettings(prev => ({
         ...prev,
         captureRateLeisure: estLeisure,
@@ -463,7 +463,7 @@ export default function Settings({ monthlyData }) {
       >
         <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
           <div className="form-group" style={{flex: 1, minWidth: '150px'}}>
-            <label htmlFor="captureRateLeisure">레져본부 투숙객 비중 (%)</label>
+            <label htmlFor="captureRateLeisure">레저본부 투숙객 비중 (%)</label>
             <input 
               type="number" 
               id="captureRateLeisure" 
@@ -583,7 +583,7 @@ export default function Settings({ monthlyData }) {
                           checked={currentGroup === 'leisure'}
                           onChange={() => handleLocationGroupChange(loc, 'leisure')}
                           style={{accentColor: 'var(--accent-emerald)'}}
-                        /> 레져본부
+                        /> 레저본부
                       </label>
                       <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', whiteSpace: 'nowrap', color: currentGroup === 'fnb' ? 'var(--accent-blue)' : 'var(--text-muted)'}}>
                         <input 
@@ -646,7 +646,7 @@ export default function Settings({ monthlyData }) {
               </h4>
               <div style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>
                 {[
-                  { id: 'leisure', title: '레져본부', color: 'var(--accent-emerald)' },
+                  { id: 'leisure', title: '레저본부', color: 'var(--accent-emerald)' },
                   { id: 'fnb', title: '식음 부문', color: 'var(--accent-blue)' },
                   { id: 'moto', title: '모토아레나', color: 'var(--accent-gold)' },
                   { id: 'golf', title: '골프 부문', color: '#22c55e' },
@@ -664,7 +664,7 @@ export default function Settings({ monthlyData }) {
                     <div key={group.id}>
                       <div style={{fontSize: '13px', color: group.color, fontWeight: 'bold', marginBottom: '8px', display: 'flex', justifyContent: 'space-between'}}>
                         <span>{group.title}</span>
-                        <span style={{background: `${group.color}20`, padding: '2px 8px', borderRadius: '10px', fontSize: '11px'}}>{items.length}곳</span>
+                        <span style={{background: `${group.color}20`, padding: '2px 8px', borderRadius: '10px', fontSize: '12px'}}>{items.length}곳</span>
                       </div>
                       <div style={{display: 'flex', flexWrap: 'wrap', gap: '6px'}}>
                         {items.map(item => (
@@ -763,7 +763,7 @@ export default function Settings({ monthlyData }) {
             </div>
           </div>
           <div style={{background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '8px'}}>
-            <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-muted)'}}>레져본부 가동률</label>
+            <label style={{display: 'block', marginBottom: '8px', color: 'var(--text-muted)'}}>레저본부 가동률</label>
             <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
               <input 
                 type="number" 
@@ -837,12 +837,12 @@ export default function Settings({ monthlyData }) {
 - 최근 총 객실 매출액: ${totalRooms.toLocaleString()}원
 
 [2. 투숙객 캡쳐율 (Capture Rate) 데이터]
-- 레져본부 투숙객 캡쳐율: ${lCap}%
+- 레저본부 투숙객 캡쳐율: ${lCap}%
 - 식음(F&B) 부문 투숙객 캡쳐율: ${fCap}%
 - 모토아레나 투숙객 캡쳐율: ${mCap}%
 
 [3. 구글 및 맥킨지 관점의 경영진 제안 및 전략 방향성]
-- 포트폴리오 믹스 최적화 제안: "레져본부의 점유율이 80%를 넘어서는 병목 구간(주말)에서, 식음(F&B) 및 모토아레나로의 전환율 추세를 보았을 때 투숙객의 추가 지출(Share of Wallet)을 유도하기 위한 패키징 전략 재설계가 시급합니다."
+- 포트폴리오 믹스 최적화 제안: "레저본부의 점유율이 80%를 넘어서는 병목 구간(주말)에서, 식음(F&B) 및 모토아레나로의 전환율 추세를 보았을 때 투숙객의 추가 지출(Share of Wallet)을 유도하기 위한 패키징 전략 재설계가 시급합니다."
 - 신사업(연수원 등) 타당성: "기존 데이터의 주중/주말 매출 상관관계를 통해 볼 때, 신사업(B2B 연수원)의 도입은 주중 공실률을 채우는 핵심 '캐시카우' 역할을 할 것이며, 이는 전체 리조트의 BEP(손익분기점) 달성 시기를 앞당길 가장 강력한 레버리지입니다."
 - 디지털 트랜스포메이션 방향: "현재의 인메모리 대시보드 구조에서 나아가, 구글 Cloud Functions 기반의 서버리스 데이터 파이프라인(ETL)을 구축하여 예측 모델의 정확도를 BigQuery ML 수준으로 고도화해야 합니다."
 

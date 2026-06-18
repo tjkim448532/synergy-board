@@ -388,7 +388,7 @@ export default function RevenuePrediction({ processedData, globalStats, settings
                   <div style={{color: 'var(--accent-gold)', fontWeight: 'bold', fontSize: '20px'}}>VS</div>
                   
                   <div style={{flex: 1, padding: '16px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px', border: '1px solid var(--accent-emerald)', position: 'relative'}}>
-                    <div style={{position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)', background: 'var(--accent-emerald)', color: 'white', padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: 'bold', whiteSpace: 'nowrap'}}>
+                    <div style={{position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)', background: 'var(--accent-emerald)', color: 'white', padding: '2px 8px', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap'}}>
                       목표 객단가 달성 시
                     </div>
                     <div style={{fontSize: '13px', color: 'var(--accent-emerald)', marginBottom: '8px', marginTop: '4px'}}>전략 목표 기준</div>
@@ -425,7 +425,7 @@ export default function RevenuePrediction({ processedData, globalStats, settings
           <div style={{flex: '1 1 240px', background: 'rgba(0,0,0,0.3)', padding: '30px 20px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
             <div>
               <div style={{color: 'var(--text-muted)', fontSize: '18px', marginBottom: '16px'}}>
-                예상 레져본부 매출
+                예상 레저본부 매출
                 {regLeisureTotal && regLeisureTotal.r !== undefined && (
                   <span style={{fontSize: '12px', marginLeft: '8px', opacity: 0.7}} title="상관관계지수 (1에 가까울수록 예측 신뢰도 높음)">
                     (r={regLeisureTotal.r.toFixed(2)})
@@ -586,7 +586,7 @@ export default function RevenuePrediction({ processedData, globalStats, settings
             <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: '1.4'}}>
               💡 <strong>해석 가이드:</strong> 둥근 점들은 <strong>'과거의 실제 성적'</strong>을 나타내고, 직선(---)은 AI가 과거 데이터를 바탕으로 그어놓은 <strong>'미래 매출 예측 궤도'</strong>입니다.
               <br/>
-              <span style={{fontSize: '11px', color: 'rgba(255,255,255,0.4)'}}>
+              <span style={{fontSize: '12px', color: 'rgba(255,255,255,0.4)'}}>
                 (※ 세로축의 'M'은 백만 단위를 뜻합니다. 예: 800M = 8억 원)
               </span>
             </p>

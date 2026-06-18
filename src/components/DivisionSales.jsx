@@ -14,7 +14,7 @@ const CHART_COLORS = {
 };
 
 const DIVISION_NAMES = {
-  leisure: '레져본부',
+  leisure: '레저본부',
   fnb: '식음 부문',
   moto: '모토아레나',
   golf: '골프 부문',
@@ -175,7 +175,7 @@ export default function DivisionSales({ processedData: globalProcessedData, glob
               <th>월 (Month)</th>
               <th>
                 <div style={{marginBottom: '4px'}}>총매출</div>
-                <span style={{fontSize:'11px', color:'var(--text-muted)', fontWeight:'normal', display:'block'}}>(골프포함)</span>
+                <span style={{fontSize: '12px', color:'var(--text-muted)', fontWeight:'normal', display:'block'}}>(골프포함)</span>
               </th>
 
               <th style={{color: CHART_COLORS.room}}>{DIVISION_NAMES.room}</th>

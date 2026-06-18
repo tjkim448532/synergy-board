@@ -49,7 +49,7 @@ export default function LogicGuide() {
                 <h4 style={{color: 'var(--accent-blue)', marginBottom: '8px'}}>A. 객실 판매 엑셀 (상세 데이터)</h4>
                 <ul style={{fontSize: '13px', lineHeight: '1.6'}}>
                   <li><CheckCircle2 size={14} className="text-emerald" /> <strong>원본 스키마:</strong> 예약건 단위 혹은 일자 단위로 기록된 세로형 리포트 (필수 열: 일자, 객실타입, 수량, 실매출 등)</li>
-                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>추출 로직:</strong> '일자'를 기준으로 행을 찾고, '객실타입(16평/35평/51평)', '판매객실수', '실매출(Net Revenue)', '요금제', '마켓/소스타입(채널)'을 긁어옵니다.</li>
+                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>추출 로직:</strong> '일자'를 기준으로 행을 찾고, '객실타입(16평/35평/51평)', '판매객실수', '실매출(Net Revenue)', '요금제', '마켓/소스타입(채널)'을 추출합니다.</li>
                   <li><CheckCircle2 size={14} className="text-emerald" /> <strong>시스템 내 활용처:</strong> 
                     <br/>- 전체 대시보드의 '객실당 평균가(ADR)', '가용객실당 매출(RevPAR)' 자동 역산 및 시계열 분석 기준점
                     <br/>- 예약 채널별(OTA, 홈페이지 등), 요일별 심층 판매 분석
@@ -70,7 +70,7 @@ export default function LogicGuide() {
                 </ul>
                 <div className="alert-box success" style={{marginTop: '12px', borderColor: 'rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.05)', padding: '10px'}}>
                   <Info size={14} style={{color: '#ef4444', flexShrink: 0}} />
-                  <span style={{color: 'var(--text-main)', fontSize: '12.5px', lineHeight: '1.5'}}>
+                  <span style={{color: 'var(--text-main)', fontSize: '13px', lineHeight: '1.5'}}>
                     <strong>💡 [중요] [B파일] 안의 객실 매출 취급 로직:</strong><br/>
                     이 엑셀 안에도 <code>ROOM</code> 매출이 찍혀 나오지만 실적 합산에서는 <strong>고의로 버립니다(필터링).</strong> 대신 여기서 뽑아낸 ROOM 총액은, 앞서 올린 <strong>[A. 객실 엑셀]의 합계액과 1원 단위까지 일치하는지 백그라운드에서 교차 대조(Cross-check)</strong>하여 엑셀 추출 누락이나 조작이 없었는지 판별하는 '정합성 검증용 잣대'로만 강력하게 쓰입니다.
                   </span>
@@ -84,7 +84,7 @@ export default function LogicGuide() {
                   <li><CheckCircle2 size={14} className="text-emerald" /> <strong>원본 스키마:</strong> 모토아레나에서 팔린 티켓별/고객유형별 거래 내역 리포트 (필수 열: 상품명/트랜잭션명, 실매출액)</li>
                   <li><CheckCircle2 size={14} className="text-emerald" /> <strong>추출 로직:</strong> '상품명' 열에 적힌 텍스트를 파싱하여 키워드 매칭을 수행합니다. (예: '객실', '콘도' 키워드 → 투숙객 / '일반', '단체' → 일반객 / '임직원', '회원' → 내부객 / 나머지 → 기타)</li>
                   <li><CheckCircle2 size={14} className="text-emerald" /> <strong>시스템 내 활용처:</strong> 
-                    <br/>- 모토아레나 전체 매출 중, <strong>실제로 리조트에 숙박하면서 모토아레나를 이용한 '투숙객 비중(Captive Rate)'</strong>을 발라내어 별도의 전환율(Conversion Rate) 심층 분석 화면에 뿌려줍니다.
+                    <br/>- 모토아레나 전체 매출 중, <strong>실제로 리조트에 숙박하면서 모토아레나를 이용한 '투숙객 비중(Captive Rate)'</strong>을 분리하여 별도의 전환율(Conversion Rate) 심층 분석 화면에 제공합니다.
                   </li>
                 </ul>
               </div>
@@ -256,7 +256,7 @@ export default function LogicGuide() {
               <div className="math-step">
                 <span className="step-num">Step 3: 물리적 객실 환산 및 평형별 매출 합산</span>
                 <div style={{color: 'var(--text-muted)'}}>
-                  가상으로 분배된 객실 수를 <strong>물리적 키(Key) 개수</strong>로 환원한 뒤 목표 단가를 곱합니다. (예: 51평 커넥팅룸이 가상 2객실로 잡혔다면, 1개로 환원하여 51평 단가를 1번만 곱해 매출 중복 뻥튀기를 방지합니다.)<br/>
+                  가상으로 분배된 객실 수를 <strong>물리적 키(Key) 개수</strong>로 환원한 뒤 목표 단가를 곱합니다. (예: 51평 커넥팅룸이 가상 2객실로 잡혔다면, 1개로 환원하여 51평 단가를 1번만 곱해 매출 중복 과대계상를 방지합니다.)<br/>
                   <code>(16평 물리판매량 × 16평 목표단가) + (35평 물리판매량 × 35평 목표단가) + (51평 물리판매량 × 51평 목표단가)</code>
                 </div>
               </div>
@@ -280,7 +280,7 @@ export default function LogicGuide() {
           </div>
           <div className="card-body">
             <p>
-              "온라인으로 예약한 사람이 모토아레나에서 돈을 썼는가?"를 직접 1:1로 추적하려면 객실 시스템(PMS)과 업장 포스(POS) 데이터가 고객 단위로 연동되어야 합니다. 그러나 현재 엑셀 업로드 방식은 독립된 월별 총합계 데이터이므로, <strong>'월별 채널 매출의 흐름'</strong>과 <strong>'월별 부대시설 매출의 흐름'</strong> 간의 거시적 통계 상관계수(Pearson Correlation)를 도출하여 이를 극복합니다.
+              "온라인으로 예약한 사람이 모토아레나에서 매출을 발생시켰는가?"를 직접 1:1로 추적하려면 객실 시스템(PMS)과 업장 포스(POS) 데이터가 고객 단위로 연동되어야 합니다. 그러나 현재 엑셀 업로드 방식은 독립된 월별 총합계 데이터이므로, <strong>'월별 채널 매출의 흐름'</strong>과 <strong>'월별 부대시설 매출의 흐름'</strong> 간의 거시적 통계 상관계수(Pearson Correlation)를 도출하여 이를 극복합니다.
             </p>
             
             <div className="formula-box vertical" style={{marginTop: '16px'}}>
@@ -345,7 +345,7 @@ export default function LogicGuide() {
                 <span className="step-num">지표 3: 순수(Pure) TrevPAR (객실 + 투숙객 부대매출)</span>
                 <div style={{color: 'var(--text-muted)'}}>
                   <code>[ (총 객실 매출) + (레저매출 × 비중) + (식음매출 × 비중) + (모토 투숙객매출) ] ÷ (총 가용 객실 수)</code><br/>
-                  방 1개를 채웠을 때, 오직 <strong>'그 투숙객'</strong>이 식당, 레저, 모토아레나 등에서 카드를 긁을 것으로 기대되는 수익을 합친 <strong>진짜 객실 1개의 연계 가치</strong>입니다.
+                  방 1개를 채웠을 때, 오직 <strong>'그 투숙객'</strong>이 식당, 레저, 모토아레나 등에서 소비할 것으로 기대되는 수익을 합친 <strong>진짜 객실 1개의 연계 가치</strong>입니다.
                 </div>
               </div>
             </div>
@@ -354,7 +354,7 @@ export default function LogicGuide() {
               <Info size={16} style={{color: '#eab308'}} />
               <span style={{color: 'var(--text-main)'}}>
                 <strong>💡 '순수'와 'Gross'가 벌어지는 원리 (워크인 변수 통제):</strong><br/>
-                현재 엑셀의 결제 데이터에는 '투숙객'과 '워크인'이 섞여 있습니다. 시스템은 [설정] 탭에 입력된 <strong>투숙객 매출 비중(Capture Rate %)</strong>이라는 돋보기를 통해 전체 매출에서 수학적으로 투숙객 지분만 깎아내어(필터링) 순수 TrevPAR를 계산합니다. 따라서, Gross와 순수 TrevPAR 사이의 금액 격차는 온전히 <strong>외부 나들이객(워크인)이 기여한 매출분</strong>을 의미합니다.
+                현재 엑셀의 결제 데이터에는 '투숙객'과 '워크인'이 섞여 있습니다. 시스템은 [설정] 탭에 입력된 <strong>투숙객 매출 비중(Capture Rate %)</strong>이라는 돋보기를 통해 전체 매출에서 수학적으로 투숙객 지분만 제외하여(필터링) 순수 TrevPAR를 계산합니다. 따라서, Gross와 순수 TrevPAR 사이의 금액 격차는 온전히 <strong>외부 나들이객(워크인)이 기여한 매출분</strong>을 의미합니다.
               </span>
             </div>
           </div>
@@ -426,15 +426,15 @@ export default function LogicGuide() {
                 </div>
               </div>
               <div className="math-step">
-                <span className="step-num">Step 2: 일반객 매출 뻥튀기 방지</span>
+                <span className="step-num">Step 2: 일반객 매출 과대계상 방지</span>
                 <div style={{color: 'var(--text-muted)'}}>
-                  신규 객실에 따른 모토아레나 창출 매출을 예측할 때, 무식하게 총매출을 사용하지 않고 오직 <strong>Step 1에서 투숙객으로 분류된 매출액의 합계</strong>만을 추출하여 객단가 분모로 사용합니다. 이를 통해 일반객 비중이 객실 수익으로 뻥튀기되는 치명적인 오류를 원천 차단합니다.
+                  신규 객실에 따른 모토아레나 창출 매출을 예측할 때, 단순 합산 방식의 오류를 방지하고 오직 <strong>Step 1에서 투숙객으로 분류된 매출액의 합계</strong>만을 추출하여 객단가 분모로 사용합니다. 이를 통해 일반객 비중이 객실 수익으로 과대계상되는 치명적인 오류를 원천 차단합니다.
                 </div>
               </div>
               <div className="math-step">
                 <span className="step-num">Step 3: 비중 + 상관관계 결합에 의한 '허수 판별' (핵심)</span>
                 <div style={{color: 'var(--text-muted)'}}>
-                  투숙객 매출을 객실 매출과 비교하여 피어슨 상관계수(r)를 구합니다. 단, <strong>상관계수(r)가 1에 가깝게 높게 나오더라도, 티켓 판매 전체에서 투숙객이 차지하는 비중(%) 자체가 쥐꼬리만 하다면 이는 비즈니스 성장을 이끌 수 없는 '통계적 착시(허수)'</strong>로 규정합니다.
+                  투숙객 매출을 객실 매출과 비교하여 피어슨 상관계수(r)를 구합니다. 단, <strong>상관계수(r)가 1에 가깝게 높게 나오더라도, 티켓 판매 전체에서 투숙객이 차지하는 비중(%) 자체가 매우 미미하다면 이는 비즈니스 성장을 이끌 수 없는 '통계적 착시(허수)'</strong>로 규정합니다.
                 </div>
               </div>
             </div>

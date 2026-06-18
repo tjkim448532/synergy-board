@@ -220,7 +220,7 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
               {customAdr !== null && (
                 <button 
                   onClick={() => setCustomAdr(null)}
-                  style={{background: 'none', border: 'none', color: 'var(--accent-gold)', cursor: 'pointer', fontSize: '11px', textDecoration: 'underline'}}
+                  style={{background: 'none', border: 'none', color: 'var(--accent-gold)', cursor: 'pointer', fontSize: '12px', textDecoration: 'underline'}}
                 >
                   초기화
                 </button>
@@ -255,7 +255,7 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
 
           <div className="glass-panel" style={{padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: 'rgba(59, 130, 246, 0.1)', borderTop: '4px solid var(--accent-blue)'}}>
             <div style={{fontSize: '16px', color: 'var(--accent-blue)', marginBottom: '8px', fontWeight: 'bold'}}>미래 종합 연간 예상 매출</div>
-            <div style={{fontSize: '42px', fontWeight: '900', color: '#fff', letterSpacing: '-1px'}}>
+            <div style={{fontSize: '40px', fontWeight: '900', color: '#fff', letterSpacing: '-1px'}}>
               ₩<CountUp end={((baseMetrics.totRev + baseMetrics.totLeisure + baseMetrics.totMoto + baseMetrics.totFnb + baseMetrics.totOther) / baseMetrics.monthsCount * 12) + expectedTotalRev} duration={1} separator="," preserveValue />
             </div>
             <div style={{fontSize: '13px', color: 'rgba(255,255,255,0.7)', marginTop: '8px'}}>기존 매출 + 신규 창출 매출</div>
@@ -284,8 +284,8 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
               </div>
               <div style={{textAlign: 'right'}}>
                 <strong style={{fontSize: '18px', color: !baseMetrics.validFnb ? 'var(--text-muted)' : fnbSim.isCapped ? '#ef4444' : 'inherit'}}>₩{formatCurrency(expectedFnbRev)}</strong>
-                {!baseMetrics.validFnb && <div style={{fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px'}}>*상관관계 지수 미달 (제외됨)</div>}
-                {baseMetrics.validFnb && fnbSim.isCapped && <div style={{fontSize: '11px', color: '#ef4444', marginTop: '4px'}}>*Capa 상한 도달 (초과분 버림)</div>}
+                {!baseMetrics.validFnb && <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px'}}>*상관관계 지수 미달 (제외됨)</div>}
+                {baseMetrics.validFnb && fnbSim.isCapped && <div style={{fontSize: '12px', color: '#ef4444', marginTop: '4px'}}>*Capa 상한 도달 (초과분 버림)</div>}
               </div>
             </div>
 
@@ -296,8 +296,8 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
               </div>
               <div style={{textAlign: 'right'}}>
                 <strong style={{fontSize: '18px', color: !baseMetrics.validMoto ? 'var(--text-muted)' : motoSim.isCapped ? 'var(--accent-gold)' : 'inherit'}}>₩{formatCurrency(expectedMotoRev)}</strong>
-                {!baseMetrics.validMoto && <div style={{fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px'}}>*상관관계 지수 미달 (제외됨)</div>}
-                {baseMetrics.validMoto && motoSim.isCapped && <div style={{fontSize: '11px', color: 'var(--accent-gold)', marginTop: '4px'}}>*Capa 상한 도달 (초과분 버림)</div>}
+                {!baseMetrics.validMoto && <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px'}}>*상관관계 지수 미달 (제외됨)</div>}
+                {baseMetrics.validMoto && motoSim.isCapped && <div style={{fontSize: '12px', color: 'var(--accent-gold)', marginTop: '4px'}}>*Capa 상한 도달 (초과분 버림)</div>}
               </div>
             </div>
 
@@ -308,8 +308,8 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
               </div>
               <div style={{textAlign: 'right'}}>
                 <strong style={{fontSize: '18px', color: !baseMetrics.validLeisure ? 'var(--text-muted)' : leisureSim.isCapped ? 'var(--accent-emerald)' : 'inherit'}}>₩{formatCurrency(expectedLeisureRev)}</strong>
-                {!baseMetrics.validLeisure && <div style={{fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px'}}>*상관관계 지수 미달 (제외됨)</div>}
-                {baseMetrics.validLeisure && leisureSim.isCapped && <div style={{fontSize: '11px', color: 'var(--accent-emerald)', marginTop: '4px'}}>*Capa 상한 도달 (초과분 버림)</div>}
+                {!baseMetrics.validLeisure && <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px'}}>*상관관계 지수 미달 (제외됨)</div>}
+                {baseMetrics.validLeisure && leisureSim.isCapped && <div style={{fontSize: '12px', color: 'var(--accent-emerald)', marginTop: '4px'}}>*Capa 상한 도달 (초과분 버림)</div>}
               </div>
             </div>
 

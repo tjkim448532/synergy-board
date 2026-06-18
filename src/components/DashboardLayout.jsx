@@ -112,7 +112,7 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }) {
           }</h1>
           <div className="user-profile">
             <div className="avatar">L</div>
-            <span>레져본부</span>
+            <span>레저본부</span>
           </div>
         </header>
         

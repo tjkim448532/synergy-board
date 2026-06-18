@@ -56,7 +56,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     };
     
     const groupLabels = {
-        leisure: '레져본부',
+        leisure: '레저본부',
         fnb: '식음 부문',
         moto: '모토아레나',
         golf: '골프 부문',
@@ -503,7 +503,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
               </div>
             </label>
           </div>
-          <div style={{fontSize: '56px', fontWeight: '900', color: 'var(--text-main)', textShadow: '0 0 20px rgba(251,191,36,0.5)'}}>
+          <div style={{fontSize: '48px', fontWeight: '900', color: 'var(--text-main)', textShadow: '0 0 20px rgba(251,191,36,0.5)'}}>
             {displayVisitors !== null ? <CountUp end={displayVisitors} duration={2} separator="," /> : '...'}
           </div>
           <p style={{margin: 0, color: 'var(--text-muted)', fontSize: '14px'}}>
@@ -513,7 +513,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px dashed rgba(255,255,255,0.1)'}}>
               <div>
                 <div style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '2px'}}>방문객 1인당 평균 소비액</div>
-                <div style={{fontSize:'10px', color: 'var(--text-muted)', opacity: 0.7}}>(골프 및 숙박비 제외 / 부대매출 합산)</div>
+                <div style={{fontSize: '12px', color: 'var(--text-muted)', opacity: 0.7}}>(골프 및 숙박비 제외 / 부대매출 합산)</div>
               </div>
               <div style={{fontSize: '20px', fontWeight: 'bold', color: 'var(--accent-gold)'}}>
                 {displayVisitors > 0 && kpiData ? `₩${Math.round(kpiData.totalSubsidiaryRev / displayVisitors).toLocaleString()}` : '₩0'}
@@ -522,7 +522,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
               <div>
                 <div style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '2px'}}>1인당 식음비</div>
-                <div style={{fontSize:'10px', color: 'var(--text-muted)', opacity: 0.7}}>(식음 + 핏스탑 특별 합산 기준)</div>
+                <div style={{fontSize: '12px', color: 'var(--text-muted)', opacity: 0.7}}>(식음 + 핏스탑 특별 합산 기준)</div>
               </div>
               <div style={{fontSize: '18px', fontWeight: 'bold', color: 'var(--accent-emerald)'}}>
                 {displayVisitors > 0 && kpiData ? `₩${Math.round(kpiData.totalFnbAndPitstopRev / displayVisitors).toLocaleString()}` : '₩0'}
@@ -537,7 +537,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
           <h2 style={{margin: 0, color: 'var(--accent-emerald)', fontSize: '24px', display: 'flex', alignItems: 'center', gap: '12px'}}>
             🛏️ {isCumulative || selectedMonthFilter === 'all' || selectedMonthFilter.endsWith('-all') ? '누적 숙박객' : '월간 숙박객'} <span style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.3)', padding: '4px 8px', borderRadius: '4px'}}>DB 기반 연산</span>
           </h2>
-          <div style={{fontSize: '56px', fontWeight: '900', color: 'var(--text-main)', textShadow: '0 0 20px rgba(52,211,153,0.5)'}}>
+          <div style={{fontSize: '48px', fontWeight: '900', color: 'var(--text-main)', textShadow: '0 0 20px rgba(52,211,153,0.5)'}}>
             <CountUp end={totalHotelGuests} duration={2} separator="," />
           </div>
           <p style={{margin: 0, color: 'var(--text-muted)', fontSize: '14px'}}>
@@ -816,7 +816,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
           <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: '1.4'}}>
             💡 <strong>해석 가이드:</strong> 초록색 선(점유율)과 매출 선의 오르내리는 모습이 비슷할수록, 해당 부문의 매출이 투숙객 수에 크게 의존하고 있음을 뜻합니다.
             <br/>
-            <span style={{fontSize: '11px', color: 'rgba(255,255,255,0.4)'}}>
+            <span style={{fontSize: '12px', color: 'rgba(255,255,255,0.4)'}}>
               (※ 좌측 숫자는 리조트 전체 통합 객실 점유율(%)을 의미하며, 우측 세로축의 'M'은 백만 단위를 뜻합니다. 예: 800M = 8억 원)
             </span>
           </p>
@@ -851,7 +851,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
               <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: '1.4'}}>
                 💡 <strong>해석 가이드:</strong> 점들이 우측 상단(↗)으로 좁게 뭉쳐서 뻗어나갈수록, 해당 평형의 투숙객이 돈을 많이 쓴다는 증거입니다.
                 <br/>
-                <span style={{fontSize: '11px', color: 'rgba(255,255,255,0.4)'}}>
+                <span style={{fontSize: '12px', color: 'rgba(255,255,255,0.4)'}}>
                   (※ 가로축(X)은 객실 판매량(실)을 나타내며, 세로축(Y)의 'M'은 백만 단위의 매출을 뜻합니다. 예: 800M = 8억 원)
                 </span>
               </p>
