@@ -388,7 +388,7 @@ export default function RevenuePrediction({ processedData, globalStats, settings
                   <div style={{color: 'var(--accent-gold)', fontWeight: 'bold', fontSize: '20px'}}>VS</div>
                   
                   <div style={{flex: 1, padding: '16px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px', border: '1px solid var(--accent-emerald)', position: 'relative'}}>
-                    <div style={{position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)', background: 'var(--accent-emerald)', color: 'white', padding: '2px 8px', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap'}}>
+                    <div style={{position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)', background: 'var(--accent-emerald)', color: 'white', padding: '2px 8px', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'normal', wordBreak: 'keep-all', overflowWrap: 'anywhere'}}>
                       목표 객단가 달성 시
                     </div>
                     <div style={{fontSize: '13px', color: 'var(--accent-emerald)', marginBottom: '8px', marginTop: '4px'}}>전략 목표 기준</div>
@@ -402,7 +402,7 @@ export default function RevenuePrediction({ processedData, globalStats, settings
                 </div>
               ) : (
                 <>
-                  <div className="responsive-large-number" style={{color: 'var(--accent-blue)', whiteSpace: 'nowrap'}}>
+                  <div className="responsive-large-number" style={{color: 'var(--accent-blue)', whiteSpace: 'normal', wordBreak: 'keep-all', overflowWrap: 'anywhere'}}>
                     ₩ <CountUp end={expectedRoomRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
                   </div>
                 </>
@@ -433,7 +433,7 @@ export default function RevenuePrediction({ processedData, globalStats, settings
                 )}
               </div>
               {validLeisure ? (
-                <div className="responsive-large-number" style={{color: 'var(--accent-purple)', whiteSpace: 'nowrap'}}>
+                <div className="responsive-large-number" style={{color: 'var(--accent-purple)', whiteSpace: 'normal', wordBreak: 'keep-all', overflowWrap: 'anywhere'}}>
                   ₩ <CountUp end={expectedLeisureRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
                 </div>
               ) : (
@@ -467,7 +467,7 @@ export default function RevenuePrediction({ processedData, globalStats, settings
                 )}
               </div>
               {validMoto ? (
-                <div className="responsive-large-number" style={{color: 'var(--accent-gold)', whiteSpace: 'nowrap'}}>
+                <div className="responsive-large-number" style={{color: 'var(--accent-gold)', whiteSpace: 'normal', wordBreak: 'keep-all', overflowWrap: 'anywhere'}}>
                   ₩ <CountUp end={expectedMotoRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
                 </div>
               ) : (
@@ -501,7 +501,7 @@ export default function RevenuePrediction({ processedData, globalStats, settings
                 )}
               </div>
               {validFnb ? (
-                <div className="responsive-large-number" style={{color: 'var(--accent-blue)', whiteSpace: 'nowrap'}}>
+                <div className="responsive-large-number" style={{color: 'var(--accent-blue)', whiteSpace: 'normal', wordBreak: 'keep-all', overflowWrap: 'anywhere'}}>
                   ₩ <CountUp end={expectedFnbRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
                 </div>
               ) : (

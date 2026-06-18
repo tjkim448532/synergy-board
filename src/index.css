@@ -24,6 +24,9 @@
 }
 
 body {
+  line-height: 1.6;
+  word-break: keep-all;
+  overflow-wrap: break-word;
   background-color: var(--bg-dark);
   color: var(--text-main);
   min-height: 100vh;
@@ -32,6 +35,8 @@ body {
 }
 
 .glass-panel {
+  max-width: 100%;
+  overflow-wrap: break-word;
   background: var(--bg-panel);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);

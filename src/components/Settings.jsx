@@ -575,7 +575,7 @@ export default function Settings({ monthlyData }) {
                   <div key={loc} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', padding: '10px 16px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px'}}>
                     <strong style={{fontSize: '16px', flex: '1 1 150px'}}>{loc}</strong>
                     <div style={{display: 'flex', gap: '16px', flexWrap: 'wrap', flex: '2 1 auto'}}>
-                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', whiteSpace: 'nowrap', color: currentGroup === 'leisure' ? 'var(--accent-emerald)' : 'var(--text-muted)'}}>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', whiteSpace: 'normal', wordBreak: 'keep-all', overflowWrap: 'anywhere', color: currentGroup === 'leisure' ? 'var(--accent-emerald)' : 'var(--text-muted)'}}>
                         <input 
                           type="radio" 
                           name={`group_${loc}`} 
@@ -585,7 +585,7 @@ export default function Settings({ monthlyData }) {
                           style={{accentColor: 'var(--accent-emerald)'}}
                         /> 레저본부
                       </label>
-                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', whiteSpace: 'nowrap', color: currentGroup === 'fnb' ? 'var(--accent-blue)' : 'var(--text-muted)'}}>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', whiteSpace: 'normal', wordBreak: 'keep-all', overflowWrap: 'anywhere', color: currentGroup === 'fnb' ? 'var(--accent-blue)' : 'var(--text-muted)'}}>
                         <input 
                           type="radio" 
                           name={`group_${loc}`} 
@@ -594,7 +594,7 @@ export default function Settings({ monthlyData }) {
                           style={{accentColor: 'var(--accent-blue)'}}
                         /> 식음 부문
                       </label>
-                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', whiteSpace: 'nowrap', color: currentGroup === 'moto' ? 'var(--accent-gold)' : 'var(--text-muted)'}}>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', whiteSpace: 'normal', wordBreak: 'keep-all', overflowWrap: 'anywhere', color: currentGroup === 'moto' ? 'var(--accent-gold)' : 'var(--text-muted)'}}>
                         <input 
                           type="radio" 
                           name={`group_${loc}`} 
@@ -603,7 +603,7 @@ export default function Settings({ monthlyData }) {
                           style={{accentColor: 'var(--accent-gold)'}}
                         /> 모토아레나
                       </label>
-                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', whiteSpace: 'nowrap', color: currentGroup === 'golf' ? '#22c55e' : 'var(--text-muted)'}}>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', whiteSpace: 'normal', wordBreak: 'keep-all', overflowWrap: 'anywhere', color: currentGroup === 'golf' ? '#22c55e' : 'var(--text-muted)'}}>
                         <input 
                           type="radio" 
                           name={`group_${loc}`} 
@@ -612,7 +612,7 @@ export default function Settings({ monthlyData }) {
                           style={{accentColor: '#22c55e'}}
                         /> 골프 부문
                       </label>
-                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', whiteSpace: 'nowrap', color: currentGroup === 'other' ? '#64748b' : 'var(--text-muted)'}}>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', whiteSpace: 'normal', wordBreak: 'keep-all', overflowWrap: 'anywhere', color: currentGroup === 'other' ? '#64748b' : 'var(--text-muted)'}}>
                         <input 
                           type="radio" 
                           name={`group_${loc}`} 
@@ -621,7 +621,7 @@ export default function Settings({ monthlyData }) {
                           style={{accentColor: '#64748b'}}
                         /> 기타 부문
                       </label>
-                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', whiteSpace: 'nowrap', color: currentGroup === 'exclude' ? '#ef4444' : 'var(--text-muted)'}}>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', whiteSpace: 'normal', wordBreak: 'keep-all', overflowWrap: 'anywhere', color: currentGroup === 'exclude' ? '#ef4444' : 'var(--text-muted)'}}>
                         <input 
                           type="radio" 
                           name={`group_${loc}`} 
