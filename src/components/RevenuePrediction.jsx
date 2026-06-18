@@ -534,8 +534,11 @@ export default function RevenuePrediction({ processedData, globalStats, settings
               (과거 추세선 기준 총매출액: ₩ {formatCurrency(expectedTotalRevenue)})
             </div>
           )}
-          <div style={{color: 'var(--text-muted)', fontSize: '14px', marginTop: '16px', opacity: 0.8}}>
-            (※ 예측 제외: 골프 평균 실적 ₩ {formatCurrency(avgGolfRev)})
+          <div style={{color: 'var(--text-muted)', fontSize: '14px', marginTop: '16px', opacity: 0.8, display: 'flex', flexDirection: 'column', gap: '4px'}}>
+            <div>(※ 예측 제외: 골프 평균 실적 ₩ {formatCurrency(avgGolfRev)})</div>
+            {!validMoto && <div>(※ 예측불가 보정 반영: 모토아레나 누적 평균 ₩ {formatCurrency(avgMotoRev)})</div>}
+            {!validFnb && <div>(※ 예측불가 보정 반영: 식음업장 누적 평균 ₩ {formatCurrency(avgFnbRev)})</div>}
+            {!validLeisure && <div>(※ 예측불가 보정 반영: 기타레저 누적 평균 ₩ {formatCurrency(avgLeisureRev)})</div>}
           </div>
         </div>
       </div>
