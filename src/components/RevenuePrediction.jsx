@@ -8,209 +8,12 @@ const CountUp = CountUpModule.default || CountUpModule;
 
 const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(Math.round(val || 0));
 
-export default function RevenuePrediction({ monthlyData, settings }) {
+export default function RevenuePrediction({ processedData, globalStats, settings }) {
   const [targetWeekdayOcc, setTargetWeekdayOcc] = useState(50);
   const [targetWeekendOcc, setTargetWeekendOcc] = useState(80);
   const [initialized, setInitialized] = useState(false);
   const [selectedRefMonth, setSelectedRefMonth] = useState('latest');
 
-  // 1. 데이터 가공 및 기초 통계
-  const { processedData, globalStats } = useMemo(() => {
-    let totalSoldAll = 0;
-    let totalInventoryAll = 0;
-    let totalSoldWdAll = 0;
-    let totalSoldWeAll = 0;
-    let totalInvWdAll = 0;
-    let totalInvWeAll = 0;
-    let totalRoomRevenueAll = 0;
-    let totalLeisureRevenueAll = 0;
-    let totalMotoRevenueAll = 0;
-    let totalFnbRevenueAll = 0;
-    let totalOtherRevenueAll = 0;
-    let totalGolfRevenueAll = 0;
-    let totalGuestsAll = 0;
-    
-    let total16All = 0;
-    let total35All = 0;
-    let total51ConnVirtualAll = 0;
-    let total51AccVirtualAll = 0;
-
-    const data = [...monthlyData].sort((a, b) => (a.id || a.yearMonth || '').localeCompare(b.id || b.yearMonth || '')).map(d => {
-      const days = d.daysCount || 30;
-      const daysWd = d.daysCountWeekday || 22;
-      const daysWe = d.daysCountWeekend || 8;
-      
-      const sold16 = Number(d.sold16 || d.standardSold || 0);
-      const sold35 = Number(d.sold35 || 0);
-      const sold51 = Number(d.sold51 || d.connectingSold || 0);
-      const sold51Acc = Number(d.sold51Acc || 0);
-      
-      const guests = (sold16 * 2) + (sold35 * 4) + ((sold51 + sold51Acc) * 6);
-      
-      const count51AsTwoRooms = settings.count51AsTwoRooms !== false;
-      const physicalRooms = Number(settings.totalRooms) || 175;
-      const rooms51Sets = Number(settings.connectingRooms51) || 85;
-      const dailyInventory = count51AsTwoRooms ? physicalRooms : (physicalRooms - rooms51Sets);
-      
-      const totalInventory = dailyInventory * days;
-      const invWd = dailyInventory * daysWd;
-      const invWe = dailyInventory * daysWe;
-
-      const totalSold = sold16 + sold35 + (count51AsTwoRooms ? sold51 * 2 : sold51) + sold51Acc;
-      const rawSoldWd = Number(d.soldWeekday || 0);
-      const rawSoldWe = Number(d.soldWeekend || 0);
-      const totalRawSold = rawSoldWd + rawSoldWe;
-      
-      let soldWd = rawSoldWd;
-      let soldWe = rawSoldWe;
-      
-      if (totalRawSold > 0 && totalSold > 0) {
-        const ratio = totalSold / totalRawSold;
-        soldWd = rawSoldWd * ratio;
-        soldWe = rawSoldWe * ratio;
-      }
-
-      const totalRoomRevenue = Number(d.totalRoomRevenue || 0);
-      const revWd = Number(d.revWeekday || 0);
-      const revWe = Number(d.revWeekend || 0);
-      
-      const locationGroups = settings.locationGroups || {};
-      let leisureSales = 0;
-      let motoSales = 0;
-      let lRevWd = 0;
-      let lRevWe = 0;
-      let mRevWd = 0;
-      let mRevWe = 0;
-      let fnbSales = 0;
-      let otherSales = 0;
-      let golfSales = 0;
-      let fRevWd = 0;
-      let fRevWe = 0;
-
-      if (d.salesByLocation || d.leisureSalesByLocation) {
-        const salesObj = d.salesByLocation || d.leisureSalesByLocation || {};
-        const calculated = calculateGroupedSales(salesObj, locationGroups);
-        leisureSales = calculated.leisure;
-        motoSales = calculated.moto || 0;
-        fnbSales = calculated.fnb;
-        otherSales = calculated.other || 0;
-        golfSales = calculated.golf || 0;
-        
-        const wdObj = d.salesWdByLocation || {};
-        const weObj = d.salesWeByLocation || {};
-        const calcWd = calculateGroupedSales(wdObj, locationGroups);
-        const calcWe = calculateGroupedSales(weObj, locationGroups);
-        
-        lRevWd = calcWd.leisure;
-        lRevWe = calcWe.leisure;
-        fRevWd = calcWd.fnb;
-        fRevWe = calcWe.fnb;
-        
-        mRevWd = calcWd.moto || 0;
-        mRevWe = calcWe.moto || 0;
-      } else {
-        // Fallback for legacy DB
-        leisureSales = Number(d.leisureSales || d.totalLeisureSales || 0);
-        motoSales = Number(d.motoSales || d.motoTotalRev || d.totalMotoSales || 0);
-        fnbSales = Number(d.fnbSales || d.totalFnbSales || 0);
-        otherSales = Number(d.otherSales || 0);
-        golfSales = Number(d.golfSales || 0);
-        lRevWd = d.leisureRevWd !== undefined ? Number(d.leisureRevWd) : null;
-        lRevWe = d.leisureRevWe !== undefined ? Number(d.leisureRevWe) : null;
-        mRevWd = d.motoRevWd !== undefined ? Number(d.motoRevWd) : null;
-        mRevWe = d.motoRevWe !== undefined ? Number(d.motoRevWe) : null;
-        fRevWd = d.fnbRevWd !== undefined ? Number(d.fnbRevWd) : null;
-        fRevWe = d.fnbRevWe !== undefined ? Number(d.fnbRevWe) : null;
-      }
-      
-      const occRate = totalInventory > 0 ? (totalSold / totalInventory) * 100 : 0;
-      const occWd = invWd > 0 ? (soldWd / invWd) * 100 : 0;
-      const occWe = invWe > 0 ? (soldWe / invWe) * 100 : 0;
-
-      totalSoldAll += totalSold;
-      totalInventoryAll += totalInventory;
-      totalSoldWdAll += soldWd;
-      totalInvWdAll += invWd;
-      totalSoldWeAll += soldWe;
-      totalInvWeAll += invWe;
-      totalRoomRevenueAll += totalRoomRevenue;
-      totalLeisureRevenueAll += leisureSales;
-      totalMotoRevenueAll += motoSales;
-      totalFnbRevenueAll += fnbSales;
-      totalOtherRevenueAll += otherSales;
-      totalGolfRevenueAll += golfSales;
-      totalGuestsAll += guests;
-      
-      total16All += sold16;
-      total35All += sold35;
-      total51ConnVirtualAll += (count51AsTwoRooms ? sold51 * 2 : sold51);
-      total51AccVirtualAll += sold51Acc;
-
-      return {
-        yearMonth: d.yearMonth,
-        occupancyRate: occRate,
-        occWd,
-        occWe,
-        totalRoomRevenue,
-        revWd,
-        revWe,
-        leisureSales,
-        motoSales,
-        fnbSales,
-        otherSales,
-        golfSales,
-        motoGuestRev: d.motoGuestRev,
-        lRevWd,
-        lRevWe,
-        mRevWd,
-        mRevWe,
-        fRevWd,
-        fRevWe
-      };
-    });
-
-    const globalOccRate = totalInventoryAll > 0 ? (totalSoldAll / totalInventoryAll) * 100 : 0;
-    const globalWdOccRate = totalInvWdAll > 0 ? (totalSoldWdAll / totalInvWdAll) * 100 : 0;
-    const globalWeOccRate = totalInvWeAll > 0 ? (totalSoldWeAll / totalInvWeAll) * 100 : 0;
-    const avgGuestsPerSoldRoom = totalSoldAll > 0 ? totalGuestsAll / totalSoldAll : 0;
-    
-    const physicalRooms = Number(settings.totalRooms) || 175;
-    const rooms51Sets = Number(settings.connectingRooms51) || 85;
-    const count51AsTwoRooms = settings.count51AsTwoRooms !== false;
-    const dailyInventory = count51AsTwoRooms ? physicalRooms : (physicalRooms - rooms51Sets);
-    
-    const avgWdDays = 22;
-    const avgWeDays = 8;
-    
-    const sumVirtualRooms = total16All + total35All + total51ConnVirtualAll + total51AccVirtualAll;
-    const mix16Virtual = sumVirtualRooms > 0 ? total16All / sumVirtualRooms : 0;
-    const mix35Virtual = sumVirtualRooms > 0 ? total35All / sumVirtualRooms : 0;
-    const mix51ConnVirtual = sumVirtualRooms > 0 ? total51ConnVirtualAll / sumVirtualRooms : 0;
-    const mix51AccVirtual = sumVirtualRooms > 0 ? total51AccVirtualAll / sumVirtualRooms : 0;
-
-    return { 
-      processedData: data, 
-      globalStats: {
-        totalOccupancyRate: globalOccRate,
-        globalWdOccRate,
-        globalWeOccRate,
-        totalRoomRevenue: totalRoomRevenueAll,
-        totalLeisureRevenue: totalLeisureRevenueAll,
-        totalMotoRevenue: totalMotoRevenueAll,
-        totalFnbRevenue: totalFnbRevenueAll,
-        totalOtherRevenue: totalOtherRevenueAll,
-        totalGolfRevenue: totalGolfRevenueAll,
-        avgGuestsPerSoldRoom,
-        dailyInventory,
-        avgWdDays,
-        avgWeDays,
-        mix16Virtual,
-        mix35Virtual,
-        mix51ConnVirtual,
-        mix51AccVirtual
-      }
-    };
-  }, [monthlyData, settings]);
 
   // 2. 선형 회귀 알고리즘 (Least Squares)
   const { regWd, regWe, regLeisureWd, regLeisureWe, regLeisureTotal, regMotoWd, regMotoWe, regMotoTotal, regMotoGuest, regFnbWd, regFnbWe, regFnbTotal, regOverallRoom } = useMemo(() => {
@@ -355,17 +158,29 @@ export default function RevenuePrediction({ monthlyData, settings }) {
     expectedFnbRevenue = calcExp(regFnbTotal, targetTotalOcc);
   }
   
+  const totalMonthsCount = processedData.length || 1;
+  const avgLeisureRev = globalStats.totalLeisureRevenue / totalMonthsCount;
+  const avgMotoRev = globalStats.totalMotoRevenue / totalMonthsCount;
+  const avgFnbRev = globalStats.totalFnbRevenue / totalMonthsCount;
+  const avgOtherRev = globalStats.totalOtherRevenue / totalMonthsCount;
+  const avgGolfRev = globalStats.totalGolfRevenue / totalMonthsCount;
+  
+  let totalDynamicRev = 0;
+  if (globalStats.totalDynamicGroups) {
+    totalDynamicRev = Object.values(globalStats.totalDynamicGroups).reduce((a, b) => a + b, 0) / totalMonthsCount;
+  }
+
   const isValidReg = (reg) => reg && reg.r >= 0.5;
   const validLeisure = isValidReg(regLeisureTotal);
   const validMoto = isValidReg(regMotoGuest);
   const validFnb = isValidReg(regFnbTotal);
 
-  const finalLeisureRev = validLeisure ? expectedLeisureRevenue : 0;
-  const finalMotoRev = validMoto ? expectedMotoRevenue : 0;
-  const finalFnbRev = validFnb ? expectedFnbRevenue : 0;
+  const finalLeisureRev = validLeisure ? expectedLeisureRevenue : avgLeisureRev;
+  const finalMotoRev = validMoto ? expectedMotoRevenue : avgMotoRev;
+  const finalFnbRev = validFnb ? expectedFnbRevenue : avgFnbRev;
 
-  const expectedTotalRevenue = expectedRoomRevenue + finalLeisureRev + finalMotoRev + finalFnbRev;
-  const targetAdrTotalRevenue = targetAdrRoomRevenue + finalLeisureRev + finalMotoRev + finalFnbRev;
+  const expectedTotalRevenue = expectedRoomRevenue + finalLeisureRev + finalMotoRev + finalFnbRev + avgOtherRev + totalDynamicRev;
+  const targetAdrTotalRevenue = targetAdrRoomRevenue + finalLeisureRev + finalMotoRev + finalFnbRev + avgOtherRev + totalDynamicRev;
 
   const expectedGuests = totalExpectedSoldRooms * globalStats.avgGuestsPerSoldRoom;
 
@@ -635,7 +450,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
               </div>
             ) : (
               <div style={{marginTop: '16px', fontSize: '12px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px'}}>
-                독립적 영업 지표를 참고하세요.
+                (상관관계 미달: 누적 평균 실적 대체)
               </div>
             )}
           </div>
@@ -669,7 +484,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
               </div>
             ) : (
               <div style={{marginTop: '16px', fontSize: '12px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px'}}>
-                독립적 영업 지표를 참고하세요.
+                (상관관계 미달: 누적 평균 실적 대체)
               </div>
             )}
           </div>
@@ -703,7 +518,7 @@ export default function RevenuePrediction({ monthlyData, settings }) {
               </div>
             ) : (
               <div style={{marginTop: '16px', fontSize: '12px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px'}}>
-                독립적 영업 지표를 참고하세요.
+                (상관관계 미달: 누적 평균 실적 대체)
               </div>
             )}
           </div>
@@ -719,6 +534,9 @@ export default function RevenuePrediction({ monthlyData, settings }) {
               (과거 추세선 기준 총매출액: ₩ {formatCurrency(expectedTotalRevenue)})
             </div>
           )}
+          <div style={{color: 'var(--text-muted)', fontSize: '14px', marginTop: '16px', opacity: 0.8}}>
+            (※ 예측 제외: 골프 평균 실적 ₩ {formatCurrency(avgGolfRev)})
+          </div>
         </div>
       </div>
 
