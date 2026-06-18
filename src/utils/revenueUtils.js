@@ -10,9 +10,10 @@ export const calculateGroupedSales = (salesObj, locationGroups = {}) => {
   let golf = 0;
   let other = 0;
   let moto = 0;
+  let dynamicGroups = {};
 
   if (!salesObj || typeof salesObj !== 'object') {
-    return { leisure, fnb, golf, other, moto };
+    return { leisure, fnb, golf, other, moto, dynamicGroups };
   }
 
   Object.entries(salesObj).forEach(([loc, amt]) => {
@@ -25,7 +26,12 @@ export const calculateGroupedSales = (salesObj, locationGroups = {}) => {
       else if (mappedGroup === 'fnb') fnb += val;
       else if (mappedGroup === 'other') other += val;
       else if (mappedGroup === 'moto') moto += val;
-      else leisure += val;
+      else if (mappedGroup === 'leisure') leisure += val;
+      else if (mappedGroup === 'exclude') { /* Do nothing */ }
+      else {
+        // Dynamic group
+        dynamicGroups[mappedGroup] = (dynamicGroups[mappedGroup] || 0) + val;
+      }
       return;
     }
 
@@ -43,5 +49,5 @@ export const calculateGroupedSales = (salesObj, locationGroups = {}) => {
     }
   });
 
-  return { leisure, fnb, golf, other, moto };
+  return { leisure, fnb, golf, other, moto, dynamicGroups };
 };
