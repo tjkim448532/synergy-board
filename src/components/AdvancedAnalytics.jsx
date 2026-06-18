@@ -676,10 +676,10 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
           
           <div style={{flex: '2 1 500px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '20px', alignItems: 'start'}}>
             <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
-              <div style={{fontSize: '12px', color: 'var(--text-muted)', minHeight: '60px', wordBreak: 'keep-all', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end'}}>
+              <div style={{fontSize: '14px', color: 'var(--text-muted)', minHeight: '60px', wordBreak: 'keep-all', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end'}}>
                 <div>
                   RevPAR<br/>
-                  <span style={{fontSize: '10px', color: 'var(--text-muted)', lineHeight: '1.2', display: 'inline-block', marginTop: '2px'}}>
+                  <span style={{fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.2', display: 'inline-block', marginTop: '2px'}}>
                     Revenue Per Available Room<br/>
                     (객실 판매로만 거둔 객실당 수익)
                   </span>
@@ -691,10 +691,10 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
             </div>
 
             <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
-              <div style={{fontSize: '12px', color: 'var(--text-muted)', minHeight: '60px', wordBreak: 'keep-all', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end'}}>
+              <div style={{fontSize: '14px', color: 'var(--text-muted)', minHeight: '60px', wordBreak: 'keep-all', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end'}}>
                 <div>
                   <span style={{color: 'var(--accent-emerald)'}}>●</span> 순수 TrevPAR<br/>
-                  <span style={{fontSize: '10px', color: 'var(--text-muted)', lineHeight: '1.2', display: 'inline-block', marginTop: '2px'}}>
+                  <span style={{fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.2', display: 'inline-block', marginTop: '2px'}}>
                     Total Revenue Per Available Room<br/>
                     (투숙객이 지출한 객실당 총수익)
                   </span>
@@ -706,10 +706,10 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
             </div>
 
             <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
-              <div style={{fontSize: '12px', color: 'var(--text-muted)', minHeight: '60px', wordBreak: 'keep-all', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end'}}>
+              <div style={{fontSize: '14px', color: 'var(--text-muted)', minHeight: '60px', wordBreak: 'keep-all', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end'}}>
                 <div>
                   Gross TrevPAR<br/>
-                  <span style={{fontSize: '10px', color: 'var(--text-muted)', lineHeight: '1.2', display: 'inline-block', marginTop: '2px'}}>
+                  <span style={{fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.2', display: 'inline-block', marginTop: '2px'}}>
                     Gross Total Revenue Per Available Room<br/>
                     (비투숙객 포함 호텔 전체 객실당 총수익)
                   </span>
