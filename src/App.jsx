@@ -13,6 +13,7 @@ import DataAccuracyTasks from './components/DataAccuracyTasks'
 import NewBusinessTraining from './components/NewBusinessTraining'
 import VisitorCalculation from './components/VisitorCalculation'
 import LeisureUtilization from './components/LeisureUtilization'
+import ManagementStrategy from './components/ManagementStrategy'
 import { collection, onSnapshot, doc } from 'firebase/firestore';
 import { db } from './firebase';
 import useProcessedData from './hooks/useProcessedData';
@@ -31,7 +32,7 @@ const pageTransition = {
 };
 
 function App() {
-  const [activeTab, setActiveTab] = useState('analytics')
+  const [activeTab, setActiveTab] = useState('strategy')
   const [settings, setSettings] = useState({});
   const [allData, setAllData] = useState([]);
 
@@ -60,6 +61,12 @@ function App() {
 
   const renderContent = () => {
     switch(activeTab) {
+      case 'strategy':
+        return (
+          <motion.div key="strategy" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} style={{padding: '32px'}}>
+            <ManagementStrategy processedData={processedData} globalStats={globalStats} settings={settings} />
+          </motion.div>
+        )
       case 'prediction':
         return (
           <motion.div key="prediction" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{padding: '32px'}}>
