@@ -71,12 +71,12 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
       totLeisure,
       totMoto: totMotoTotal,
       totFnb,
-      monthsCount: monthlyData.length || 1,
+      monthsCount: processedData.length || 1,
       validLeisure,
       validMoto,
       validFnb
     };
-  }, [monthlyData, settings]);
+  }, [processedData, settings]);
 
   const [customAdr, setCustomAdr] = useState(null);
   
