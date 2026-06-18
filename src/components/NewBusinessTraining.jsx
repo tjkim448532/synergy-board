@@ -258,7 +258,7 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
             <div style={{fontSize: '42px', fontWeight: '900', color: '#fff', letterSpacing: '-1px'}}>
               ₩<CountUp end={((baseMetrics.totRev + baseMetrics.totLeisure + baseMetrics.totMoto + baseMetrics.totFnb + baseMetrics.totOther) / baseMetrics.monthsCount * 12) + expectedTotalRev} duration={1} separator="," preserveValue />
             </div>
-            <div style={{fontSize: '13px', color: 'rgba(255,255,255,0.7)', marginTop: '8px'}}>기존 매출 + 신규 시설 파생 매출</div>
+            <div style={{fontSize: '13px', color: 'rgba(255,255,255,0.7)', marginTop: '8px'}}>기존 매출 + 신규 창출 매출</div>
           </div>
 
         </div>
