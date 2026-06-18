@@ -3,12 +3,12 @@ import { Upload, Settings, PieChart, TrendingUp, BookOpen, Building, ChevronDown
 import './DashboardLayout.css';
 
 const SIDEBAR_MENU = [
-  { id: 'strategy', icon: Target, label: '맥킨지식 경영전략 보고서' },
   { id: 'analytics', icon: PieChart, label: '상관관계 분석' },
   { id: 'division-sales', icon: BarChart2, label: '부문별 매출 분석' },
   { id: 'leisure-utilization', icon: Activity, label: '레저본부 이용률 심층분석' },
   { id: 'channel-analysis', icon: PieChart, label: '객실판매채널 심층분석' },
   { id: 'prediction', icon: TrendingUp, label: '목표 예약률 기반 매출 시뮬레이터' },
+  { id: 'strategy', icon: Target, label: '경영전략 보고서' },
   { 
     id: 'new-business-parent', 
     icon: Building, 

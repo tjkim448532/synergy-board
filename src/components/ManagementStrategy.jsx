@@ -97,9 +97,14 @@ export default function ManagementStrategy({ processedData, globalStats, setting
       {/* Header */}
       <div className="glass-panel" style={{position: 'relative', overflow: 'hidden', borderLeft: '4px solid #6366f1', padding: '40px'}}>
         <div style={{position: 'relative', zIndex: 2}}>
-          <h2 style={{margin: '0 0 16px 0', color: '#fff', fontSize: '28px', display: 'flex', alignItems: 'center', gap: '12px'}}>
-            <Target size={32} color="#6366f1" /> 맥킨지식 경영전략 보고서
-          </h2>
+          <div style={{display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px'}}>
+            <h2 style={{margin: 0, color: '#fff', fontSize: '28px', display: 'flex', alignItems: 'center', gap: '12px'}}>
+              <Target size={32} color="#6366f1" /> 경영전략 보고서
+            </h2>
+            <div style={{background: 'rgba(99, 102, 241, 0.2)', color: '#818cf8', padding: '4px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: 'bold', border: '1px solid rgba(99, 102, 241, 0.4)'}}>
+              총 {processedData.length}개월 누적 데이터 기준
+            </div>
+          </div>
           <p style={{margin: 0, color: 'rgba(255,255,255,0.85)', fontSize: '15px', lineHeight: '1.6', maxWidth: '800px'}}>
             현재 업로드된 리조트 운영 데이터를 기반으로 <strong>MECE, 가설 지향적 사고, 파레토 법칙, So What?</strong> 프레임워크를 적용한 자동화 전략 분석 리포트입니다. 직관적인 수치를 바탕으로 차년도 수익 극대화를 위한 핵심 액션 플랜을 도출합니다.
           </p>
