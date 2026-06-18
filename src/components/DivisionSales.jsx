@@ -70,7 +70,7 @@ export default function DivisionSales({ processedData: globalProcessedData, glob
         other: otherSales,
         room: roomSales,
         total: leisureSales + fnbSales + motoSales + golfSales + otherSales + roomSales,
-        grandTotal: leisureSales + fnbSales + motoSales + golfSales + otherSales + excludeSales + roomSales,
+        grandTotal: leisureSales + fnbSales + motoSales + golfSales + otherSales + roomSales,
 
         // Cumulative values
         cumLeisure,
