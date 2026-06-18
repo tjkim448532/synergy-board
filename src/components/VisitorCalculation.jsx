@@ -5,7 +5,7 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import toast from 'react-hot-toast';
 
-export default function VisitorCalculation({ monthlyData, settings }) {
+export default function VisitorCalculation({ processedData, globalStats, settings }) {
   const [selectedMonth, setSelectedMonth] = useState('');
   
   // States for inputs
@@ -17,17 +17,17 @@ export default function VisitorCalculation({ monthlyData, settings }) {
 
   // Set default month
   useEffect(() => {
-    if (monthlyData && monthlyData.length > 0 && !selectedMonth) {
+    if (processedData && processedData.length > 0 && !selectedMonth) {
       // Sort by yearMonth descending and pick first
-      const sorted = [...monthlyData].sort((a, b) => (b.id || b.yearMonth || '').localeCompare(a.id || a.yearMonth || ''));
+      const sorted = [...processedData].sort((a, b) => (b.id || b.yearMonth || '').localeCompare(a.id || a.yearMonth || ''));
       setSelectedMonth(sorted[0].yearMonth);
     }
-  }, [monthlyData, selectedMonth]);
+  }, [processedData, selectedMonth]);
 
   // Load saved data when month changes
   useEffect(() => {
-    if (selectedMonth && monthlyData) {
-      const targetData = monthlyData.find(d => d.yearMonth === selectedMonth);
+    if (selectedMonth && processedData) {
+      const targetData = processedData.find(d => d.yearMonth === selectedMonth);
       if (targetData && targetData.visitorCalcData) {
         setTotalVehicles(targetData.visitorCalcData.totalVehicles || '');
         setEmployeeVehicles(targetData.visitorCalcData.employeeVehicles || '');
@@ -38,14 +38,14 @@ export default function VisitorCalculation({ monthlyData, settings }) {
         setGolfGuests('');
       }
     }
-  }, [selectedMonth, monthlyData]);
+  }, [selectedMonth, processedData]);
 
   const targetDoc = useMemo(() => {
-    if (!selectedMonth || !monthlyData) return null;
-    return monthlyData.find(d => d.yearMonth === selectedMonth);
-  }, [selectedMonth, monthlyData]);
+    if (!selectedMonth || !processedData) return null;
+    return processedData.find(d => d.yearMonth === selectedMonth);
+  }, [selectedMonth, processedData]);
 
-  // Calculate Staying Guests directly from the monthlyData (just like AdvancedAnalytics)
+  // Calculate Staying Guests directly from the processedData (just like AdvancedAnalytics)
   const stayingGuests = useMemo(() => {
     if (!targetDoc) return 0;
     
@@ -103,12 +103,12 @@ export default function VisitorCalculation({ monthlyData, settings }) {
   };
 
   const monthlyStats = useMemo(() => {
-    if (!monthlyData) return [];
-    return [...monthlyData].sort((a, b) => (b.id || b.yearMonth || '').localeCompare(a.id || a.yearMonth || '')).map(d => ({
+    if (!processedData) return [];
+    return [...processedData].sort((a, b) => (b.id || b.yearMonth || '').localeCompare(a.id || a.yearMonth || '')).map(d => ({
       yearMonth: d.yearMonth,
       ...getVisitorStatsForDoc(d)
     }));
-  }, [monthlyData]);
+  }, [processedData]);
 
   const totals = useMemo(() => {
     return monthlyStats.reduce((acc, curr) => {
@@ -184,7 +184,7 @@ export default function VisitorCalculation({ monthlyData, settings }) {
           onChange={(e) => setSelectedMonth(e.target.value)}
           style={{ width: '200px' }}
         >
-          {monthlyData && monthlyData.map(d => (
+          {processedData && processedData.map(d => (
             <option key={d.yearMonth} value={d.yearMonth}>{d.yearMonth}</option>
           ))}
         </select>

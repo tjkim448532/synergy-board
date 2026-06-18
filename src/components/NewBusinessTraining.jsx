@@ -7,7 +7,7 @@ import { calculateGroupedSales } from '../utils/revenueUtils';
 
 const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(Math.round(val || 0));
 
-export default function NewBusinessTraining({ monthlyData, settings }) {
+export default function NewBusinessTraining({ processedData, globalStats, settings }) {
   // Input states
   const [newRooms, setNewRooms] = useState(200);
   const [targetOcc, setTargetOcc] = useState(60);
@@ -20,81 +20,47 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
     let totMotoGuest = 0;
     let totMotoTotal = 0;
     let totFnb = 0;
-    
+    let totOther = 0;
+    let totGolf = 0;
+
     const pointsLeisure = [];
     const pointsMoto = [];
     const pointsFnb = [];
-    
-    const locationGroups = settings.locationGroups || {};
 
-    monthlyData.forEach(d => {
-      const sold16 = Number(d.sold16 || d.standardSold || 0);
-      const sold35 = Number(d.sold35 || 0);
-      const sold51 = Number(d.sold51 || d.connectingSold || 0);
-      const sold51Acc = Number(d.sold51Acc || 0);
-      
-      const count51AsTwoRooms = settings.count51AsTwoRooms !== false;
-      const totalSold = sold16 + sold35 + (count51AsTwoRooms ? sold51 * 2 : sold51) + sold51Acc;
-      
+    const validData = (processedData || []).filter(d => {
+      const idStr = String(d.id || d.yearMonth || "");
+      return idStr.match(/^\d{4}-\d{2}$/);
+    });
+
+    validData.forEach(d => {
+      const totalSold = d.totalSold || 0;
       totSold += totalSold;
-      totRev += Number(d.totalRoomRevenue || 0);
-      
-      let leisureSales = 0;
-      let fnbSales = 0;
-      let motoSales = 0;
-      
-      if (d.salesByLocation || d.leisureSalesByLocation) {
-        const salesObj = d.salesByLocation || d.leisureSalesByLocation || {};
-        const calculated = calculateGroupedSales(salesObj, locationGroups);
-        leisureSales = calculated.leisure || 0;
-        fnbSales = calculated.fnb || 0;
-        motoSales = calculated.moto || 0;
-      } else {
-        leisureSales = Number(d.leisureSales || d.totalLeisureSales || 0);
-        fnbSales = Number(d.fnbSales || d.totalFnbSales || 0);
-        motoSales = Number(d.motoSales || d.motoTotalRev || d.totalMotoSales || 0);
-      }
+      totRev += d.totalRoomRevenue || 0;
 
       let mGuestRev = 0;
-      let mTotalRev = motoSales;
-
+      let mTotalRev = d.motoSales || 0;
       const excel2Total = Number(d.motoTotalRev || 0);
-      if (excel2Total > 0 && motoSales > 0) {
+      if (excel2Total > 0 && mTotalRev > 0) {
         const guestRatio = Number(d.motoGuestRev || 0) / excel2Total;
-        mGuestRev = Math.round(motoSales * guestRatio);
-      } else if (motoSales > 0) {
-        mGuestRev = Math.round(motoSales * 0.7);
+        mGuestRev = Math.round(mTotalRev * guestRatio);
+      } else if (mTotalRev > 0) {
+        mGuestRev = Math.round(mTotalRev * 0.7);
       }
-      
-      totLeisure += leisureSales;
+
+      totLeisure += d.leisureSales || 0;
       totMotoGuest += mGuestRev;
       totMotoTotal += mTotalRev;
-      totFnb += fnbSales;
+      totFnb += d.fnbSales || 0;
+      totOther += d.otherSales || 0;
+      totGolf += d.golfSales || 0;
 
       if (totalSold > 0) {
-         if (leisureSales > 0) pointsLeisure.push({ x: totalSold, y: leisureSales });
+         if (d.leisureSales > 0) pointsLeisure.push({ x: totalSold, y: d.leisureSales });
          if (mGuestRev > 0) pointsMoto.push({ x: totalSold, y: mGuestRev });
-         if (fnbSales > 0) pointsFnb.push({ x: totalSold, y: fnbSales });
+         if (d.fnbSales > 0) pointsFnb.push({ x: totalSold, y: d.fnbSales });
       }
     });
 
-    const calcR = (points) => {
-      const n = points.length;
-      if (n < 2) return 0;
-      const sumX = points.reduce((acc, p) => acc + p.x, 0);
-      const sumY = points.reduce((acc, p) => acc + p.y, 0);
-      const sumXY = points.reduce((acc, p) => acc + (p.x * p.y), 0);
-      const sumX2 = points.reduce((acc, p) => acc + (p.x * p.x), 0);
-      const sumY2 = points.reduce((acc, p) => acc + (p.y * p.y), 0);
-      const numerator = (n * sumXY) - (sumX * sumY);
-      const denomInside = (n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY);
-      if (denomInside <= 0) return 0;
-      return numerator / Math.sqrt(denomInside);
-    };
-
-    const validLeisure = calcR(pointsLeisure) >= 0.5;
-    const validMoto = calcR(pointsMoto) >= 0.5;
-    const validFnb = calcR(pointsFnb) >= 0.5;
 
     return {
       avgAdr: totSold > 0 ? totRev / totSold : 150000,
@@ -272,7 +238,7 @@ export default function NewBusinessTraining({ monthlyData, settings }) {
           <div className="glass-panel" style={{padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: 'rgba(59, 130, 246, 0.1)', borderTop: '4px solid var(--accent-blue)'}}>
             <div style={{fontSize: '16px', color: 'var(--accent-blue)', marginBottom: '8px', fontWeight: 'bold'}}>미래 종합 연간 예상 매출</div>
             <div style={{fontSize: '42px', fontWeight: '900', color: '#fff', letterSpacing: '-1px'}}>
-              ₩<CountUp end={((baseMetrics.totRev + baseMetrics.totLeisure + baseMetrics.totMoto + baseMetrics.totFnb) / baseMetrics.monthsCount * 12) + expectedTotalRev} duration={1} separator="," preserveValue />
+              ₩<CountUp end={((baseMetrics.totRev + baseMetrics.totLeisure + baseMetrics.totMoto + baseMetrics.totFnb + baseMetrics.totOther) / baseMetrics.monthsCount * 12) + expectedTotalRev} duration={1} separator="," preserveValue />
             </div>
             <div style={{fontSize: '13px', color: 'rgba(255,255,255,0.7)', marginTop: '8px'}}>기존 매출 + 신규 시설 파생 매출</div>
           </div>

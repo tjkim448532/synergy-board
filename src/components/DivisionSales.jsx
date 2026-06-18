@@ -22,15 +22,15 @@ const DIVISION_NAMES = {
   room: '객실 부문'
 };
 
-export default function DivisionSales({ monthlyData, settings }) {
+export default function DivisionSales({ processedData: globalProcessedData, globalStats, settings }) {
   const [viewMode, setViewMode] = useState('monthly'); // 'monthly' | 'cumulative'
 
   // Process data to calculate sales by division per month
   const processedData = useMemo(() => {
-    if (!monthlyData || monthlyData.length === 0) return [];
+    if (!globalProcessedData || globalProcessedData.length === 0) return [];
 
     // Sort chronologically and filter out invalid rows
-    const sortedData = [...monthlyData]
+    const sortedData = [...globalProcessedData]
       .filter(m => {
         const idStr = String(m.id || m.yearMonth || '');
         return idStr.match(/^\d{4}-\d{2}$/);
@@ -45,32 +45,13 @@ export default function DivisionSales({ monthlyData, settings }) {
     let cumRoom = 0;
 
     return sortedData.map(month => {
-      let leisureSales = 0;
-      let fnbSales = 0;
-      let motoSales = 0;
-      let golfSales = 0;
-      let otherSales = 0;
-      let excludeSales = 0;
-      let roomSales = month.totalRoomRevenue || month.roomRevenue || 0;
+      let leisureSales = month.leisureSales || 0;
+      let fnbSales = month.fnbSales || 0;
+      let motoSales = month.motoSales || 0;
+      let golfSales = month.golfSales || 0;
+      let otherSales = month.otherSales || 0;
+      let roomSales = month.totalRoomRevenue || 0;
 
-      // Group sales by location using unified logic
-      if (month.salesByLocation || month.leisureSalesByLocation) {
-        const salesObj = month.salesByLocation || month.leisureSalesByLocation || {};
-        const calculated = calculateGroupedSales(salesObj, settings.locationGroups || {});
-        
-        leisureSales = calculated.leisure || 0;
-        fnbSales = calculated.fnb || 0;
-        golfSales = calculated.golf || 0;
-        otherSales = calculated.other || 0;
-        motoSales = calculated.moto || 0;
-      } else {
-        // Fallback for legacy DB
-        leisureSales = Number(month.leisureSales || month.totalLeisureSales || 0);
-        fnbSales = Number(month.fnbSales || month.totalFnbSales || 0);
-        motoSales = Number(month.motoSales || month.motoTotalRev || month.totalMotoSales || 0);
-      }
-
-      // Add to cumulative totals
       cumLeisure += leisureSales;
       cumFnb += fnbSales;
       cumMoto += motoSales;
@@ -101,7 +82,7 @@ export default function DivisionSales({ monthlyData, settings }) {
         cumTotal: cumLeisure + cumFnb + cumMoto + cumGolf + cumOther + cumRoom
       };
     });
-  }, [monthlyData, settings.locationGroups]);
+  }, [globalProcessedData, settings.locationGroups]);
 
   if (!processedData || processedData.length === 0) {
     return (

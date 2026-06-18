@@ -3,14 +3,14 @@ import useGoogleSheetVisitors from '../hooks/useGoogleSheetVisitors';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Activity, Users, Target, UserCheck } from 'lucide-react';
 
-export default function LeisureUtilization({ monthlyData, settings }) {
-  const sortedMonths = [...monthlyData].sort((a, b) => (b.id || '').localeCompare(a.id || ''));
+export default function LeisureUtilization({ processedData, globalStats, settings }) {
+  const sortedMonths = [...processedData].sort((a, b) => (b.id || '').localeCompare(a.id || ''));
   const [selectedPeriod, setSelectedPeriod] = useState(sortedMonths.length > 0 ? sortedMonths[0].id : 'all');
   const [isGoogleSheetSyncEnabled, setIsGoogleSheetSyncEnabled] = useState(true);
   const { googleSheetData } = useGoogleSheetVisitors();
 
   const analysisResult = useMemo(() => {
-    if (monthlyData.length === 0) return null;
+    if (processedData.length === 0) return null;
 
     const parseSafeInt = (v) => {
       const num = parseInt(v, 10);
@@ -44,14 +44,14 @@ export default function LeisureUtilization({ monthlyData, settings }) {
         aggregatedTotalVisitors = googleSheetData[selM] || 0;
       }
     } else {
-      const targetData = selectedPeriod === 'all' ? monthlyData : monthlyData.filter(d => d.id === selectedPeriod);
+      const targetData = selectedPeriod === 'all' ? processedData : processedData.filter(d => d.id === selectedPeriod);
       targetData.forEach(d => {
         aggregatedTotalVisitors += getMonthTotalVisitors(d);
       });
     }
 
     const aggregatedUsage = {};
-    const targetData2 = selectedPeriod === 'all' ? monthlyData : monthlyData.filter(d => d.id === selectedPeriod);
+    const targetData2 = selectedPeriod === 'all' ? processedData : processedData.filter(d => d.id === selectedPeriod);
     
     targetData2.forEach(d => {
       const usage = d.leisureTicketUsage || {};
@@ -75,7 +75,7 @@ export default function LeisureUtilization({ monthlyData, settings }) {
       chartData,
       totalLeisureVisitors
     };
-  }, [monthlyData, selectedPeriod, settings, isGoogleSheetSyncEnabled, googleSheetData]);
+  }, [processedData, selectedPeriod, settings, isGoogleSheetSyncEnabled, googleSheetData]);
 
   if (!analysisResult) {
     return (

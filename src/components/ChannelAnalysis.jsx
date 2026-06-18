@@ -49,7 +49,7 @@ const normalizeRoomType = (type) => {
   return '기타';
 };
 
-export default function ChannelAnalysis({ monthlyData, settings }) {
+export default function ChannelAnalysis({ processedData, globalStats, settings }) {
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedMonthFilter, setSelectedMonthFilter] = useState('all');
 
@@ -63,7 +63,7 @@ export default function ChannelAnalysis({ monthlyData, settings }) {
   // 동적 필터 옵션 생성
   const monthOptions = useMemo(() => {
     const options = [];
-    const validData = monthlyData.filter(d => d.yearMonth !== '2024-11' && d.yearMonth !== '2024-12');
+    const validData = processedData.filter(d => d.yearMonth !== '2024-11' && d.yearMonth !== '2024-12');
     const years = [...new Set(validData.map(d => (d.yearMonth || '').split('-')[0]))].filter(y => y);
     years.sort((a,b) => b.localeCompare(a));
     
@@ -80,11 +80,11 @@ export default function ChannelAnalysis({ monthlyData, settings }) {
       }
     });
     return options;
-  }, [monthlyData]);
+  }, [processedData]);
 
   // Filter out recent months like AdvancedAnalytics does
   const filteredProcessedData = useMemo(() => {
-    return monthlyData.filter(d => {
+    return processedData.filter(d => {
       if (d.yearMonth === '2024-11' || d.yearMonth === '2024-12') return false;
       if (selectedMonthFilter !== 'all') {
         const [selYear, selMonth] = selectedMonthFilter.split('-');
@@ -94,7 +94,7 @@ export default function ChannelAnalysis({ monthlyData, settings }) {
       }
       return true;
     }).sort((a, b) => (a.id || a.yearMonth || '').localeCompare(b.id || b.yearMonth || ''));
-  }, [monthlyData, selectedMonthFilter]);
+  }, [processedData, selectedMonthFilter]);
 
   const divisionConfig = useMemo(() => {
     const config = {
@@ -117,38 +117,7 @@ export default function ChannelAnalysis({ monthlyData, settings }) {
   }, [settings.locationGroups]);
 
   // We need to map data to include dataKey sums so correlation works
-  const processedDataWithSales = useMemo(() => {
-    return filteredProcessedData.map(d => {
-      const groupSales = { leisure: 0, moto: 0, fnb: 0, golf: 0, other: 0 };
-      let totalSales = 0;
-      const locationGroups = settings.locationGroups || {};
-
-      if (d.salesByLocation) {
-        Object.keys(d.salesByLocation).forEach(loc => {
-          const group = locationGroups[loc] || 'leisure';
-          groupSales[group] = (groupSales[group] || 0) + d.salesByLocation[loc];
-          if (group !== 'exclude') {
-            totalSales += d.salesByLocation[loc];
-          }
-        });
-      } else {
-        groupSales.leisure = Number(d.leisureSales || d.totalLeisureSales || 0);
-        groupSales.moto = Number(d.motoSales || d.motoTotalRev || d.totalMotoSales || 0);
-        groupSales.fnb = Number(d.fnbSales || d.totalFnbSales || 0);
-        totalSales = groupSales.leisure + groupSales.moto + groupSales.fnb;
-      }
-      
-      return {
-        ...d,
-        leisureSales: groupSales.leisure,
-        motoSales: groupSales.moto,
-        fnbSales: groupSales.fnb,
-        golfSales: groupSales.golf,
-        otherSales: groupSales.other,
-        totalSales
-      };
-    });
-  }, [filteredProcessedData, settings]);
+  const processedDataWithSales = filteredProcessedData;
 
   // 1. Overview 데이터 (기존 로직)
   const { channelData, negativeChannels, channelAdrData } = useMemo(() => {

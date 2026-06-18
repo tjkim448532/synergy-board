@@ -33,7 +33,7 @@ function calculateCorrelation(xArray, yArray) {
 
 const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(Math.round(val || 0));
 
-export default function AdvancedAnalytics({ monthlyData, settings }) {
+export default function AdvancedAnalytics({ processedData, globalStats, settings }) {
   const [selectedRoomType, setSelectedRoomType] = useState('all');
   const [activeDivision, setActiveDivision] = useState('all');
   const [motoLogic, setMotoLogic] = useState('new');
@@ -109,72 +109,6 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
   const activeConf = divisionConfig[activeDivision] || divisionConfig['all'];
 
   // 데이터 가공
-  const processedData = useMemo(() => {
-    // 오래된 순으로 정렬 (그래프용)
-    const sorted = [...monthlyData].sort((a, b) => (a.id || a.yearMonth || '').localeCompare(b.id || b.yearMonth || ''));
-    
-    return sorted.map(d => {
-      // 영업일수 fallback
-      const days = d.daysCount || 30; 
-      
-      // 51평 산정 방식 설정 반영
-      const count51AsTwoRooms = settings.count51AsTwoRooms !== false; // 기본값 true
-      
-      const sold16 = Number(d.sold16 || d.standardSold || 0);
-      const sold35 = Number(d.sold35 || 0);
-      const sold51 = Number(d.sold51 || d.connectingSold || 0);
-      const sold51Acc = Number(d.sold51Acc || 0);
-      const totalSold = sold16 + sold35 + (count51AsTwoRooms ? sold51 * 2 : sold51) + sold51Acc;
-      
-      // 총 객실 모수 계산 (고정값)
-      const physicalRooms = Number(settings.totalRooms) || 175;
-      const rooms51Sets = Number(settings.connectingRooms51) || 85;
-      const dailyInventory = count51AsTwoRooms ? physicalRooms : (physicalRooms - rooms51Sets);
-      const totalInventory = dailyInventory * days;
-      
-      const occRate = totalInventory > 0 ? (totalSold / totalInventory) * 100 : 0;
-
-      // 동적 매출 합산 로직
-      const locationGroups = settings.locationGroups || {};
-      let groupSales = { leisure: 0, moto: 0, fnb: 0, golf: 0, other: 0 };
-      let totalSales = 0;
-
-      if (d.salesByLocation || d.leisureSalesByLocation) {
-        const salesObj = d.salesByLocation || d.leisureSalesByLocation || {};
-        const calculated = calculateGroupedSales(salesObj, locationGroups);
-        groupSales = { ...calculated };
-        groupSales.moto = calculated.moto || 0;
-        totalSales = groupSales.leisure + groupSales.moto + groupSales.fnb;
-      } else {
-        // Fallback for legacy DB
-        groupSales.leisure = Number(d.leisureSales || d.totalLeisureSales || 0);
-        groupSales.moto = Number(d.motoSales || d.motoTotalRev || d.totalMotoSales || 0);
-        groupSales.fnb = Number(d.fnbSales || d.totalFnbSales || 0);
-        totalSales = groupSales.leisure + groupSales.moto + groupSales.fnb;
-      }
-      
-      const leisureSales = groupSales.leisure || 0;
-      const motoSales = groupSales.moto || 0;
-      const fnbSales = groupSales.fnb || 0;
-      const golfSales = groupSales.golf || 0;
-      const otherSales = groupSales.other || 0;
-
-
-      return {
-        ...d,
-        sold16, sold35, sold51: sold51 + sold51Acc, totalSold,
-        occupancyRate: occRate,
-        ...Object.keys(groupSales).reduce((acc, g) => ({ ...acc, [`${g}Sales`]: groupSales[g] }), {}),
-        leisureSales,
-        motoSales,
-        fnbSales,
-        golfSales,
-        otherSales,
-        totalSales,
-        totalRoomRevenue: Number(d.totalRoomRevenue || 0)
-      };
-    });
-  }, [monthlyData, settings]);
 
   // 동적 필터 옵션 생성
   const monthOptions = useMemo(() => {
@@ -250,7 +184,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     return filteredProcessedData.reduce((sum, d) => {
       const sold16 = Number(d.sold16 || d.standardSold || 0);
       const sold35 = Number(d.sold35 || 0);
-      const sold51Combined = Number(d.sold51 || d.connectingSold || 0); // Already includes sold51Acc
+      const sold51Combined = Number(d.sold51 || d.connectingSold || 0) + Number(d.sold51Acc || 0);
       return sum + (sold16 * 2.5) + (sold35 * 4.5) + (sold51Combined * 6);
     }, 0);
   }, [filteredProcessedData]);
@@ -347,7 +281,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
     return {
       '16평': calculateCorrelation(filteredProcessedData.map(d => d.sold16), targetArr),
       '35평': calculateCorrelation(filteredProcessedData.map(d => d.sold35), targetArr),
-      '51평': calculateCorrelation(filteredProcessedData.map(d => d.sold51), targetArr)
+      '51평': calculateCorrelation(filteredProcessedData.map(d => d.sold51 + (d.sold51Acc || 0)), targetArr)
     };
   }, [filteredProcessedData, activeConf.dataKey]);
 

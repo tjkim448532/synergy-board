@@ -15,6 +15,7 @@ import VisitorCalculation from './components/VisitorCalculation'
 import LeisureUtilization from './components/LeisureUtilization'
 import { collection, onSnapshot, doc } from 'firebase/firestore';
 import { db } from './firebase';
+import useProcessedData from './hooks/useProcessedData';
 import './App.css'
 
 const pageVariants = {
@@ -33,6 +34,8 @@ function App() {
   const [activeTab, setActiveTab] = useState('analytics')
   const [settings, setSettings] = useState({});
   const [allData, setAllData] = useState([]);
+
+  const { processedData, globalStats } = useProcessedData(allData, settings);
 
   useEffect(() => {
     const unsubSettings = onSnapshot(doc(db, 'config', 'mainSettings'), (docSnap) => {
@@ -60,43 +63,43 @@ function App() {
       case 'prediction':
         return (
           <motion.div key="prediction" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{padding: '32px'}}>
-            <RevenuePrediction monthlyData={allData} settings={settings} />
+            <RevenuePrediction processedData={processedData} globalStats={globalStats} settings={settings} />
           </motion.div>
         )
       case 'analytics':
         return (
           <motion.div key="analytics" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{padding: '32px'}}>
-            <AdvancedAnalytics monthlyData={allData} settings={settings} />
+            <AdvancedAnalytics processedData={processedData} globalStats={globalStats} settings={settings} />
           </motion.div>
         )
       case 'division-sales':
         return (
           <motion.div key="division-sales" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{padding: '32px'}}>
-            <DivisionSales monthlyData={allData} settings={settings} />
+            <DivisionSales processedData={processedData} globalStats={globalStats} settings={settings} />
           </motion.div>
         )
       case 'leisure-utilization':
         return (
           <motion.div key="leisure-utilization" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{padding: '32px'}}>
-            <LeisureUtilization monthlyData={allData} settings={settings} />
+            <LeisureUtilization processedData={processedData} globalStats={globalStats} settings={settings} />
           </motion.div>
         )
       case 'channel-analysis':
         return (
           <motion.div key="channel-analysis" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{padding: '32px'}}>
-            <ChannelAnalysis monthlyData={allData} settings={settings} />
+            <ChannelAnalysis processedData={processedData} globalStats={globalStats} settings={settings} />
           </motion.div>
         )
       case 'new-business':
         return (
           <motion.div key="new-business" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{padding: '32px'}}>
-            <NewBusinessTraining monthlyData={allData} settings={settings} />
+            <NewBusinessTraining processedData={processedData} globalStats={globalStats} settings={settings} />
           </motion.div>
         )
       case 'visitor-calc':
         return (
           <motion.div key="visitor-calc" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{padding: '32px'}}>
-            <VisitorCalculation monthlyData={allData} settings={settings} />
+            <VisitorCalculation processedData={processedData} globalStats={globalStats} settings={settings} />
           </motion.div>
         )
       case 'new-business-soccer':
