@@ -88,6 +88,7 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
       totLeisure,
       totMoto: totMotoTotal,
       totFnb,
+      totOther,
       monthsCount: processedData.length || 1,
       validLeisure,
       validMoto,
@@ -239,7 +240,7 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
           <div className="glass-panel" style={{padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderTop: '4px solid rgba(255,255,255,0.2)'}}>
             <div style={{fontSize: '16px', color: 'var(--text-muted)', marginBottom: '8px'}}>기존 연간 통합 매출 (과거 평균 기준)</div>
             <div style={{fontSize: '36px', fontWeight: '900', color: 'var(--text-main)', letterSpacing: '-1px'}}>
-              ₩<CountUp end={(baseMetrics.totRev + baseMetrics.totLeisure + baseMetrics.totMoto + baseMetrics.totFnb) / baseMetrics.monthsCount * 12} duration={1} separator="," preserveValue />
+              ₩<CountUp end={(baseMetrics.totRev + baseMetrics.totLeisure + baseMetrics.totMoto + baseMetrics.totFnb + baseMetrics.totOther) / baseMetrics.monthsCount * 12} duration={1} separator="," preserveValue />
             </div>
             <div style={{fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px'}}>업로드된 데이터를 바탕으로 연 환산한 현재 매출 규모</div>
           </div>
