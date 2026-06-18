@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import useGoogleSheetVisitors from '../hooks/useGoogleSheetVisitors';
 import { Save, Link as LinkIcon, RefreshCw, Lock, ChevronDown, ChevronUp, AlertCircle, TrendingUp, Key, ArrowRight, Shield, DownloadCloud, UploadCloud, PieChart, Activity, Briefcase, Copy, FileText, CheckCircle2 } from 'lucide-react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -55,6 +56,7 @@ export default function Settings({ monthlyData }) {
   const [pin, setPin] = useState('');
 
   const [expandedSections, setExpandedSections] = useState({
+    visitorValidation: true,
     basic: true,
     weekend: false,
     capture: false,

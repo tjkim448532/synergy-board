@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import useGoogleSheetVisitors from '../hooks/useGoogleSheetVisitors';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
   ScatterChart, Scatter, ZAxis, PieChart, Pie, Cell
@@ -39,50 +40,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
   const [selectedMonthFilter, setSelectedMonthFilter] = useState('all');
   const [isCumulative, setIsCumulative] = useState(false);
   const [useGoogleSheetVisitors, setUseGoogleSheetVisitors] = useState(true);
-  const [googleSheetData, setGoogleSheetData] = useState(null);
-
-  useEffect(() => {
-    const fetchGoogleSheet = async () => {
-      try {
-        const url = 'https://docs.google.com/spreadsheets/d/1wlNrE_FvXCYNGfyvIYxEidYLKoEas4pidWe0Z9e_2xs/export?format=csv&gid=1933764837';
-        const response = await fetch(url);
-        const csvText = await response.text();
-        const lines = csvText.split('\n');
-        const targetLine = lines.find(line => line.includes('리조트 총 방문객'));
-        if (targetLine) {
-          const cells = [];
-          let currentCell = '';
-          let inQuotes = false;
-          for(let i=0; i<targetLine.length; i++){
-            const char = targetLine[i];
-            if(char === '"'){
-              inQuotes = !inQuotes;
-            } else if(char === ',' && !inQuotes){
-              cells.push(currentCell.trim());
-              currentCell = '';
-            } else {
-              currentCell += char;
-            }
-          }
-          cells.push(currentCell.trim());
-
-          const monthlyData = {};
-          for(let m=1; m<=12; m++) {
-            const idx = 6 + (m - 1) * 3;
-            if (cells[idx]) {
-              monthlyData[m] = parseInt(cells[idx].replace(/,/g, ''), 10) || 0;
-            } else {
-              monthlyData[m] = 0;
-            }
-          }
-          setGoogleSheetData(monthlyData);
-        }
-      } catch (error) {
-        console.error('Failed to fetch Google Sheet data', error);
-      }
-    };
-    fetchGoogleSheet();
-  }, []);
+  const { googleSheetData } = useGoogleSheetVisitors();
 
   // fallback for legacy cached state like '05'
   useEffect(() => {

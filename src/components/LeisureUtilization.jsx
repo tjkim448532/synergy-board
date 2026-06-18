@@ -1,10 +1,13 @@
 import React, { useState, useMemo } from 'react';
+import useGoogleSheetVisitors from '../hooks/useGoogleSheetVisitors';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Activity, Users, Target, UserCheck } from 'lucide-react';
 
 export default function LeisureUtilization({ monthlyData, settings }) {
   const sortedMonths = [...monthlyData].sort((a, b) => (b.id || '').localeCompare(a.id || ''));
   const [selectedPeriod, setSelectedPeriod] = useState(sortedMonths.length > 0 ? sortedMonths[0].id : 'all');
+  const [useGoogleSheetVisitors, setUseGoogleSheetVisitors] = useState(true);
+  const { googleSheetData } = useGoogleSheetVisitors();
 
   const analysisResult = useMemo(() => {
     if (monthlyData.length === 0) return null;
@@ -32,12 +35,25 @@ export default function LeisureUtilization({ monthlyData, settings }) {
     };
 
     let aggregatedTotalVisitors = 0;
+    
+    if (useGoogleSheetVisitors && googleSheetData) {
+      if (selectedPeriod === 'all') {
+        aggregatedTotalVisitors = Object.values(googleSheetData).reduce((a, b) => a + b, 0);
+      } else {
+        const selM = parseInt(selectedPeriod.split('-')[1], 10);
+        aggregatedTotalVisitors = googleSheetData[selM] || 0;
+      }
+    } else {
+      const targetData = selectedPeriod === 'all' ? monthlyData : monthlyData.filter(d => d.id === selectedPeriod);
+      targetData.forEach(d => {
+        aggregatedTotalVisitors += getMonthTotalVisitors(d);
+      });
+    }
+
     const aggregatedUsage = {};
-
-    const targetData = selectedPeriod === 'all' ? monthlyData : monthlyData.filter(d => d.id === selectedPeriod);
-
-    targetData.forEach(d => {
-      aggregatedTotalVisitors += getMonthTotalVisitors(d);
+    const targetData2 = selectedPeriod === 'all' ? monthlyData : monthlyData.filter(d => d.id === selectedPeriod);
+    
+    targetData2.forEach(d => {
       const usage = d.leisureTicketUsage || {};
       Object.entries(usage).forEach(([venue, count]) => {
         aggregatedUsage[venue] = (aggregatedUsage[venue] || 0) + count;
@@ -59,7 +75,7 @@ export default function LeisureUtilization({ monthlyData, settings }) {
       chartData,
       totalLeisureVisitors
     };
-  }, [monthlyData, settings, selectedPeriod]);
+  }, [monthlyData, selectedPeriod, settings, useGoogleSheetVisitors, googleSheetData]);
 
   if (!analysisResult) {
     return (
@@ -100,10 +116,17 @@ export default function LeisureUtilization({ monthlyData, settings }) {
 
       <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '32px'}}>
         <div className="glass-panel" style={{padding: '24px', borderLeft: '4px solid var(--accent-blue)'}}>
-          <div style={{color: 'var(--text-muted)', fontSize: '14px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px'}}>
+          <div style={{display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', marginBottom: '8px'}}>
             <UserCheck size={16} /> 총 리조트 방문객 (이용 가능 모수)
+            <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', marginLeft: 'auto'}}>
+              <input type="checkbox" checked={useGoogleSheetVisitors} onChange={(e) => setUseGoogleSheetVisitors(e.target.checked)} style={{display: 'none'}} />
+              <span style={{fontSize: '12px', color: useGoogleSheetVisitors ? 'var(--accent-emerald)' : 'var(--text-muted)'}}>구글 시트 연동</span>
+              <div style={{position: 'relative', width: '32px', height: '16px', background: useGoogleSheetVisitors ? 'var(--accent-emerald)' : 'rgba(255,255,255,0.2)', borderRadius: '8px', transition: '0.3s'}}>
+                <div style={{position: 'absolute', top: '2px', left: useGoogleSheetVisitors ? '18px' : '2px', width: '12px', height: '12px', background: 'white', borderRadius: '50%', transition: '0.3s'}} />
+              </div>
+            </label>
           </div>
-          <div style={{fontSize: '32px', fontWeight: 'bold', color: 'var(--text-main)'}}>
+          <div style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--text-main)', marginTop: '8px'}}>
             {aggregatedTotalVisitors.toLocaleString()}명
           </div>
           <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px'}}>
