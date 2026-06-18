@@ -26,6 +26,8 @@ export default function RevenuePrediction({ monthlyData, settings }) {
     let totalLeisureRevenueAll = 0;
     let totalMotoRevenueAll = 0;
     let totalFnbRevenueAll = 0;
+    let totalOtherRevenueAll = 0;
+    let totalGolfRevenueAll = 0;
     let totalGuestsAll = 0;
     
     let total16All = 0;
@@ -80,6 +82,8 @@ export default function RevenuePrediction({ monthlyData, settings }) {
       let mRevWd = 0;
       let mRevWe = 0;
       let fnbSales = 0;
+      let otherSales = 0;
+      let golfSales = 0;
       let fRevWd = 0;
       let fRevWe = 0;
 
@@ -89,6 +93,8 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         leisureSales = calculated.leisure;
         motoSales = calculated.moto || 0;
         fnbSales = calculated.fnb;
+        otherSales = calculated.other || 0;
+        golfSales = calculated.golf || 0;
         
         const wdObj = d.salesWdByLocation || {};
         const weObj = d.salesWeByLocation || {};
@@ -107,6 +113,8 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         leisureSales = Number(d.leisureSales || d.totalLeisureSales || 0);
         motoSales = Number(d.motoSales || d.motoTotalRev || d.totalMotoSales || 0);
         fnbSales = Number(d.fnbSales || d.totalFnbSales || 0);
+        otherSales = Number(d.otherSales || 0);
+        golfSales = Number(d.golfSales || 0);
         lRevWd = d.leisureRevWd !== undefined ? Number(d.leisureRevWd) : null;
         lRevWe = d.leisureRevWe !== undefined ? Number(d.leisureRevWe) : null;
         mRevWd = d.motoRevWd !== undefined ? Number(d.motoRevWd) : null;
@@ -129,6 +137,8 @@ export default function RevenuePrediction({ monthlyData, settings }) {
       totalLeisureRevenueAll += leisureSales;
       totalMotoRevenueAll += motoSales;
       totalFnbRevenueAll += fnbSales;
+      totalOtherRevenueAll += otherSales;
+      totalGolfRevenueAll += golfSales;
       totalGuestsAll += guests;
       
       total16All += sold16;
@@ -146,8 +156,10 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         revWe,
         leisureSales,
         motoSales,
-        motoGuestRev: d.motoGuestRev,
         fnbSales,
+        otherSales,
+        golfSales,
+        motoGuestRev: d.motoGuestRev,
         lRevWd,
         lRevWe,
         mRevWd,
@@ -186,6 +198,8 @@ export default function RevenuePrediction({ monthlyData, settings }) {
         totalLeisureRevenue: totalLeisureRevenueAll,
         totalMotoRevenue: totalMotoRevenueAll,
         totalFnbRevenue: totalFnbRevenueAll,
+        totalOtherRevenue: totalOtherRevenueAll,
+        totalGolfRevenue: totalGolfRevenueAll,
         avgGuestsPerSoldRoom,
         dailyInventory,
         avgWdDays,
@@ -401,7 +415,8 @@ export default function RevenuePrediction({ monthlyData, settings }) {
     if (selectedRefMonth === 'all') {
       return {
         label: `전체 누적 (${processedData.length}개월)`,
-        totalRev: globalStats.totalRoomRevenue + globalStats.totalLeisureRevenue + globalStats.totalFnbRevenue + globalStats.totalMotoRevenue,
+        totalRev: globalStats.totalRoomRevenue + globalStats.totalLeisureRevenue + globalStats.totalFnbRevenue + globalStats.totalMotoRevenue + globalStats.totalOtherRevenue,
+        golfRev: globalStats.totalGolfRevenue,
         occRate: globalStats.totalOccupancyRate,
         wdOccRate: globalStats.globalWdOccRate,
         weOccRate: globalStats.globalWeOccRate,
@@ -412,7 +427,8 @@ export default function RevenuePrediction({ monthlyData, settings }) {
       const monthRow = processedData.find(d => d.yearMonth === targetMonth) || processedData[processedData.length - 1];
       return {
         label: `선택 마감 실적 (${monthRow.yearMonth})`,
-        totalRev: monthRow.totalRoomRevenue + monthRow.leisureSales + monthRow.fnbSales + monthRow.motoSales,
+        totalRev: monthRow.totalRoomRevenue + monthRow.leisureSales + monthRow.fnbSales + monthRow.motoSales + (monthRow.otherSales || 0),
+        golfRev: monthRow.golfSales || 0,
         occRate: monthRow.occupancyRate,
         wdOccRate: monthRow.occWd,
         weOccRate: monthRow.occWe,
@@ -460,7 +476,10 @@ export default function RevenuePrediction({ monthlyData, settings }) {
             <div style={{textAlign: 'center', flex: '1', minWidth: '250px', maxWidth: '100%'}}>
               <div style={{color: 'var(--accent-emerald)', fontSize: '16px', marginBottom: '8px', fontWeight: 'bold'}}>📌 {refData.label}</div>
               <div className="responsive-stat-value">
-                총 통합 매출 <span style={{fontSize: '13px', color: 'var(--text-muted)', fontWeight: 'normal', verticalAlign: 'middle'}}>(골프/기타 제외)</span>: <span style={{color: 'var(--accent-gold)'}}>₩ {formatCurrency(refData.totalRev)}</span>
+                총 통합 매출 <span style={{fontSize: '13px', color: 'var(--text-muted)', fontWeight: 'normal', verticalAlign: 'middle'}}>(골프 제외)</span>: <span style={{color: 'var(--accent-gold)'}}>₩ {formatCurrency(refData.totalRev)}</span>
+              </div>
+              <div style={{marginTop: '8px', fontSize: '14px', color: 'var(--text-muted)'}}>
+                <span style={{color: '#22c55e'}}>⛳ 골프 부문 (제외됨)</span>: ₩ {formatCurrency(refData.golfRev)}
               </div>
             </div>
             <div className="mobile-no-border" style={{textAlign: 'center', flex: '1', minWidth: '150px', maxWidth: '100%', borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '20px'}}>
