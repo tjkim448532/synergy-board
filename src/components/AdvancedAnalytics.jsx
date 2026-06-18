@@ -39,7 +39,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
   const [motoLogic, setMotoLogic] = useState('new');
   const [selectedMonthFilter, setSelectedMonthFilter] = useState('all');
   const [isCumulative, setIsCumulative] = useState(false);
-  const [useGoogleSheetVisitors, setUseGoogleSheetVisitors] = useState(true);
+  const [isGoogleSheetSyncEnabled, setIsGoogleSheetSyncEnabled] = useState(true);
   const { googleSheetData } = useGoogleSheetVisitors();
 
   // fallback for legacy cached state like '05'
@@ -215,7 +215,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
 
 
   const displayVisitors = useMemo(() => {
-    if (useGoogleSheetVisitors && googleSheetData) {
+    if (isGoogleSheetSyncEnabled && googleSheetData) {
       if (selectedMonthFilter === 'all' || selectedMonthFilter.endsWith('-all')) {
         return Object.values(googleSheetData).reduce((a, b) => a + b, 0);
       } else {
@@ -243,7 +243,7 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
       }
       return sum;
     }, 0);
-  }, [filteredProcessedData, useGoogleSheetVisitors, googleSheetData, selectedMonthFilter, isCumulative]);
+  }, [filteredProcessedData, isGoogleSheetSyncEnabled, googleSheetData, selectedMonthFilter, isCumulative]);
 
   const totalHotelGuests = useMemo(() => {
     if (!filteredProcessedData || filteredProcessedData.length === 0) return 0;
@@ -558,14 +558,14 @@ export default function AdvancedAnalytics({ monthlyData, settings }) {
           <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px'}}>
             <h2 style={{margin: 0, color: 'var(--accent-gold)', fontSize: '24px', display: 'flex', alignItems: 'center', gap: '12px'}}>
               👥 총 방문객 <span style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.3)', padding: '4px 8px', borderRadius: '4px'}}>
-                {useGoogleSheetVisitors ? 'Google Sheet 연동' : 'Calculated'}
+                {isGoogleSheetSyncEnabled ? 'Google Sheet 연동' : 'Calculated'}
               </span>
             </h2>
             <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px'}}>
-              <input type="checkbox" checked={useGoogleSheetVisitors} onChange={(e) => setUseGoogleSheetVisitors(e.target.checked)} style={{display: 'none'}} />
-              <span style={{fontSize: '12px', color: useGoogleSheetVisitors ? 'var(--accent-emerald)' : 'var(--text-muted)'}}>구글 시트 연동</span>
-              <div style={{position: 'relative', width: '32px', height: '16px', background: useGoogleSheetVisitors ? 'var(--accent-emerald)' : 'rgba(255,255,255,0.2)', borderRadius: '8px', transition: '0.3s'}}>
-                <div style={{position: 'absolute', top: '2px', left: useGoogleSheetVisitors ? '18px' : '2px', width: '12px', height: '12px', background: 'white', borderRadius: '50%', transition: '0.3s'}} />
+              <input type="checkbox" checked={isGoogleSheetSyncEnabled} onChange={(e) => setIsGoogleSheetSyncEnabled(e.target.checked)} style={{display: 'none'}} />
+              <span style={{fontSize: '12px', color: isGoogleSheetSyncEnabled ? 'var(--accent-emerald)' : 'var(--text-muted)'}}>구글 시트 연동</span>
+              <div style={{position: 'relative', width: '32px', height: '16px', background: isGoogleSheetSyncEnabled ? 'var(--accent-emerald)' : 'rgba(255,255,255,0.2)', borderRadius: '8px', transition: '0.3s'}}>
+                <div style={{position: 'absolute', top: '2px', left: isGoogleSheetSyncEnabled ? '18px' : '2px', width: '12px', height: '12px', background: 'white', borderRadius: '50%', transition: '0.3s'}} />
               </div>
             </label>
           </div>

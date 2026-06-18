@@ -6,7 +6,7 @@ import { Activity, Users, Target, UserCheck } from 'lucide-react';
 export default function LeisureUtilization({ monthlyData, settings }) {
   const sortedMonths = [...monthlyData].sort((a, b) => (b.id || '').localeCompare(a.id || ''));
   const [selectedPeriod, setSelectedPeriod] = useState(sortedMonths.length > 0 ? sortedMonths[0].id : 'all');
-  const [useGoogleSheetVisitors, setUseGoogleSheetVisitors] = useState(true);
+  const [isGoogleSheetSyncEnabled, setIsGoogleSheetSyncEnabled] = useState(true);
   const { googleSheetData } = useGoogleSheetVisitors();
 
   const analysisResult = useMemo(() => {
@@ -36,7 +36,7 @@ export default function LeisureUtilization({ monthlyData, settings }) {
 
     let aggregatedTotalVisitors = 0;
     
-    if (useGoogleSheetVisitors && googleSheetData) {
+    if (isGoogleSheetSyncEnabled && googleSheetData) {
       if (selectedPeriod === 'all') {
         aggregatedTotalVisitors = Object.values(googleSheetData).reduce((a, b) => a + b, 0);
       } else {
@@ -75,7 +75,7 @@ export default function LeisureUtilization({ monthlyData, settings }) {
       chartData,
       totalLeisureVisitors
     };
-  }, [monthlyData, selectedPeriod, settings, useGoogleSheetVisitors, googleSheetData]);
+  }, [monthlyData, selectedPeriod, settings, isGoogleSheetSyncEnabled, googleSheetData]);
 
   if (!analysisResult) {
     return (
@@ -119,10 +119,10 @@ export default function LeisureUtilization({ monthlyData, settings }) {
           <div style={{display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', marginBottom: '8px'}}>
             <UserCheck size={16} /> 총 리조트 방문객 (이용 가능 모수)
             <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', marginLeft: 'auto'}}>
-              <input type="checkbox" checked={useGoogleSheetVisitors} onChange={(e) => setUseGoogleSheetVisitors(e.target.checked)} style={{display: 'none'}} />
-              <span style={{fontSize: '12px', color: useGoogleSheetVisitors ? 'var(--accent-emerald)' : 'var(--text-muted)'}}>구글 시트 연동</span>
-              <div style={{position: 'relative', width: '32px', height: '16px', background: useGoogleSheetVisitors ? 'var(--accent-emerald)' : 'rgba(255,255,255,0.2)', borderRadius: '8px', transition: '0.3s'}}>
-                <div style={{position: 'absolute', top: '2px', left: useGoogleSheetVisitors ? '18px' : '2px', width: '12px', height: '12px', background: 'white', borderRadius: '50%', transition: '0.3s'}} />
+              <input type="checkbox" checked={isGoogleSheetSyncEnabled} onChange={(e) => setIsGoogleSheetSyncEnabled(e.target.checked)} style={{display: 'none'}} />
+              <span style={{fontSize: '12px', color: isGoogleSheetSyncEnabled ? 'var(--accent-emerald)' : 'var(--text-muted)'}}>구글 시트 연동</span>
+              <div style={{position: 'relative', width: '32px', height: '16px', background: isGoogleSheetSyncEnabled ? 'var(--accent-emerald)' : 'rgba(255,255,255,0.2)', borderRadius: '8px', transition: '0.3s'}}>
+                <div style={{position: 'absolute', top: '2px', left: isGoogleSheetSyncEnabled ? '18px' : '2px', width: '12px', height: '12px', background: 'white', borderRadius: '50%', transition: '0.3s'}} />
               </div>
             </label>
           </div>
