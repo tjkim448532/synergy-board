@@ -93,7 +93,7 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
       totMoto: totMotoTotal,
       totFnb,
       totOther,
-      monthsCount: processedData.length || 1,
+      monthsCount: validData.length || 1,
       validLeisure,
       validMoto,
       validFnb
