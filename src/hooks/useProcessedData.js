@@ -159,6 +159,34 @@ export default function useProcessedData(monthlyData, settings) {
       total51ConnVirtualAll += (count51AsTwoRooms ? sold51 * 2 : sold51);
       total51AccVirtualAll += sold51Acc;
 
+      let calcMotoGuest = 0;
+      let calcMotoGeneral = 0;
+      let calcMotoInternal = 0;
+      let calcMotoOther = 0;
+      
+      if (d.venues && d.venues['모토아레나'] && d.venues['모토아레나'].tickets) {
+        Object.entries(d.venues['모토아레나'].tickets).forEach(([ticket, amt]) => {
+          let group = 'other';
+          if (settings?.motoTicketGroups?.[ticket]) {
+            group = settings.motoTicketGroups[ticket];
+          } else {
+            if (ticket.includes('콘도') || ticket.includes('객실') || ticket.includes('패키지')) {
+              group = 'guest';
+            }
+          }
+          const val = Number(amt) || 0;
+          if (group === 'guest') calcMotoGuest += val;
+          else if (group === 'general') calcMotoGeneral += val;
+          else if (group === 'internal') calcMotoInternal += val;
+          else calcMotoOther += val;
+        });
+      } else {
+        calcMotoGuest = d.motoGuestRev || 0;
+        calcMotoGeneral = d.motoGeneralRev || 0;
+        calcMotoInternal = d.motoInternalRev || 0;
+        calcMotoOther = d.motoOtherRev || 0;
+      }
+
       return {
         ...d,
         yearMonth: d.yearMonth,
@@ -180,10 +208,10 @@ export default function useProcessedData(monthlyData, settings) {
         otherSales,
         golfSales,
         totalSales,
-        motoGuestRev: d.motoGuestRev,
-        motoGeneralRev: d.motoGeneralRev,
-        motoInternalRev: d.motoInternalRev,
-        motoOtherRev: d.motoOtherRev,
+        motoGuestRev: calcMotoGuest,
+        motoGeneralRev: calcMotoGeneral,
+        motoInternalRev: calcMotoInternal,
+        motoOtherRev: calcMotoOther,
         motoTotalRev: d.motoTotalRev,
         lRevWd,
         lRevWe,
