@@ -150,7 +150,7 @@ export default function useProcessedData(monthlyData, settings) {
       totalLeisureRevenueAll += leisureSales;
       totalMotoRevenueAll += motoSales;
       totalFnbRevenueAll += fnbSales;
-      totalOtherRevenueAll += otherSales;
+      totalOtherRevenueAll += otherSales + dynamicGroupsSum;
       totalGolfRevenueAll += golfSales;
       totalGuestsAll += guests;
       

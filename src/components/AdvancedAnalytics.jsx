@@ -156,7 +156,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
   }, [filteredProcessedData]);
 
   const { displayVisitors, hasMissingVisitorData } = useMemo(() => {
-    if (!filteredProcessedData || filteredProcessedData.length === 0) return { displayVisitors: 0, hasMissingVisitorData: false };
+    if (!filteredProcessedData || filteredProcessedData.length === 0) return { displayVisitors: 0, hasMissingVisitorData: true };
     
     let missing = false;
     const count = filteredProcessedData.reduce((sum, d) => {
@@ -188,6 +188,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       return sum;
     }, 0);
     
+    // 전체 연도 중 하나라도 빠진 데이터가 있다면, 1인당 식음비 및 소비액을 구할 수 없도록 missing 을 true 로 설정 (count 여부와 무관하게)
     return { displayVisitors: count, hasMissingVisitorData: missing };
   }, [filteredProcessedData, isGoogleSheetSyncEnabled, googleSheetData]);
 

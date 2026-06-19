@@ -54,7 +54,8 @@ export default function ManagementStrategy({ processedData, globalStats, setting
       { name: '골프', rev: totalGolf },
       { name: 'F&B', rev: totalFnb },
       { name: '모토아레나', rev: totalMoto },
-      { name: '기타레저', rev: totalLeisure }
+      { name: '기타레저', rev: totalLeisure },
+      { name: '기타/신규사업', rev: totalOther }
     ].sort((a, b) => b.rev - a.rev);
     
     const totalAll = facilities.reduce((sum, f) => sum + f.rev, 0);
