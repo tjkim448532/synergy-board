@@ -632,34 +632,52 @@ export default function MonthlyDataForm({ settings }) {
         let dateColIdx = -1;
         let venueColIdx = -1;
 
-        // 헤더 행 찾기 (더 넓은 범위의 키워드 검색)
+        // 헤더 행 찾기 (우선순위 1: 엑셀 원본에 있는 '트랜잭션명' 우선 탐색)
         for (let i = 0; i < 15; i++) {
           const r = data[i];
           if (!r) continue;
           const rStr = r.join(' ').replace(/\s+/g, '');
           
-          if (rStr.includes('트랜잭션명') || rStr.includes('상품명') || rStr.includes('메뉴명') || rStr.includes('매출구분') || rStr.includes('품목명') || rStr.includes('아이템')) {
+          // '트랜잭션명'이 있으면 무조건 진짜 헤더로 간주 (상단 요약표 스킵 목적)
+          if (rStr.includes('트랜잭션명')) {
             headerRowIdx = i;
-            for (let j = 0; j < r.length; j++) {
-              const cellStr = r[j] ? r[j].toString().replace(/\s+/g, '') : '';
-              if (cellStr.includes('트랜잭션명') || cellStr.includes('상품명') || cellStr.includes('메뉴명') || cellStr.includes('매출구분') || cellStr.includes('품목명') || cellStr.includes('아이템')) {
-                txColIdx = j;
-              }
-              if (cellStr.includes('할인') || cellStr.includes('취소') || cellStr.includes('수수료') || cellStr.includes('부가세') || cellStr.includes('봉사료')) {
-                // 수익(Revenue) 컬럼으로 오해하지 않도록 스킵
-                continue;
-              }
-              if (cellStr.includes('영업장') || cellStr.includes('업장명') || cellStr.includes('판매부서')) {
-                venueColIdx = j; // 영업장 컬럼 분리용
-              }
-              if (cellStr.includes('순매출') || cellStr.includes('실매출') || cellStr.includes('결제금액') || cellStr === '합계' || cellStr === '매출' || cellStr === '총합계') {
-                revColIdx = j; // 정확한 매출 컬럼 캡처 (순매출, 합계 등)
-              }
-              if (cellStr.includes('일자') || cellStr.includes('날짜') || cellStr.includes('DATE')) {
-                dateColIdx = j;
-              }
-            }
             break;
+          }
+        }
+
+        // 우선순위 2: 없으면 다른 키워드로 탐색
+        if (headerRowIdx === -1) {
+          for (let i = 0; i < 15; i++) {
+            const r = data[i];
+            if (!r) continue;
+            const rStr = r.join(' ').replace(/\s+/g, '');
+            if (rStr.includes('상품명') || rStr.includes('메뉴명') || rStr.includes('매출구분') || rStr.includes('품목명') || rStr.includes('아이템')) {
+              headerRowIdx = i;
+              break;
+            }
+          }
+        }
+
+        // 헤더 인덱스 찾은 후 컬럼 매핑
+        if (headerRowIdx !== -1) {
+          const r = data[headerRowIdx];
+          for (let j = 0; j < r.length; j++) {
+            const cellStr = r[j] ? r[j].toString().replace(/\s+/g, '') : '';
+            if (cellStr.includes('트랜잭션명') || cellStr.includes('상품명') || cellStr.includes('메뉴명') || cellStr.includes('매출구분') || cellStr.includes('품목명') || cellStr.includes('아이템')) {
+              txColIdx = j;
+            }
+            if (cellStr.includes('할인') || cellStr.includes('취소') || cellStr.includes('수수료') || cellStr.includes('부가세') || cellStr.includes('봉사료')) {
+              continue;
+            }
+            if (cellStr.includes('영업장') || cellStr.includes('업장명') || cellStr.includes('판매부서')) {
+              venueColIdx = j; 
+            }
+            if (cellStr.includes('순매출') || cellStr.includes('실매출') || cellStr.includes('결제금액') || cellStr === '합계' || cellStr === '매출' || cellStr === '총합계') {
+              revColIdx = j; 
+            }
+            if (cellStr.includes('일자') || cellStr.includes('날짜') || cellStr.includes('DATE')) {
+              dateColIdx = j;
+            }
           }
         }
 
@@ -761,8 +779,9 @@ export default function MonthlyDataForm({ settings }) {
              mData.venues[venueName] = {
                  guestRev: 0,
                  generalRev: 0,
+                 otherRev: 0,
                  totalRev: 0,
-                 breakdown: { guest: {}, general: {} }
+                 breakdown: { guest: {}, general: {}, other: {} }
              };
           }
           const venueData = mData.venues[venueName];
@@ -774,16 +793,20 @@ export default function MonthlyDataForm({ settings }) {
             const upperTx = txName.toUpperCase();
             if (upperTx.includes('TOTAL') || txName.includes('소계') || txName.includes('합계') || txName.includes('총계')) continue;
             
-            let category = 'general';
-            if (txName.includes('콘도') || txName.includes('객실')) {
-              venueData.guestRev += rev;
-              category = 'guest';
-            } else {
-              venueData.generalRev += rev;
-              category = 'general'; // 투숙객 아닌 모든 것은 일반객(투숙객 외)으로 분류
+            let category = settings?.motoTicketGroups?.[txName];
+            if (!category) {
+              if (txName.includes('콘도') || txName.includes('객실')) category = 'guest';
+              else if (txName.includes('일반') || txName.includes('증평군민') || txName.includes('MOU') || txName.includes('단체')) category = 'general';
+              else category = 'other';
             }
+            
+            if (category === 'guest') venueData.guestRev += rev;
+            else if (category === 'general') venueData.generalRev += rev;
+            else if (category === 'other') venueData.otherRev += rev;
+            
             venueData.totalRev += rev;
             
+            if (!venueData.breakdown[category]) venueData.breakdown[category] = {};
             if (!venueData.breakdown[category][txName]) venueData.breakdown[category][txName] = 0;
             venueData.breakdown[category][txName] += rev;
           }
@@ -837,7 +860,7 @@ export default function MonthlyDataForm({ settings }) {
             savePayload.motoGuestRev = moto.guestRev;
             savePayload.motoGeneralRev = moto.generalRev;
             savePayload.motoInternalRev = 0; // Removed, but kept for legacy schema
-            savePayload.motoOtherRev = 0;    // Removed, but kept for legacy schema
+            savePayload.motoOtherRev = moto.otherRev;
             savePayload.motoTotalRev = moto.totalRev;
             savePayload.motoBreakdown = moto.breakdown;
          }
