@@ -149,18 +149,18 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
 
 
   const displayVisitors = useMemo(() => {
-    if (isGoogleSheetSyncEnabled && googleSheetData) {
+    if (isGoogleSheetSyncEnabled && googleSheetData && googleSheetData.visitors) {
       if (selectedMonthFilter === 'all' || selectedMonthFilter.endsWith('-all')) {
-        return Object.values(googleSheetData).reduce((a, b) => a + b, 0);
+        return Object.values(googleSheetData.visitors).reduce((a, b) => a + b, 0);
       } else {
         const mStr = selectedMonthFilter.split('-')[1];
         const selM = parseInt(mStr, 10);
         if (isCumulative) {
           let sum = 0;
-          for(let i=1; i<=selM; i++) sum += (googleSheetData[i] || 0);
+          for(let i=1; i<=selM; i++) sum += (googleSheetData.visitors[i] || 0);
           return sum;
         } else {
-          return googleSheetData[selM] || 0;
+          return googleSheetData.visitors[selM] || 0;
         }
       }
     }
