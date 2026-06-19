@@ -562,18 +562,31 @@ export default function MonthlyDataForm({ settings }) {
     setMotoData(null);
     setIsMotoSaved(false);
 
-    // 파일명에서 1~12월 숫자 추출
-    const match = file.name.match(/(\d+)월?/);
-    if (match) {
-      let month = parseInt(match[1], 10);
+    // 파일명에서 년도와 월 추출 (예: 25년 1월, 2025년 1월)
+    const yearMatch = file.name.match(/(\d{2,4})년/);
+    const monthMatch = file.name.match(/(\d+)월?/);
+    
+    if (monthMatch) {
+      let month = parseInt(monthMatch[1], 10);
       if (month >= 1 && month <= 12) {
-        let year = new Date().getFullYear();
-        const currentMonth = new Date().getMonth() + 1;
-        // 만약 현재 1~3월인데, 올리는 엑셀이 10~12월분이라면 작년 데이터일 확률이 높음!
-        if (currentMonth <= 3 && month >= 10) {
-          year -= 1;
-        }
-        setMotoTargetMonth(`${year}-${month.toString().padStart(2, '0')}`);
+        setMotoTargetMonth((prev) => {
+          let targetYear = new Date().getFullYear();
+          
+          if (yearMatch) {
+            let y = parseInt(yearMatch[1], 10);
+            targetYear = y < 100 ? 2000 + y : y;
+          } else if (prev) {
+            // 사용자가 이미 연도를 변경해둔 상태라면 그 연도 유지
+            targetYear = parseInt(prev.split('-')[0], 10);
+          } else {
+            const currentMonth = new Date().getMonth() + 1;
+            // 만약 현재 1~3월인데, 올리는 엑셀이 10~12월분이라면 작년 데이터일 확률이 높음!
+            if (currentMonth <= 3 && month >= 10) {
+              targetYear -= 1;
+            }
+          }
+          return `${targetYear}-${month.toString().padStart(2, '0')}`;
+        });
       }
     }
   };
