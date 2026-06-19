@@ -396,11 +396,13 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
         });
       }
 
-      // 모토아레나 및 기타 매출을 KPI 산정에 포함
-      totalGrossTrev += (d.totalRoomRevenue || 0) + leisureGross + fnbGross + motoGross + otherGross;
+      // 모토아레나 및 사용자 정의(Dynamic) 그룹 매출을 KPI 산정에 포함
+      const dynamicGrossSum = Math.max(0, (d.totalSales || 0) - (leisureGross + fnbGross + motoGross + otherGross));
+      
+      totalGrossTrev += (d.totalRoomRevenue || 0) + (d.totalSales || 0); // 기존 4대 매출 + 커스텀 그룹 자동 합산
       // 모토아레나는 캡쳐율 추정이 아닌 실제 투숙객 데이터(motoGuestRev)가 우선이나, 없을 경우 capMoto 적용
-      totalPureTrev += (d.totalRoomRevenue || 0) + (leisureGross * capLeisure) + (fnbGross * capFnb) + (d.motoGuestRev || (motoGross * capMoto)) + otherGross;
-      totalSubsidiaryRev += leisureGross + fnbGross + motoGross + otherGross;
+      totalPureTrev += (d.totalRoomRevenue || 0) + (leisureGross * capLeisure) + (fnbGross * capFnb) + (d.motoGuestRev || (motoGross * capMoto)) + otherGross + dynamicGrossSum;
+      totalSubsidiaryRev += (d.totalSales || 0);
       totalFnbAndPitstopRev += fnbGross + pitstopRev;
     });
 

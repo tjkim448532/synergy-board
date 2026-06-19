@@ -51,11 +51,13 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
         mGuestRev = Math.round(mTotalRev * 0.7);
       }
 
+      const dynamicGrossSum = Math.max(0, (d.totalSales || 0) - ((d.leisureSales||0) + (d.fnbSales||0) + (d.motoSales||0) + (d.otherSales||0)));
+
       totLeisure += d.leisureSales || 0;
       totMotoGuest += mGuestRev;
       totMotoTotal += mTotalRev;
       totFnb += d.fnbSales || 0;
-      totOther += d.otherSales || 0;
+      totOther += (d.otherSales || 0) + dynamicGrossSum;
       totGolf += d.golfSales || 0;
 
       if (totalSold > 0) {
