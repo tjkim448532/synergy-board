@@ -83,14 +83,15 @@ export default function useProcessedData(monthlyData, settings) {
         const salesObj = { ...(d.salesByLocation || d.leisureSalesByLocation || {}) };
         
         // 기존 버그 수정: 부대업장 엑셀을 올리면 기존에 올려둔 모토아레나 매출이 0으로 무시되던 현상 해결
-        if (d.motoTotalRev) {
+        if (d.motoTotalRev && !salesObj['모토아레나']) {
           salesObj['모토아레나(티켓)'] = Number(d.motoTotalRev);
         }
 
         // 새로 추가된 동적 영업장 티켓 매출 합산 (이미 leisureSalesByLocation에 있는 항목은 중복 방지)
         if (d.venues) {
           Object.entries(d.venues).forEach(([vName, vData]) => {
-            if (vName !== '모토아레나' && !salesObj[vName]) { 
+            const ignoreList = ['모토아레나', 'ROOM', 'ROOM OTHER', '합계'];
+            if (!ignoreList.includes(vName) && !salesObj[vName]) { 
               salesObj[`${vName}(티켓)`] = Number(vData.totalRev || 0);
             }
           });
