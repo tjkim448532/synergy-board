@@ -1197,12 +1197,37 @@ export default function MonthlyDataForm({ settings }) {
                        <div key={venueName} style={{background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '8px', borderLeft: '4px solid var(--accent-gold)'}}>
                          <h5 style={{margin: '0 0 12px 0', color: 'var(--text-main)', fontSize: '16px'}}>{venueName}</h5>
                          <div style={{fontSize: '15px', display: 'flex', flexDirection: 'column', gap: '12px'}}>
-                           <div style={{display: 'flex', justifyContent: 'space-between', color: 'var(--accent-emerald)'}}>
-                             <span>투숙객 이용수:</span> <strong style={{fontSize: '18px'}}>{venue.guestCount || 0} 명</strong>
+                           <div style={{display: 'flex', flexDirection: 'column', gap: '4px'}}>
+                             <div style={{display: 'flex', justifyContent: 'space-between', color: 'var(--accent-emerald)'}}>
+                               <span>투숙객 이용수:</span> <strong style={{fontSize: '18px'}}>{venue.guestCount || 0} 명</strong>
+                             </div>
+                             {venue.breakdown && venue.breakdown.guest && Object.keys(venue.breakdown.guest).length > 0 && (
+                               <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
+                                 {Object.entries(venue.breakdown.guest).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
+                               </div>
+                             )}
                            </div>
                            
-                           <div style={{display: 'flex', justifyContent: 'space-between', color: 'var(--accent-blue)'}}>
-                             <span>비숙박객 이용수:</span> <strong style={{fontSize: '18px'}}>{venue.generalCount || 0} 명</strong>
+                           <div style={{display: 'flex', flexDirection: 'column', gap: '4px'}}>
+                             <div style={{display: 'flex', justifyContent: 'space-between', color: 'var(--accent-blue)'}}>
+                               <span>비숙박객 이용수:</span> <strong style={{fontSize: '18px'}}>{venue.generalCount || 0} 명</strong>
+                             </div>
+                             {venue.breakdown && venue.breakdown.general && Object.keys(venue.breakdown.general).length > 0 && (
+                               <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
+                                 {Object.entries(venue.breakdown.general).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
+                               </div>
+                             )}
+                           </div>
+
+                           <div style={{display: 'flex', flexDirection: 'column', gap: '4px'}}>
+                             <div style={{display: 'flex', justifyContent: 'space-between', color: 'var(--accent-coral)'}}>
+                               <span>기타 매출 (이용객수 무관):</span> <strong>₩{formatCurrency(venue.otherRev || 0)}</strong>
+                             </div>
+                             {venue.breakdown && venue.breakdown.other && Object.keys(venue.breakdown.other).length > 0 && (
+                               <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
+                                 {Object.entries(venue.breakdown.other).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
+                               </div>
+                             )}
                            </div>
 
                            <div style={{display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed rgba(255,255,255,0.2)', paddingTop: '12px', marginTop: '4px'}}>
