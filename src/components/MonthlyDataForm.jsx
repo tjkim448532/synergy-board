@@ -116,16 +116,43 @@ export default function MonthlyDataForm({ settings }) {
         const data = new Uint8Array(evt.target.result);
         const workbook = XLSX.read(data, { type: 'array' });
         
-        // 데이터가 가장 많은(가장 줄 수가 많은) 시트를 자동으로 선택 (일일 시트와 월간 시트가 섞여 있을 때 월간을 잡기 위함)
+        // 데이터가 가장 많은(가장 줄 수가 많은) 시트 대신, "총합계(매출)가 가장 큰" 시트를 선택합니다.
+        // 월별 요약 시트와 일일 시트가 같이 있을 때 확실하게 월별 요약 시트를 잡기 위함입니다.
         let bestSheetName = workbook.SheetNames[0];
-        let maxRows = 0;
+        let maxRevSum = -1;
         let bestJsonData = [];
 
         for (const sName of workbook.SheetNames) {
           const s = workbook.Sheets[sName];
           const jData = XLSX.utils.sheet_to_json(s, { header: 1, raw: false });
-          if (jData.length > maxRows) {
-            maxRows = jData.length;
+          
+          // 대략적인 매출 합계 계산
+          let currentSheetRevSum = 0;
+          let revIdx = -1;
+          for(let i=0; i<Math.min(jData.length, 50); i++){
+            const r = jData[i] || [];
+            const rStr = r.join(' ').replace(/\s+/g, '');
+            if(rStr.includes('합계') || rStr.includes('순매출')){
+              for(let j=0; j<r.length; j++){
+                const cStr = String(r[j] || '').replace(/\s+/g, '');
+                if(cStr === '합계' || cStr === '순매출' || cStr === '결제금액' || cStr === '총합계'){
+                  revIdx = j;
+                }
+              }
+            }
+          }
+          if (revIdx !== -1) {
+            for(let i=0; i<jData.length; i++){
+              const val = parseInt(String((jData[i] || [])[revIdx] || '').replace(/,/g, ''), 10);
+              if(!isNaN(val)) currentSheetRevSum += val;
+            }
+          } else {
+            // 헤더를 못 찾은 경우 걍 줄 수로 임시 점수
+            currentSheetRevSum = jData.length;
+          }
+
+          if (currentSheetRevSum > maxRevSum) {
+            maxRevSum = currentSheetRevSum;
             bestSheetName = sName;
             bestJsonData = jData;
           }
@@ -635,16 +662,43 @@ export default function MonthlyDataForm({ settings }) {
         const dataArray = new Uint8Array(evt.target.result);
         const workbook = XLSX.read(dataArray, { type: 'array' });
         
-        // 데이터가 가장 많은(가장 줄 수가 많은) 시트를 자동으로 선택 (일일 시트와 월간 시트가 섞여 있을 때 월간을 잡기 위함)
+        // 데이터가 가장 많은(가장 줄 수가 많은) 시트 대신, "총합계(매출)가 가장 큰" 시트를 선택합니다.
+        // 월별 요약 시트와 일일 시트가 같이 있을 때 확실하게 월별 요약 시트를 잡기 위함입니다.
         let bestSheetName = workbook.SheetNames[0];
-        let maxRows = 0;
+        let maxRevSum = -1;
         let bestJsonData = [];
 
         for (const sName of workbook.SheetNames) {
           const s = workbook.Sheets[sName];
           const jData = XLSX.utils.sheet_to_json(s, { header: 1, raw: false });
-          if (jData.length > maxRows) {
-            maxRows = jData.length;
+          
+          // 대략적인 매출 합계 계산
+          let currentSheetRevSum = 0;
+          let revIdx = -1;
+          for(let i=0; i<Math.min(jData.length, 50); i++){
+            const r = jData[i] || [];
+            const rStr = r.join(' ').replace(/\s+/g, '');
+            if(rStr.includes('합계') || rStr.includes('순매출')){
+              for(let j=0; j<r.length; j++){
+                const cStr = String(r[j] || '').replace(/\s+/g, '');
+                if(cStr === '합계' || cStr === '순매출' || cStr === '결제금액' || cStr === '총합계'){
+                  revIdx = j;
+                }
+              }
+            }
+          }
+          if (revIdx !== -1) {
+            for(let i=0; i<jData.length; i++){
+              const val = parseInt(String((jData[i] || [])[revIdx] || '').replace(/,/g, ''), 10);
+              if(!isNaN(val)) currentSheetRevSum += val;
+            }
+          } else {
+            // 헤더를 못 찾은 경우 걍 줄 수로 임시 점수
+            currentSheetRevSum = jData.length;
+          }
+
+          if (currentSheetRevSum > maxRevSum) {
+            maxRevSum = currentSheetRevSum;
             bestSheetName = sName;
             bestJsonData = jData;
           }
