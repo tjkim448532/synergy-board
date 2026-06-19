@@ -1191,42 +1191,22 @@ export default function MonthlyDataForm({ settings }) {
                     <div style={{fontWeight: 'bold', color: 'var(--text-main)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '4px'}}>
                       📅 {mData.yearMonth}
                     </div>
-                    {Object.entries(mData.venues || {}).map(([venueName, venue]) => (
-                       <div key={venueName} style={{background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '8px', borderLeft: '3px solid var(--accent-gold)'}}>
-                         <h5 style={{margin: '0 0 8px 0', color: 'var(--text-main)'}}>{venueName}</h5>
-                         <div style={{fontSize: '14px', display: 'flex', flexDirection: 'column', gap: '8px'}}>
-                           {venueName.includes('모토아레나') ? (
-                             <>
-                               <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                                 <span>투숙객 매출:</span> <strong>₩{formatCurrency(venue.guestRev)}</strong>
-                               </div>
-                               {venue.breakdown && venue.breakdown.guest && Object.keys(venue.breakdown.guest).length > 0 && (
-                                 <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
-                                   {Object.entries(venue.breakdown.guest).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
-                                 </div>
-                               )}
-                               
-                               <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '8px'}}>
-                                 <span>비숙박객 매출:</span> <strong>₩{formatCurrency(venue.generalRev)}</strong>
-                               </div>
-                               {venue.breakdown && venue.breakdown.general && Object.keys(venue.breakdown.general).length > 0 && (
-                                 <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
-                                   {Object.entries(venue.breakdown.general).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
-                                 </div>
-                               )}
-                             </>
-                           ) : (
-                             <>
-                               {venue.breakdown && venue.breakdown.all && Object.keys(venue.breakdown.all).length > 0 && (
-                                 <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
-                                   {Object.entries(venue.breakdown.all).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
-                                 </div>
-                               )}
-                             </>
-                           )}
+                    {Object.entries(mData.venues || {})
+                      .filter(([venueName]) => venueName.includes('모토아레나'))
+                      .map(([venueName, venue]) => (
+                       <div key={venueName} style={{background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '8px', borderLeft: '4px solid var(--accent-gold)'}}>
+                         <h5 style={{margin: '0 0 12px 0', color: 'var(--text-main)', fontSize: '16px'}}>{venueName}</h5>
+                         <div style={{fontSize: '15px', display: 'flex', flexDirection: 'column', gap: '12px'}}>
+                           <div style={{display: 'flex', justifyContent: 'space-between', color: 'var(--accent-emerald)'}}>
+                             <span>투숙객 이용수:</span> <strong style={{fontSize: '18px'}}>{venue.guestCount || 0} 명</strong>
+                           </div>
+                           
+                           <div style={{display: 'flex', justifyContent: 'space-between', color: 'var(--accent-blue)'}}>
+                             <span>비숙박객 이용수:</span> <strong style={{fontSize: '18px'}}>{venue.generalCount || 0} 명</strong>
+                           </div>
 
-                           <div style={{display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed rgba(255,255,255,0.2)', paddingTop: '8px', marginTop: '8px'}}>
-                             <span style={{color: 'var(--accent-gold)'}}>소계:</span> <strong style={{color: 'var(--accent-gold)'}}>₩{formatCurrency(venue.totalRev)}</strong>
+                           <div style={{display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed rgba(255,255,255,0.2)', paddingTop: '12px', marginTop: '4px'}}>
+                             <span style={{color: 'var(--accent-gold)'}}>전체 총합 (검산용):</span> <strong style={{color: 'var(--accent-gold)', fontSize: '18px'}}>₩{formatCurrency(venue.totalRev)}</strong>
                            </div>
                          </div>
                        </div>
