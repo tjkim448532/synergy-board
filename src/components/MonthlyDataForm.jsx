@@ -760,10 +760,8 @@ export default function MonthlyDataForm({ settings }) {
              mData.venues[venueName] = {
                  guestRev: 0,
                  generalRev: 0,
-                 internalRev: 0,
-                 otherRev: 0,
                  totalRev: 0,
-                 breakdown: { guest: {}, general: {}, internal: {}, other: {} }
+                 breakdown: { guest: {}, general: {} }
              };
           }
           const venueData = mData.venues[venueName];
@@ -773,20 +771,15 @@ export default function MonthlyDataForm({ settings }) {
           
           if (txName) {
             const upperTx = txName.toUpperCase();
-            if (upperTx.includes('TOTAL') || txName.includes('소계') || txName.includes('합계')) continue;
+            if (upperTx.includes('TOTAL') || txName.includes('소계') || txName.includes('합계') || txName.includes('총계')) continue;
             
-            let category = 'other';
+            let category = 'general';
             if (txName.includes('콘도') || txName.includes('객실')) {
               venueData.guestRev += rev;
               category = 'guest';
-            } else if (txName.includes('일반') || txName.includes('증평군민') || txName.includes('MOU') || txName.includes('단체')) {
-              venueData.generalRev += rev;
-              category = 'general';
-            } else if (txName.includes('임직원') || txName.includes('직원동반')) {
-              venueData.internalRev += rev;
-              category = 'internal';
             } else {
-              venueData.otherRev += rev;
+              venueData.generalRev += rev;
+              category = 'general'; // 투숙객 아닌 모든 것은 일반객(투숙객 외)으로 분류
             }
             venueData.totalRev += rev;
             
@@ -842,8 +835,8 @@ export default function MonthlyDataForm({ settings }) {
          if (moto) {
             savePayload.motoGuestRev = moto.guestRev;
             savePayload.motoGeneralRev = moto.generalRev;
-            savePayload.motoInternalRev = moto.internalRev;
-            savePayload.motoOtherRev = moto.otherRev;
+            savePayload.motoInternalRev = 0; // Removed, but kept for legacy schema
+            savePayload.motoOtherRev = 0;    // Removed, but kept for legacy schema
             savePayload.motoTotalRev = moto.totalRev;
             savePayload.motoBreakdown = moto.breakdown;
          }
@@ -1066,7 +1059,7 @@ export default function MonthlyDataForm({ settings }) {
                            )}
                            
                            <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '8px'}}>
-                             <span>일반객 매출:</span> <strong>₩{formatCurrency(venue.generalRev)}</strong>
+                             <span>일반객(투숙객 외) 매출:</span> <strong>₩{formatCurrency(venue.generalRev)}</strong>
                            </div>
                            {venue.breakdown && Object.keys(venue.breakdown.general).length > 0 && (
                              <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
@@ -1074,15 +1067,7 @@ export default function MonthlyDataForm({ settings }) {
                              </div>
                            )}
 
-                           <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '8px'}}>
-                             <span>임직원 매출:</span> <strong>₩{formatCurrency(venue.internalRev)}</strong>
-                           </div>
-                           {venue.breakdown && Object.keys(venue.breakdown.internal).length > 0 && (
-                             <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
-                               {Object.entries(venue.breakdown.internal).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
-                             </div>
-                           )}
-                           <div style={{display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed rgba(255,255,255,0.2)', paddingTop: '8px'}}>
+                           <div style={{display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed rgba(255,255,255,0.2)', paddingTop: '8px', marginTop: '8px'}}>
                              <span style={{color: 'var(--accent-gold)'}}>소계:</span> <strong style={{color: 'var(--accent-gold)'}}>₩{formatCurrency(venue.totalRev)}</strong>
                            </div>
                          </div>
