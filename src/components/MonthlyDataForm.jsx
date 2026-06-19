@@ -865,7 +865,7 @@ export default function MonthlyDataForm({ settings }) {
           </div>
           
           <label className="btn-primary" style={{cursor: 'pointer', textAlign: 'center', marginBottom: '20px', background: 'var(--accent-purple)'}}>
-            <Upload size={18} /> 레저 엑셀 파일 선택
+            <Upload size={18} /> 부대매출(통합) 엑셀 파일 선택
             <input type="file" accept=".xlsx" onChange={handleLeisureFileUpload} style={{display: 'none'}} />
           </label>
 
