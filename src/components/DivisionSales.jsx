@@ -87,9 +87,9 @@ export default function DivisionSales({ processedData: globalProcessedData, glob
     const yoyData = useMemo(() => {
     if (!globalProcessedData || globalProcessedData.length === 0) return [];
     
-    const map = {};
+    const arr = [];
     for (let i = 1; i <= 12; i++) {
-      map[String(i).padStart(2, '0')] = { month: `${i}월`, '2024': 0, '2025': 0, '2026': 0 };
+      arr.push({ monthStr: String(i).padStart(2, '0'), month: `${i}월`, '2024': 0, '2025': 0, '2026': 0 });
     }
 
     globalProcessedData.forEach(d => {
@@ -99,14 +99,15 @@ export default function DivisionSales({ processedData: globalProcessedData, glob
         const year = match[1];
         const m = match[2];
         const total = (d.leisureSales || 0) + (d.fnbSales || 0) + (d.motoSales || 0) + (d.golfSales || 0) + (d.otherSales || 0) + (d.totalRoomRevenue || 0);
-        if (map[m] && (year === '2024' || year === '2025' || year === '2026')) {
-           map[m][year] += total;
+        const row = arr.find(x => x.monthStr === m);
+        if (row && (year === '2024' || year === '2025' || year === '2026')) {
+           row[year] += total;
         }
       }
     });
 
     let cum24=0, cum25=0, cum26=0;
-    return Object.values(map).map(row => {
+    return arr.map(row => {
       cum24 += row['2024'];
       cum25 += row['2025'];
       cum26 += row['2026'];
