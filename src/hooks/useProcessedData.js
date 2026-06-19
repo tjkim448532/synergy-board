@@ -187,6 +187,24 @@ export default function useProcessedData(monthlyData, settings) {
         calcMotoOther = d.motoOtherRev || 0;
       }
 
+      let calcLeisureTicketUsage = {};
+      if (d.venues) {
+        Object.entries(d.venues).forEach(([venue, data]) => {
+          if (data.tickets && venue !== '모토아레나' && venue !== 'ROOM' && venue !== 'ROOM OTHER' && venue !== '합계') {
+            Object.entries(data.tickets).forEach(([ticket, qty]) => {
+              const compositeKey = `${venue}___${ticket}`;
+              const rule = settings?.leisureTicketRules?.[compositeKey] || { count: 1, exclude: false, customVenue: '' };
+              if (!rule.exclude) {
+                const finalVenue = (rule.customVenue && rule.customVenue.trim() !== '') ? rule.customVenue.trim() : venue;
+                calcLeisureTicketUsage[finalVenue] = (calcLeisureTicketUsage[finalVenue] || 0) + (Number(qty) || 0) * (Number(rule.count) || 1);
+              }
+            });
+          }
+        });
+      } else if (d.leisureTicketUsage) {
+        calcLeisureTicketUsage = d.leisureTicketUsage;
+      }
+
       return {
         ...d,
         yearMonth: d.yearMonth,
@@ -208,6 +226,7 @@ export default function useProcessedData(monthlyData, settings) {
         otherSales,
         golfSales,
         totalSales,
+        leisureTicketUsage: calcLeisureTicketUsage,
         motoGuestRev: calcMotoGuest,
         motoGeneralRev: calcMotoGeneral,
         motoInternalRev: calcMotoInternal,

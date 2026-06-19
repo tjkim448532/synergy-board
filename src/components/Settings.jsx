@@ -101,10 +101,13 @@ export default function Settings({ monthlyData }) {
     fetchSettings();
   }, []);
 
+  const [uniqueLeisureTickets, setUniqueLeisureTickets] = useState([]);
+
   useEffect(() => {
     if (monthlyData && monthlyData.length > 0) {
       const locSet = new Set();
       const motoSet = new Set();
+      const leisureTicketSet = new Set();
       
       monthlyData.forEach(month => {
         if (month.salesByLocation) Object.keys(month.salesByLocation).forEach(loc => locSet.add(loc));
@@ -117,10 +120,19 @@ export default function Settings({ monthlyData }) {
             }
           });
         }
+
+        if (month.venues) {
+          Object.entries(month.venues).forEach(([venue, data]) => {
+            if (data.tickets && venue !== '모토아레나' && venue !== 'ROOM' && venue !== 'ROOM OTHER' && venue !== '합계') {
+              Object.keys(data.tickets).forEach(ticket => leisureTicketSet.add(`${venue}___${ticket}`));
+            }
+          });
+        }
       });
       
       setUniqueLocations(Array.from(locSet).sort());
       setUniqueMotoTickets(Array.from(motoSet).sort());
+      setUniqueLeisureTickets(Array.from(leisureTicketSet).sort());
     }
   }, [monthlyData]);
 
@@ -806,7 +818,7 @@ export default function Settings({ monthlyData }) {
 
       <SectionCard
         title="레저본부 이용률 (티켓 인원수 매핑)"
-        description="레저본부 월별 티켓 판매 엑셀을 업로드하여 영업장별 실제 이용객 수를 산출하고 그룹핑합니다."
+        description="영업장 품목별 엑셀에서 추출된 티켓별 실제 이용객 수(방문자 수)를 산출하기 위한 매핑 규칙을 설정합니다."
         isExpanded={expandedSections.leisureTicket}
         onToggle={() => toggleSection('leisureTicket')}
       >
@@ -814,6 +826,7 @@ export default function Settings({ monthlyData }) {
           settings={settings} 
           setSettings={setSettings} 
           uniqueLocations={uniqueLocations} 
+          uniqueLeisureTickets={uniqueLeisureTickets}
         />
       </SectionCard>
 
