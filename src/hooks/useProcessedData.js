@@ -87,10 +87,10 @@ export default function useProcessedData(monthlyData, settings) {
           salesObj['모토아레나(티켓)'] = Number(d.motoTotalRev);
         }
 
-        // 새로 추가된 동적 영업장 티켓 매출 합산
+        // 새로 추가된 동적 영업장 티켓 매출 합산 (이미 leisureSalesByLocation에 있는 항목은 중복 방지)
         if (d.venues) {
           Object.entries(d.venues).forEach(([vName, vData]) => {
-            if (vName !== '모토아레나') { // 모토아레나는 위에서 이미 처리함
+            if (vName !== '모토아레나' && !salesObj[vName]) { 
               salesObj[`${vName}(티켓)`] = Number(vData.totalRev || 0);
             }
           });
