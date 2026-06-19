@@ -694,44 +694,27 @@ export default function Settings({ monthlyData }) {
           ) : (
             <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
               {uniqueMotoTickets.map(ticket => {
-                let currentGroup = settings.motoTicketGroups?.[ticket];
-                if (!currentGroup) {
-                  if (ticket.includes('콘도') || ticket.includes('객실')) currentGroup = 'guest';
-                  else if (ticket.includes('일반') || ticket.includes('증평군민') || ticket.includes('MOU') || ticket.includes('단체')) currentGroup = 'general';
-                  else currentGroup = 'other';
+                let isGuest = false;
+                if (settings.motoTicketGroups?.[ticket] === 'guest') {
+                  isGuest = true;
+                } else if (settings.motoTicketGroups?.[ticket] === undefined) {
+                  if (ticket.includes('콘도') || ticket.includes('객실') || ticket.includes('패키지')) {
+                    isGuest = true;
+                  }
                 }
+                
                 return (
                   <div key={ticket} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px'}}>
                     <strong style={{fontSize: '15px', flex: 1, color: 'var(--text-bright)'}}>{ticket}</strong>
-                    <div style={{display: 'flex', gap: '16px'}}>
-                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: currentGroup === 'guest' ? 'var(--accent-emerald)' : 'var(--text-muted)'}}>
-                        <input 
-                          type="radio" 
-                          name={`moto_${ticket}`} 
-                          checked={currentGroup === 'guest'}
-                          onChange={() => handleMotoTicketGroupChange(ticket, 'guest')}
-                          style={{accentColor: 'var(--accent-emerald)'}}
-                        /> 투숙객 매출
-                      </label>
-                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: currentGroup === 'general' ? 'var(--accent-gold)' : 'var(--text-muted)'}}>
-                        <input 
-                          type="radio" 
-                          name={`moto_${ticket}`} 
-                          checked={currentGroup === 'general'}
-                          onChange={() => handleMotoTicketGroupChange(ticket, 'general')}
-                          style={{accentColor: 'var(--accent-gold)'}}
-                        /> 일반객 매출
-                      </label>
-                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: currentGroup === 'other' ? '#ef4444' : 'var(--text-muted)'}}>
-                        <input 
-                          type="radio" 
-                          name={`moto_${ticket}`} 
-                          checked={currentGroup === 'other'}
-                          onChange={() => handleMotoTicketGroupChange(ticket, 'other')}
-                          style={{accentColor: '#ef4444'}}
-                        /> 기타 매출 (임직원 등)
-                      </label>
-                    </div>
+                    <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: isGuest ? 'var(--accent-emerald)' : 'var(--text-muted)'}}>
+                      <input 
+                        type="checkbox" 
+                        checked={isGuest}
+                        onChange={(e) => handleMotoTicketGroupChange(ticket, e.target.checked ? 'guest' : 'general')}
+                        style={{width: '18px', height: '18px', accentColor: 'var(--accent-emerald)'}}
+                      />
+                      투숙객 매출로 분류
+                    </label>
                   </div>
                 );
               })}

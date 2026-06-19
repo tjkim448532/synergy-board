@@ -113,11 +113,30 @@ export default function MonthlyDataForm({ settings }) {
     const reader = new FileReader();
     reader.onload = async (evt) => {
       try {
-        const bstr = evt.target.result;
-        const wb = XLSX.read(bstr, { type: 'binary' });
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        const data = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false });
+        const data = new Uint8Array(evt.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
         
+        // 데이터가 가장 많은(가장 줄 수가 많은) 시트를 자동으로 선택 (일일 시트와 월간 시트가 섞여 있을 때 월간을 잡기 위함)
+        let bestSheetName = workbook.SheetNames[0];
+        let maxRows = 0;
+        let bestJsonData = [];
+
+        for (const sName of workbook.SheetNames) {
+          const s = workbook.Sheets[sName];
+          const jData = XLSX.utils.sheet_to_json(s, { header: 1, raw: false });
+          if (jData.length > maxRows) {
+            maxRows = jData.length;
+            bestSheetName = sName;
+            bestJsonData = jData;
+          }
+        }
+
+        const jsonData = bestJsonData;
+
+        if (jsonData.length < 2) {
+          return toast.error('데이터가 비어있습니다.');
+        }
+
         let headerRowIdx = -1;
         let dateIdx = -1, typeIdx = -1, countIdx = -1, revIdx = -1;
         let rateIdx = -1, marketIdx = -1, sourceIdx = -1, agencyIdx = -1;
@@ -784,9 +803,8 @@ export default function MonthlyDataForm({ settings }) {
              mData.venues[venueName] = {
                  guestRev: 0,
                  generalRev: 0,
-                 otherRev: 0,
                  totalRev: 0,
-                 breakdown: { guest: {}, general: {}, other: {} }
+                 breakdown: { guest: {}, general: {} }
              };
           }
           const venueData = mData.venues[venueName];
@@ -800,18 +818,21 @@ export default function MonthlyDataForm({ settings }) {
             
             venueData.totalRev += rev;
 
-            // 모토아레나만 투숙/일반/기타 분류를 적용
+            // 모토아레나만 투숙/비숙박 분류를 적용
             if (venueName.includes('모토아레나')) {
-              let category = settings?.motoTicketGroups?.[txName];
-              if (!category) {
-                if (txName.includes('콘도') || txName.includes('객실')) category = 'guest';
-                else if (txName.includes('일반') || txName.includes('증평군민') || txName.includes('MOU') || txName.includes('단체')) category = 'general';
-                else category = 'other';
+              let category = 'general';
+              // settings?.motoTicketGroups 가 'guest' 이면 투숙객, 아니면 전부 비숙박객(general)
+              if (settings?.motoTicketGroups?.[txName] === 'guest') {
+                category = 'guest';
+              } else if (settings?.motoTicketGroups?.[txName] === undefined) {
+                // 설정이 없을 때의 기본값
+                if (txName.includes('콘도') || txName.includes('객실') || txName.includes('패키지')) {
+                  category = 'guest';
+                }
               }
               
               if (category === 'guest') venueData.guestRev += rev;
-              else if (category === 'general') venueData.generalRev += rev;
-              else if (category === 'other') venueData.otherRev += rev;
+              else venueData.generalRev += rev;
               
               if (!venueData.breakdown[category]) venueData.breakdown[category] = {};
               if (!venueData.breakdown[category][txName]) venueData.breakdown[category][txName] = 0;
@@ -872,8 +893,6 @@ export default function MonthlyDataForm({ settings }) {
          if (moto) {
             savePayload.motoGuestRev = moto.guestRev;
             savePayload.motoGeneralRev = moto.generalRev;
-            savePayload.motoInternalRev = 0; // Removed, but kept for legacy schema
-            savePayload.motoOtherRev = moto.otherRev;
             savePayload.motoTotalRev = moto.totalRev;
             savePayload.motoBreakdown = moto.breakdown;
          }
@@ -1104,25 +1123,12 @@ export default function MonthlyDataForm({ settings }) {
                                )}
                                
                                <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '8px'}}>
-                                 <span>일반객(투숙객 외) 매출:</span> <strong>₩{formatCurrency(venue.generalRev)}</strong>
+                                 <span>비숙박객 매출:</span> <strong>₩{formatCurrency(venue.generalRev)}</strong>
                                </div>
                                {venue.breakdown && venue.breakdown.general && Object.keys(venue.breakdown.general).length > 0 && (
                                  <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
                                    {Object.entries(venue.breakdown.general).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
                                  </div>
-                               )}
-
-                               {venue.otherRev > 0 && (
-                                 <>
-                                   <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '8px'}}>
-                                     <span style={{color: '#ef4444'}}>기타 매출 (임직원 등):</span> <strong style={{color: '#ef4444'}}>₩{formatCurrency(venue.otherRev)}</strong>
-                                   </div>
-                                   {venue.breakdown && venue.breakdown.other && Object.keys(venue.breakdown.other).length > 0 && (
-                                     <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
-                                       {Object.entries(venue.breakdown.other).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
-                                     </div>
-                                   )}
-                                 </>
                                )}
                              </>
                            ) : (
