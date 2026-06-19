@@ -79,8 +79,23 @@ export default function useProcessedData(monthlyData, settings) {
       let fRevWd = 0;
       let fRevWe = 0;
 
-      if (d.salesByLocation || d.leisureSalesByLocation) {
-        const salesObj = d.salesByLocation || d.leisureSalesByLocation || {};
+      if (d.salesByLocation || d.leisureSalesByLocation || d.venues) {
+        const salesObj = { ...(d.salesByLocation || d.leisureSalesByLocation || {}) };
+        
+        // 기존 버그 수정: 부대업장 엑셀을 올리면 기존에 올려둔 모토아레나 매출이 0으로 무시되던 현상 해결
+        if (d.motoTotalRev) {
+          salesObj['모토아레나(티켓)'] = Number(d.motoTotalRev);
+        }
+
+        // 새로 추가된 동적 영업장 티켓 매출 합산
+        if (d.venues) {
+          Object.entries(d.venues).forEach(([vName, vData]) => {
+            if (vName !== '모토아레나') { // 모토아레나는 위에서 이미 처리함
+              salesObj[`${vName}(티켓)`] = Number(vData.totalRev || 0);
+            }
+          });
+        }
+
         const calculated = calculateGroupedSales(salesObj, locationGroups);
         leisureSales = calculated.leisure;
         motoSales = calculated.moto || 0;

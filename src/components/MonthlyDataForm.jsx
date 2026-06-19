@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Save, Trash2, Upload, Hotel, Ticket, Lock } from 'lucide-react';
-import { collection, onSnapshot, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, setDoc, deleteDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import * as XLSX from 'xlsx';
 import toast from 'react-hot-toast';
@@ -19,9 +19,10 @@ const parseSafeInt = (val) => {
 const parseExcelDate = (val) => {
   if (!val) return null;
   if (typeof val === 'number') {
-    // 엑셀 시리얼 넘버 (1900년 1월 1일 기준)
+    // 엑셀 시리얼 넘버 (1900년 1월 1일 기준) -> UTC 자정으로 변환됨
     const d = new Date(Math.round((val - 25569) * 86400 * 1000));
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    // 타임존 문제 방지를 위해 반드시 UTC 기준으로 연월일 추출
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
   }
   let str = val.toString().trim();
   // 지원: 2024-05-01, 24. 5. 1, 2024/5/1 등
@@ -500,9 +501,15 @@ export default function MonthlyDataForm({ settings }) {
             };
          }
          
-         await setDoc(doc(db, 'monthly_records', data.yearMonth), dataToSave, { merge: true });
+         const docRef = doc(db, 'monthly_records', data.yearMonth);
+         const docSnap = await getDoc(docRef);
+         if (docSnap.exists()) {
+            await updateDoc(docRef, dataToSave);
+         } else {
+            await setDoc(docRef, { ...dataToSave, id: data.yearMonth });
+         }
       }
-      toast.success(`[${roomData.map(d => d.yearMonth).join(', ')}] 객실 데이터가 성공적으로 저장(병합)되었습니다!`);
+      toast.success(`[${roomData.map(d => d.yearMonth).join(', ')}] 객실 데이터가 성공적으로 저장(원자적 업데이트)되었습니다!`);
       setIsRoomSaved(true);
     } catch (e) {
       toast.error('저장 실패: ' + e.message);
@@ -533,9 +540,15 @@ export default function MonthlyDataForm({ settings }) {
                hasRecord: !!existingRecord
             }
          };
-         await setDoc(doc(db, 'monthly_records', data.yearMonth), dataToSave, { merge: true });
+         const docRef = doc(db, 'monthly_records', data.yearMonth);
+         const docSnap = await getDoc(docRef);
+         if (docSnap.exists()) {
+            await updateDoc(docRef, dataToSave);
+         } else {
+            await setDoc(docRef, { ...dataToSave, id: data.yearMonth });
+         }
       }
-      toast.success(`총 ${leisureData.length}개월의 레저 데이터가 성공적으로 저장(병합)되었습니다!`);
+      toast.success(`총 ${leisureData.length}개월의 레저 데이터가 성공적으로 저장(원자적 업데이트)되었습니다!`);
       setIsLeisureSaved(true);
     } catch (e) {
       toast.error('저장 실패: ' + e.message);
@@ -698,43 +711,50 @@ export default function MonthlyDataForm({ settings }) {
           if (!motoParsedMap[monthKey]) {
              motoParsedMap[monthKey] = {
                  yearMonth: monthKey,
-                 motoGuestRev: 0,
-                 motoGeneralRev: 0,
-                 motoInternalRev: 0,
-                 motoOtherRev: 0,
-                 motoTotalRev: 0,
-                 breakdown: { guest: {}, general: {}, internal: {}, other: {} }
+                 venues: {}
              };
           }
 
           const mData = motoParsedMap[monthKey];
-          const venueName = venueColIdx !== -1 ? String(row[venueColIdx] || '') : '모토아레나';
-          if (venueColIdx !== -1 && !venueName.includes('모토아레나')) continue;
+          const rawVenueName = venueColIdx !== -1 ? String(row[venueColIdx] || '') : '모토아레나';
+          const venueName = rawVenueName.trim() || '모토아레나';
 
-          const txName = row[txColIdx];
+          if (!mData.venues[venueName]) {
+             mData.venues[venueName] = {
+                 guestRev: 0,
+                 generalRev: 0,
+                 internalRev: 0,
+                 otherRev: 0,
+                 totalRev: 0,
+                 breakdown: { guest: {}, general: {}, internal: {}, other: {} }
+             };
+          }
+          const venueData = mData.venues[venueName];
+
+          const txName = row[txColIdx] != null ? String(row[txColIdx]).trim() : '';
           const rev = parseSafeInt(row[revColIdx]);
           
-          if (typeof txName === 'string') {
+          if (txName) {
             const upperTx = txName.toUpperCase();
             if (upperTx.includes('TOTAL') || txName.includes('소계') || txName.includes('합계')) continue;
             
             let category = 'other';
             if (txName.includes('콘도') || txName.includes('객실')) {
-              mData.motoGuestRev += rev;
+              venueData.guestRev += rev;
               category = 'guest';
             } else if (txName.includes('일반') || txName.includes('증평군민') || txName.includes('MOU') || txName.includes('단체')) {
-              mData.motoGeneralRev += rev;
+              venueData.generalRev += rev;
               category = 'general';
             } else if (txName.includes('임직원') || txName.includes('직원동반')) {
-              mData.motoInternalRev += rev;
+              venueData.internalRev += rev;
               category = 'internal';
             } else {
-              mData.motoOtherRev += rev;
+              venueData.otherRev += rev;
             }
-            mData.motoTotalRev += rev;
+            venueData.totalRev += rev;
             
-            if (!mData.breakdown[category][txName]) mData.breakdown[category][txName] = 0;
-            mData.breakdown[category][txName] += rev;
+            if (!venueData.breakdown[category][txName]) venueData.breakdown[category][txName] = 0;
+            venueData.breakdown[category][txName] += rev;
           }
         }
         
@@ -758,16 +778,43 @@ export default function MonthlyDataForm({ settings }) {
     if (!motoData || !Array.isArray(motoData)) return;
     try {
       for (const mData of motoData) {
-         await setDoc(doc(db, 'monthly_records', mData.yearMonth), {
-           motoGuestRev: mData.motoGuestRev,
-           motoGeneralRev: mData.motoGeneralRev,
-           motoInternalRev: mData.motoInternalRev,
-           motoOtherRev: mData.motoOtherRev,
-           motoTotalRev: mData.motoTotalRev,
-           motoBreakdown: mData.breakdown
-         }, { merge: true });
+         const docRef = doc(db, 'monthly_records', mData.yearMonth);
+         const docSnap = await getDoc(docRef);
+         
+         const existingRecord = docSnap.exists() ? docSnap.data() : {};
+         const savePayload = {
+            id: mData.yearMonth,
+            venues: {
+              ...(existingRecord.venues || {}),
+              ...mData.venues
+            }
+         };
+         
+         // 호환성을 위해 '모토아레나' 데이터가 있으면 루트 레벨 필드에도 복사
+         let moto = null;
+         for (const key of Object.keys(mData.venues)) {
+           if (key.includes('모토아레나')) {
+             moto = mData.venues[key];
+             break;
+           }
+         }
+         
+         if (moto) {
+            savePayload.motoGuestRev = moto.guestRev;
+            savePayload.motoGeneralRev = moto.generalRev;
+            savePayload.motoInternalRev = moto.internalRev;
+            savePayload.motoOtherRev = moto.otherRev;
+            savePayload.motoTotalRev = moto.totalRev;
+            savePayload.motoBreakdown = moto.breakdown;
+         }
+
+         if (docSnap.exists()) {
+            await updateDoc(docRef, savePayload);
+         } else {
+            await setDoc(docRef, savePayload);
+         }
       }
-      toast.success(`총 ${motoData.length}개월의 모토아레나 데이터가 성공적으로 저장(병합)되었습니다!`);
+      toast.success(`총 ${motoData.length}개월의 부대업장(Ticket) 데이터가 성공적으로 저장(원자적 업데이트)되었습니다!`);
       setIsMotoSaved(true);
     } catch (e) {
       toast.error('저장 실패: ' + e.message);
@@ -930,7 +977,7 @@ export default function MonthlyDataForm({ settings }) {
         <div className="glass-panel" style={{display: 'flex', flexDirection: 'column', padding: '24px', border: motoData ? '2px solid var(--accent-gold)' : '1px solid var(--border-glass)'}}>
           <div style={{display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px'}}>
             <span style={{fontSize: '32px'}}>🏎️</span>
-            <h3 style={{margin: 0}}>3. 고객군 분리 매출 처리 (모토아레나)</h3>
+            <h3 style={{margin: 0}}>3. 영업장별 고객군 분리 매출 처리 (티켓 판매)</h3>
           </div>
           <p style={{fontSize:'13px', color:'var(--text-muted)', margin:'-10px 0 16px 0'}}>📌 업로드 파일: 투숙객/일반객 구분을 위한 상세 품목명(트랜잭션)이 포함된 월간 매출 엑셀 파일</p>
           <div style={{display:'none'}}>
@@ -959,40 +1006,47 @@ export default function MonthlyDataForm({ settings }) {
             <div style={{background: 'rgba(251, 191, 36, 0.1)', padding: '16px', borderRadius: '8px', border: '1px solid var(--accent-gold)'}}>
               <h4 style={{margin: '0 0 12px 0', color: 'var(--accent-gold)'}}>추출 결과 ({motoData.yearMonth})</h4>
               
-              <div style={{marginBottom: '16px', fontSize: '14px', display: 'flex', flexDirection: 'column', gap: '8px'}}>
-                <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                  <span>투숙객 매출:</span> <strong>₩{formatCurrency(motoData.motoGuestRev)}</strong>
-                </div>
-                {motoData.breakdown && Object.keys(motoData.breakdown.guest).length > 0 && (
-                  <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
-                    {Object.entries(motoData.breakdown.guest).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
-                  </div>
-                )}
-                
-                <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '8px'}}>
-                  <span>일반객 매출:</span> <strong>₩{formatCurrency(motoData.motoGeneralRev)}</strong>
-                </div>
-                {motoData.breakdown && Object.keys(motoData.breakdown.general).length > 0 && (
-                  <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
-                    {Object.entries(motoData.breakdown.general).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
-                  </div>
-                )}
+              <div style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>
+                {Object.entries(motoData.venues || {}).map(([venueName, venue]) => (
+                   <div key={venueName} style={{background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '8px', borderLeft: '3px solid var(--accent-gold)'}}>
+                     <h5 style={{margin: '0 0 8px 0', color: 'var(--text-main)'}}>{venueName}</h5>
+                     <div style={{fontSize: '14px', display: 'flex', flexDirection: 'column', gap: '8px'}}>
+                       <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                         <span>투숙객 매출:</span> <strong>₩{formatCurrency(venue.guestRev)}</strong>
+                       </div>
+                       {venue.breakdown && Object.keys(venue.breakdown.guest).length > 0 && (
+                         <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
+                           {Object.entries(venue.breakdown.guest).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
+                         </div>
+                       )}
+                       
+                       <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '8px'}}>
+                         <span>일반객 매출:</span> <strong>₩{formatCurrency(venue.generalRev)}</strong>
+                       </div>
+                       {venue.breakdown && Object.keys(venue.breakdown.general).length > 0 && (
+                         <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
+                           {Object.entries(venue.breakdown.general).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
+                         </div>
+                       )}
 
-                <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '8px'}}>
-                  <span>임직원 매출:</span> <strong>₩{formatCurrency(motoData.motoInternalRev)}</strong>
-                </div>
-                {motoData.breakdown && Object.keys(motoData.breakdown.internal).length > 0 && (
-                  <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
-                    {Object.entries(motoData.breakdown.internal).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
-                  </div>
-                )}
-                <div style={{display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed rgba(255,255,255,0.2)', paddingTop: '8px'}}>
-                  <span style={{color: 'var(--accent-gold)'}}>총 추출 합계:</span> <strong style={{color: 'var(--accent-gold)'}}>₩{formatCurrency(motoData.motoTotalRev)}</strong>
-                </div>
+                       <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '8px'}}>
+                         <span>임직원 매출:</span> <strong>₩{formatCurrency(venue.internalRev)}</strong>
+                       </div>
+                       {venue.breakdown && Object.keys(venue.breakdown.internal).length > 0 && (
+                         <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
+                           {Object.entries(venue.breakdown.internal).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
+                         </div>
+                       )}
+                       <div style={{display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed rgba(255,255,255,0.2)', paddingTop: '8px'}}>
+                         <span style={{color: 'var(--accent-gold)'}}>소계:</span> <strong style={{color: 'var(--accent-gold)'}}>₩{formatCurrency(venue.totalRev)}</strong>
+                       </div>
+                     </div>
+                   </div>
+                ))}
               </div>
 
-              <button className="btn-primary" onClick={handleSaveMotoData} disabled={isMotoSaved} style={{width: '100%', background: isMotoSaved ? 'var(--accent-emerald)' : 'var(--accent-gold)', display: 'flex', justifyContent: 'center', gap: '8px', color: 'black'}}>
-                <Save size={18} /> {isMotoSaved ? '✅ 저장 완료' : '해당 월 모토아레나 DB에 저장'}
+              <button className="btn-primary" onClick={handleSaveMotoData} disabled={isMotoSaved} style={{width: '100%', background: isMotoSaved ? 'var(--accent-emerald)' : 'var(--accent-gold)', display: 'flex', justifyContent: 'center', gap: '8px', color: 'black', marginTop: '16px'}}>
+                <Save size={18} /> {isMotoSaved ? '✅ 저장 완료' : '해당 월 부대업장(Ticket) DB에 저장'}
               </button>
             </div>
           )}

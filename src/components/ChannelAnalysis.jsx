@@ -63,7 +63,7 @@ export default function ChannelAnalysis({ processedData, globalStats, settings }
   // 동적 필터 옵션 생성
   const monthOptions = useMemo(() => {
     const options = [];
-    const validData = processedData.filter(d => d.yearMonth !== '2024-11' && d.yearMonth !== '2024-12');
+    const validData = processedData;
     const years = [...new Set(validData.map(d => (d.yearMonth || '').split('-')[0]))].filter(y => y);
     years.sort((a,b) => b.localeCompare(a));
     
@@ -85,7 +85,6 @@ export default function ChannelAnalysis({ processedData, globalStats, settings }
   // Filter out recent months like AdvancedAnalytics does
   const filteredProcessedData = useMemo(() => {
     return processedData.filter(d => {
-      if (d.yearMonth === '2024-11' || d.yearMonth === '2024-12') return false;
       if (selectedMonthFilter !== 'all') {
         const [selYear, selMonth] = selectedMonthFilter.split('-');
         const [y, m] = (d.yearMonth || '').split('-');
