@@ -1004,44 +1004,51 @@ export default function MonthlyDataForm({ settings }) {
 
           {motoData && (
             <div style={{background: 'rgba(251, 191, 36, 0.1)', padding: '16px', borderRadius: '8px', border: '1px solid var(--accent-gold)'}}>
-              <h4 style={{margin: '0 0 12px 0', color: 'var(--accent-gold)'}}>추출 결과 ({motoData.yearMonth})</h4>
+              <h4 style={{margin: '0 0 12px 0', color: 'var(--accent-gold)'}}>추출 결과 ({motoData.map(d => d.yearMonth).join(', ')})</h4>
               
               <div style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>
-                {Object.entries(motoData.venues || {}).map(([venueName, venue]) => (
-                   <div key={venueName} style={{background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '8px', borderLeft: '3px solid var(--accent-gold)'}}>
-                     <h5 style={{margin: '0 0 8px 0', color: 'var(--text-main)'}}>{venueName}</h5>
-                     <div style={{fontSize: '14px', display: 'flex', flexDirection: 'column', gap: '8px'}}>
-                       <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                         <span>투숙객 매출:</span> <strong>₩{formatCurrency(venue.guestRev)}</strong>
-                       </div>
-                       {venue.breakdown && Object.keys(venue.breakdown.guest).length > 0 && (
-                         <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
-                           {Object.entries(venue.breakdown.guest).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
-                         </div>
-                       )}
-                       
-                       <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '8px'}}>
-                         <span>일반객 매출:</span> <strong>₩{formatCurrency(venue.generalRev)}</strong>
-                       </div>
-                       {venue.breakdown && Object.keys(venue.breakdown.general).length > 0 && (
-                         <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
-                           {Object.entries(venue.breakdown.general).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
-                         </div>
-                       )}
+                {motoData.map(mData => (
+                  <div key={mData.yearMonth} style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
+                    <div style={{fontWeight: 'bold', color: 'var(--text-main)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '4px'}}>
+                      📅 {mData.yearMonth}
+                    </div>
+                    {Object.entries(mData.venues || {}).map(([venueName, venue]) => (
+                       <div key={venueName} style={{background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '8px', borderLeft: '3px solid var(--accent-gold)'}}>
+                         <h5 style={{margin: '0 0 8px 0', color: 'var(--text-main)'}}>{venueName}</h5>
+                         <div style={{fontSize: '14px', display: 'flex', flexDirection: 'column', gap: '8px'}}>
+                           <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                             <span>투숙객 매출:</span> <strong>₩{formatCurrency(venue.guestRev)}</strong>
+                           </div>
+                           {venue.breakdown && Object.keys(venue.breakdown.guest).length > 0 && (
+                             <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
+                               {Object.entries(venue.breakdown.guest).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
+                             </div>
+                           )}
+                           
+                           <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '8px'}}>
+                             <span>일반객 매출:</span> <strong>₩{formatCurrency(venue.generalRev)}</strong>
+                           </div>
+                           {venue.breakdown && Object.keys(venue.breakdown.general).length > 0 && (
+                             <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
+                               {Object.entries(venue.breakdown.general).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
+                             </div>
+                           )}
 
-                       <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '8px'}}>
-                         <span>임직원 매출:</span> <strong>₩{formatCurrency(venue.internalRev)}</strong>
-                       </div>
-                       {venue.breakdown && Object.keys(venue.breakdown.internal).length > 0 && (
-                         <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
-                           {Object.entries(venue.breakdown.internal).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
+                           <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '8px'}}>
+                             <span>임직원 매출:</span> <strong>₩{formatCurrency(venue.internalRev)}</strong>
+                           </div>
+                           {venue.breakdown && Object.keys(venue.breakdown.internal).length > 0 && (
+                             <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
+                               {Object.entries(venue.breakdown.internal).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
+                             </div>
+                           )}
+                           <div style={{display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed rgba(255,255,255,0.2)', paddingTop: '8px'}}>
+                             <span style={{color: 'var(--accent-gold)'}}>소계:</span> <strong style={{color: 'var(--accent-gold)'}}>₩{formatCurrency(venue.totalRev)}</strong>
+                           </div>
                          </div>
-                       )}
-                       <div style={{display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed rgba(255,255,255,0.2)', paddingTop: '8px'}}>
-                         <span style={{color: 'var(--accent-gold)'}}>소계:</span> <strong style={{color: 'var(--accent-gold)'}}>₩{formatCurrency(venue.totalRev)}</strong>
                        </div>
-                     </div>
-                   </div>
+                    ))}
+                  </div>
                 ))}
               </div>
 
