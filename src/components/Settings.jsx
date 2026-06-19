@@ -7,6 +7,7 @@ import Papa from 'papaparse';
 import toast from 'react-hot-toast';
 import LeisureTicketManager from './LeisureTicketManager';
 import './Settings.css';
+import { getDefaultGroup } from '../utils/revenueUtils';
 
 const SectionCard = ({ title, description, isExpanded, onToggle, children, actions }) => (
   <div className="settings-card glass-panel" style={{marginBottom: '20px', padding: 0}}>
@@ -247,7 +248,7 @@ export default function Settings({ monthlyData }) {
 
       if (d.salesByLocation) {
         Object.keys(d.salesByLocation).forEach(loc => {
-          const group = locationGroups[loc] || 'leisure';
+          const group = locationGroups[loc] || getDefaultGroup(loc);
           if (group === 'leisure') leisureSales += d.salesByLocation[loc];
           else if (group === 'moto') motoSales += d.salesByLocation[loc];
           else if (group === 'fnb') fnbSales += d.salesByLocation[loc];
@@ -570,7 +571,7 @@ export default function Settings({ monthlyData }) {
           ) : (
             <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
               {uniqueLocations.map(loc => {
-                const currentGroup = (settings.locationGroups && settings.locationGroups[loc]) || 'leisure';
+                const currentGroup = (settings.locationGroups && settings.locationGroups[loc]) || getDefaultGroup(loc);
                 return (
                   <div key={loc} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', padding: '10px 16px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px'}}>
                     <strong style={{fontSize: '16px', flex: '1 1 150px'}}>{loc}</strong>
@@ -654,7 +655,7 @@ export default function Settings({ monthlyData }) {
                   { id: 'exclude', title: '제외됨', color: '#ef4444' }
                 ].map(group => {
                   const items = uniqueLocations.filter(loc => {
-                    const g = (settings.locationGroups && settings.locationGroups[loc]) || 'leisure';
+                    const g = (settings.locationGroups && settings.locationGroups[loc]) || getDefaultGroup(loc);
                     return g === group.id;
                   });
                   
