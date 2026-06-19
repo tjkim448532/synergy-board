@@ -633,7 +633,7 @@ export default function MonthlyDataForm({ settings }) {
         let venueColIdx = -1;
 
         // 헤더 행 찾기 (우선순위 1: 엑셀 원본에 있는 '트랜잭션명' 우선 탐색)
-        for (let i = 0; i < 15; i++) {
+        for (let i = 0; i < 50; i++) {
           const r = data[i];
           if (!r) continue;
           const rStr = r.join(' ').replace(/\s+/g, '');
@@ -647,7 +647,7 @@ export default function MonthlyDataForm({ settings }) {
 
         // 우선순위 2: 없으면 다른 키워드로 탐색
         if (headerRowIdx === -1) {
-          for (let i = 0; i < 15; i++) {
+          for (let i = 0; i < 50; i++) {
             const r = data[i];
             if (!r) continue;
             const rStr = r.join(' ').replace(/\s+/g, '');
