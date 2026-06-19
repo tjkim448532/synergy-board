@@ -149,23 +149,14 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
 
 
   const displayVisitors = useMemo(() => {
-    if (isGoogleSheetSyncEnabled && googleSheetData && googleSheetData.visitors) {
-      if (selectedMonthFilter === 'all' || selectedMonthFilter.endsWith('-all')) {
-        return Object.values(googleSheetData.visitors).reduce((a, b) => a + b, 0);
-      } else {
-        const mStr = selectedMonthFilter.split('-')[1];
-        const selM = parseInt(mStr, 10);
-        if (isCumulative) {
-          let sum = 0;
-          for(let i=1; i<=selM; i++) sum += (googleSheetData.visitors[i] || 0);
-          return sum;
-        } else {
-          return googleSheetData.visitors[selM] || 0;
-        }
-      }
-    }
-
     return filteredProcessedData.reduce((sum, d) => {
+      // 1. 구글 시트 연동 켜져있고, 해당 데이터가 2024년도일 때만 구글 시트 데이터 사용
+      if (isGoogleSheetSyncEnabled && googleSheetData && googleSheetData.visitors && (d.yearMonth || '').startsWith('2024')) {
+         const m = parseInt(d.yearMonth.split('-')[1], 10);
+         return sum + (googleSheetData.visitors[m] || 0);
+      }
+      
+      // 2. 그 외 (2025년 등 구글시트 미지원 년도) 또는 구글 연동 꺼졌을 때는 기존 DB 기반 Calculation 사용
       if (d.visitorCalcData) {
         const numTotalVehicles = Number(d.visitorCalcData.totalVehicles) || 0;
         const numEmployeeVehicles = Number(d.visitorCalcData.employeeVehicles) || 0;
