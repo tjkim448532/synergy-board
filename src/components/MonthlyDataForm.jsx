@@ -632,10 +632,25 @@ export default function MonthlyDataForm({ settings }) {
     const reader = new FileReader();
     reader.onload = async (evt) => {
       try {
-        const bstr = evt.target.result;
-        const wb = XLSX.read(bstr, { type: 'binary' });
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        const data = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false });
+        const dataArray = new Uint8Array(evt.target.result);
+        const workbook = XLSX.read(dataArray, { type: 'array' });
+        
+        // 데이터가 가장 많은(가장 줄 수가 많은) 시트를 자동으로 선택 (일일 시트와 월간 시트가 섞여 있을 때 월간을 잡기 위함)
+        let bestSheetName = workbook.SheetNames[0];
+        let maxRows = 0;
+        let bestJsonData = [];
+
+        for (const sName of workbook.SheetNames) {
+          const s = workbook.Sheets[sName];
+          const jData = XLSX.utils.sheet_to_json(s, { header: 1, raw: false });
+          if (jData.length > maxRows) {
+            maxRows = jData.length;
+            bestSheetName = sName;
+            bestJsonData = jData;
+          }
+        }
+
+        const data = bestJsonData;
         
         let guestRev = 0;
         let generalRev = 0;
