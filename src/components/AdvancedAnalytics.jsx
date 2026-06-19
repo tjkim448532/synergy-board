@@ -148,17 +148,33 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
   }, [processedData, selectedMonthFilter, isCumulative]);
 
 
-  const displayVisitors = useMemo(() => {
-    return filteredProcessedData.reduce((sum, d) => {
+  const dateRangeStr = useMemo(() => {
+    if (!filteredProcessedData || filteredProcessedData.length === 0) return '';
+    const sorted = [...filteredProcessedData].sort((a, b) => (a.yearMonth || '').localeCompare(b.yearMonth || ''));
+    if (sorted.length === 1) return `(${sorted[0].yearMonth})`;
+    return `(${sorted[0].yearMonth} ~ ${sorted[sorted.length - 1].yearMonth})`;
+  }, [filteredProcessedData]);
+
+  const { displayVisitors, hasMissingVisitorData } = useMemo(() => {
+    if (!filteredProcessedData || filteredProcessedData.length === 0) return { displayVisitors: 0, hasMissingVisitorData: false };
+    
+    let missing = false;
+    const count = filteredProcessedData.reduce((sum, d) => {
       // 1. 구글 시트 연동 켜져있고, 해당 데이터가 2024년도일 때만 구글 시트 데이터 사용
       if (isGoogleSheetSyncEnabled && googleSheetData && googleSheetData.visitors && (d.yearMonth || '').startsWith('2024')) {
          const m = parseInt(d.yearMonth.split('-')[1], 10);
+         if (googleSheetData.visitors[m] === undefined || googleSheetData.visitors[m] === null) {
+           missing = true;
+         }
          return sum + (googleSheetData.visitors[m] || 0);
       }
       
       // 2. 그 외 (2025년 등 구글시트 미지원 년도) 또는 구글 연동 꺼졌을 때는 기존 DB 기반 Calculation 사용
       if (d.visitorCalcData) {
-        const numTotalVehicles = Number(d.visitorCalcData.totalVehicles) || 0;
+        const numTotalVehicles = Number(d.visitorCalcData.totalVehicles);
+        if (isNaN(numTotalVehicles) || numTotalVehicles <= 0) {
+          missing = true; // No vehicle data means visitor count is effectively missing
+        }
         const numEmployeeVehicles = Number(d.visitorCalcData.employeeVehicles) || 0;
         const numGolfGuests = Number(d.visitorCalcData.golfGuests) || 0;
         const netVehicles = Math.max(0, numTotalVehicles - numEmployeeVehicles);
@@ -166,9 +182,14 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
         const totalVisitors = Math.max(0, estimatedPeople - numGolfGuests);
         return sum + totalVisitors;
       }
+      
+      // No visitorCalcData at all
+      missing = true;
       return sum;
     }, 0);
-  }, [filteredProcessedData, isGoogleSheetSyncEnabled, googleSheetData, selectedMonthFilter, isCumulative]);
+    
+    return { displayVisitors: count, hasMissingVisitorData: missing };
+  }, [filteredProcessedData, isGoogleSheetSyncEnabled, googleSheetData]);
 
   const totalHotelGuests = useMemo(() => {
     if (!filteredProcessedData || filteredProcessedData.length === 0) return 0;
@@ -498,7 +519,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
             {displayVisitors !== null ? <CountUp end={displayVisitors} duration={2} separator="," /> : '...'}
           </div>
           <p style={{margin: 0, color: 'var(--text-muted)', fontSize: '14px'}}>
-            {selectedMonthFilter === 'all' ? '전체 기간 리조트 통합 고객 수 (골프장 제외)' : (selectedMonthFilter.endsWith('-all') ? `${selectedMonthFilter.split('-')[0]}년 리조트 통합 고객 수` : `${selectedMonthFilter.split('-')[0]}년 ${isCumulative ? `1~${parseInt(selectedMonthFilter.split('-')[1])}월 누적` : `${parseInt(selectedMonthFilter.split('-')[1])}월`} 리조트 고객 수`)}
+            {selectedMonthFilter === 'all' ? '전체 기간 리조트 통합 고객 수 (골프장 제외)' : (selectedMonthFilter.endsWith('-all') ? `${selectedMonthFilter.split('-')[0]}년 리조트 통합 고객 수` : `${selectedMonthFilter.split('-')[0]}년 ${isCumulative ? `1~${parseInt(selectedMonthFilter.split('-')[1])}월 누적` : `${parseInt(selectedMonthFilter.split('-')[1])}월`} 리조트 고객 수`)} {dateRangeStr}
           </p>
           <div style={{marginTop: 'auto', background: 'rgba(255,255,255,0.05)', padding: '12px 16px', borderRadius: '8px', border: '1px solid rgba(251, 191, 36, 0.2)'}}>
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px dashed rgba(255,255,255,0.1)'}}>
@@ -506,8 +527,8 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                 <div style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '2px'}}>방문객 1인당 평균 소비액</div>
                 <div style={{fontSize: '12px', color: 'var(--text-muted)', opacity: 0.7}}>(골프 및 숙박비 제외 / 부대매출 합산)</div>
               </div>
-              <div style={{fontSize: '20px', fontWeight: 'bold', color: 'var(--accent-gold)'}}>
-                {displayVisitors > 0 && kpiData ? `₩${Math.round(kpiData.totalSubsidiaryRev / displayVisitors).toLocaleString()}` : '₩0'}
+              <div style={{fontSize: '20px', fontWeight: 'bold', color: hasMissingVisitorData ? 'var(--text-muted)' : 'var(--accent-gold)'}}>
+                {hasMissingVisitorData ? <span style={{fontSize: '14px'}}>N/A (데이터 누락)</span> : (displayVisitors > 0 && kpiData ? `₩${Math.round(kpiData.totalSubsidiaryRev / displayVisitors).toLocaleString()}` : '₩0')}
               </div>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
@@ -515,8 +536,8 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                 <div style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '2px'}}>1인당 식음비</div>
                 <div style={{fontSize: '12px', color: 'var(--text-muted)', opacity: 0.7}}>(식음 + 핏스탑 특별 합산 기준)</div>
               </div>
-              <div style={{fontSize: '18px', fontWeight: 'bold', color: 'var(--accent-emerald)'}}>
-                {displayVisitors > 0 && kpiData ? `₩${Math.round(kpiData.totalFnbAndPitstopRev / displayVisitors).toLocaleString()}` : '₩0'}
+              <div style={{fontSize: '18px', fontWeight: 'bold', color: hasMissingVisitorData ? 'var(--text-muted)' : 'var(--accent-emerald)'}}>
+                {hasMissingVisitorData ? <span style={{fontSize: '14px'}}>N/A (데이터 누락)</span> : (displayVisitors > 0 && kpiData ? `₩${Math.round(kpiData.totalFnbAndPitstopRev / displayVisitors).toLocaleString()}` : '₩0')}
               </div>
             </div>
           </div>
@@ -532,7 +553,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
             <CountUp end={totalHotelGuests} duration={2} separator="," />
           </div>
           <p style={{margin: 0, color: 'var(--text-muted)', fontSize: '14px'}}>
-            (16평×2.5인) + (35평×4.5인) + (51평×6인) {isCumulative || selectedMonthFilter === 'all' || selectedMonthFilter.endsWith('-all') ? '누적' : '당월'} 합산 결과
+            (16평×2.5인) + (35평×4.5인) + (51평×6인) {isCumulative || selectedMonthFilter === 'all' || selectedMonthFilter.endsWith('-all') ? '누적' : '당월'} 합산 결과 {dateRangeStr}
           </p>
 
           <div style={{position: 'absolute', right: '40px', bottom: '32px', background: 'rgba(0,0,0,0.4)', padding: '12px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end'}}>

@@ -147,6 +147,29 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
   
   const expectedTotalRev = expectedRoomRev + expectedLeisureRev + expectedMotoRev + expectedFnbRev;
 
+  const excludedFromBaseline = ['골프'];
+  let baselineTotal = baseMetrics.totRev + baseMetrics.totOther;
+
+  if (baseMetrics.validLeisure) {
+    baselineTotal += baseMetrics.totLeisure;
+  } else if (baseMetrics.totLeisure > 0) {
+    excludedFromBaseline.push('레저(상관관계 미달)');
+  }
+
+  if (baseMetrics.validMoto) {
+    baselineTotal += baseMetrics.totMoto;
+  } else if (baseMetrics.totMoto > 0) {
+    excludedFromBaseline.push('모토아레나(상관관계 미달)');
+  }
+
+  if (baseMetrics.validFnb) {
+    baselineTotal += baseMetrics.totFnb;
+  } else if (baseMetrics.totFnb > 0) {
+    excludedFromBaseline.push('식음(상관관계 미달)');
+  }
+
+  const annualizedBaseline = (baselineTotal / baseMetrics.monthsCount) * 12;
+
   const chartData = [
     { name: '객실 매출', value: expectedRoomRev, color: 'var(--accent-blue)' },
     { name: '식음(F&B)', value: expectedFnbRev, color: '#ef4444' }, // Red-ish for F&B
@@ -207,28 +230,21 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
               연간 예상 판매 객실: {formatCurrency(annualSoldRooms)}실
             </div>
           </div>
-
+          
           <div style={{background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)'}}>
             <label style={{display: 'block', marginBottom: '12px', color: 'var(--text-muted)', fontSize: '14px'}}>객단가 (ADR)</label>
             <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
               <span style={{color: 'var(--text-muted)'}}>₩</span>
               <input 
                 type="number" 
-                value={activeAdr === 0 ? '' : activeAdr} 
-                onChange={e => setCustomAdr(Number(e.target.value))}
-                style={{width: '140px', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-glass)', background: 'rgba(0,0,0,0.3)', color: 'var(--accent-blue)', fontSize: '18px', fontWeight: 'bold'}}
+                value={customAdr !== null ? customAdr : Math.round(baseMetrics.avgAdr)} 
+                onChange={e => setCustomAdr(e.target.value ? Number(e.target.value) : null)}
+                placeholder={Math.round(baseMetrics.avgAdr).toString()}
+                style={{width: '120px', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-glass)', background: 'rgba(0,0,0,0.3)', color: '#fff', fontSize: '18px', fontWeight: 'bold'}}
               />
             </div>
-            <div style={{fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '8px', display: 'flex', justifyContent: 'space-between'}}>
-              <span>*기본값: 기존 콘도 평균치</span>
-              {customAdr !== null && (
-                <button 
-                  onClick={() => setCustomAdr(null)}
-                  style={{background: 'none', border: 'none', color: 'var(--accent-gold)', cursor: 'pointer', fontSize: '12px', textDecoration: 'underline'}}
-                >
-                  초기화
-                </button>
-              )}
+            <div style={{fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '8px'}}>
+              *기본값: 기존 콘도 평균치
             </div>
           </div>
 
@@ -260,9 +276,12 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
           <div className="glass-panel" style={{padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderTop: '4px solid rgba(255,255,255,0.2)'}}>
             <div style={{fontSize: '16px', color: 'var(--text-muted)', marginBottom: '8px'}}>기존 연간 통합 매출 (과거 평균 기준)</div>
             <div style={{fontSize: '36px', fontWeight: '900', color: 'var(--text-main)', letterSpacing: '-1px'}}>
-              ₩<CountUp end={(baseMetrics.totRev + baseMetrics.totLeisure + baseMetrics.totMoto + baseMetrics.totFnb + baseMetrics.totOther) / baseMetrics.monthsCount * 12} duration={1} separator="," preserveValue />
+              ₩<CountUp end={annualizedBaseline} duration={1} separator="," preserveValue />
             </div>
             <div style={{fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px'}}>업로드된 데이터를 바탕으로 연 환산한 현재 매출 규모</div>
+            <div style={{fontSize: '12px', color: 'var(--accent-red)', marginTop: '6px'}}>
+              *제외된 매출: {excludedFromBaseline.join(', ')}
+            </div>
           </div>
 
           <div className="glass-panel" style={{padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderTop: '4px solid var(--accent-gold)'}}>
@@ -273,12 +292,12 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
             <div style={{fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px'}}>신규 객실 추가로 인해 순수하게 증가하는 예상 매출액</div>
           </div>
 
-          <div className="glass-panel" style={{padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: 'rgba(59, 130, 246, 0.1)', borderTop: '4px solid var(--accent-blue)'}}>
+          <div className="glass-panel" style={{padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderTop: '4px solid var(--accent-blue)'}}>
             <div style={{fontSize: '16px', color: 'var(--accent-blue)', marginBottom: '8px', fontWeight: 'bold'}}>미래 종합 연간 예상 매출</div>
-            <div style={{fontSize: '40px', fontWeight: '900', color: '#fff', letterSpacing: '-1px'}}>
-              ₩<CountUp end={((baseMetrics.totRev + baseMetrics.totLeisure + baseMetrics.totMoto + baseMetrics.totFnb + baseMetrics.totOther) / baseMetrics.monthsCount * 12) + expectedTotalRev} duration={1} separator="," preserveValue />
+            <div style={{fontSize: '36px', fontWeight: '900', color: 'var(--accent-blue)', letterSpacing: '-1px'}}>
+              ₩<CountUp end={annualizedBaseline + expectedTotalRev} duration={1} separator="," preserveValue />
             </div>
-            <div style={{fontSize: '13px', color: 'rgba(255,255,255,0.7)', marginTop: '8px'}}>기존 매출 + 신규 창출 매출</div>
+            <div style={{fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px'}}>기존 매출 + 신규 창출 매출</div>
           </div>
 
         </div>
