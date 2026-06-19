@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { 
-  BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer 
+  BarChart, Bar, AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer 
 } from 'recharts';
 import { calculateGroupedSales } from '../utils/revenueUtils';
 
@@ -84,6 +84,41 @@ export default function DivisionSales({ processedData: globalProcessedData, glob
     });
   }, [globalProcessedData, settings.locationGroups]);
 
+    const yoyData = useMemo(() => {
+    if (!globalProcessedData || globalProcessedData.length === 0) return [];
+    
+    const map = {};
+    for (let i = 1; i <= 12; i++) {
+      map[String(i).padStart(2, '0')] = { month: `${i}월`, '2024': 0, '2025': 0, '2026': 0 };
+    }
+
+    globalProcessedData.forEach(d => {
+      const idStr = String(d.id || d.yearMonth || '');
+      const match = idStr.match(/^(\d{4})-(\d{2})$/);
+      if (match) {
+        const year = match[1];
+        const m = match[2];
+        const total = (d.leisureSales || 0) + (d.fnbSales || 0) + (d.motoSales || 0) + (d.golfSales || 0) + (d.otherSales || 0) + (d.totalRoomRevenue || 0);
+        if (map[m] && (year === '2024' || year === '2025' || year === '2026')) {
+           map[m][year] += total;
+        }
+      }
+    });
+
+    let cum24=0, cum25=0, cum26=0;
+    return Object.values(map).map(row => {
+      cum24 += row['2024'];
+      cum25 += row['2025'];
+      cum26 += row['2026'];
+      return {
+        ...row,
+        cum2024: cum24,
+        cum2025: cum25,
+        cum2026: cum26
+      };
+    });
+  }, [globalProcessedData]);
+
   if (!processedData || processedData.length === 0) {
     return (
       <div style={{textAlign: 'center', padding: '40px', color: 'var(--text-muted)'}}>
@@ -119,51 +154,93 @@ export default function DivisionSales({ processedData: globalProcessedData, glob
         </div>
       </div>
 
-      {/* Chart Section */}
-      <div className="chart-card" style={{padding: '20px', background: 'var(--bg-panel)', borderRadius: '12px', border: '1px solid var(--border-glass)'}}>
-        <h3 style={{margin: '0 0 20px 0'}}>
-          {viewMode === 'monthly' ? '월별 부문 매출 추이' : '월 누적 부문 매출 추이'}
-        </h3>
-        <div style={{height: '400px', width: '100%', minWidth: 0, minHeight: 0}}>
-          <ResponsiveContainer width="99%" height="100%" minWidth={1} minHeight={1}>
-            {viewMode === 'monthly' ? (
-              <BarChart data={processedData} margin={{ top: 20, right: 30, left: 60, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
-                <XAxis dataKey="month" stroke="#94a3b8" />
-                <YAxis tickFormatter={formatCurrency} stroke="#94a3b8" />
-                <RechartsTooltip 
-                  formatter={(value) => formatCurrency(value)}
-                  labelStyle={{ color: '#000' }}
-                  contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderRadius: '8px', border: 'none', color: '#000' }}
-                />
-                <Legend />
-                <Bar dataKey="room" stackId="a" fill={CHART_COLORS.room} name={DIVISION_NAMES.room} />
-                <Bar dataKey="leisure" stackId="a" fill={CHART_COLORS.leisure} name={DIVISION_NAMES.leisure} />
-                <Bar dataKey="fnb" stackId="a" fill={CHART_COLORS.fnb} name={DIVISION_NAMES.fnb} />
-                <Bar dataKey="moto" stackId="a" fill={CHART_COLORS.moto} name={DIVISION_NAMES.moto} />
-                <Bar dataKey="golf" stackId="a" fill={CHART_COLORS.golf} name={DIVISION_NAMES.golf} />
-                <Bar dataKey="other" stackId="a" fill={CHART_COLORS.other} name={DIVISION_NAMES.other} />
-              </BarChart>
-            ) : (
-              <AreaChart data={processedData} margin={{ top: 20, right: 30, left: 60, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
-                <XAxis dataKey="month" stroke="#94a3b8" />
-                <YAxis tickFormatter={formatCurrency} stroke="#94a3b8" />
-                <RechartsTooltip 
-                  formatter={(value) => formatCurrency(value)}
-                  labelStyle={{ color: '#000' }}
-                  contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderRadius: '8px', border: 'none', color: '#000' }}
-                />
-                <Legend />
-                <Area type="monotone" dataKey="cumRoom" stackId="1" stroke={CHART_COLORS.room} fill={CHART_COLORS.room} name={DIVISION_NAMES.room} />
-                <Area type="monotone" dataKey="cumLeisure" stackId="1" stroke={CHART_COLORS.leisure} fill={CHART_COLORS.leisure} name={DIVISION_NAMES.leisure} />
-                <Area type="monotone" dataKey="cumFnb" stackId="1" stroke={CHART_COLORS.fnb} fill={CHART_COLORS.fnb} name={DIVISION_NAMES.fnb} />
-                <Area type="monotone" dataKey="cumMoto" stackId="1" stroke={CHART_COLORS.moto} fill={CHART_COLORS.moto} name={DIVISION_NAMES.moto} />
-                <Area type="monotone" dataKey="cumGolf" stackId="1" stroke={CHART_COLORS.golf} fill={CHART_COLORS.golf} name={DIVISION_NAMES.golf} />
-                <Area type="monotone" dataKey="cumOther" stackId="1" stroke={CHART_COLORS.other} fill={CHART_COLORS.other} name={DIVISION_NAMES.other} />
-              </AreaChart>
-            )}
-          </ResponsiveContainer>
+      <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
+        {/* Main Chart Section */}
+        <div className="chart-card" style={{flex: '2 1 600px', padding: '20px', background: 'var(--bg-panel)', borderRadius: '12px', border: '1px solid var(--border-glass)'}}>
+          <h3 style={{margin: '0 0 20px 0'}}>
+            {viewMode === 'monthly' ? '월별 부문 매출 추이' : '월 누적 부문 매출 추이'}
+          </h3>
+          <div style={{height: '350px', width: '100%', minWidth: 0, minHeight: 0}}>
+            <ResponsiveContainer width="99%" height="100%" minWidth={1} minHeight={1}>
+              {viewMode === 'monthly' ? (
+                <BarChart data={processedData} margin={{ top: 20, right: 30, left: 60, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
+                  <XAxis dataKey="month" stroke="#94a3b8" />
+                  <YAxis tickFormatter={formatCurrency} stroke="#94a3b8" />
+                  <RechartsTooltip 
+                    formatter={(value) => formatCurrency(value)}
+                    labelStyle={{ color: '#000' }}
+                    contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderRadius: '8px', border: 'none', color: '#000' }}
+                  />
+                  <Legend />
+                  <Bar dataKey="room" stackId="a" fill={CHART_COLORS.room} name={DIVISION_NAMES.room} />
+                  <Bar dataKey="leisure" stackId="a" fill={CHART_COLORS.leisure} name={DIVISION_NAMES.leisure} />
+                  <Bar dataKey="fnb" stackId="a" fill={CHART_COLORS.fnb} name={DIVISION_NAMES.fnb} />
+                  <Bar dataKey="moto" stackId="a" fill={CHART_COLORS.moto} name={DIVISION_NAMES.moto} />
+                  <Bar dataKey="golf" stackId="a" fill={CHART_COLORS.golf} name={DIVISION_NAMES.golf} />
+                  <Bar dataKey="other" stackId="a" fill={CHART_COLORS.other} name={DIVISION_NAMES.other} />
+                </BarChart>
+              ) : (
+                <AreaChart data={processedData} margin={{ top: 20, right: 30, left: 60, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
+                  <XAxis dataKey="month" stroke="#94a3b8" />
+                  <YAxis tickFormatter={formatCurrency} stroke="#94a3b8" />
+                  <RechartsTooltip 
+                    formatter={(value) => formatCurrency(value)}
+                    labelStyle={{ color: '#000' }}
+                    contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderRadius: '8px', border: 'none', color: '#000' }}
+                  />
+                  <Legend />
+                  <Area type="monotone" dataKey="cumRoom" stackId="1" stroke={CHART_COLORS.room} fill={CHART_COLORS.room} name={DIVISION_NAMES.room} />
+                  <Area type="monotone" dataKey="cumLeisure" stackId="1" stroke={CHART_COLORS.leisure} fill={CHART_COLORS.leisure} name={DIVISION_NAMES.leisure} />
+                  <Area type="monotone" dataKey="cumFnb" stackId="1" stroke={CHART_COLORS.fnb} fill={CHART_COLORS.fnb} name={DIVISION_NAMES.fnb} />
+                  <Area type="monotone" dataKey="cumMoto" stackId="1" stroke={CHART_COLORS.moto} fill={CHART_COLORS.moto} name={DIVISION_NAMES.moto} />
+                  <Area type="monotone" dataKey="cumGolf" stackId="1" stroke={CHART_COLORS.golf} fill={CHART_COLORS.golf} name={DIVISION_NAMES.golf} />
+                  <Area type="monotone" dataKey="cumOther" stackId="1" stroke={CHART_COLORS.other} fill={CHART_COLORS.other} name={DIVISION_NAMES.other} />
+                </AreaChart>
+              )}
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* YoY Chart Section */}
+        <div className="chart-card" style={{flex: '1 1 400px', padding: '20px', background: 'var(--bg-panel)', borderRadius: '12px', border: '1px solid var(--border-glass)'}}>
+          <h3 style={{margin: '0 0 20px 0'}}>
+            연도별 총매출 비교 (YoY)
+          </h3>
+          <div style={{height: '350px', width: '100%', minWidth: 0, minHeight: 0}}>
+            <ResponsiveContainer width="99%" height="100%" minWidth={1} minHeight={1}>
+              {viewMode === 'monthly' ? (
+                <LineChart data={yoyData} margin={{ top: 20, right: 30, left: 60, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
+                  <XAxis dataKey="month" stroke="#94a3b8" />
+                  <YAxis tickFormatter={formatCurrency} stroke="#94a3b8" />
+                  <RechartsTooltip 
+                    formatter={(value) => formatCurrency(value)}
+                    labelStyle={{ color: '#000' }}
+                    contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderRadius: '8px', border: 'none', color: '#000' }}
+                  />
+                  <Legend />
+                  <Line type="monotone" dataKey="2025" stroke="var(--accent-emerald)" strokeWidth={3} dot={{r: 4}} name="2025년" />
+                  <Line type="monotone" dataKey="2026" stroke="var(--accent-gold)" strokeWidth={3} dot={{r: 4}} name="2026년" />
+                </LineChart>
+              ) : (
+                <LineChart data={yoyData} margin={{ top: 20, right: 30, left: 60, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
+                  <XAxis dataKey="month" stroke="#94a3b8" />
+                  <YAxis tickFormatter={formatCurrency} stroke="#94a3b8" />
+                  <RechartsTooltip 
+                    formatter={(value) => formatCurrency(value)}
+                    labelStyle={{ color: '#000' }}
+                    contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderRadius: '8px', border: 'none', color: '#000' }}
+                  />
+                  <Legend />
+                  <Line type="monotone" dataKey="cum2025" stroke="var(--accent-emerald)" strokeWidth={3} dot={{r: 4}} name="2025년 (누적)" />
+                  <Line type="monotone" dataKey="cum2026" stroke="var(--accent-gold)" strokeWidth={3} dot={{r: 4}} name="2026년 (누적)" />
+                </LineChart>
+              )}
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
 
