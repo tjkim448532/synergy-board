@@ -193,7 +193,8 @@ export default function useProcessedData(monthlyData, settings) {
           if (data.tickets && venue !== '모토아레나' && venue !== 'ROOM' && venue !== 'ROOM OTHER' && venue !== '합계') {
             Object.entries(data.tickets).forEach(([ticket, qty]) => {
               const compositeKey = `${venue}___${ticket}`;
-              const rule = settings?.leisureTicketRules?.[compositeKey] || { count: 1, exclude: false, customVenue: '' };
+              // 변경: 수동으로 클릭(선택)한 것만 포함되도록 기본값을 exclude: true 로 변경합니다.
+              const rule = settings?.leisureTicketRules?.[compositeKey] || { count: 1, exclude: true, customVenue: '' };
               if (!rule.exclude) {
                 const finalVenue = (rule.customVenue && rule.customVenue.trim() !== '') ? rule.customVenue.trim() : venue;
                 calcLeisureTicketUsage[finalVenue] = (calcLeisureTicketUsage[finalVenue] || 0) + (Number(qty) || 0) * (Number(rule.count) || 1);

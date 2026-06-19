@@ -817,8 +817,8 @@ export default function Settings({ monthlyData }) {
       </SectionCard>
 
       <SectionCard
-        title="레저본부 이용률 (티켓 인원수 매핑)"
-        description="영업장 품목별 엑셀에서 추출된 티켓별 실제 이용객 수(방문자 수)를 산출하기 위한 매핑 규칙을 설정합니다."
+        title="영업장별 사용인원 축출 설정"
+        description="영업장별로 판매된 트랜잭션 중, 실제 이용객 수를 산출할 기준 트랜잭션을 선택합니다."
         isExpanded={expandedSections.leisureTicket}
         onToggle={() => toggleSection('leisureTicket')}
       >
