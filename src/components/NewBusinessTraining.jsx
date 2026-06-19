@@ -290,6 +290,9 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
               + ₩<CountUp end={expectedTotalRev} duration={1} separator="," preserveValue />
             </div>
             <div style={{fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px'}}>신규 객실 추가로 인해 순수하게 증가하는 예상 매출액</div>
+            <div style={{fontSize: '12px', color: 'var(--accent-red)', marginTop: '6px'}}>
+              *제외된 부대매출 창출: {excludedFromBaseline.join(', ')}
+            </div>
           </div>
 
           <div className="glass-panel" style={{padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderTop: '4px solid var(--accent-blue)'}}>
@@ -298,6 +301,9 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
               ₩<CountUp end={annualizedBaseline + expectedTotalRev} duration={1} separator="," preserveValue />
             </div>
             <div style={{fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px'}}>기존 매출 + 신규 창출 매출</div>
+            <div style={{fontSize: '12px', color: 'var(--accent-red)', marginTop: '6px'}}>
+              *완전 제외된 영업장: {excludedFromBaseline.join(', ')}
+            </div>
           </div>
 
         </div>
