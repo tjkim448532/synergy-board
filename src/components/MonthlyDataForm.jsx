@@ -9,9 +9,9 @@ import './MonthlyDataForm.css';
 import { isHoliday } from 'korean-holidays';
 
 const parseSafeInt = (val) => {
-  if (val === undefined || val === null) return 0;
+  if (val === undefined || val === null || val === '') return 0;
   if (typeof val === 'number') return Math.floor(val);
-  const str = val.toString().replace(/,/g, '').trim();
+  const str = val.toString().replace(/[^0-9.-]/g, '');
   const parsed = parseInt(str, 10);
   return isNaN(parsed) ? 0 : parsed;
 };
@@ -713,6 +713,9 @@ export default function MonthlyDataForm({ settings }) {
         const dataStartIdx = headerRowIdx + 1;
         
         const motoParsedMap = {};
+        
+        // 병합된 셀(Merged Cells) 대응을 위해 직전에 읽은 영업장 이름을 기억
+        let currentVenueName = '모토아레나';
 
         for (let i = dataStartIdx; i < data.length; i++) {
           const row = data[i];
@@ -747,8 +750,11 @@ export default function MonthlyDataForm({ settings }) {
           }
 
           const mData = motoParsedMap[monthKey];
-          const rawVenueName = venueColIdx !== -1 ? String(row[venueColIdx] || '') : '모토아레나';
-          const venueName = rawVenueName.trim() || '모토아레나';
+          
+          if (venueColIdx !== -1 && row[venueColIdx]) {
+              currentVenueName = String(row[venueColIdx]).trim() || currentVenueName;
+          }
+          const venueName = currentVenueName;
 
           if (!mData.venues[venueName]) {
              mData.venues[venueName] = {
@@ -794,6 +800,9 @@ export default function MonthlyDataForm({ settings }) {
             toast.error('유효한 데이터를 찾을 수 없습니다.');
             return;
         }
+
+        const revColName = revColIdx !== -1 ? String(data[headerRowIdx][revColIdx] || '알수없음') : '알수없음';
+        toast.success(`모토아레나 데이터 추출 성공! (매출 인식 열: ${revColName})`);
 
         setMotoData(parsedMonthsArray);
 
