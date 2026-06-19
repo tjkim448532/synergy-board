@@ -593,6 +593,7 @@ export default function MonthlyDataForm({ settings }) {
         let txColIdx = -1;
         let revColIdx = -1;
         let dateColIdx = -1;
+        let venueColIdx = -1;
 
         // 헤더 행 찾기 (더 넓은 범위의 키워드 검색)
         for (let i = 0; i < 15; i++) {
@@ -707,6 +708,9 @@ export default function MonthlyDataForm({ settings }) {
           }
 
           const mData = motoParsedMap[monthKey];
+          const venueName = venueColIdx !== -1 ? String(row[venueColIdx] || '') : '모토아레나';
+          if (venueColIdx !== -1 && !venueName.includes('모토아레나')) continue;
+
           const txName = row[txColIdx];
           const rev = parseSafeInt(row[revColIdx]);
           
@@ -926,7 +930,10 @@ export default function MonthlyDataForm({ settings }) {
         <div className="glass-panel" style={{display: 'flex', flexDirection: 'column', padding: '24px', border: motoData ? '2px solid var(--accent-gold)' : '1px solid var(--border-glass)'}}>
           <div style={{display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px'}}>
             <span style={{fontSize: '32px'}}>🏎️</span>
-            <h3 style={{margin: 0}}>3. 모토아레나 티켓 매출 처리</h3>
+            <h3 style={{margin: 0}}>3. 고객군 분리 매출 처리 (모토아레나)</h3>
+          </div>
+          <p style={{fontSize:'13px', color:'var(--text-muted)', margin:'-10px 0 16px 0'}}>📌 업로드 파일: 투숙객/일반객 구분을 위한 상세 품목명(트랜잭션)이 포함된 월간 매출 엑셀 파일</p>
+          <div style={{display:'none'}}>
           </div>
           
           <div style={{display: 'flex', gap: '12px', marginBottom: '20px'}}>
@@ -937,7 +944,7 @@ export default function MonthlyDataForm({ settings }) {
               style={{flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid var(--border-glass)', background: 'rgba(0,0,0,0.3)', color: 'var(--text-main)'}}
             />
             <label className="btn-primary" style={{cursor: 'pointer', textAlign: 'center', background: 'var(--accent-gold)', color: 'black', flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'}}>
-              <Upload size={18} /> {motoFileObj ? motoFileObj.name : '모토아레나 엑셀 선택'}
+              <Upload size={18} /> {motoFileObj ? motoFileObj.name : '고객분류용 엑셀(월간) 선택'}
               <input type="file" accept=".xlsx" onChange={handleMotoFileSelect} style={{display: 'none'}} />
             </label>
           </div>
