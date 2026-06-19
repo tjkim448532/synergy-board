@@ -53,7 +53,7 @@ export default function VisitorCalculation({ processedData, globalStats, setting
     const sold35 = Number(targetDoc.sold35 || 0);
     const sold51Combined = Number(targetDoc.sold51 || targetDoc.connectingSold || 0);
     
-    return Math.round((sold16 * 2.5) + (sold35 * 4.5) + (sold51Combined * 6));
+    return Math.round((sold16 * 2.5) + (sold35 * 3.5) + (sold51Combined * 6));
   }, [targetDoc]);
 
   // Derived calculations
@@ -70,7 +70,7 @@ export default function VisitorCalculation({ processedData, globalStats, setting
     const sold16 = Number(docData.sold16 || docData.standardSold || 0);
     const sold35 = Number(docData.sold35 || 0);
     const sold51Combined = Number(docData.sold51 || docData.connectingSold || 0);
-    return Math.round((sold16 * 2.5) + (sold35 * 4.5) + (sold51Combined * 6));
+    return Math.round((sold16 * 2.5) + (sold35 * 3.5) + (sold51Combined * 6));
   };
 
   const getVisitorStatsForDoc = (docData) => {

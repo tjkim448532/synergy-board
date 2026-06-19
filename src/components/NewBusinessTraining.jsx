@@ -48,7 +48,7 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
         const guestRatio = Number(d.motoGuestRev || 0) / excel2Total;
         mGuestRev = Math.round(mTotalRev * guestRatio);
       } else if (mTotalRev > 0) {
-        mGuestRev = Math.round(mTotalRev * 0.7);
+        mGuestRev = Math.round(mTotalRev * ((settings?.captureRateMoto ?? 25) / 100));
       }
 
       const dynamicGrossSum = Math.max(0, (d.totalSales || 0) - ((d.leisureSales||0) + (d.fnbSales||0) + (d.motoSales||0) + (d.otherSales||0)));

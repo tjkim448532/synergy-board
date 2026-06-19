@@ -198,7 +198,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       const sold16 = Number(d.sold16 || d.standardSold || 0);
       const sold35 = Number(d.sold35 || 0);
       const sold51Combined = Number(d.sold51 || d.connectingSold || 0) + Number(d.sold51Acc || 0);
-      return sum + (sold16 * 2.5) + (sold35 * 4.5) + (sold51Combined * 6);
+      return sum + (sold16 * 2.5) + (sold35 * 3.5) + (sold51Combined * 6);
     }, 0);
   }, [filteredProcessedData]);
 
@@ -213,7 +213,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
             const count = Number(record.count || 0);
             const rType = String(record.roomType || '');
             if (rType.includes('16평')) seminar += count * 2.5;
-            else if (rType.includes('35평')) seminar += count * 4.5;
+            else if (rType.includes('35평')) seminar += count * 3.5;
             else if (rType.includes('51평')) seminar += count * 6;
           }
         });

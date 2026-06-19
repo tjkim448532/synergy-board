@@ -25,10 +25,10 @@ export default function LeisureUtilization({ processedData, globalStats, setting
       } else {
         const { totalRooms = 175, connectingRooms51 = 85, count51AsTwoRooms = true } = settings || {};
         const dailyInventory = count51AsTwoRooms ? Number(totalRooms) : (Number(totalRooms) - Number(connectingRooms51));
-        const daysInMonth = parseSafeInt(d.weekdayCount) + parseSafeInt(d.weekendCount);
+        const daysInMonth = parseSafeInt(d.daysCountWeekday) + parseSafeInt(d.daysCountWeekend);
         let roomSold = 0;
-        if (daysInMonth > 0) roomSold = parseSafeInt(d.roomSoldWd) + parseSafeInt(d.roomSoldWe);
-        v = Math.round(roomSold * 2.5);
+        if (daysInMonth > 0) roomSold = parseSafeInt(d.soldWd || d.soldWeekday) + parseSafeInt(d.soldWe || d.soldWeekend);
+        v = Math.round(roomSold * (globalStats?.avgGuestsPerSoldRoom || 2.5));
         if (d.motoGeneralRev > 0) v += Math.round(d.motoGeneralRev / 35000);
       }
       return v;

@@ -10,10 +10,10 @@ import { isHoliday } from 'korean-holidays';
 
 const parseSafeInt = (val) => {
   if (val === undefined || val === null || val === '') return 0;
-  if (typeof val === 'number') return Math.floor(val);
-  const str = val.toString().replace(/[^0-9.-]/g, '');
-  const parsed = parseInt(str, 10);
-  return isNaN(parsed) ? 0 : parsed;
+  if (typeof val === 'number') return Math.round(val);
+  const str = val.toString().replace(/[\s,]+/g, '');
+  const parsed = parseFloat(str);
+  return isNaN(parsed) ? 0 : Math.round(parsed);
 };
 
 const parseExcelDate = (val) => {
@@ -143,7 +143,7 @@ export default function MonthlyDataForm({ settings }) {
           }
           if (revIdx !== -1) {
             for(let i=0; i<jData.length; i++){
-              const val = parseInt(String((jData[i] || [])[revIdx] || '').replace(/,/g, ''), 10);
+              const val = parseInt(String((jData[i] || [])[revIdx] || '').replace(/[\s,]+/g, ''), 10);
               if(!isNaN(val)) currentSheetRevSum += val;
             }
           } else {
@@ -689,7 +689,7 @@ export default function MonthlyDataForm({ settings }) {
           }
           if (revIdx !== -1) {
             for(let i=0; i<jData.length; i++){
-              const val = parseInt(String((jData[i] || [])[revIdx] || '').replace(/,/g, ''), 10);
+              const val = parseInt(String((jData[i] || [])[revIdx] || '').replace(/[\s,]+/g, ''), 10);
               if(!isNaN(val)) currentSheetRevSum += val;
             }
           } else {
@@ -801,7 +801,7 @@ export default function MonthlyDataForm({ settings }) {
              for(let j = data[1].length - 1; j >= 0; j--) {
                 let valid = false;
                 for(let k=1; k<=5 && k<data.length; k++) {
-                   const testVal = parseInt(String(data[k][j] || '').replace(/,/g, ''), 10);
+                   const testVal = parseInt(String(data[k][j] || '').replace(/[\s,]+/g, ''), 10);
                    if (!isNaN(testVal) && testVal > 0) {
                       valid = true;
                       break;
@@ -1072,7 +1072,7 @@ export default function MonthlyDataForm({ settings }) {
                       <span>16/35/51평 판매량</span> <strong>{data.sold16} / {data.sold35} / {data.sold51} 실</strong>
                     </div>
                     <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
-                      <span>예상 투숙객</span> <strong style={{color: 'var(--accent-emerald)'}}>{formatCurrency((data.sold16 * 2.5) + (data.sold35 * 4.5) + (data.sold51 * 6))} 명</strong>
+                      <span>예상 투숙객</span> <strong style={{color: 'var(--accent-emerald)'}}>{formatCurrency((data.sold16 * 2.5) + (data.sold35 * 3.5) + (data.sold51 * 6))} 명</strong>
                     </div>
                   </div>
                 ))}
@@ -1322,7 +1322,7 @@ export default function MonthlyDataForm({ settings }) {
                   const s16 = r.sold16 || r.standardSold || 0;
                   const s35 = r.sold35 || 0;
                   const s51 = r.sold51 || r.connectingSold || 0;
-                  const estimatedGuests = (s16 * 2) + (s35 * 4) + (s51 * 6);
+                  const estimatedGuests = (s16 * 2.5) + (s35 * 3.5) + (s51 * 6);
                   return (
                   <tr key={r.id}>
                     <td>
@@ -1398,7 +1398,7 @@ export default function MonthlyDataForm({ settings }) {
               const s16 = r.sold16 || r.standardSold || 0;
               const s35 = r.sold35 || 0;
               const s51 = r.sold51 || r.connectingSold || 0;
-              const estimatedGuests = (s16 * 2) + (s35 * 4) + (s51 * 6);
+              const estimatedGuests = (s16 * 2.5) + (s35 * 3.5) + (s51 * 6);
               return (
                 <div key={r.id} className="glass-panel" style={{padding: '16px', position: 'relative', borderLeft: '4px solid var(--accent-emerald)'}}>
                   <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '12px', marginBottom: '12px'}}>

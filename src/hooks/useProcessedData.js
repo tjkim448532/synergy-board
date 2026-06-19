@@ -36,7 +36,7 @@ export default function useProcessedData(monthlyData, settings) {
       const sold51 = Number(d.sold51 || d.connectingSold || 0);
       const sold51Acc = Number(d.sold51Acc || 0);
       
-      const guests = (sold16 * 2) + (sold35 * 4) + ((sold51 + sold51Acc) * 6);
+      const guests = (sold16 * 2.5) + (sold35 * 3.5) + ((sold51 + sold51Acc) * 6);
       
       const count51AsTwoRooms = settings?.count51AsTwoRooms !== false;
       const physicalRooms = Number(settings?.totalRooms) || 175;

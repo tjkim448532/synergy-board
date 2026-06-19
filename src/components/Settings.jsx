@@ -7,7 +7,7 @@ import Papa from 'papaparse';
 import toast from 'react-hot-toast';
 import LeisureTicketManager from './LeisureTicketManager';
 import './Settings.css';
-import { getDefaultGroup } from '../utils/revenueUtils';
+import { getDefaultGroup, calculateGroupedSales } from '../utils/revenueUtils';
 
 const SectionCard = ({ title, description, isExpanded, onToggle, children, actions }) => (
   <div className="settings-card glass-panel" style={{marginBottom: '20px', padding: 0}}>
@@ -158,13 +158,30 @@ export default function Settings({ monthlyData }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setSettings(prev => ({
-      ...prev,
-      [name]: (name === 'resortName' || name === 'customWeekends') ? value : Number(value)
-    }));
+    setSettings(prev => {
+      let parsedValue = value;
+      if (name !== 'resortName' && name !== 'customWeekends') {
+        const num = Number(value);
+        parsedValue = isNaN(num) ? 0 : num;
+      }
+      return {
+        ...prev,
+        [name]: parsedValue
+      };
+    });
   };
 
   const handleSave = async () => {
+    const totalRooms = Number(settings.totalRooms) || 0;
+    const connectingRooms51 = Number(settings.connectingRooms51) || 0;
+    if (totalRooms < 0 || connectingRooms51 < 0) {
+      toast.error("방의 개수는 음수가 될 수 없습니다.");
+      return;
+    }
+    if (totalRooms < connectingRooms51) {
+      toast.error("총 객실 수는 51평 세트 수보다 크거나 같아야 합니다.");
+      return;
+    }
     try {
       const docRef = doc(db, 'config', 'mainSettings');
       await setDoc(docRef, settings);
@@ -258,15 +275,30 @@ export default function Settings({ monthlyData }) {
       let motoSales = 0;
       let fnbSales = 0;
 
-      if (d.salesByLocation) {
-        Object.keys(d.salesByLocation).forEach(loc => {
-          const group = locationGroups[loc] || getDefaultGroup(loc);
-          if (group === 'leisure') leisureSales += d.salesByLocation[loc];
-          else if (group === 'moto') motoSales += d.salesByLocation[loc];
-          else if (group === 'fnb') fnbSales += d.salesByLocation[loc];
-        });
+      if (d.salesByLocation || d.leisureSalesByLocation || d.venues) {
+        const salesObj = { ...(d.salesByLocation || d.leisureSalesByLocation || {}) };
+        
+        if (d.motoTotalRev && !salesObj['모토아레나']) {
+          salesObj['모토아레나(티켓)'] = Number(d.motoTotalRev);
+        }
+
+        if (d.venues && !salesObj['모토아레나']) {
+          Object.entries(d.venues).forEach(([vName, vData]) => {
+            const ignoreList = ['모토아레나', 'ROOM', 'ROOM OTHER', '합계'];
+            if (!ignoreList.includes(vName) && !salesObj[vName]) { 
+              salesObj[`${vName}(티켓)`] = Number(vData.totalRev || 0);
+            }
+          });
+        }
+
+        const calculated = calculateGroupedSales(salesObj, locationGroups);
+        leisureSales = calculated.leisure;
+        motoSales = calculated.moto || 0;
+        fnbSales = calculated.fnb;
       } else {
         leisureSales = Number(d.totalLeisureSales || d.leisureSales || 0);
+        motoSales = Number(d.motoSales || d.motoTotalRev || d.totalMotoSales || 0);
+        fnbSales = Number(d.fnbSales || d.totalFnbSales || 0);
       }
 
       return { occRate, leisureSales, motoSales, fnbSales };

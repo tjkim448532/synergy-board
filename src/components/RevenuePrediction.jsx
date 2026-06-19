@@ -18,7 +18,7 @@ export default function RevenuePrediction({ processedData, globalStats, settings
   // 2. 선형 회귀 알고리즘 (Least Squares)
   const { regWd, regWe, regLeisureWd, regLeisureWe, regLeisureTotal, regMotoWd, regMotoWe, regMotoTotal, regMotoGuest, regFnbWd, regFnbWe, regFnbTotal, regOverallRoom } = useMemo(() => {
     const calcRegression = (xKey, yKey) => {
-      const points = processedData.filter(d => d[yKey] > 0);
+      const points = processedData.filter(d => d[yKey] !== 0 && d[yKey] !== null && d[yKey] !== undefined);
       const n = points.length;
       
       if (n === 0) return { slope: 0, intercept: 0, r: 0 };
@@ -40,8 +40,8 @@ export default function RevenuePrediction({ processedData, globalStats, settings
       });
 
       const denominator = (n * sumX2 - sumX * sumX);
-      const intercept = denominator === 0 ? sumY / n : (sumY - ((n * sumXY - sumX * sumY) / denominator) * sumX) / n;
-      const slope = denominator === 0 ? 0 : (n * sumXY - sumX * sumY) / denominator;
+      const intercept = Math.abs(denominator) < 1e-9 ? sumY / n : (sumY - ((n * sumXY - sumX * sumY) / denominator) * sumX) / n;
+      const slope = Math.abs(denominator) < 1e-9 ? 0 : (n * sumXY - sumX * sumY) / denominator;
       const avgYPerX = sumX > 0 ? sumY / sumX : 0;
       
       const numerator = (n * sumXY) - (sumX * sumY);
