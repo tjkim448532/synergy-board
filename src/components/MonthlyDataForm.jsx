@@ -634,8 +634,15 @@ export default function MonthlyDataForm({ settings }) {
               if (cellStr.includes('트랜잭션명') || cellStr.includes('상품명') || cellStr.includes('메뉴명') || cellStr.includes('매출구분') || cellStr.includes('품목명') || cellStr.includes('아이템')) {
                 txColIdx = j;
               }
-              if (cellStr.includes('실매출') || cellStr.includes('결제금액') || cellStr.includes('매출') || cellStr.includes('합계')) {
-                revColIdx = j;
+              if (cellStr.includes('할인') || cellStr.includes('취소') || cellStr.includes('수수료') || cellStr.includes('부가세') || cellStr.includes('봉사료')) {
+                // 수익(Revenue) 컬럼으로 오해하지 않도록 스킵
+                continue;
+              }
+              if (cellStr.includes('영업장') || cellStr.includes('업장명') || cellStr.includes('판매부서')) {
+                venueColIdx = j; // 영업장 컬럼 분리용
+              }
+              if (cellStr.includes('순매출') || cellStr.includes('실매출') || cellStr.includes('결제금액') || cellStr === '합계' || cellStr === '매출' || cellStr === '총합계') {
+                revColIdx = j; // 정확한 매출 컬럼 캡처 (순매출, 합계 등)
               }
               if (cellStr.includes('일자') || cellStr.includes('날짜') || cellStr.includes('DATE')) {
                 dateColIdx = j;
