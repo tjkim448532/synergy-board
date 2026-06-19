@@ -1097,6 +1097,19 @@ export default function MonthlyDataForm({ settings }) {
                              </div>
                            )}
 
+                           {venue.otherRev > 0 && (
+                             <>
+                               <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '8px'}}>
+                                 <span style={{color: '#ef4444'}}>기타 매출 (임직원 등):</span> <strong style={{color: '#ef4444'}}>₩{formatCurrency(venue.otherRev)}</strong>
+                               </div>
+                               {venue.breakdown && Object.keys(venue.breakdown.other || {}).length > 0 && (
+                                 <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
+                                   {Object.entries(venue.breakdown.other).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
+                                 </div>
+                               )}
+                             </>
+                           )}
+
                            <div style={{display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed rgba(255,255,255,0.2)', paddingTop: '8px', marginTop: '8px'}}>
                              <span style={{color: 'var(--accent-gold)'}}>소계:</span> <strong style={{color: 'var(--accent-gold)'}}>₩{formatCurrency(venue.totalRev)}</strong>
                            </div>
