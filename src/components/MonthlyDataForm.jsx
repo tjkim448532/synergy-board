@@ -775,6 +775,11 @@ export default function MonthlyDataForm({ settings }) {
           }
           const venueName = currentVenueName;
 
+          // 영업장 이름에 TOTAL, 합계 등이 들어가면 요약 행이므로 아예 건너뜀
+          if (venueName.toUpperCase().includes('TOTAL') || venueName.includes('합계') || venueName.includes('소계')) {
+             continue;
+          }
+
           if (!mData.venues[venueName]) {
              mData.venues[venueName] = {
                  guestRev: 0,
