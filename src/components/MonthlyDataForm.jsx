@@ -946,7 +946,7 @@ export default function MonthlyDataForm({ settings }) {
         toast.error('모토아레나 데이터 추출 중 오류가 발생했습니다.');
       }
     };
-    reader.readAsBinaryString(motoFileObj);
+    reader.readAsArrayBuffer(motoFileObj);
   };
 
   const handleSaveMotoData = async () => {
