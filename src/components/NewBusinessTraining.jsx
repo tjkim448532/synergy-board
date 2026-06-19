@@ -11,6 +11,7 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
   // Input states
   const [newRooms, setNewRooms] = useState(200);
   const [targetOcc, setTargetOcc] = useState(60);
+  const [dataBasis, setDataBasis] = useState('all');
   
   // Base Historical Metrics
   const baseMetrics = useMemo(() => {
@@ -29,7 +30,10 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
 
     const validData = (processedData || []).filter(d => {
       const idStr = String(d.id || d.yearMonth || "");
-      return idStr.match(/^\d{4}-\d{2}$/);
+      if (!idStr.match(/^\d{4}-\d{2}$/)) return false;
+      if (dataBasis === '2025') return idStr.startsWith('2025');
+      if (dataBasis === '2026') return idStr.startsWith('2026');
+      return idStr.startsWith('2025') || idStr.startsWith('2026');
     });
 
     validData.forEach(d => {
@@ -94,7 +98,7 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
       validMoto,
       validFnb
     };
-  }, [processedData, settings]);
+  }, [processedData, settings, dataBasis]);
 
   const [customAdr, setCustomAdr] = useState(null);
   
@@ -225,6 +229,22 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
                   초기화
                 </button>
               )}
+            </div>
+          </div>
+
+          <div style={{background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)'}}>
+            <label style={{display: 'block', marginBottom: '12px', color: 'var(--text-muted)', fontSize: '14px'}}>데이터 산출 기준 (상관관계)</label>
+            <select 
+              value={dataBasis} 
+              onChange={e => setDataBasis(e.target.value)}
+              style={{width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-glass)', background: 'rgba(0,0,0,0.3)', color: '#fff', fontSize: '16px', fontWeight: 'bold', outline: 'none'}}
+            >
+              <option value="all" style={{background: '#1e293b'}}>전체 통합 데이터 (25+26년)</option>
+              <option value="2025" style={{background: '#1e293b'}}>25년 마감 데이터 기준</option>
+              <option value="2026" style={{background: '#1e293b'}}>26년 최신 데이터 기준</option>
+            </select>
+            <div style={{fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '8px'}}>
+              시뮬레이션 상관관계 지수의 기준 년도를 선택합니다.
             </div>
           </div>
 
