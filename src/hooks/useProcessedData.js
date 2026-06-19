@@ -87,8 +87,10 @@ export default function useProcessedData(monthlyData, settings) {
           salesObj['모토아레나(티켓)'] = Number(d.motoTotalRev);
         }
 
-        // 새로 추가된 동적 영업장 티켓 매출 합산 (이미 leisureSalesByLocation에 있는 항목은 중복 방지)
-        if (d.venues) {
+        // 새로 추가된 동적 영업장 티켓 매출 합산
+        // 단, 부대업장(Leisure) 데이터에 이미 '모토아레나'가 있다면 통합 엑셀을 올린 것이므로
+        // MotoArena 슬롯에서 추출된 d.venues 병합은 이름 불일치로 인한 중복(예: 목장 vs 벨포레 목장)을 방지하기 위해 생략합니다.
+        if (d.venues && !salesObj['모토아레나']) {
           Object.entries(d.venues).forEach(([vName, vData]) => {
             const ignoreList = ['모토아레나', 'ROOM', 'ROOM OTHER', '합계'];
             if (!ignoreList.includes(vName) && !salesObj[vName]) { 
