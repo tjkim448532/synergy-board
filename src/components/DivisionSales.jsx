@@ -49,7 +49,8 @@ export default function DivisionSales({ processedData: globalProcessedData, glob
       let fnbSales = month.fnbSales || 0;
       let motoSales = month.motoSales || 0;
       let golfSales = month.golfSales || 0;
-      let otherSales = month.otherSales || 0;
+      let dynamicGroupsSum = Object.values(month.dynamicGroups || {}).reduce((sum, val) => sum + val, 0);
+      let otherSales = (month.otherSales || 0) + dynamicGroupsSum;
       let roomSales = month.totalRoomRevenue || 0;
 
       cumLeisure += leisureSales;
@@ -98,7 +99,8 @@ export default function DivisionSales({ processedData: globalProcessedData, glob
       if (match) {
         const year = match[1];
         const m = match[2];
-        const total = (d.leisureSales || 0) + (d.fnbSales || 0) + (d.motoSales || 0) + (d.golfSales || 0) + (d.otherSales || 0) + (d.totalRoomRevenue || 0);
+        const dynamicGroupsSum = Object.values(d.dynamicGroups || {}).reduce((sum, val) => sum + val, 0);
+        const total = (d.leisureSales || 0) + (d.fnbSales || 0) + (d.motoSales || 0) + (d.golfSales || 0) + (d.otherSales || 0) + (d.totalRoomRevenue || 0) + dynamicGroupsSum;
         const row = arr.find(x => x.monthStr === m);
         if (row && (year === '2024' || year === '2025' || year === '2026')) {
            row[year] += total;
