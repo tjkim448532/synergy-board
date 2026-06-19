@@ -45,7 +45,50 @@ export default function useGoogleSheetVisitors() {
               monthlyDataObj[m] = 0;
             }
           }
-          setGoogleSheetData(monthlyDataObj);
+          
+          // 이용률 실적 파싱
+          const utilizationRates = {};
+          let inUtilizationSection = false;
+          
+          for (let l of lines) {
+            if (l.includes('월별 이용률 목표')) {
+              inUtilizationSection = true;
+              continue;
+            }
+            if (inUtilizationSection) {
+              if (l.includes('월별 매출 목표')) break; // 다음 섹션 만나면 중단
+              
+              const parts = [];
+              let current = '';
+              let inQ = false;
+              for(let i=0; i<l.length; i++){
+                const c = l[i];
+                if(c === '"') inQ = !inQ;
+                else if(c === ',' && !inQ) { parts.push(current.trim()); current = ''; }
+                else current += c;
+              }
+              parts.push(current.trim());
+              
+              const venueName = parts[1];
+              if (venueName && venueName !== '업장' && venueName !== '') {
+                utilizationRates[venueName] = {};
+                // 전체 실적 (인덱스 3)
+                utilizationRates[venueName]['all'] = parseFloat((parts[3] || '0').replace('%', '')) || 0;
+                
+                // 월별 실적 (인덱스는 1월이 6, 2월이 9 ...)
+                for(let m=1; m<=12; m++) {
+                  const idx = 6 + (m - 1) * 3;
+                  if (parts[idx]) {
+                    utilizationRates[venueName][m] = parseFloat((parts[idx] || '0').replace('%', '')) || 0;
+                  } else {
+                    utilizationRates[venueName][m] = 0;
+                  }
+                }
+              }
+            }
+          }
+
+          setGoogleSheetData({ visitors: monthlyDataObj, utilizationRates });
           setSyncError(null);
         } else {
           throw new Error("구글 시트에서 '레저본부 방문객' 행을 찾을 수 없습니다.");

@@ -35,14 +35,16 @@ export default function LeisureUtilization({ processedData, globalStats, setting
     };
 
     let aggregatedTotalVisitors = 0;
+    let sheetUtilizationRates = null;
     
     if (isGoogleSheetSyncEnabled && googleSheetData) {
       if (selectedPeriod === 'all') {
-        aggregatedTotalVisitors = Object.values(googleSheetData).reduce((a, b) => a + b, 0);
+        aggregatedTotalVisitors = Object.values(googleSheetData.visitors || {}).reduce((a, b) => a + b, 0);
       } else {
         const selM = parseInt(selectedPeriod.split('-')[1], 10);
-        aggregatedTotalVisitors = googleSheetData[selM] || 0;
+        aggregatedTotalVisitors = (googleSheetData.visitors || {})[selM] || 0;
       }
+      sheetUtilizationRates = googleSheetData.utilizationRates;
     } else {
       const targetData = selectedPeriod === 'all' ? processedData : processedData.filter(d => d.id === selectedPeriod);
       targetData.forEach(d => {
@@ -51,14 +53,35 @@ export default function LeisureUtilization({ processedData, globalStats, setting
     }
 
     const aggregatedUsage = {};
-    const targetData2 = selectedPeriod === 'all' ? processedData : processedData.filter(d => d.id === selectedPeriod);
     
-    targetData2.forEach(d => {
-      const usage = d.leisureTicketUsage || {};
-      Object.entries(usage).forEach(([venue, count]) => {
-        aggregatedUsage[venue] = (aggregatedUsage[venue] || 0) + count;
+    if (isGoogleSheetSyncEnabled && sheetUtilizationRates) {
+      // 구글 시트에서 이용률(%)을 가져와서 이용객 수를 계산 (총 방문객 수 * 이용률)
+      Object.entries(sheetUtilizationRates).forEach(([venue, rates]) => {
+        if (selectedPeriod === 'all') {
+          // 전체 누적: 각 월별 (해당 월 총방문객 * 해당 월 이용률)을 합산해야 정확함
+          let totalV = 0;
+          for(let m=1; m<=12; m++) {
+            const mVisit = (googleSheetData.visitors || {})[m] || 0;
+            const mRate = (rates[m] || 0) / 100;
+            totalV += mVisit * mRate;
+          }
+          aggregatedUsage[venue] = Math.round(totalV);
+        } else {
+          // 특정 월
+          const selM = parseInt(selectedPeriod.split('-')[1], 10);
+          const mRate = (rates[selM] || 0) / 100;
+          aggregatedUsage[venue] = Math.round(aggregatedTotalVisitors * mRate);
+        }
       });
-    });
+    } else {
+      const targetData2 = selectedPeriod === 'all' ? processedData : processedData.filter(d => d.id === selectedPeriod);
+      targetData2.forEach(d => {
+        const usage = d.leisureTicketUsage || {};
+        Object.entries(usage).forEach(([venue, count]) => {
+          aggregatedUsage[venue] = (aggregatedUsage[venue] || 0) + count;
+        });
+      });
+    }
 
     const chartData = Object.entries(aggregatedUsage).map(([venue, count]) => {
       return {
