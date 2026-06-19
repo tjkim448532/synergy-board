@@ -820,7 +820,10 @@ export default function MonthlyDataForm({ settings }) {
         <div className="glass-panel" style={{display: 'flex', flexDirection: 'column', padding: '24px', border: roomData ? '2px solid var(--accent-emerald)' : '1px solid var(--border-glass)'}}>
           <div style={{display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px'}}>
             <Hotel size={32} color="var(--accent-blue)" />
-            <h3 style={{margin: 0}}>1. 객실 매출 처리</h3>
+            <h3 style={{margin: 0}}>1. 객실 일일실적 (Daily)</h3>
+          </div>
+          <p style={{fontSize:'13px', color:'var(--text-muted)', margin:'-10px 0 16px 0'}}>📌 업로드 파일: 날짜별 가동률 및 판매 객실 수가 기록된 일일실적 엑셀 파일</p>
+          <div style={{display:'none'}}>
           </div>
           
           <label className="btn-primary" style={{cursor: 'pointer', textAlign: 'center', marginBottom: '20px'}}>
@@ -861,7 +864,10 @@ export default function MonthlyDataForm({ settings }) {
         <div className="glass-panel" style={{display: 'flex', flexDirection: 'column', padding: '24px', border: leisureData ? '2px solid var(--accent-gold)' : '1px solid var(--border-glass)'}}>
           <div style={{display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px'}}>
             <Ticket size={32} color="var(--accent-purple)" />
-            <h3 style={{margin: 0}}>2. 레저 매출 처리</h3>
+            <h3 style={{margin: 0}}>2. 부대시설 일일 매출 통합 (Daily)</h3>
+          </div>
+          <p style={{fontSize:'13px', color:'var(--text-muted)', margin:'-10px 0 16px 0'}}>📌 업로드 파일: 식음, 레저, 모토 등 전체 영업장의 날짜별 결제 내역 엑셀 파일 (주중/주말 자동 분리용)</p>
+          <div style={{display:'none'}}>
           </div>
           
           <label className="btn-primary" style={{cursor: 'pointer', textAlign: 'center', marginBottom: '20px', background: 'var(--accent-purple)'}}>
@@ -871,7 +877,7 @@ export default function MonthlyDataForm({ settings }) {
 
           {leisureData && Array.isArray(leisureData) && (
             <div style={{background: 'rgba(251, 191, 36, 0.1)', padding: '16px', borderRadius: '8px', border: '1px solid var(--accent-gold)'}}>
-              <h4 style={{margin: '0 0 12px 0', color: 'var(--accent-gold)'}}>레저 추출 결과 (총 {leisureData.length}건)</h4>
+              <h4 style={{margin: '0 0 12px 0', color: 'var(--accent-gold)'}}>부대매출 추출 결과 (총 {leisureData.length}건)</h4>
               
               <div style={{maxHeight: '300px', overflowY: 'auto', marginBottom: '16px', paddingRight: '8px'}}>
                 {leisureData.map(data => {

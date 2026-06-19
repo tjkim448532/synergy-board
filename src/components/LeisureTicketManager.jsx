@@ -253,11 +253,11 @@ export default function LeisureTicketManager({ monthlyData, settings, setSetting
       
       <div style={{display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px'}}>
         <Ticket color="var(--accent-emerald)" size={24} />
-        <h3 style={{margin: 0, fontSize: '18px', color: 'var(--text-main)'}}>매월 레저본부 티켓 이용객 엑셀 업로드 및 그룹핑</h3>
+        <h3 style={{margin: 0, fontSize: '18px', color: 'var(--text-main)'}}>3. 영업장 품목별 월간 엑셀 업로드 (Monthly)</h3>
       </div>
       
       <p style={{color: 'var(--text-muted)', fontSize: '14px', marginBottom: '20px'}}>
-        엑셀 파일을 업로드하거나, 이미 저장된 내역을 불러와서 영업장(그룹)과 티켓별 인원수 룰을 자유롭게 커스텀할 수 있습니다.
+        📌 업로드 파일: 각 영업장별(모토아레나, 레저 등) 상세 품목명(트랜잭션명)과 수량이 적힌 월간 누적 엑셀 파일 (이용객 수 및 투숙객 구분용)
       </p>
 
       <div style={{display: 'flex', gap: '12px', marginBottom: '24px', alignItems: 'flex-end'}}>
