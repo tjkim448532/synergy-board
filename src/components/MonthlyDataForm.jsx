@@ -132,12 +132,15 @@ export default function MonthlyDataForm({ settings }) {
             headerRowIdx = i;
             const headers = row.map(h => h ? h.toString().replace(/\s+/g, '') : '');
             
-            const findCol = (keywords) => headers.findIndex(h => keywords.some(k => h.includes(k)));
+            const findCol = (keywords, exactKeywords = []) => headers.findIndex(h => 
+              !h.includes('할인') && !h.includes('취소') && !h.includes('부가세') && !h.includes('수수료') &&
+              (keywords.some(k => h.includes(k)) || exactKeywords.includes(h))
+            );
             
             dateIdx = findCol(['일자', '날짜', 'Date']);
             typeIdx = findCol(['객실타입', '룸타입']);
             countIdx = findCol(['객실수', '판매객실', '객실판매']);
-            revIdx = findCol(['합계', '실매출', '매출액']);
+            revIdx = findCol(['실매출', '매출액', '순매출', '결제금액'], ['합계', '총합계']);
             rateIdx = findCol(['요금타입', 'RateType']);
             marketIdx = findCol(['마켓타입', '마켓구분']);
             sourceIdx = findCol(['소스타입', '소스구분']);
@@ -315,7 +318,10 @@ export default function MonthlyDataForm({ settings }) {
             const headers = row.map(h => h ? h.toString().replace(/\s+/g, '').toUpperCase() : '');
             
             dateIdx = headers.findIndex(h => h.includes('일자') || h.includes('날짜') || h.includes('DATE'));
-            sumIdx = headers.findIndex(h => h.includes('합계') || h.includes('TOTAL'));
+            sumIdx = headers.findIndex(h => !h.includes('할인') && !h.includes('취소') && !h.includes('수수료') && !h.includes('부가세') && (h.includes('실매출') || h.includes('결제금액') || h.includes('매출액') || h === '합계' || h === '총합계' || h === '순매출'));
+            if (sumIdx === -1) {
+              sumIdx = headers.findIndex(h => !h.includes('할인') && (h.includes('합계') || h.includes('TOTAL')));
+            }
             roomIdx = headers.findIndex(h => h === 'ROOM' || h === 'ROOMS' || h.includes('객실'));
             roomOtherIdx = headers.findIndex(h => h === 'ROOMOTHER' || h.includes('객실수입'));
             
@@ -356,11 +362,16 @@ export default function MonthlyDataForm({ settings }) {
         };
 
         const excludedCols = ['영업일자', '일자', 'ROOM', 'ROOM OTHER', 'ROOMOTHER', '합계'];
+        const excludedKeywords = ['할인', '취소', '수수료', '부가세', '봉사료'];
         const locationCols = [];
         for (let j = 1; j < headers.length; j++) {
-            if (j === sumIdx || j === roomIdx) continue;
+            if (j === sumIdx || j === roomIdx || j === dateIdx || j === roomOtherIdx) continue;
             const colName = headers[j] ? headers[j].toString().trim() : '';
             if (!colName || excludedCols.includes(colName.toUpperCase().replace(/\s+/g, ''))) continue;
+            
+            // 할인, 부가세 등은 영업장 이름이 아니므로 제외
+            if (excludedKeywords.some(k => colName.includes(k))) continue;
+            
             locationCols.push({ index: j, name: mapLocationName(colName) });
         }
 
