@@ -932,7 +932,7 @@ export default function MonthlyDataForm({ settings }) {
         
         const parsedMonthsArray = Object.values(motoParsedMap);
         if (parsedMonthsArray.length === 0) {
-            toast.error('유효한 데이터를 찾을 수 없습니다.');
+            toast.error(`유효한 데이터를 찾을 수 없습니다. (인식된 행 수: ${data.length}, 데이터 시작 행: ${dataStartIdx})`);
             return;
         }
 
