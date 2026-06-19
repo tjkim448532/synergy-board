@@ -745,6 +745,7 @@ export default function MonthlyDataForm({ settings }) {
           if (!motoParsedMap[monthKey]) {
              motoParsedMap[monthKey] = {
                  yearMonth: monthKey,
+                 debugRevColName: revColIdx !== -1 ? String(data[headerRowIdx][revColIdx] || '알수없음') : '알수없음',
                  venues: {}
              };
           }
@@ -1037,7 +1038,13 @@ export default function MonthlyDataForm({ settings }) {
 
           {motoData && (
             <div style={{background: 'rgba(251, 191, 36, 0.1)', padding: '16px', borderRadius: '8px', border: '1px solid var(--accent-gold)'}}>
-              <h4 style={{margin: '0 0 12px 0', color: 'var(--accent-gold)'}}>추출 결과 ({motoData.map(d => d.yearMonth).join(', ')})</h4>
+              <h4 style={{margin: '0 0 12px 0', color: 'var(--accent-gold)'}}>
+                추출 결과 ({motoData.map(d => d.yearMonth || '날짜 미지정').join(', ')})
+              </h4>
+              <div style={{fontSize: '12px', color: 'var(--accent-gold)', marginBottom: '16px', padding: '8px', background: 'rgba(0,0,0,0.2)', borderRadius: '4px'}}>
+                💡 <b>디버그 정보</b><br/>
+                엑셀에서 <b>"{motoData[0]?.debugRevColName || '알수없음'}"</b> 열을 매출 금액으로 계산했습니다. 이 열이 맞는지 확인해 주세요! 만약 수량이나 부가세 등 다른 열이라면 파일 구조 확인이 필요합니다.
+              </div>
               
               <div style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>
                 {motoData.map(mData => (
