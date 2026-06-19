@@ -694,27 +694,52 @@ export default function Settings({ monthlyData }) {
           ) : (
             <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
               {uniqueMotoTickets.map(ticket => {
-                let isGuest = false;
-                if (settings.motoTicketGroups?.[ticket] === 'guest') {
-                  isGuest = true;
-                } else if (settings.motoTicketGroups?.[ticket] === undefined) {
+                let group = 'other';
+                if (settings.motoTicketGroups?.[ticket]) {
+                  group = settings.motoTicketGroups[ticket];
+                } else {
                   if (ticket.includes('콘도') || ticket.includes('객실') || ticket.includes('패키지')) {
-                    isGuest = true;
+                    group = 'guest';
+                  } else if (ticket.includes('일반') || ticket.includes('증평') || ticket.includes('단체')) {
+                    group = 'general';
                   }
                 }
                 
                 return (
                   <div key={ticket} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px'}}>
                     <strong style={{fontSize: '15px', flex: 1, color: 'var(--text-bright)'}}>{ticket}</strong>
-                    <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: isGuest ? 'var(--accent-emerald)' : 'var(--text-muted)'}}>
-                      <input 
-                        type="checkbox" 
-                        checked={isGuest}
-                        onChange={(e) => handleMotoTicketGroupChange(ticket, e.target.checked ? 'guest' : 'general')}
-                        style={{width: '18px', height: '18px', accentColor: 'var(--accent-emerald)'}}
-                      />
-                      투숙객 매출로 분류
-                    </label>
+                    <div style={{display: 'flex', gap: '16px'}}>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: group === 'guest' ? 'var(--accent-emerald)' : 'var(--text-muted)'}}>
+                        <input 
+                          type="radio" 
+                          name={`group_${ticket}`}
+                          checked={group === 'guest'}
+                          onChange={() => handleMotoTicketGroupChange(ticket, 'guest')}
+                          style={{accentColor: 'var(--accent-emerald)'}}
+                        />
+                        투숙객
+                      </label>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: group === 'general' ? 'var(--accent-blue)' : 'var(--text-muted)'}}>
+                        <input 
+                          type="radio" 
+                          name={`group_${ticket}`}
+                          checked={group === 'general'}
+                          onChange={() => handleMotoTicketGroupChange(ticket, 'general')}
+                          style={{accentColor: 'var(--accent-blue)'}}
+                        />
+                        비투숙객
+                      </label>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: group === 'other' ? 'var(--accent-coral)' : 'var(--text-muted)'}}>
+                        <input 
+                          type="radio" 
+                          name={`group_${ticket}`}
+                          checked={group === 'other'}
+                          onChange={() => handleMotoTicketGroupChange(ticket, 'other')}
+                          style={{accentColor: 'var(--accent-coral)'}}
+                        />
+                        기타
+                      </label>
+                    </div>
                   </div>
                 );
               })}

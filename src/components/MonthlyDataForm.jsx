@@ -719,6 +719,7 @@ export default function MonthlyDataForm({ settings }) {
         let revColIdx = -1;
         let dateColIdx = -1;
         let venueColIdx = -1;
+        let countColIdx = -1;
 
         // 헤더 행 찾기 (우선순위 1: 엑셀 원본에 있는 '트랜잭션명' 우선 탐색)
         for (let i = 0; i < 50; i++) {
@@ -765,6 +766,9 @@ export default function MonthlyDataForm({ settings }) {
             }
             if (cellStr.includes('일자') || cellStr.includes('날짜') || cellStr.includes('DATE')) {
               dateColIdx = j;
+            }
+            if (cellStr === '수량' || cellStr.includes('건수') || cellStr === '수' || cellStr.includes('판매량')) {
+              countColIdx = j;
             }
           }
         }
@@ -872,14 +876,18 @@ export default function MonthlyDataForm({ settings }) {
              mData.venues[venueName] = {
                  guestRev: 0,
                  generalRev: 0,
+                 otherRev: 0,
+                 guestCount: 0,
+                 generalCount: 0,
                  totalRev: 0,
-                 breakdown: { guest: {}, general: {} }
+                 breakdown: { guest: {}, general: {}, other: {} }
              };
           }
           const venueData = mData.venues[venueName];
 
           const txName = row[txColIdx] != null ? String(row[txColIdx]).trim() : '';
           const rev = parseSafeInt(row[revColIdx]);
+          const count = countColIdx !== -1 ? parseSafeInt(row[countColIdx]) : 0;
           
           if (txName) {
             const upperTx = txName.toUpperCase();
@@ -887,21 +895,28 @@ export default function MonthlyDataForm({ settings }) {
             
             venueData.totalRev += rev;
 
-            // 모토아레나만 투숙/비숙박 분류를 적용
+            // 모토아레나 분류 적용
             if (venueName.includes('모토아레나')) {
-              let category = 'general';
-              // settings?.motoTicketGroups 가 'guest' 이면 투숙객, 아니면 전부 비숙박객(general)
-              if (settings?.motoTicketGroups?.[txName] === 'guest') {
-                category = 'guest';
-              } else if (settings?.motoTicketGroups?.[txName] === undefined) {
-                // 설정이 없을 때의 기본값
+              let category = 'other';
+              if (settings?.motoTicketGroups?.[txName]) {
+                category = settings.motoTicketGroups[txName];
+              } else {
                 if (txName.includes('콘도') || txName.includes('객실') || txName.includes('패키지')) {
                   category = 'guest';
+                } else if (txName.includes('일반') || txName.includes('단체') || txName.includes('증평')) {
+                  category = 'general';
                 }
               }
               
-              if (category === 'guest') venueData.guestRev += rev;
-              else venueData.generalRev += rev;
+              if (category === 'guest') {
+                venueData.guestRev += rev;
+                venueData.guestCount += count;
+              } else if (category === 'general') {
+                venueData.generalRev += rev;
+                venueData.generalCount += count;
+              } else {
+                venueData.otherRev += rev;
+              }
               
               if (!venueData.breakdown[category]) venueData.breakdown[category] = {};
               if (!venueData.breakdown[category][txName]) venueData.breakdown[category][txName] = 0;
