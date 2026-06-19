@@ -798,22 +798,30 @@ export default function MonthlyDataForm({ settings }) {
             const upperTx = txName.toUpperCase();
             if (upperTx.includes('TOTAL') || txName.includes('소계') || txName.includes('합계') || txName.includes('총계')) continue;
             
-            let category = settings?.motoTicketGroups?.[txName];
-            if (!category) {
-              if (txName.includes('콘도') || txName.includes('객실')) category = 'guest';
-              else if (txName.includes('일반') || txName.includes('증평군민') || txName.includes('MOU') || txName.includes('단체')) category = 'general';
-              else category = 'other';
-            }
-            
-            if (category === 'guest') venueData.guestRev += rev;
-            else if (category === 'general') venueData.generalRev += rev;
-            else if (category === 'other') venueData.otherRev += rev;
-            
             venueData.totalRev += rev;
-            
-            if (!venueData.breakdown[category]) venueData.breakdown[category] = {};
-            if (!venueData.breakdown[category][txName]) venueData.breakdown[category][txName] = 0;
-            venueData.breakdown[category][txName] += rev;
+
+            // 모토아레나만 투숙/일반/기타 분류를 적용
+            if (venueName.includes('모토아레나')) {
+              let category = settings?.motoTicketGroups?.[txName];
+              if (!category) {
+                if (txName.includes('콘도') || txName.includes('객실')) category = 'guest';
+                else if (txName.includes('일반') || txName.includes('증평군민') || txName.includes('MOU') || txName.includes('단체')) category = 'general';
+                else category = 'other';
+              }
+              
+              if (category === 'guest') venueData.guestRev += rev;
+              else if (category === 'general') venueData.generalRev += rev;
+              else if (category === 'other') venueData.otherRev += rev;
+              
+              if (!venueData.breakdown[category]) venueData.breakdown[category] = {};
+              if (!venueData.breakdown[category][txName]) venueData.breakdown[category][txName] = 0;
+              venueData.breakdown[category][txName] += rev;
+            } else {
+              // 나머지 업장(미디어아트센터 등)은 합계만 필요하므로 breakdown.all 에 뭉뚱그려 저장
+              if (!venueData.breakdown.all) venueData.breakdown.all = {};
+              if (!venueData.breakdown.all[txName]) venueData.breakdown.all[txName] = 0;
+              venueData.breakdown.all[txName] += rev;
+            }
           }
         }
         
@@ -1075,8 +1083,8 @@ export default function MonthlyDataForm({ settings }) {
               </div>
               
               <div style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>
-                {motoData.map(mData => (
-                  <div key={mData.yearMonth} style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
+                {motoData.map((mData, idx) => (
+                  <div key={idx} style={{display: 'flex', flexDirection: 'column', gap: '24px'}}>
                     <div style={{fontWeight: 'bold', color: 'var(--text-main)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '4px'}}>
                       📅 {mData.yearMonth}
                     </div>
@@ -1084,32 +1092,44 @@ export default function MonthlyDataForm({ settings }) {
                        <div key={venueName} style={{background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '8px', borderLeft: '3px solid var(--accent-gold)'}}>
                          <h5 style={{margin: '0 0 8px 0', color: 'var(--text-main)'}}>{venueName}</h5>
                          <div style={{fontSize: '14px', display: 'flex', flexDirection: 'column', gap: '8px'}}>
-                           <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                             <span>투숙객 매출:</span> <strong>₩{formatCurrency(venue.guestRev)}</strong>
-                           </div>
-                           {venue.breakdown && Object.keys(venue.breakdown.guest).length > 0 && (
-                             <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
-                               {Object.entries(venue.breakdown.guest).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
-                             </div>
-                           )}
-                           
-                           <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '8px'}}>
-                             <span>일반객(투숙객 외) 매출:</span> <strong>₩{formatCurrency(venue.generalRev)}</strong>
-                           </div>
-                           {venue.breakdown && Object.keys(venue.breakdown.general).length > 0 && (
-                             <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
-                               {Object.entries(venue.breakdown.general).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
-                             </div>
-                           )}
-
-                           {venue.otherRev > 0 && (
+                           {venueName.includes('모토아레나') ? (
                              <>
-                               <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '8px'}}>
-                                 <span style={{color: '#ef4444'}}>기타 매출 (임직원 등):</span> <strong style={{color: '#ef4444'}}>₩{formatCurrency(venue.otherRev)}</strong>
+                               <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                                 <span>투숙객 매출:</span> <strong>₩{formatCurrency(venue.guestRev)}</strong>
                                </div>
-                               {venue.breakdown && Object.keys(venue.breakdown.other || {}).length > 0 && (
+                               {venue.breakdown && venue.breakdown.guest && Object.keys(venue.breakdown.guest).length > 0 && (
                                  <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
-                                   {Object.entries(venue.breakdown.other).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
+                                   {Object.entries(venue.breakdown.guest).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
+                                 </div>
+                               )}
+                               
+                               <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '8px'}}>
+                                 <span>일반객(투숙객 외) 매출:</span> <strong>₩{formatCurrency(venue.generalRev)}</strong>
+                               </div>
+                               {venue.breakdown && venue.breakdown.general && Object.keys(venue.breakdown.general).length > 0 && (
+                                 <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
+                                   {Object.entries(venue.breakdown.general).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
+                                 </div>
+                               )}
+
+                               {venue.otherRev > 0 && (
+                                 <>
+                                   <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '8px'}}>
+                                     <span style={{color: '#ef4444'}}>기타 매출 (임직원 등):</span> <strong style={{color: '#ef4444'}}>₩{formatCurrency(venue.otherRev)}</strong>
+                                   </div>
+                                   {venue.breakdown && venue.breakdown.other && Object.keys(venue.breakdown.other).length > 0 && (
+                                     <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
+                                       {Object.entries(venue.breakdown.other).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
+                                     </div>
+                                   )}
+                                 </>
+                               )}
+                             </>
+                           ) : (
+                             <>
+                               {venue.breakdown && venue.breakdown.all && Object.keys(venue.breakdown.all).length > 0 && (
+                                 <div style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px'}}>
+                                   {Object.entries(venue.breakdown.all).map(([k, v]) => `${k} (₩${formatCurrency(v)})`).join(' / ')}
                                  </div>
                                )}
                              </>
