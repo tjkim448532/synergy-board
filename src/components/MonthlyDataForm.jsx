@@ -514,8 +514,19 @@ export default function MonthlyDataForm({ settings }) {
                monthData.uniqueLeisureWdDates.add(dateVal);
              }
 
+            if (!monthData.dailyLeisureMap) {
+                monthData.dailyLeisureMap = {};
+            }
+            if (!monthData.dailyLeisureMap[dateVal]) {
+                monthData.dailyLeisureMap[dateVal] = {
+                    date: dateVal,
+                    revenue: 0,
+                    breakdown: {}
+                };
+            }
+            const dailyRec = monthData.dailyLeisureMap[dateVal];
+
             let rowLeisureSum = 0;
-            const breakdown = {};
             locationCols.forEach(col => {
                 const val = parseSafeInt(row[col.index]);
                 if (!isNaN(val)) {
@@ -528,18 +539,11 @@ export default function MonthlyDataForm({ settings }) {
                         monthData.salesWdByLocation[col.name] = (monthData.salesWdByLocation[col.name] || 0) + val;
                     }
                     rowLeisureSum += val;
-                    breakdown[col.name] = val;
+                    dailyRec.breakdown[col.name] = (dailyRec.breakdown[col.name] || 0) + val;
                 }
             });
 
-            if (!monthData.rawLeisureRecords) {
-                monthData.rawLeisureRecords = [];
-            }
-            monthData.rawLeisureRecords.push({
-                date: dateVal,
-                revenue: rowLeisureSum,
-                breakdown: breakdown
-            });
+            dailyRec.revenue += rowLeisureSum;
 
             monthData.totalLeisureSales += rowLeisureSum;
             if (isWe) {
@@ -561,11 +565,14 @@ export default function MonthlyDataForm({ settings }) {
         }
         
         const parsedMonthsArray = Object.values(monthlyParsedMap).map(m => {
+          const sortedDaily = Object.values(m.dailyLeisureMap || {}).sort((a, b) => a.date.localeCompare(b.date));
           const newObj = {
             ...m,
+            rawLeisureRecords: sortedDaily,
             daysCountWeekdayLeisure: m.uniqueLeisureWdDates ? m.uniqueLeisureWdDates.size : 0,
             daysCountWeekendLeisure: m.uniqueLeisureWeDates ? m.uniqueLeisureWeDates.size : 0
           };
+          delete newObj.dailyLeisureMap;
           delete newObj.uniqueLeisureWdDates;
           delete newObj.uniqueLeisureWeDates;
           return newObj;
