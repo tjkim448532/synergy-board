@@ -835,20 +835,20 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                     <div className="glass-panel" style={{flex: 1, minWidth: '300px', padding: '24px', background: 'rgba(52, 211, 153, 0.05)', border: '1px solid var(--accent-emerald)'}}>
                       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                         <h4 style={{margin: '0', color: 'var(--accent-emerald)', fontSize: '18px'}}>투숙객 매출 (객실연계)</h4>
-                        <div style={{fontSize: '32px', fontWeight: 'bold'}}>{motoCorrelations.guestRatio !== null ? `${motoCorrelations.guestRatio.toFixed(1)}%` : 'N/A'}</div>
+                        <div style={{fontSize: '32px', fontWeight: 'bold'}}>{(motoCorrelations.guestRatio !== null && motoCorrelations.guestRatio !== undefined && typeof motoCorrelations.guestRatio === 'number') ? `${motoCorrelations.guestRatio.toFixed(1)}%` : 'N/A'}</div>
                       </div>
                       <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', marginBottom: '16px'}}>
                         객실에 투숙하며 구매한 티켓 비율 (콘도/객실 티켓합계)
                       </div>
 
                       <div style={{fontSize: '13px', color: 'var(--accent-emerald)', background: 'rgba(52, 211, 153, 0.1)', padding: '10px 12px', borderRadius: '6px', marginBottom: '16px'}}>
-                        💡 <strong>[추천]</strong> 이 수치({motoCorrelations.guestRatio !== null ? motoCorrelations.guestRatio.toFixed(1) : '0'}%)를 <strong>[설정] 탭의 '모토아레나 캡처 레이트'</strong>에 입력하시면, 가장 정확한 투숙객 순수 TrevPAR가 자동 계산됩니다.
+                        💡 <strong>[추천]</strong> 이 수치({(motoCorrelations.guestRatio !== null && motoCorrelations.guestRatio !== undefined && typeof motoCorrelations.guestRatio === 'number') ? motoCorrelations.guestRatio.toFixed(1) : '0'}%)를 <strong>[설정] 탭의 '모토아레나 캡처 레이트'</strong>에 입력하시면, 가장 정확한 투숙객 순수 TrevPAR가 자동 계산됩니다.
                       </div>
                       
                       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '12px'}}>
                         <span style={{fontSize: '14px', color: 'var(--text-main)'}}>객실 점유율과의 상관계수 (r)</span>
                         <span style={{fontSize: '24px', fontWeight: 'bold', color: (motoCorrelations.guest !== null && motoCorrelations.guest >= 0.4) ? 'var(--accent-emerald)' : 'var(--text-main)'}}>
-                          {motoCorrelations.guest !== null ? motoCorrelations.guest.toFixed(3) : 'N/A'}
+                          {typeof motoCorrelations.guest === 'number' ? motoCorrelations.guest.toFixed(3) : 'N/A'}
                         </span>
                       </div>
                       
@@ -867,7 +867,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                     <div className="glass-panel" style={{flex: 1, minWidth: '300px', padding: '24px', background: 'rgba(251, 191, 36, 0.05)', border: '1px solid var(--accent-gold)'}}>
                       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                         <h4 style={{margin: '0', color: 'var(--accent-gold)', fontSize: '18px'}}>일반객 매출 (외부유입)</h4>
-                        <div style={{fontSize: '32px', fontWeight: 'bold'}}>{motoCorrelations.generalRatio !== null ? `${motoCorrelations.generalRatio.toFixed(1)}%` : 'N/A'}</div>
+                        <div style={{fontSize: '32px', fontWeight: 'bold'}}>{(motoCorrelations.generalRatio !== null && motoCorrelations.generalRatio !== undefined && typeof motoCorrelations.generalRatio === 'number') ? `${motoCorrelations.generalRatio.toFixed(1)}%` : 'N/A'}</div>
                       </div>
                       <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', marginBottom: '16px'}}>
                         객실과 무관한 순수 외부 유입 비율 (일반/군민/MOU/단체)
@@ -889,7 +889,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                     <div className="glass-panel" style={{flex: 1, minWidth: '300px', padding: '24px', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255,255,255,0.1)'}}>
                       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                         <h4 style={{margin: '0', color: 'var(--text-bright)', fontSize: '18px'}}>기타 매출 (미분류)</h4>
-                        <div style={{fontSize: '32px', fontWeight: 'bold', color: 'var(--text-main)'}}>{motoCorrelations.otherRatio !== null ? `${motoCorrelations.otherRatio.toFixed(1)}%` : 'N/A'}</div>
+                        <div style={{fontSize: '32px', fontWeight: 'bold', color: 'var(--text-main)'}}>{(motoCorrelations.otherRatio !== null && motoCorrelations.otherRatio !== undefined && typeof motoCorrelations.otherRatio === 'number') ? `${motoCorrelations.otherRatio.toFixed(1)}%` : 'N/A'}</div>
                       </div>
                       <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', marginBottom: '16px'}}>
                         투숙객/일반객 키워드로 분류되지 않은 매출 (임직원/기타 등)
@@ -961,7 +961,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
             </select>
           </h3>
           <div style={{fontSize: '36px', fontWeight: 'bold', color: activeConf.color}}>
-            {activeGlobalCorrelation ? activeGlobalCorrelation.toFixed(3) : 'N/A'}
+            {typeof activeGlobalCorrelation === 'number' ? activeGlobalCorrelation.toFixed(3) : 'N/A'}
           </div>
           <div style={{color: 'var(--text-muted)', marginTop: '8px'}}>
             객실 점유율 ↔ {activeConf.title} 총매출 간의 관계<br/>
@@ -976,7 +976,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
               <div key={type} style={{flex: 1, background: 'rgba(255,255,255,0.05)', padding: '16px', borderRadius: '8px', textAlign: 'center'}}>
                 <div style={{fontSize: '18px', fontWeight: 'bold'}}>{type}</div>
                 <div style={{fontSize: '24px', color: (r && r > 0.5) ? activeConf.color : 'var(--text-main)', margin: '8px 0'}}>
-                  {r ? r.toFixed(2) : '-'}
+                  {typeof r === 'number' ? r.toFixed(2) : '-'}
                 </div>
                 <div style={{fontSize: '12px', color: 'var(--text-muted)'}}>{getInterpretation(r)}</div>
               </div>
@@ -1002,11 +1002,11 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
             <LineChart data={filteredProcessedData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
               <XAxis dataKey="yearMonth" stroke="var(--text-muted)" />
-              <YAxis yAxisId="left" stroke="#94a3b8" tickFormatter={(v) => `${v.toFixed(0)}%`} />
-              <YAxis yAxisId="right" orientation="right" stroke={activeConf.color} tickFormatter={(v) => `${(v/1000000).toFixed(0)}M`} />
+              <YAxis yAxisId="left" stroke="#94a3b8" tickFormatter={(v) => typeof v === 'number' ? `${v.toFixed(0)}%` : ''} />
+              <YAxis yAxisId="right" orientation="right" stroke={activeConf.color} tickFormatter={(v) => typeof v === 'number' ? `${(v/1000000).toFixed(0)}M` : ''} />
               <RechartsTooltip 
                 contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)'}}
-                formatter={(value, name) => name === '점유율' ? `${value.toFixed(1)}%` : `₩${formatCurrency(value)}`}
+                formatter={(value, name) => name === '점유율' ? `${typeof value === 'number' ? value.toFixed(1) : value}%` : `₩${formatCurrency(value)}`}
               />
               <Legend />
               <Line yAxisId="left" type="monotone" dataKey="occupancyRate" name="점유율" stroke="#94a3b8" strokeWidth={3} dot={{r: 4}} activeDot={{r: 8}} />
@@ -1049,7 +1049,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
               <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                 <XAxis type="number" dataKey={selectedRoomType === 'all' ? 'totalSold' : selectedRoomType} name="객실 판매(실)" stroke="var(--text-muted)" />
-                <YAxis type="number" dataKey={activeConf.dataKey} name={`${activeConf.title} 매출`} stroke="var(--text-muted)" tickFormatter={(v) => `${(v/1000000).toFixed(0)}M`} />
+                <YAxis type="number" dataKey={activeConf.dataKey} name={`${activeConf.title} 매출`} stroke="var(--text-muted)" tickFormatter={(v) => typeof v === 'number' ? `${(v/1000000).toFixed(0)}M` : ''} />
                 <ZAxis type="category" dataKey="yearMonth" name="연/월" />
                 <RechartsTooltip 
                   cursor={{ strokeDasharray: '3 3' }}
@@ -1079,7 +1079,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                   </div>
                 </div>
                 <div style={{width: '60px', textAlign: 'right', fontWeight: 'bold', color: activeConf.color}}>
-                  {loc.correlation.toFixed(2)}
+                  {typeof loc.correlation === 'number' ? loc.correlation.toFixed(2) : 'N/A'}
                 </div>
               </div>
             ))}
@@ -1230,7 +1230,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                 <div style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px'}}>최고기온 vs {weatherDataType === 'room' ? '객실 매출' : '레저 매출'} 상관관계</div>
                 <div style={{display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '8px'}}>
                   <span style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-gold)'}}>
-                    {weatherStats.tempCorr !== null ? weatherStats.tempCorr.toFixed(3) : 'N/A'}
+                    {typeof weatherStats.tempCorr === 'number' ? weatherStats.tempCorr.toFixed(3) : 'N/A'}
                   </span>
                   <span style={{fontSize: '14px', color: 'var(--text-muted)'}}>(r)</span>
                 </div>
@@ -1247,7 +1247,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                 <div style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px'}}>강수량 vs {weatherDataType === 'room' ? '객실 매출' : '레저 매출'} 상관관계</div>
                 <div style={{display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '8px'}}>
                   <span style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-blue)'}}>
-                    {weatherStats.precipCorr !== null ? weatherStats.precipCorr.toFixed(3) : 'N/A'}
+                    {typeof weatherStats.precipCorr === 'number' ? weatherStats.precipCorr.toFixed(3) : 'N/A'}
                   </span>
                   <span style={{fontSize: '14px', color: 'var(--text-muted)'}}>(r)</span>
                 </div>
@@ -1276,7 +1276,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                         </div>
                         {weatherDataType === 'room' && (
                           <div style={{textAlign: 'right', minWidth: '80px'}}>
-                            <div style={{fontSize: '13px', fontWeight: 'bold', color: 'var(--accent-emerald)'}}>{g.avgQuantity.toFixed(1)}실</div>
+                            <div style={{fontSize: '13px', fontWeight: 'bold', color: 'var(--accent-emerald)'}}>{typeof g.avgQuantity === 'number' ? g.avgQuantity.toFixed(1) : '0.0'}실</div>
                             <div style={{fontSize: '11px', color: 'var(--text-muted)'}}>일평균 판매</div>
                           </div>
                         )}
@@ -1302,14 +1302,14 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                   <ComposedChart data={dailyWeatherSalesData} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                     <XAxis dataKey="date" stroke="var(--text-muted)" fontSize={11} tickFormatter={(val) => val.substring(5)} />
-                    <YAxis yAxisId="left" stroke={weatherDataType === 'room' ? 'var(--accent-emerald)' : 'var(--accent-purple)'} tickFormatter={(v) => `${(v/1000000).toFixed(1)}M`} label={{ value: `${weatherDataType === 'room' ? '객실' : '레저'} 매출 (백만)`, angle: -90, position: 'insideLeft', style: { fill: 'var(--text-muted)', fontSize: 12 } }} />
-                    <YAxis yAxisId="right" orientation="right" stroke="var(--accent-gold)" tickFormatter={(v) => `${v}°C`} label={{ value: '최고기온 (°C)', angle: 90, position: 'insideRight', style: { fill: 'var(--text-muted)', fontSize: 12 } }} />
+                    <YAxis yAxisId="left" stroke={weatherDataType === 'room' ? 'var(--accent-emerald)' : 'var(--accent-purple)'} tickFormatter={(v) => typeof v === 'number' ? `${(v/1000000).toFixed(1)}M` : ''} label={{ value: `${weatherDataType === 'room' ? '객실' : '레저'} 매출 (백만)`, angle: -90, position: 'insideLeft', style: { fill: 'var(--text-muted)', fontSize: 12 } }} />
+                    <YAxis yAxisId="right" orientation="right" stroke="var(--accent-gold)" tickFormatter={(v) => typeof v === 'number' ? `${v}°C` : ''} label={{ value: '최고기온 (°C)', angle: 90, position: 'insideRight', style: { fill: 'var(--text-muted)', fontSize: 12 } }} />
                     <RechartsTooltip 
                       contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)'}}
                       formatter={(value, name) => {
                         if (name === '매출') return `₩${formatCurrency(value)}`;
-                        if (name === '최고기온') return `${value.toFixed(1)}°C`;
-                        if (name === '강수량') return `${value.toFixed(1)}mm`;
+                        if (name === '최고기온') return typeof value === 'number' ? `${value.toFixed(1)}°C` : 'N/A';
+                        if (name === '강수량') return typeof value === 'number' ? `${value.toFixed(1)}mm` : 'N/A';
                         return value;
                       }}
                     />
