@@ -14,6 +14,7 @@ import NewBusinessTraining from './components/NewBusinessTraining'
 import VisitorCalculation from './components/VisitorCalculation'
 import LeisureUtilization from './components/LeisureUtilization'
 import ManagementStrategy from './components/ManagementStrategy'
+import WeatherForecastAnalytics from './components/WeatherForecastAnalytics'
 import { collection, onSnapshot, doc } from 'firebase/firestore';
 import { db } from './firebase';
 import useProcessedData from './hooks/useProcessedData';
@@ -77,6 +78,12 @@ function App() {
         return (
           <motion.div key="analytics" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{padding: '32px'}}>
             <AdvancedAnalytics processedData={processedData} globalStats={globalStats} settings={settings} />
+          </motion.div>
+        )
+      case 'weather-forecast':
+        return (
+          <motion.div key="weather-forecast" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{padding: '32px'}}>
+            <WeatherForecastAnalytics processedData={processedData} settings={settings} />
           </motion.div>
         )
       case 'division-sales':

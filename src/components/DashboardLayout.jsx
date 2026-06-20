@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Upload, Settings, PieChart, TrendingUp, BookOpen, Building, ChevronDown, BarChart2, Users, Activity, Target } from 'lucide-react';
+import { Upload, Settings, PieChart, TrendingUp, BookOpen, Building, ChevronDown, BarChart2, Users, Activity, Target, CloudRain } from 'lucide-react';
 import './DashboardLayout.css';
 
 const SIDEBAR_MENU = [
   { id: 'analytics', icon: PieChart, label: '상관관계 분석' },
+  { id: 'weather-forecast', icon: CloudRain, label: '날씨 기반 인력 배치 시뮬레이터' },
   { id: 'division-sales', icon: BarChart2, label: '부문별 매출 분석' },
   { id: 'leisure-utilization', icon: Activity, label: '레저본부 이용률 심층분석' },
   { id: 'channel-analysis', icon: PieChart, label: '객실판매채널 심층분석' },
