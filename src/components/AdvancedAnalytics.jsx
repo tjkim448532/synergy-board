@@ -479,8 +479,8 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       const wkPrecips = weekendValidData.map(d => d.precipitation);
       weekendPrecipCorr = calculateCorrelation(wkPrecips, wkRevenues);
 
-      const rainyWeekend = weekendValidData.filter(d => d.precipitation > 0);
-      const clearWeekend = weekendValidData.filter(d => d.precipitation === 0);
+      const rainyWeekend = weekendValidData.filter(d => Number(d.precipitation || 0) > 0);
+      const clearWeekend = weekendValidData.filter(d => Number(d.precipitation || 0) <= 0);
 
       weekendRainyStats = {
         totalDays: weekendValidData.length,
@@ -492,8 +492,8 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     }
 
     const getRainStats = (dataList, key = 'revenue') => {
-      const rainy = dataList.filter(d => d.precipitation > 0);
-      const clear = dataList.filter(d => d.precipitation === 0);
+      const rainy = dataList.filter(d => Number(d.precipitation || 0) > 0);
+      const clear = dataList.filter(d => Number(d.precipitation || 0) <= 0);
       return {
         clearDays: clear.length,
         clearAvgRev: clear.length > 0 ? clear.reduce((sum, d) => sum + d[key], 0) / clear.length : 0,
