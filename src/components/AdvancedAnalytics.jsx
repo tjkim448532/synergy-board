@@ -484,6 +484,116 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     };
   }, [dailyWeatherSalesData]);
 
+  const weatherYearComparisonData = useMemo(() => {
+    const dateWeather = {};
+    processedData.forEach(m => {
+      if (m.rawRoomRecords && Array.isArray(m.rawRoomRecords)) {
+        m.rawRoomRecords.forEach(rec => {
+          if (!rec.date) return;
+          if (rec.weatherTempMax !== undefined && rec.weatherTempMax !== null) {
+            dateWeather[rec.date] = {
+              tempMax: Number(rec.weatherTempMax),
+              tempMin: Number(rec.weatherTempMin),
+              precipitation: rec.weatherPrecipitation !== undefined && rec.weatherPrecipitation !== null ? Number(rec.weatherPrecipitation) : 0,
+            };
+          }
+        });
+      }
+    });
+
+    const months = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'));
+    const comparison = months.map(mm => {
+      const data2025 = { avgTemp: null, rainyDays: 0, totalRevenue: 0, hasData: false };
+      const data2026 = { avgTemp: null, rainyDays: 0, totalRevenue: 0, hasData: false };
+
+      const record2025 = processedData.find(d => d.yearMonth === `2025-${mm}`);
+      const record2026 = processedData.find(d => d.yearMonth === `2026-${mm}`);
+
+      const processYearData = (record, targetData, yearStr) => {
+        if (!record) return;
+        targetData.totalRevenue = (record.totalRoomRevenue || 0) + (record.totalSales || 0);
+        targetData.hasData = true;
+
+        const datesInMonth = Object.keys(dateWeather).filter(d => d.startsWith(`${yearStr}-${mm}`));
+        if (datesInMonth.length > 0) {
+          let tempSum = 0;
+          let tempCount = 0;
+          let rainDays = 0;
+          datesInMonth.forEach(dateStr => {
+            const w = dateWeather[dateStr];
+            if (w.tempMax !== null && w.tempMin !== null && !isNaN(w.tempMax) && !isNaN(w.tempMin)) {
+              tempSum += (w.tempMax + w.tempMin) / 2;
+              tempCount++;
+            }
+            if (w.precipitation > 0) {
+              rainDays++;
+            }
+          });
+          targetData.avgTemp = tempCount > 0 ? tempSum / tempCount : null;
+          targetData.rainyDays = rainDays;
+        }
+      };
+
+      processYearData(record2025, data2025, '2025');
+      processYearData(record2026, data2026, '2026');
+
+      return {
+        month: `${parseInt(mm)}월`,
+        monthVal: mm,
+        2025: data2025,
+        2026: data2026
+      };
+    }).filter(item => item['2025'].hasData || item['2026'].hasData);
+
+    return comparison;
+  }, [processedData]);
+
+  const weatherInsights = useMemo(() => {
+    const insights = [];
+    weatherYearComparisonData.forEach(item => {
+      const d25 = item['2025'];
+      const d26 = item['2026'];
+      if (d25.hasData && d26.hasData) {
+        const revDiff = d26.totalRevenue - d25.totalRevenue;
+        const revDiffPct = d25.totalRevenue > 0 ? (revDiff / d25.totalRevenue) * 100 : 0;
+        const rainDiff = d26.rainyDays - d25.rainyDays;
+        
+        let weatherCompare = '';
+        if (rainDiff < 0) {
+          weatherCompare = `비 온 날이 ${Math.abs(rainDiff)}일 줄어 더 맑고 좋은 날씨를 보였습니다.`;
+        } else if (rainDiff > 0) {
+          weatherCompare = `비 온 날이 ${rainDiff}일 늘어나 더 궂은 날씨였습니다.`;
+        } else {
+          weatherCompare = `비 온 날이 ${d25.rainyDays}일로 동일했습니다.`;
+        }
+
+        const tempDiff = d26.avgTemp !== null && d25.avgTemp !== null ? d26.avgTemp - d25.avgTemp : 0;
+        const tempCompare = tempDiff > 0 ? `평균 기온은 ${tempDiff.toFixed(1)}°C 상승했습니다.` : `평균 기온은 ${Math.abs(tempDiff).toFixed(1)}°C 하락했습니다.`;
+
+        const revStatus = revDiff > 0 
+          ? `매출은 ₩${formatCurrency(revDiff)} (${revDiffPct.toFixed(1)}% ▲) 증가했습니다.`
+          : `매출은 ₩${formatCurrency(Math.abs(revDiff))} (${Math.abs(revDiffPct).toFixed(1)}% ▼) 감소했습니다.`;
+
+        let impactInterpretation = '';
+        if (rainDiff < 0 && revDiff > 0) {
+          impactInterpretation = `맑은 날씨가 야외 레저 및 골프, 리조트 방문을 활성화시켜 매출 성장에 긍정적인 영향을 준 것으로 보입니다.`;
+        } else if (rainDiff > 0 && revDiff < 0) {
+          impactInterpretation = `비 온 날의 증가와 궂은 기상이 야외 레저 활동 및 콘도 예약을 제한하여 매출에 부정적인 영향을 준 것으로 분석됩니다.`;
+        } else if (rainDiff < 0 && revDiff < 0) {
+          impactInterpretation = `강수일수 감소 등 기상 여건은 우호적이었으나 매출이 감소하여, 날씨 외의 외부 요인(경기, 주말 분포 등)이 주된 작용을 한 것으로 보입니다.`;
+        } else {
+          impactInterpretation = `기상 변동폭 대비 매출이 안정적으로 유지되거나 타 요인들과 복합적으로 작용하여 상쇄된 것으로 판단됩니다.`;
+        }
+
+        insights.push({
+          month: item.month,
+          text: `📅 **${item.month} 분석:** 25년 대비 26년 ${weatherCompare} ${tempCompare} 이 기간 동안 ${revStatus} ${impactInterpretation}`
+        });
+      }
+    });
+    return insights;
+  }, [weatherYearComparisonData]);
+
   const motoCorrelations = useMemo(() => {
     if (activeDivision !== 'moto' || motoLogic !== 'new') return null;
     const filtered = filteredProcessedData.filter(d => d.motoGuestRev !== undefined);
@@ -1430,6 +1540,88 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>
+            </div>
+
+            {/* 2025 vs 2026 전년동월 대비 날씨 및 매출 비교 표 */}
+            <div style={{background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px', marginTop: '20px'}}>
+              <h4 style={{margin: '0 0 8px 0', color: 'var(--accent-emerald)'}}>📊 2025년 vs 2026년 날씨 & 전체매출 전년 대비(YoY) 비교</h4>
+              <p style={{fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 20px 0'}}>
+                전년 동월 대비 기온 변화와 비 온 날(강수일수)이 리조트 전체 통합 매출(객실 매출 + 부대업장 매출) 변동에 미친 연관성을 대조 분석합니다.
+              </p>
+
+              {/* 비교 테이블 */}
+              <div style={{overflowX: 'auto', marginBottom: '20px'}}>
+                <table style={{width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'center'}}>
+                  <thead>
+                    <tr style={{background: 'rgba(255, 255, 255, 0.05)', borderBottom: '2px solid rgba(255,255,255,0.1)'}}>
+                      <th style={{padding: '10px 6px', color: 'var(--text-muted)'}} rowspan="2">월</th>
+                      <th style={{padding: '10px 6px', color: 'var(--accent-gold)'}} colspan="3">2025년</th>
+                      <th style={{padding: '10px 6px', color: 'var(--accent-blue)'}} colspan="3">2026년</th>
+                      <th style={{padding: '10px 6px', color: 'var(--text-bright)'}} colspan="2">전체매출 변동 (YoY)</th>
+                    </tr>
+                    <tr style={{background: 'rgba(255, 255, 255, 0.02)', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '11px'}}>
+                      <th style={{padding: '6px', color: 'var(--text-muted)'}}>평균기온</th>
+                      <th style={{padding: '6px', color: 'var(--text-muted)'}}>비 온 날</th>
+                      <th style={{padding: '6px', color: 'var(--text-muted)'}}>전체매출</th>
+                      <th style={{padding: '6px', color: 'var(--text-muted)'}}>평균기온</th>
+                      <th style={{padding: '6px', color: 'var(--text-muted)'}}>비 온 날</th>
+                      <th style={{padding: '6px', color: 'var(--text-muted)'}}>전체매출</th>
+                      <th style={{padding: '6px', color: 'var(--text-muted)'}}>변동액</th>
+                      <th style={{padding: '6px', color: 'var(--text-muted)'}}>변동률</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {weatherYearComparisonData.map(item => {
+                      const d25 = item['2025'];
+                      const d26 = item['2026'];
+                      const rev25 = d25.hasData ? d25.totalRevenue : 0;
+                      const rev26 = d26.hasData ? d26.totalRevenue : 0;
+                      const diff = rev26 - rev25;
+                      const diffPct = rev25 > 0 ? (diff / rev25) * 100 : 0;
+                      
+                      return (
+                        <tr key={item.month} style={{borderBottom: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s'}} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
+                          <td style={{padding: '10px 6px', fontWeight: 'bold'}}>{item.month}</td>
+                          
+                          {/* 2025 */}
+                          <td style={{padding: '10px 6px'}}>{d25.hasData && d25.avgTemp !== null ? `${d25.avgTemp.toFixed(1)}°C` : '-'}</td>
+                          <td style={{padding: '10px 6px'}}>{d25.hasData ? `${d25.rainyDays}일` : '-'}</td>
+                          <td style={{padding: '10px 6px'}}>{d25.hasData ? `₩${formatCurrency(d25.totalRevenue)}` : '-'}</td>
+                          
+                          {/* 2026 */}
+                          <td style={{padding: '10px 6px'}}>{d26.hasData && d26.avgTemp !== null ? `${d26.avgTemp.toFixed(1)}°C` : '-'}</td>
+                          <td style={{padding: '10px 6px'}}>{d26.hasData ? `${d26.rainyDays}일` : '-'}</td>
+                          <td style={{padding: '10px 6px'}}>{d26.hasData ? `₩${formatCurrency(d26.totalRevenue)}` : '-'}</td>
+                          
+                          {/* 변동 */}
+                          <td style={{padding: '10px 6px', fontWeight: 'bold', color: !d25.hasData || !d26.hasData ? 'var(--text-muted)' : (diff > 0 ? 'var(--accent-emerald)' : 'var(--accent-red)')}}>
+                            {!d25.hasData || !d26.hasData ? '-' : `${diff > 0 ? '+' : ''}₩${formatCurrency(diff)}`}
+                          </td>
+                          <td style={{padding: '10px 6px', fontWeight: 'bold', color: !d25.hasData || !d26.hasData ? 'var(--text-muted)' : (diff > 0 ? 'var(--accent-emerald)' : 'var(--accent-red)')}}>
+                            {!d25.hasData || !d26.hasData ? '-' : `${diff > 0 ? '▲' : '▼'} ${Math.abs(diffPct).toFixed(1)}%`}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* AI/정밀 데이터 분석 인사이트 코멘트 영역 */}
+              {weatherInsights.length > 0 && (
+                <div style={{background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', padding: '16px'}}>
+                  <div style={{fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px'}}>
+                    <span>💡</span> <strong>날씨-매출 연계 주요 관측 인사이트:</strong>
+                  </div>
+                  <div style={{display: 'flex', flexDirection: 'column', gap: '8px', lineHeight: '1.5'}}>
+                    {weatherInsights.map((insight, idx) => (
+                      <div key={idx} style={{fontSize: '12px', color: 'var(--text-muted)'}}>
+                        {insight.text.split('**').map((chunk, i) => i % 2 === 1 ? <strong key={i} style={{color: 'var(--accent-gold)'}}>{chunk}</strong> : chunk)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
           </div>
