@@ -1791,18 +1791,18 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                 <table style={{width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'center'}}>
                   <thead>
                     <tr style={{background: 'rgba(255, 255, 255, 0.05)', borderBottom: '2px solid rgba(255,255,255,0.1)'}}>
-                      <th style={{padding: '10px 6px', color: 'var(--text-muted)'}} rowspan="2">월</th>
-                      <th style={{padding: '10px 6px', color: 'var(--accent-gold)'}} colspan="3">2025년</th>
-                      <th style={{padding: '10px 6px', color: 'var(--accent-blue)'}} colspan="3">2026년</th>
-                      <th style={{padding: '10px 6px', color: 'var(--text-bright)'}} colspan="2">전체매출 변동 (YoY)</th>
+                      <th style={{padding: '10px 6px', color: 'var(--text-muted)'}} rowSpan="2">월</th>
+                      <th style={{padding: '10px 6px', color: 'var(--accent-gold)', borderRight: '1px solid rgba(255,255,255,0.15)'}} colSpan="3">2025년</th>
+                      <th style={{padding: '10px 6px', color: 'var(--accent-blue)', borderRight: '1px solid rgba(255,255,255,0.15)'}} colSpan="3">2026년</th>
+                      <th style={{padding: '10px 6px', color: 'var(--text-bright)'}} colSpan="2">전체매출 변동 (YoY)</th>
                     </tr>
                     <tr style={{background: 'rgba(255, 255, 255, 0.02)', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '11px'}}>
                       <th style={{padding: '6px', color: 'var(--text-muted)'}}>평균기온</th>
                       <th style={{padding: '6px', color: 'var(--text-muted)'}}>비 온 날</th>
-                      <th style={{padding: '6px', color: 'var(--text-muted)'}}>전체매출</th>
+                      <th style={{padding: '6px', color: 'var(--text-muted)', borderRight: '1px solid rgba(255,255,255,0.15)'}}>전체매출</th>
                       <th style={{padding: '6px', color: 'var(--text-muted)'}}>평균기온</th>
                       <th style={{padding: '6px', color: 'var(--text-muted)'}}>비 온 날</th>
-                      <th style={{padding: '6px', color: 'var(--text-muted)'}}>전체매출</th>
+                      <th style={{padding: '6px', color: 'var(--text-muted)', borderRight: '1px solid rgba(255,255,255,0.15)'}}>전체매출</th>
                       <th style={{padding: '6px', color: 'var(--text-muted)'}}>변동액</th>
                       <th style={{padding: '6px', color: 'var(--text-muted)'}}>변동률</th>
                     </tr>
@@ -1823,12 +1823,12 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                           {/* 2025 */}
                           <td style={{padding: '10px 6px'}}>{d25.hasData && d25.avgTemp !== null ? `${d25.avgTemp.toFixed(1)}°C` : '-'}</td>
                           <td style={{padding: '10px 6px'}}>{d25.hasData ? `${d25.rainyDays}일` : '-'}</td>
-                          <td style={{padding: '10px 6px'}}>{d25.hasData ? `₩${formatCurrency(d25.totalRevenue)}` : '-'}</td>
+                          <td style={{padding: '10px 6px', borderRight: '1px solid rgba(255,255,255,0.15)'}}>{d25.hasData ? `₩${formatCurrency(d25.totalRevenue)}` : '-'}</td>
                           
                           {/* 2026 */}
                           <td style={{padding: '10px 6px'}}>{d26.hasData && d26.avgTemp !== null ? `${d26.avgTemp.toFixed(1)}°C` : '-'}</td>
                           <td style={{padding: '10px 6px'}}>{d26.hasData ? `${d26.rainyDays}일` : '-'}</td>
-                          <td style={{padding: '10px 6px'}}>{d26.hasData ? `₩${formatCurrency(d26.totalRevenue)}` : '-'}</td>
+                          <td style={{padding: '10px 6px', borderRight: '1px solid rgba(255,255,255,0.15)'}}>{d26.hasData ? `₩${formatCurrency(d26.totalRevenue)}` : '-'}</td>
                           
                           {/* 변동 */}
                           <td style={{padding: '10px 6px', fontWeight: 'bold', color: !d25.hasData || !d26.hasData ? 'var(--text-muted)' : (diff > 0 ? 'var(--accent-emerald)' : 'var(--accent-red)')}}>
