@@ -1601,9 +1601,9 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
 
             {/* 우천 여부 비교 표 */}
             <div style={{background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px', marginTop: '20px'}}>
-              <h4 style={{margin: '0 0 8px 0', color: 'var(--accent-coral)'}}>🌧️ 우천 여부(비 온 날 vs 비 안 온 날)에 따른 일평균 매출 비교</h4>
+              <h4 style={{margin: '0 0 8px 0', color: 'var(--accent-coral)'}}>🌧️ 강수 여부(비/눈 온 날 vs 맑은 날)에 따른 일평균 매출 비교</h4>
               <p style={{fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 16px 0'}}>
-                강수량 크기와 상관없이 단순히 '비가 왔는지(강수량 &gt; 0)'와 '안 왔는지(강수량 = 0)'로 구분하여 주중, 주말/공휴일, 전체 기간의 일평균 {weatherLabel}을 비교 대조합니다.
+                강수량 크기와 상관없이 단순히 '비/눈이 왔는지(강수량 &gt; 0mm)'와 '오지 않았는지(강수량 = 0mm)'로 구분하여 주중, 주말/공휴일, 전체 기간의 일평균 {weatherLabel}을 비교 대조합니다.
               </p>
               
               <div style={{overflowX: 'auto'}}>
@@ -1611,9 +1611,9 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                   <thead>
                     <tr style={{background: 'rgba(255, 255, 255, 0.05)', borderBottom: '2px solid rgba(255,255,255,0.1)'}}>
                       <th style={{padding: '10px 6px', color: 'var(--text-muted)', textAlign: 'left'}}>구분</th>
-                      <th style={{padding: '10px 6px', color: 'var(--accent-emerald)'}} colspan="2">비 안 온 날 (강수량 0mm)</th>
-                      <th style={{padding: '10px 6px', color: 'var(--accent-coral)'}} colspan="2">비 온 날 (강수량 &gt; 0mm)</th>
-                      <th style={{padding: '10px 6px', color: 'var(--text-bright)'}} colspan="2">우천 시 매출 차이</th>
+                      <th style={{padding: '10px 6px', color: 'var(--accent-emerald)'}} colspan="2">맑음 / 강수 없음 (0mm)</th>
+                      <th style={{padding: '10px 6px', color: 'var(--accent-coral)'}} colspan="2">비 / 눈 온 날 (&gt; 0mm)</th>
+                      <th style={{padding: '10px 6px', color: 'var(--text-bright)'}} colspan="2">강수 시 매출 차이</th>
                     </tr>
                     <tr style={{background: 'rgba(255, 255, 255, 0.02)', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '11px'}}>
                       <th style={{padding: '6px', textAlign: 'left', color: 'var(--text-muted)'}}>분류</th>
@@ -1622,7 +1622,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                       <th style={{padding: '6px', color: 'var(--text-muted)'}}>일수</th>
                       <th style={{padding: '6px', color: 'var(--text-muted)'}}>일평균 매출</th>
                       <th style={{padding: '6px', color: 'var(--text-muted)'}}>변동액</th>
-                      <th style={{padding: '6px', color: 'var(--text-muted)'}}>감소율</th>
+                      <th style={{padding: '6px', color: 'var(--text-muted)'}}>증감률</th>
                     </tr>
                   </thead>
                   <tbody>
