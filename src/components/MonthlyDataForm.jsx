@@ -515,6 +515,7 @@ export default function MonthlyDataForm({ settings }) {
              }
 
             let rowLeisureSum = 0;
+            const breakdown = {};
             locationCols.forEach(col => {
                 const val = parseSafeInt(row[col.index]);
                 if (!isNaN(val)) {
@@ -527,7 +528,17 @@ export default function MonthlyDataForm({ settings }) {
                         monthData.salesWdByLocation[col.name] = (monthData.salesWdByLocation[col.name] || 0) + val;
                     }
                     rowLeisureSum += val;
+                    breakdown[col.name] = val;
                 }
+            });
+
+            if (!monthData.rawLeisureRecords) {
+                monthData.rawLeisureRecords = [];
+            }
+            monthData.rawLeisureRecords.push({
+                date: dateVal,
+                revenue: rowLeisureSum,
+                breakdown: breakdown
             });
 
             monthData.totalLeisureSales += rowLeisureSum;
@@ -658,6 +669,7 @@ export default function MonthlyDataForm({ settings }) {
             salesByLocation: data.salesByLocation,
             salesWdByLocation: data.salesWdByLocation,
             salesWeByLocation: data.salesWeByLocation,
+            rawLeisureRecords: data.rawLeisureRecords || [],
             crossCheckResult: {
                dbRoom: dbRoom,
                parsedRoom: data.crossCheckRoomSum,

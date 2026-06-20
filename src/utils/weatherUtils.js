@@ -45,3 +45,29 @@ export const fetchWeatherForRange = async (startDate, endDate) => {
     return {};
   }
 };
+
+export const fetchCurrentWeather = async () => {
+  const lat = 36.8451;
+  const lon = 127.5821;
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=Asia/Seoul`;
+  
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Weather API HTTP error: ${response.status}`);
+    const data = await response.json();
+    const cur = data.current_weather;
+    if (cur) {
+      return {
+        temp: cur.temperature,
+        code: cur.weathercode,
+        desc: getWeatherDesc(cur.weathercode),
+        time: cur.time
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error("fetchCurrentWeather failed:", error);
+    return null;
+  }
+};
+

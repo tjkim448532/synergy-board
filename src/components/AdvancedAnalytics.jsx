@@ -8,6 +8,7 @@ import CountUpModule from 'react-countup';
 const CountUp = CountUpModule.default || CountUpModule;
 import { isHoliday } from 'korean-holidays';
 import { calculateGroupedSales } from '../utils/revenueUtils';
+import { fetchCurrentWeather } from '../utils/weatherUtils';
 
 // 피어슨 상관계수 계산 함수
 function calculateCorrelation(xArray, yArray) {
@@ -40,7 +41,29 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
   const [selectedMonthFilter, setSelectedMonthFilter] = useState('all');
   const [isCumulative, setIsCumulative] = useState(false);
   const [isGoogleSheetSyncEnabled, setIsGoogleSheetSyncEnabled] = useState(true);
+  const [weatherDataType, setWeatherDataType] = useState('room');
+  const [currentWeather, setCurrentWeather] = useState(null);
+  const [isLoadingWeather, setIsLoadingWeather] = useState(false);
   const { googleSheetData } = useGoogleSheetVisitors();
+
+  // 실시간 날씨 데이터 로드
+  useEffect(() => {
+    let active = true;
+    const loadCurrentWeather = async () => {
+      setIsLoadingWeather(true);
+      const data = await fetchCurrentWeather();
+      if (active && data) {
+        setCurrentWeather(data);
+      }
+      if (active) setIsLoadingWeather(false);
+    };
+    loadCurrentWeather();
+    const interval = setInterval(loadCurrentWeather, 5 * 60 * 1000); // 5분 주기 갱신
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, []);
 
   // fallback for legacy cached state like '05'
   useEffect(() => {
@@ -1072,18 +1095,99 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
 
       {/* 4. 날씨 & 매출 상관관계 분석 */}
       <div className="glass-panel" style={{padding: '24px', marginTop: '20px'}}>
-        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
-          <div>
-            <h3 style={{margin: 0}}>🌤️ 날씨 및 일별 객실 매출 상관관계 분석</h3>
+        <style>{`
+          @keyframes live-pulse {
+            0% { transform: scale(0.95); opacity: 0.5; }
+            50% { transform: scale(1.15); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.5; }
+          }
+        `}</style>
+        
+        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '16px'}}>
+          <div style={{display: 'flex', flexDirection: 'column', gap: '4px'}}>
+            <div style={{display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap'}}>
+              <h3 style={{margin: 0}}>🌤️ 날씨 및 일별 매출 상관관계 분석</h3>
+              
+              {/* 실시간 날씨 위젯 */}
+              {currentWeather && (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '20px',
+                  padding: '4px 12px',
+                  fontSize: '12px',
+                  color: 'var(--text-main)',
+                  boxShadow: '0 0 10px rgba(0,0,0,0.2)'
+                }}>
+                  <span style={{
+                    display: 'inline-block',
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    background: '#10b981',
+                    boxShadow: '0 0 8px #10b981',
+                    animation: 'live-pulse 2s infinite'
+                  }}></span>
+                  <span style={{color: 'var(--accent-emerald)', fontWeight: 'bold', fontSize: '11px'}}>LIVE</span>
+                  <span style={{color: 'rgba(255,255,255,0.2)'}}>|</span>
+                  <span>벨포레 현재: <strong>{currentWeather.desc}</strong> ({currentWeather.temp}°C)</span>
+                  <span style={{fontSize: '10px', color: 'var(--text-muted)'}}>
+                    ({currentWeather.time ? currentWeather.time.split('T')[1] : ''} 기준)
+                  </span>
+                </div>
+              )}
+            </div>
             <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: '4px 0 0 0'}}>
-              일자별 최고기온, 강수량 데이터와 당일 객실 매출의 피어슨 상관계수를 분석합니다.
+              일자별 최고기온, 강수량 데이터와 당일 매출의 피어슨 상관계수를 분석합니다.
             </p>
           </div>
-          {weatherStats && (
-            <div style={{fontSize: '12px', background: 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '6px', color: 'var(--text-muted)'}}>
-              분석 대상: 총 {weatherStats.totalValidDays}일 (날씨 연동 데이터 기준)
+
+          <div style={{display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap'}}>
+            {/* 분석 대상 전환 토글 단추 */}
+            <div style={{display: 'flex', background: 'rgba(255,255,255,0.05)', padding: '4px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)'}}>
+              <button
+                onClick={() => setWeatherDataType('room')}
+                style={{
+                  background: weatherDataType === 'room' ? 'var(--accent-emerald)' : 'transparent',
+                  color: weatherDataType === 'room' ? '#000' : 'var(--text-main)',
+                  border: 'none',
+                  padding: '6px 14px',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: '12px',
+                  transition: 'all 0.2s'
+                }}
+              >
+                객실 매출
+              </button>
+              <button
+                onClick={() => setWeatherDataType('leisure')}
+                style={{
+                  background: weatherDataType === 'leisure' ? 'var(--accent-purple)' : 'transparent',
+                  color: weatherDataType === 'leisure' ? '#000' : 'var(--text-main)',
+                  border: 'none',
+                  padding: '6px 14px',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: '12px',
+                  transition: 'all 0.2s'
+                }}
+              >
+                레저본부 매출
+              </button>
             </div>
-          )}
+
+            {weatherStats && (
+              <div style={{fontSize: '12px', background: 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '6px', color: 'var(--text-muted)'}}>
+                분석 대상: 총 {weatherStats.totalValidDays}일
+              </div>
+            )}
+          </div>
         </div>
 
         {!weatherStats ? (
@@ -1101,6 +1205,21 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
               또는 날씨 정보가 추가된 새 객실 실적 파일을 업로드하시면 자동으로 날씨가 동기화됩니다.
             </p>
           </div>
+        ) : (weatherDataType === 'leisure' && (!dailyWeatherSalesData || dailyWeatherSalesData.length === 0 || !dailyWeatherSalesData.some(d => d.revenue > 0))) ? (
+          <div style={{
+            background: 'rgba(251, 191, 36, 0.1)', 
+            border: '1px solid var(--accent-gold)', 
+            borderRadius: '12px', 
+            padding: '24px', 
+            textAlign: 'center',
+            color: 'var(--text-main)'
+          }}>
+            <p style={{margin: '0 0 12px 0', fontSize: '15px', fontWeight: 'bold'}}>일별 레저 매출 데이터가 없습니다.</p>
+            <p style={{margin: 0, fontSize: '13px', color: 'var(--text-muted)'}}>
+              레저본부 날씨 매출 분석을 시작하려면 <strong>[설정] ➡️ [데이터 업로드]</strong> 탭으로 이동하여 <strong>레저 실적 엑셀 파일</strong>을 다시 업로드해 주세요.<br/>
+              재업로드 시 데이터베이스에 일별 레저 실적이 추가되어 날씨 분석이 실시간으로 제공됩니다.
+            </p>
+          </div>
         ) : (
           <div style={{display: 'flex', flexDirection: 'column', gap: '24px'}}>
             {/* 상관계수 및 날씨별 비교 카드 그리드 */}
@@ -1108,7 +1227,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
               
               {/* 기온 상관계수 카드 */}
               <div style={{background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px'}}>
-                <div style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px'}}>최고기온 vs 객실 매출 상관관계</div>
+                <div style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px'}}>최고기온 vs {weatherDataType === 'room' ? '객실 매출' : '레저 매출'} 상관관계</div>
                 <div style={{display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '8px'}}>
                   <span style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-gold)'}}>
                     {weatherStats.tempCorr !== null ? weatherStats.tempCorr.toFixed(3) : 'N/A'}
@@ -1125,7 +1244,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
 
               {/* 강수량 상관계수 카드 */}
               <div style={{background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px'}}>
-                <div style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px'}}>강수량 vs 객실 매출 상관관계</div>
+                <div style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px'}}>강수량 vs {weatherDataType === 'room' ? '객실 매출' : '레저 매출'} 상관관계</div>
                 <div style={{display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '8px'}}>
                   <span style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-blue)'}}>
                     {weatherStats.precipCorr !== null ? weatherStats.precipCorr.toFixed(3) : 'N/A'}
@@ -1136,13 +1255,13 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                   해석: {getInterpretation(weatherStats.precipCorr)}
                 </div>
                 <p style={{fontSize: '12px', color: 'var(--text-muted)', margin: '8px 0 0 0', lineHeight: '1.4'}}>
-                  대체로 음수(-)의 강한 상관관계를 보이며, 비/눈이 오는 날 객실 수요가 감소하는 경향성을 파악할 수 있습니다.
+                  값이 음수(-)일 때 비가 올수록 매출이 감소하며, 양수(+)이면 비가 와도 매출이 탄력적으로 유지됨을 뜻합니다.
                 </p>
               </div>
 
               {/* 날씨 유형별 통계 카드 */}
               <div style={{background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px', gridColumn: 'span 2'}}>
-                <div style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '12px'}}>날씨 상태별 일평균 객실 매출 및 판매량</div>
+                <div style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '12px'}}>날씨 상태별 일평균 {weatherDataType === 'room' ? '객실 매출 및 판매량' : '레저 매출'}</div>
                 <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
                   {weatherStats.descList.map((g) => (
                     <div key={g.desc} style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', borderRadius: '6px'}}>
@@ -1155,10 +1274,12 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                           <div style={{fontSize: '13px', fontWeight: 'bold'}}>₩{formatCurrency(g.avgRevenue)}</div>
                           <div style={{fontSize: '11px', color: 'var(--text-muted)'}}>일평균 매출</div>
                         </div>
-                        <div style={{textAlign: 'right', minWidth: '80px'}}>
-                          <div style={{fontSize: '13px', fontWeight: 'bold', color: 'var(--accent-emerald)'}}>{g.avgRoomsSold.toFixed(1)}실</div>
-                          <div style={{fontSize: '11px', color: 'var(--text-muted)'}}>일평균 판매</div>
-                        </div>
+                        {weatherDataType === 'room' && (
+                          <div style={{textAlign: 'right', minWidth: '80px'}}>
+                            <div style={{fontSize: '13px', fontWeight: 'bold', color: 'var(--accent-emerald)'}}>{g.avgQuantity.toFixed(1)}실</div>
+                            <div style={{fontSize: '11px', color: 'var(--text-muted)'}}>일평균 판매</div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -1170,7 +1291,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
             {/* 일별 매출-기온/강수량 혼합 차트 */}
             <div style={{background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px'}}>
               <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px'}}>
-                <h4 style={{margin: 0}}>📈 일별 매출 - 기온/강수량 추이 혼합 차트</h4>
+                <h4 style={{margin: 0}}>📈 일별 매출 - 기온/강수량 추이 혼합 차트 ({weatherDataType === 'room' ? '객실 매출' : '레저 매출'})</h4>
                 <div style={{fontSize: '12px', color: 'var(--text-muted)'}}>
                   * 하단 차트에서 일자별 매출액(막대)과 최고기온(선)을 오버레이하여 기상 변동에 따른 즉각적인 매출 탄력성을 시각화합니다.
                 </div>
@@ -1181,19 +1302,19 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                   <ComposedChart data={dailyWeatherSalesData} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                     <XAxis dataKey="date" stroke="var(--text-muted)" fontSize={11} tickFormatter={(val) => val.substring(5)} />
-                    <YAxis yAxisId="left" stroke="var(--accent-emerald)" tickFormatter={(v) => `${(v/1000000).toFixed(1)}M`} label={{ value: '객실 매출 (백만)', angle: -90, position: 'insideLeft', style: { fill: 'var(--text-muted)', fontSize: 12 } }} />
+                    <YAxis yAxisId="left" stroke={weatherDataType === 'room' ? 'var(--accent-emerald)' : 'var(--accent-purple)'} tickFormatter={(v) => `${(v/1000000).toFixed(1)}M`} label={{ value: `${weatherDataType === 'room' ? '객실' : '레저'} 매출 (백만)`, angle: -90, position: 'insideLeft', style: { fill: 'var(--text-muted)', fontSize: 12 } }} />
                     <YAxis yAxisId="right" orientation="right" stroke="var(--accent-gold)" tickFormatter={(v) => `${v}°C`} label={{ value: '최고기온 (°C)', angle: 90, position: 'insideRight', style: { fill: 'var(--text-muted)', fontSize: 12 } }} />
                     <RechartsTooltip 
                       contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)'}}
                       formatter={(value, name) => {
-                        if (name === '객실 매출') return `₩${formatCurrency(value)}`;
+                        if (name === '매출') return `₩${formatCurrency(value)}`;
                         if (name === '최고기온') return `${value.toFixed(1)}°C`;
                         if (name === '강수량') return `${value.toFixed(1)}mm`;
                         return value;
                       }}
                     />
                     <Legend />
-                    <Bar yAxisId="left" dataKey="revenue" name="객실 매출" fill="rgba(16, 185, 129, 0.6)" barSize={16} radius={[4, 4, 0, 0]} />
+                    <Bar yAxisId="left" dataKey="revenue" name="매출" fill={weatherDataType === 'room' ? 'rgba(16, 185, 129, 0.6)' : 'rgba(168, 85, 247, 0.6)'} barSize={16} radius={[4, 4, 0, 0]} />
                     <Line yAxisId="right" type="monotone" dataKey="tempMax" name="최고기온" stroke="var(--accent-gold)" strokeWidth={2.5} dot={false} />
                   </ComposedChart>
                 </ResponsiveContainer>
