@@ -308,6 +308,14 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     return calculateCorrelation(occArr, targetArr);
   }, [filteredProcessedData, activeConf.dataKey]);
 
+  const isWeatherMerged = useMemo(() => {
+    return filteredProcessedData.some(m => 
+      m.rawRoomRecords && 
+      Array.isArray(m.rawRoomRecords) && 
+      m.rawRoomRecords.some(rec => rec.weatherTempMax !== undefined && rec.weatherTempMax !== null)
+    );
+  }, [filteredProcessedData]);
+
   const dailyWeatherSalesData = useMemo(() => {
     if (!filteredProcessedData || filteredProcessedData.length === 0) return [];
     
@@ -1293,22 +1301,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
           </div>
         </div>
 
-        {!weatherStats ? (
-          <div style={{
-            background: 'rgba(251, 191, 36, 0.1)', 
-            border: '1px solid var(--accent-gold)', 
-            borderRadius: '12px', 
-            padding: '24px', 
-            textAlign: 'center',
-            color: 'var(--text-main)'
-          }}>
-            <p style={{margin: '0 0 12px 0', fontSize: '15px', fontWeight: 'bold'}}>날씨 데이터가 아직 병합되지 않았습니다.</p>
-            <p style={{margin: 0, fontSize: '13px', color: 'var(--text-muted)'}}>
-              날씨 분석을 시작하려면 <strong>[설정]</strong> 탭으로 이동하여 <strong>과거 날씨 데이터 소급 적용 (과거 데이터 마이그레이션)</strong>을 실행해 주세요.<br/>
-              또는 날씨 정보가 추가된 새 객실 실적 파일을 업로드하시면 자동으로 날씨가 동기화됩니다.
-            </p>
-          </div>
-        ) : ((weatherDataType === 'leisure' || weatherDataType === 'golf') && (!dailyWeatherSalesData || dailyWeatherSalesData.length === 0 || !dailyWeatherSalesData.some(d => d.revenue > 0))) ? (
+        {((weatherDataType === 'leisure' || weatherDataType === 'golf') && (!dailyWeatherSalesData || dailyWeatherSalesData.length === 0 || !dailyWeatherSalesData.some(d => d.revenue > 0))) ? (
           <div style={{
             background: 'rgba(251, 191, 36, 0.1)', 
             border: '1px solid var(--accent-gold)', 
@@ -1321,6 +1314,21 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
             <p style={{margin: 0, fontSize: '13px', color: 'var(--text-muted)'}}>
               {weatherDataType === 'golf' ? '골프' : '레저본부'} 날씨 매출 분석을 시작하려면 <strong>[설정] ➡️ [데이터 업로드]</strong> 탭으로 이동하여 <strong>레저 실적 엑셀 파일</strong>을 다시 업로드해 주세요.<br/>
               재업로드 시 데이터베이스에 일별 상세 실적(분류별 영업장 데이터)이 추가되어 날씨 분석이 실시간으로 제공됩니다.
+            </p>
+          </div>
+        ) : (!isWeatherMerged || !weatherStats) ? (
+          <div style={{
+            background: 'rgba(251, 191, 36, 0.1)', 
+            border: '1px solid var(--accent-gold)', 
+            borderRadius: '12px', 
+            padding: '24px', 
+            textAlign: 'center',
+            color: 'var(--text-main)'
+          }}>
+            <p style={{margin: '0 0 12px 0', fontSize: '15px', fontWeight: 'bold'}}>날씨 데이터가 아직 병합되지 않았습니다.</p>
+            <p style={{margin: 0, fontSize: '13px', color: 'var(--text-muted)'}}>
+              날씨 분석을 시작하려면 <strong>[설정]</strong> 탭으로 이동하여 <strong>과거 날씨 데이터 소급 적용 (과거 데이터 마이그레이션)</strong>을 실행해 주세요.<br/>
+              또는 날씨 정보가 추가된 새 객실 실적 파일을 업로드하시면 자동으로 날씨가 동기화됩니다.
             </p>
           </div>
         ) : (
