@@ -311,43 +311,92 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
   const dailyWeatherSalesData = useMemo(() => {
     if (!filteredProcessedData || filteredProcessedData.length === 0) return [];
     
-    const dateMap = {};
-    
+    const weatherLookup = {};
     filteredProcessedData.forEach(m => {
       if (m.rawRoomRecords && Array.isArray(m.rawRoomRecords)) {
         m.rawRoomRecords.forEach(rec => {
           if (!rec.date) return;
-          const dateStr = rec.date;
-          
-          if (!dateMap[dateStr]) {
-            dateMap[dateStr] = {
-              date: dateStr,
-              revenue: 0,
-              roomsSold: 0,
-              tempMax: rec.weatherTempMax !== undefined && rec.weatherTempMax !== null ? Number(rec.weatherTempMax) : null,
-              tempMin: rec.weatherTempMin !== undefined && rec.weatherTempMin !== null ? Number(rec.weatherTempMin) : null,
-              precipitation: rec.weatherPrecipitation !== undefined && rec.weatherPrecipitation !== null ? Number(rec.weatherPrecipitation) : null,
-              code: rec.weatherCode !== undefined && rec.weatherCode !== null ? Number(rec.weatherCode) : null,
+          if (rec.weatherTempMax !== undefined && rec.weatherTempMax !== null) {
+            weatherLookup[rec.date] = {
+              tempMax: Number(rec.weatherTempMax),
+              tempMin: Number(rec.weatherTempMin),
+              precipitation: Number(rec.weatherPrecipitation),
+              code: Number(rec.weatherCode),
               desc: rec.weatherDesc || '정보없음'
             };
-          }
-          
-          dateMap[dateStr].revenue += Number(rec.revenue || 0);
-          dateMap[dateStr].roomsSold += Number(rec.count || 0);
-          
-          if (dateMap[dateStr].tempMax === null && rec.weatherTempMax !== undefined && rec.weatherTempMax !== null) {
-            dateMap[dateStr].tempMax = Number(rec.weatherTempMax);
-            dateMap[dateStr].tempMin = Number(rec.weatherTempMin);
-            dateMap[dateStr].precipitation = Number(rec.weatherPrecipitation);
-            dateMap[dateStr].code = Number(rec.weatherCode);
-            dateMap[dateStr].desc = rec.weatherDesc || '정보없음';
           }
         });
       }
     });
+
+    const dateMap = {};
+    const locationGroups = settings?.locationGroups || {};
+
+    if (weatherDataType === 'room') {
+      filteredProcessedData.forEach(m => {
+        if (m.rawRoomRecords && Array.isArray(m.rawRoomRecords)) {
+          m.rawRoomRecords.forEach(rec => {
+            if (!rec.date) return;
+            const dateStr = rec.date;
+            
+            if (!dateMap[dateStr]) {
+              const w = weatherLookup[dateStr] || {};
+              dateMap[dateStr] = {
+                date: dateStr,
+                revenue: 0,
+                roomsSold: 0,
+                tempMax: w.tempMax !== undefined && w.tempMax !== null ? Number(w.tempMax) : null,
+                tempMin: w.tempMin !== undefined && w.tempMin !== null ? Number(w.tempMin) : null,
+                precipitation: w.precipitation !== undefined && w.precipitation !== null ? Number(w.precipitation) : null,
+                code: w.code !== undefined && w.code !== null ? Number(w.code) : null,
+                desc: w.desc || '정보없음'
+              };
+            }
+            dateMap[dateStr].revenue += Number(rec.revenue || 0);
+            dateMap[dateStr].roomsSold += Number(rec.count || 0);
+          });
+        }
+      });
+    } else {
+      filteredProcessedData.forEach(m => {
+        if (m.rawLeisureRecords && Array.isArray(m.rawLeisureRecords)) {
+          m.rawLeisureRecords.forEach(rec => {
+            if (!rec.date) return;
+            const dateStr = rec.date;
+            
+            if (!dateMap[dateStr]) {
+              const w = weatherLookup[dateStr] || {};
+              dateMap[dateStr] = {
+                date: dateStr,
+                revenue: 0,
+                roomsSold: 0,
+                tempMax: w.tempMax !== undefined && w.tempMax !== null ? Number(w.tempMax) : null,
+                tempMin: w.tempMin !== undefined && w.tempMin !== null ? Number(w.tempMin) : null,
+                precipitation: w.precipitation !== undefined && w.precipitation !== null ? Number(w.precipitation) : null,
+                code: w.code !== undefined && w.code !== null ? Number(w.code) : null,
+                desc: w.desc || '정보없음'
+              };
+            }
+            
+            if (rec.breakdown) {
+              let leisureSum = 0;
+              Object.entries(rec.breakdown).forEach(([locName, amt]) => {
+                const group = locationGroups[locName] || 'leisure';
+                if (group === 'leisure') {
+                  leisureSum += Number(amt) || 0;
+                }
+              });
+              dateMap[dateStr].revenue += leisureSum;
+            } else {
+              dateMap[dateStr].revenue += Number(rec.revenue || 0);
+            }
+          });
+        }
+      });
+    }
     
     return Object.values(dateMap).sort((a, b) => a.date.localeCompare(b.date));
-  }, [filteredProcessedData]);
+  }, [filteredProcessedData, weatherDataType, settings?.locationGroups]);
 
   const weatherStats = useMemo(() => {
     const validData = dailyWeatherSalesData.filter(d => d.tempMax !== null && d.desc !== '정보없음');
