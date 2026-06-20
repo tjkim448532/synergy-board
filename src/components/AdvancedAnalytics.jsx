@@ -471,6 +471,8 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       return day === 0 || day === 6 || isHoliday(dateObj);
     });
 
+    const RAIN_THRESHOLD = 3.0; // 3.0mm 이상을 실질적인 우천일로 정의 (미량 강수로 인한 통계 희석 방지)
+
     let weekendPrecipCorr = null;
     let weekendRainyStats = null;
 
@@ -479,8 +481,8 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       const wkPrecips = weekendValidData.map(d => d.precipitation);
       weekendPrecipCorr = calculateCorrelation(wkPrecips, wkRevenues);
 
-      const rainyWeekend = weekendValidData.filter(d => Number(d.precipitation || 0) > 0);
-      const clearWeekend = weekendValidData.filter(d => Number(d.precipitation || 0) <= 0);
+      const rainyWeekend = weekendValidData.filter(d => Number(d.precipitation || 0) >= RAIN_THRESHOLD);
+      const clearWeekend = weekendValidData.filter(d => Number(d.precipitation || 0) < RAIN_THRESHOLD);
 
       weekendRainyStats = {
         totalDays: weekendValidData.length,
@@ -492,8 +494,8 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     }
 
     const getRainStats = (dataList, key = 'revenue') => {
-      const rainy = dataList.filter(d => Number(d.precipitation || 0) > 0);
-      const clear = dataList.filter(d => Number(d.precipitation || 0) <= 0);
+      const rainy = dataList.filter(d => Number(d.precipitation || 0) >= RAIN_THRESHOLD);
+      const clear = dataList.filter(d => Number(d.precipitation || 0) < RAIN_THRESHOLD);
       return {
         clearDays: clear.length,
         clearAvgRev: clear.length > 0 ? clear.reduce((sum, d) => sum + d[key], 0) / clear.length : 0,
@@ -1609,9 +1611,9 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
 
             {/* 우천 여부 비교 표 */}
             <div style={{background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px', marginTop: '20px'}}>
-              <h4 style={{margin: '0 0 8px 0', color: 'var(--accent-coral)'}}>🌧️ 강수 여부(비/눈 온 날 vs 맑은 날)에 따른 일평균 매출 비교</h4>
+              <h4 style={{margin: '0 0 8px 0', color: 'var(--accent-coral)'}}>🌧️ 실질적 우천 여부(비/눈 온 날 vs 맑음/미량 강수)에 따른 일평균 매출 비교</h4>
               <p style={{fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 16px 0'}}>
-                강수량 크기와 상관없이 단순히 '비/눈이 왔는지(강수량 &gt; 0mm)'와 '오지 않았는지(강수량 = 0mm)'로 구분하여 주중, 주말/공휴일, 전체 기간의 일평균 매출을 4대 핵심 부문별로 나누어 대조 분석합니다.
+                미량의 이슬비로 인한 통계 왜곡을 방지하기 위해 일일 강수량 3.0mm 이상을 실질적 우천일(비/눈 온 날)로 정의하고, 그 미만(3.0mm 미만)을 맑음/미량 강수일로 구분하여 주중, 주말/공휴일, 전체 기간의 일평균 매출을 4대 핵심 부문별로 나누어 대조 분석합니다.
               </p>
               
               <div style={{overflowX: 'auto'}}>
@@ -1619,8 +1621,8 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                   <thead>
                     <tr style={{background: 'rgba(255, 255, 255, 0.05)', borderBottom: '2px solid rgba(255,255,255,0.1)'}}>
                       <th style={{padding: '10px 6px', color: 'var(--text-muted)', textAlign: 'left', width: '150px'}} colSpan="2">구분</th>
-                      <th style={{padding: '10px 6px', color: 'var(--accent-emerald)'}} colSpan="2">맑음 / 강수 없음 (0mm)</th>
-                      <th style={{padding: '10px 6px', color: 'var(--accent-coral)'}} colSpan="2">비 / 눈 온 날 (&gt; 0mm)</th>
+                      <th style={{padding: '10px 6px', color: 'var(--accent-emerald)'}} colSpan="2">맑음 / 미량 강수 ({"< 3mm"})</th>
+                      <th style={{padding: '10px 6px', color: 'var(--accent-coral)'}} colSpan="2">비 / 눈 온 날 ({">= 3mm"})</th>
                       <th style={{padding: '10px 6px', color: 'var(--text-bright)'}} colSpan="2">강수 시 매출 차이</th>
                     </tr>
                     <tr style={{background: 'rgba(255, 255, 255, 0.02)', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '11px'}}>
