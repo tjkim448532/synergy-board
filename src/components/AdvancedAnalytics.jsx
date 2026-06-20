@@ -316,20 +316,21 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     );
   }, [filteredProcessedData]);
 
+  // 통합 일별 데이터 (날씨 + 객실 + 레저 + 골프 등)
   const dailyWeatherSalesData = useMemo(() => {
-    if (!filteredProcessedData || filteredProcessedData.length === 0) return [];
-    
+    const dateMap = {};
     const weatherLookup = {};
+
     filteredProcessedData.forEach(m => {
       if (m.rawRoomRecords && Array.isArray(m.rawRoomRecords)) {
         m.rawRoomRecords.forEach(rec => {
           if (!rec.date) return;
           if (rec.weatherTempMax !== undefined && rec.weatherTempMax !== null) {
             weatherLookup[rec.date] = {
-              tempMax: Number(rec.weatherTempMax),
-              tempMin: Number(rec.weatherTempMin),
-              precipitation: Number(rec.weatherPrecipitation),
-              code: Number(rec.weatherCode),
+              tempMax: parseSafeNumber(rec.weatherTempMax),
+              tempMin: parseSafeNumber(rec.weatherTempMin),
+              precipitation: parseSafeNumber(rec.weatherPrecipitation),
+              code: parseSafeNumber(rec.weatherCode),
               desc: rec.weatherDesc || '정보없음'
             };
           }
@@ -337,16 +338,14 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       }
     });
 
-    const dateMap = {};
     const locationGroups = settings?.locationGroups || {};
 
-    // 1. 객실 매출 및 가동량 처리
+    // 1. 객실 매출 처리
     filteredProcessedData.forEach(m => {
       if (m.rawRoomRecords && Array.isArray(m.rawRoomRecords)) {
         m.rawRoomRecords.forEach(rec => {
           if (!rec.date) return;
           const dateStr = rec.date;
-          
           if (!dateMap[dateStr]) {
             const w = weatherLookup[dateStr] || {};
             dateMap[dateStr] = {
@@ -356,16 +355,18 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
               leisureRevenue: 0,
               golfRevenue: 0,
               totalRevenue: 0,
-              tempMax: w.tempMax !== undefined && w.tempMax !== null ? Number(w.tempMax) : null,
-              tempMin: w.tempMin !== undefined && w.tempMin !== null ? Number(w.tempMin) : null,
-              precipitation: w.precipitation !== undefined && w.precipitation !== null ? Number(w.precipitation) : null,
-              code: w.code !== undefined && w.code !== null ? Number(w.code) : null,
+              tempMax: w.tempMax !== undefined && w.tempMax !== null ? parseSafeNumber(w.tempMax) : null,
+              tempMin: w.tempMin !== undefined && w.tempMin !== null ? parseSafeNumber(w.tempMin) : null,
+              precipitation: w.precipitation !== undefined && w.precipitation !== null ? parseSafeNumber(w.precipitation) : null,
+              code: w.code !== undefined && w.code !== null ? parseSafeNumber(w.code) : null,
               desc: w.desc || '정보없음'
             };
           }
-          dateMap[dateStr].roomRevenue += Number(rec.revenue || 0);
-          dateMap[dateStr].roomsSold += Number(rec.count || 0);
-          dateMap[dateStr].totalRevenue += Number(rec.revenue || 0);
+          const revenue = parseSafeNumber(rec.revenue);
+          const count = parseSafeNumber(rec.count);
+          dateMap[dateStr].roomRevenue += revenue;
+          dateMap[dateStr].roomsSold += count;
+          dateMap[dateStr].totalRevenue += revenue;
         });
       }
     });
@@ -386,17 +387,17 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
               leisureRevenue: 0,
               golfRevenue: 0,
               totalRevenue: 0,
-              tempMax: w.tempMax !== undefined && w.tempMax !== null ? Number(w.tempMax) : null,
-              tempMin: w.tempMin !== undefined && w.tempMin !== null ? Number(w.tempMin) : null,
-              precipitation: w.precipitation !== undefined && w.precipitation !== null ? Number(w.precipitation) : null,
-              code: w.code !== undefined && w.code !== null ? Number(w.code) : null,
+              tempMax: w.tempMax !== undefined && w.tempMax !== null ? parseSafeNumber(w.tempMax) : null,
+              tempMin: w.tempMin !== undefined && w.tempMin !== null ? parseSafeNumber(w.tempMin) : null,
+              precipitation: w.precipitation !== undefined && w.precipitation !== null ? parseSafeNumber(w.precipitation) : null,
+              code: w.code !== undefined && w.code !== null ? parseSafeNumber(w.code) : null,
               desc: w.desc || '정보없음'
             };
           }
           
           if (rec.breakdown) {
             Object.entries(rec.breakdown).forEach(([locName, amt]) => {
-              const val = Number(amt) || 0;
+              const val = parseSafeNumber(amt);
               const group = locationGroups[locName] || 'leisure';
               
               if (group === 'leisure') {
@@ -408,7 +409,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
               dateMap[dateStr].totalRevenue += val;
             });
           } else {
-            const val = Number(rec.revenue || 0);
+            const val = parseSafeNumber(rec.revenue);
             dateMap[dateStr].leisureRevenue += val;
             dateMap[dateStr].totalRevenue += val;
           }
@@ -421,7 +422,8 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       let revenue = 0;
       if (weatherDataType === 'room') revenue = d.roomRevenue;
       else if (weatherDataType === 'golf') revenue = d.golfRevenue;
-      else revenue = d.leisureRevenue;
+      else if (weatherDataType === 'leisure') revenue = d.leisureRevenue;
+      else revenue = d.totalRevenue;
       return {
         ...d,
         revenue
@@ -492,8 +494,8 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     
     const descList = Object.values(descGroup).map(g => ({
       desc: g.desc,
-      avgRevenue: g.totalRevenue / g.daysCount,
-      avgRoomsSold: g.totalRoomsSold / g.daysCount,
+      avgRevenue: g.daysCount > 0 ? g.totalRevenue / g.daysCount : 0,
+      avgRoomsSold: g.daysCount > 0 ? g.totalRoomsSold / g.daysCount : 0,
       daysCount: g.daysCount
     })).sort((a, b) => b.avgRevenue - a.avgRevenue);
     
@@ -509,28 +511,28 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       const wkPrecips = weekendValidData.map(d => d.precipitation);
       weekendPrecipCorr = calculateCorrelation(wkPrecips, wkRevenues);
 
-      const rainyWeekend = weekendValidData.filter(d => Number(d.precipitation || 0) >= RAIN_THRESHOLD);
-      const clearWeekend = weekendValidData.filter(d => Number(d.precipitation || 0) < RAIN_THRESHOLD);
+      const rainyWeekend = weekendValidData.filter(d => parseSafeNumber(d.precipitation) >= RAIN_THRESHOLD);
+      const clearWeekend = weekendValidData.filter(d => parseSafeNumber(d.precipitation) < RAIN_THRESHOLD);
 
       weekendRainyStats = {
         totalDays: weekendValidData.length,
         rainyDaysCount: rainyWeekend.length,
         clearDaysCount: clearWeekend.length,
-        avgRainyRevenue: rainyWeekend.length > 0 ? rainyWeekend.reduce((sum, d) => sum + d.revenue, 0) / rainyWeekend.length : 0,
-        avgClearRevenue: clearWeekend.length > 0 ? clearWeekend.reduce((sum, d) => sum + d.revenue, 0) / clearWeekend.length : 0,
+        avgRainyRevenue: safeAverage(rainyWeekend.map(d => d.revenue), false),
+        avgClearRevenue: safeAverage(clearWeekend.map(d => d.revenue), false),
       };
     }
 
     const getRainStats = (dataList, key = 'revenue') => {
-      const rainy = dataList.filter(d => Number(d.precipitation || 0) >= RAIN_THRESHOLD);
-      const clear = dataList.filter(d => Number(d.precipitation || 0) < RAIN_THRESHOLD);
+      const rainy = dataList.filter(d => parseSafeNumber(d.precipitation) >= RAIN_THRESHOLD);
+      const clear = dataList.filter(d => parseSafeNumber(d.precipitation) < RAIN_THRESHOLD);
       return {
         clearDays: clear.length,
-        clearAvgRev: clear.length > 0 ? clear.reduce((sum, d) => sum + d[key], 0) / clear.length : 0,
-        clearAvgRooms: clear.length > 0 ? clear.reduce((sum, d) => sum + d.roomsSold, 0) / clear.length : 0,
+        clearAvgRev: safeAverage(clear.map(d => d[key]), false),
+        clearAvgRooms: safeAverage(clear.map(d => d.roomsSold), false),
         rainyDays: rainy.length,
-        rainyAvgRev: rainy.length > 0 ? rainy.reduce((sum, d) => sum + d[key], 0) / rainy.length : 0,
-        rainyAvgRooms: rainy.length > 0 ? rainy.reduce((sum, d) => sum + d.roomsSold, 0) / rainy.length : 0,
+        rainyAvgRev: safeAverage(rainy.map(d => d[key]), false),
+        rainyAvgRooms: safeAverage(rainy.map(d => d.roomsSold), false),
       };
     };
 

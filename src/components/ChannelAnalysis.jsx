@@ -133,8 +133,8 @@ export default function ChannelAnalysis({ processedData, globalStats, settings }
     processedDataWithSales.forEach(month => {
       if (month.rawRoomRecords) {
         month.rawRoomRecords.forEach(record => {
-          const rev = record.revenue || 0;
-          const cnt = record.count || 0;
+          const rev = parseSafeNumber(record.revenue);
+          const cnt = parseSafeNumber(record.count);
           const channelName = normalizeMarketType(record.marketType);
           const typeName = normalizeRoomType(record.roomType);
 
@@ -154,10 +154,10 @@ export default function ChannelAnalysis({ processedData, globalStats, settings }
     const adrArr = Object.entries(adrMap).map(([channel, types]) => {
       return {
         channel,
-        '16평': types['16평'].cnt > 0 ? types['16평'].rev / types['16평'].cnt : 0,
-        '35평': types['35평'].cnt > 0 ? types['35평'].rev / types['35평'].cnt : 0,
-        '51평': types['51평'].cnt > 0 ? types['51평'].rev / types['51평'].cnt : 0,
-        '전체': types['전체'].cnt > 0 ? types['전체'].rev / types['전체'].cnt : 0,
+        '16평': safeRate(types['16평'].rev, types['16평'].cnt),
+        '35평': safeRate(types['35평'].rev, types['35평'].cnt),
+        '51평': safeRate(types['51평'].rev, types['51평'].cnt),
+        '전체': safeRate(types['전체'].rev, types['전체'].cnt),
         totalRev: types['전체'].rev
       };
     }).filter(d => d.totalRev > 0).sort((a, b) => b.totalRev - a.totalRev);

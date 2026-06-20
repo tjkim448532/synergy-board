@@ -4,6 +4,7 @@ import { Users, Car, UserMinus, UserCheck, Save, Calendar, FileText } from 'luci
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import toast from 'react-hot-toast';
+import { parseSafeNumber } from '../utils/statUtils';
 
 export default function VisitorCalculation({ processedData, globalStats, settings }) {
   const [selectedMonth, setSelectedMonth] = useState('');
@@ -50,24 +51,24 @@ export default function VisitorCalculation({ processedData, globalStats, setting
     if (!targetDoc) return 0;
     if (targetDoc.guests !== undefined) return targetDoc.guests;
     
-    const weight16 = settings?.guestWeight16 !== undefined ? Number(settings.guestWeight16) : 2.5;
-    const weight35 = settings?.guestWeight35 !== undefined ? Number(settings.guestWeight35) : 3.5;
-    const weight51 = settings?.guestWeight51 !== undefined ? Number(settings.guestWeight51) : 6.0;
+    const weight16 = settings?.guestWeight16 !== undefined ? parseSafeNumber(settings.guestWeight16) : 2.5;
+    const weight35 = settings?.guestWeight35 !== undefined ? parseSafeNumber(settings.guestWeight35) : 3.5;
+    const weight51 = settings?.guestWeight51 !== undefined ? parseSafeNumber(settings.guestWeight51) : 6.0;
     
-    const sold16 = Number(targetDoc.sold16 || targetDoc.standardSold || 0);
-    const sold35 = Number(targetDoc.sold35 || 0);
-    const sold51 = Number(targetDoc.sold51 || targetDoc.connectingSold || 0);
-    const sold51Acc = Number(targetDoc.sold51Acc || 0);
+    const sold16 = parseSafeNumber(targetDoc.sold16 || targetDoc.standardSold);
+    const sold35 = parseSafeNumber(targetDoc.sold35);
+    const sold51 = parseSafeNumber(targetDoc.sold51 || targetDoc.connectingSold);
+    const sold51Acc = parseSafeNumber(targetDoc.sold51Acc);
     
     return Math.round((sold16 * weight16) + (sold35 * weight35) + ((sold51 + sold51Acc) * weight51));
   }, [targetDoc, settings]);
 
-  const carPeopleWeight = settings?.carPeopleWeight !== undefined ? Number(settings.carPeopleWeight) : 3.0;
+  const carPeopleWeight = settings?.carPeopleWeight !== undefined ? parseSafeNumber(settings.carPeopleWeight) : 3.0;
 
   // Derived calculations
-  const numTotalVehicles = Number(totalVehicles) || 0;
-  const numEmployeeVehicles = Number(employeeVehicles) || 0;
-  const numGolfGuests = Number(golfGuests) || 0;
+  const numTotalVehicles = parseSafeNumber(totalVehicles);
+  const numEmployeeVehicles = parseSafeNumber(employeeVehicles);
+  const numGolfGuests = parseSafeNumber(golfGuests);
 
   const netVehicles = Math.max(0, numTotalVehicles - numEmployeeVehicles);
   const estimatedPeople = netVehicles * carPeopleWeight;
@@ -77,14 +78,14 @@ export default function VisitorCalculation({ processedData, globalStats, setting
   const getStayingGuestsForDoc = (docData) => {
     if (docData.guests !== undefined) return docData.guests;
     
-    const weight16 = settings?.guestWeight16 !== undefined ? Number(settings.guestWeight16) : 2.5;
-    const weight35 = settings?.guestWeight35 !== undefined ? Number(settings.guestWeight35) : 3.5;
-    const weight51 = settings?.guestWeight51 !== undefined ? Number(settings.guestWeight51) : 6.0;
+    const weight16 = settings?.guestWeight16 !== undefined ? parseSafeNumber(settings.guestWeight16) : 2.5;
+    const weight35 = settings?.guestWeight35 !== undefined ? parseSafeNumber(settings.guestWeight35) : 3.5;
+    const weight51 = settings?.guestWeight51 !== undefined ? parseSafeNumber(settings.guestWeight51) : 6.0;
     
-    const sold16 = Number(docData.sold16 || docData.standardSold || 0);
-    const sold35 = Number(docData.sold35 || 0);
-    const sold51Combined = Number(docData.sold51 || docData.connectingSold || 0);
-    const sold51Acc = Number(docData.sold51Acc || 0);
+    const sold16 = parseSafeNumber(docData.sold16 || docData.standardSold);
+    const sold35 = parseSafeNumber(docData.sold35);
+    const sold51Combined = parseSafeNumber(docData.sold51 || docData.connectingSold);
+    const sold51Acc = parseSafeNumber(docData.sold51Acc);
     
     return Math.round((sold16 * weight16) + (sold35 * weight35) + ((sold51Combined + sold51Acc) * weight51));
   };
@@ -96,9 +97,9 @@ export default function VisitorCalculation({ processedData, globalStats, setting
     let nGolfGuests = 0;
     
     if (docData.visitorCalcData) {
-      nTotalVehicles = Number(docData.visitorCalcData.totalVehicles) || 0;
-      nEmployeeVehicles = Number(docData.visitorCalcData.employeeVehicles) || 0;
-      nGolfGuests = Number(docData.visitorCalcData.golfGuests) || 0;
+      nTotalVehicles = parseSafeNumber(docData.visitorCalcData.totalVehicles);
+      nEmployeeVehicles = parseSafeNumber(docData.visitorCalcData.employeeVehicles);
+      nGolfGuests = parseSafeNumber(docData.visitorCalcData.golfGuests);
     }
 
     const nVehicles = Math.max(0, nTotalVehicles - nEmployeeVehicles);

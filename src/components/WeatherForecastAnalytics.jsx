@@ -75,11 +75,74 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
     const isWeekendOrHoliday = day === 0 || day === 6 || isHoliday(dateObj);
     const RAIN_THRESHOLD = 3.0;
 
-    // 1. 해당 월(Month)의 과거 기록 필터링
-    const targetMonthRecords = processedData.filter(d => d.yearMonth.endsWith(`-${mm}`));
+    // 제외할 F&B 및 임대/리테일 업장 키워드
+    const excludeKeywords = ['투썸', 'BHC', '멕시카나', '핏스탑', '프로샵', '딜라이트', '식당', '카페', 'F&B', '식음', '식음료', '대여품', '펫포레'];
+
+    // 숫자 파싱 유틸리티
+    const parseAmount = (amt) => {
+      if (typeof amt === 'string') return Number(amt.replace(/,/g, '')) || 0;
+      return Number(amt) || 0;
+    };
+
+    // IQR 필터링 함수
+    const filterOutliers = (dataList) => {
+      if (dataList.length < 4) return dataList;
+      const values = [...dataList].sort((a, b) => a - b);
+      const q1 = values[Math.floor(values.length * 0.25)];
+      const q3 = values[Math.floor(values.length * 0.75)];
+      const iqr = q3 - q1;
+      const lowerBound = q1 - 1.5 * iqr;
+      const upperBound = q3 + 1.5 * iqr;
+      return dataList.filter(v => v >= lowerBound && v <= upperBound);
+    };
+
+    // --- 1단계: 전 기간(All-Time) 데이터를 이용해 시설별 '우천 타격률(Penalty Rate)' 산출 ---
+    const allTimeStats = {};
     
-    // 2. 레저본부 각 영업장별 날짜 리스트 추출
-    const historicalDates = [];
+    processedData.forEach(m => {
+      if (m.rawLeisureRecords && Array.isArray(m.rawLeisureRecords)) {
+        m.rawLeisureRecords.forEach(rec => {
+          if (!rec.date) return;
+          const precipitation = Number(rec.weatherPrecipitation || 0);
+          const isRainy = precipitation >= RAIN_THRESHOLD;
+
+          if (rec.breakdown) {
+            Object.entries(rec.breakdown).forEach(([facilityName, amount]) => {
+              const group = settings?.locationGroups?.[facilityName] || 'leisure';
+              const isExcluded = excludeKeywords.some(keyword => facilityName.includes(keyword)) || group === 'fnb';
+              if (isExcluded && !facilityName.includes('모토아레나')) return;
+
+              if (!allTimeStats[facilityName]) {
+                allTimeStats[facilityName] = { clearVals: [], rainyVals: [] };
+              }
+              const val = parseAmount(amount);
+              if (val > 0) {
+                if (isRainy) allTimeStats[facilityName].rainyVals.push(val);
+                else allTimeStats[facilityName].clearVals.push(val);
+              }
+            });
+          }
+        });
+      }
+    });
+
+    const penaltyRates = {};
+    Object.keys(allTimeStats).forEach(fac => {
+      const clearFiltered = filterOutliers(allTimeStats[fac].clearVals);
+      const rainyFiltered = filterOutliers(allTimeStats[fac].rainyVals);
+      
+      const clearAvg = clearFiltered.length > 0 ? clearFiltered.reduce((a, b) => a + b, 0) / clearFiltered.length : 0;
+      const rainyAvg = rainyFiltered.length > 0 ? rainyFiltered.reduce((a, b) => a + b, 0) / rainyFiltered.length : clearAvg;
+      
+      // 타격률: 음수면 하락, 양수면 상승
+      penaltyRates[fac] = clearAvg > 0 ? (rainyAvg - clearAvg) / clearAvg : 0;
+    });
+
+
+    // --- 2단계: 사용자가 선택한 미래의 달(mm)과 요일 특성(평일/휴일)에 맞는 Baseline 산출 ---
+    const targetMonthRecords = processedData.filter(d => d.yearMonth.endsWith(`-${mm}`));
+    const facilityBaseline = {};
+
     targetMonthRecords.forEach(m => {
       if (m.rawLeisureRecords && Array.isArray(m.rawLeisureRecords)) {
         m.rawLeisureRecords.forEach(rec => {
@@ -88,51 +151,39 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
           const recDay = recDateObj.getDay();
           const recIsWkEnd = recDay === 0 || recDay === 6 || isHoliday(recDateObj);
           
-          // 사용자가 선택한 미래 날짜와 평일/주말 여부가 같은 과거 기록만 선별
           if (recIsWkEnd === isWeekendOrHoliday) {
-            historicalDates.push({
-              date: rec.date,
-              breakdown: rec.breakdown || {},
-              precipitation: Number(rec.weatherPrecipitation || 0)
-            });
+            // Baseline은 맑은 날(정상 영업일) 기준이므로 우천일은 제외하여 순수 기대치 계산
+            const precipitation = Number(rec.weatherPrecipitation || 0);
+            if (precipitation < RAIN_THRESHOLD) {
+              Object.entries(rec.breakdown || {}).forEach(([facilityName, amount]) => {
+                const group = settings?.locationGroups?.[facilityName] || 'leisure';
+                const isExcluded = excludeKeywords.some(keyword => facilityName.includes(keyword)) || group === 'fnb';
+                if (isExcluded && !facilityName.includes('모토아레나')) return;
+
+                if (!facilityBaseline[facilityName]) {
+                  facilityBaseline[facilityName] = { group, vals: [] };
+                }
+                const val = parseAmount(amount);
+                if (val > 0) facilityBaseline[facilityName].vals.push(val);
+              });
+            }
           }
         });
       }
     });
 
-    // 3. 영업장별(breakdown keys) 맑은 날 평균 및 비 온 날 평균 계산
-    const facilityStats = {};
-    
-    historicalDates.forEach(hd => {
-      Object.entries(hd.breakdown).forEach(([facilityName, amount]) => {
-        // 그룹핑 분류상 'leisure' (골프/식음 등 제외하고 야외 위주 레저본부만 타겟팅할 수도 있음, 여기선 전체 분석)
-        const group = settings?.locationGroups?.[facilityName] || 'leisure';
-        
-        if (!facilityStats[facilityName]) {
-          facilityStats[facilityName] = { 
-            name: facilityName, 
-            group: group,
-            clearTotal: 0, clearCount: 0, 
-            rainyTotal: 0, rainyCount: 0 
-          };
-        }
-        
-        const val = Number(amount) || 0;
-        if (hd.precipitation < RAIN_THRESHOLD) {
-          facilityStats[facilityName].clearTotal += val;
-          facilityStats[facilityName].clearCount += 1;
-        } else {
-          facilityStats[facilityName].rainyTotal += val;
-          facilityStats[facilityName].rainyCount += 1;
-        }
-      });
-    });
-
     const isForecastRainy = forecastData && forecastData.precipitation >= RAIN_THRESHOLD;
 
-    const results = Object.values(facilityStats).map(fac => {
-      const clearAvg = fac.clearCount > 0 ? fac.clearTotal / fac.clearCount : 0;
-      const rainyAvg = fac.rainyCount > 0 ? fac.rainyTotal / fac.rainyCount : clearAvg;
+    const results = Object.keys(facilityBaseline).map(facName => {
+      const fb = facilityBaseline[facName];
+      const filteredVals = filterOutliers(fb.vals);
+      
+      // 해당 동월 동일조건의 맑은 날 평균 기대매출 (A)
+      const clearAvg = filteredVals.length > 0 ? filteredVals.reduce((a, b) => a + b, 0) / filteredVals.length : 0;
+      
+      // 우천 시 예상 하락률 적용하여 (B) 산출
+      const penaltyRate = penaltyRates[facName] || 0;
+      const rainyAvg = clearAvg * (1 + penaltyRate);
       
       const expectedRevenue = isForecastRainy ? rainyAvg : clearAvg;
       const variance = expectedRevenue - clearAvg;
@@ -148,18 +199,18 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
         } else if (decreaseRate <= -20) {
           recommendation = "타격 심함 (20%+ 하락): 아르바이트 조기 퇴근 등 인력 축소 운영 필요";
           severity = "medium";
-        } else if (decreaseRate < 0) {
+        } else if (decreaseRate < -5) {
           recommendation = "타격 예상 (소폭 하락): 기상 상황에 따른 유연한 인력 운영 필요";
           severity = "low";
-        } else if (decreaseRate >= 0) {
-          recommendation = "타격 없음/수요 증가: 실내 피난 수요 등으로 정상 인력 유지 권장";
+        } else {
+          recommendation = "타격 없음/수요 증가: 정상 인력 유지 권장";
           severity = "positive";
         }
       }
 
       return {
-        name: fac.name,
-        group: fac.group,
+        name: facName,
+        group: fb.group,
         clearAvg,
         rainyAvg,
         expectedRevenue,
@@ -167,7 +218,7 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
         decreaseRate,
         recommendation,
         severity,
-        dataPoints: fac.clearCount + fac.rainyCount
+        dataPoints: filteredVals.length
       };
     }).sort((a, b) => a.decreaseRate - b.decreaseRate); // 하락률이 심한 순으로 정렬
 

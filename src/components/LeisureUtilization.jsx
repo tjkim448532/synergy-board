@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import useGoogleSheetVisitors from '../hooks/useGoogleSheetVisitors';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Activity, Users, Target, UserCheck } from 'lucide-react';
+import { parseSafeNumber, safeRate } from '../utils/statUtils';
 
 export default function LeisureUtilization({ processedData, globalStats, settings }) {
   const sortedMonths = [...processedData].sort((a, b) => (b.id || '').localeCompare(a.id || ''));
@@ -12,26 +13,21 @@ export default function LeisureUtilization({ processedData, globalStats, setting
   const analysisResult = useMemo(() => {
     if (processedData.length === 0) return null;
 
-    const parseSafeInt = (v) => {
-      const num = parseInt(v, 10);
-      return isNaN(num) ? 0 : num;
-    };
-
-    const carPeopleWeight = settings?.carPeopleWeight !== undefined ? Number(settings.carPeopleWeight) : 3.0;
+    const carPeopleWeight = settings?.carPeopleWeight !== undefined ? parseSafeNumber(settings.carPeopleWeight) : 3.0;
 
     const getMonthTotalVisitors = (d) => {
       let v = 0;
       if (d.visitorCalcData) {
-        const netVehicles = Math.max(0, parseSafeInt(d.visitorCalcData.totalVehicles) - parseSafeInt(d.visitorCalcData.employeeVehicles));
-        v = Math.max(0, netVehicles * carPeopleWeight - parseSafeInt(d.visitorCalcData.golfGuests));
+        const netVehicles = Math.max(0, parseSafeNumber(d.visitorCalcData.totalVehicles) - parseSafeNumber(d.visitorCalcData.employeeVehicles));
+        v = Math.max(0, netVehicles * carPeopleWeight - parseSafeNumber(d.visitorCalcData.golfGuests));
       } else {
         const { totalRooms = 175, connectingRooms51 = 85, count51AsTwoRooms = true } = settings || {};
-        const dailyInventory = count51AsTwoRooms ? Number(totalRooms) : (Number(totalRooms) - Number(connectingRooms51));
-        const daysWd = parseSafeInt(d.daysCountWeekdayLeisure || d.daysCountWeekday);
-        const daysWe = parseSafeInt(d.daysCountWeekendLeisure || d.daysCountWeekend);
+        const dailyInventory = count51AsTwoRooms ? parseSafeNumber(totalRooms) : (parseSafeNumber(totalRooms) - parseSafeNumber(connectingRooms51));
+        const daysWd = parseSafeNumber(d.daysCountWeekdayLeisure || d.daysCountWeekday);
+        const daysWe = parseSafeNumber(d.daysCountWeekendLeisure || d.daysCountWeekend);
         const daysInMonth = daysWd + daysWe;
         let roomSold = 0;
-        if (daysInMonth > 0) roomSold = parseSafeInt(d.soldWd || d.soldWeekday) + parseSafeInt(d.soldWe || d.soldWeekend);
+        if (daysInMonth > 0) roomSold = parseSafeNumber(d.soldWd || d.soldWeekday) + parseSafeNumber(d.soldWe || d.soldWeekend);
         v = Math.round(roomSold * (globalStats?.avgGuestsPerSoldRoom || 2.5));
         if (d.motoGeneralRev > 0) v += Math.round(d.motoGeneralRev / 35000);
       }
@@ -91,7 +87,7 @@ export default function LeisureUtilization({ processedData, globalStats, setting
       return {
         name: venue,
         visitors: count,
-        rate: aggregatedTotalVisitors > 0 ? (count / aggregatedTotalVisitors) * 100 : 0
+        rate: safeRate(count, aggregatedTotalVisitors) * 100
       };
     }).sort((a, b) => b.visitors - a.visitors);
 
