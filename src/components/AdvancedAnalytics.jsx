@@ -535,7 +535,10 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       descList,
       totalValidDays: validData.length,
       weekendPrecipCorr,
-      weekendRainyStats
+      weekendRainyStats,
+      overallRainStats,
+      weekdayRainStats,
+      weekendRainStats
     };
   }, [dailyWeatherSalesData]);
 
