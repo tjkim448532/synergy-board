@@ -17,15 +17,19 @@ export default function LeisureUtilization({ processedData, globalStats, setting
       return isNaN(num) ? 0 : num;
     };
 
+    const carPeopleWeight = settings?.carPeopleWeight !== undefined ? Number(settings.carPeopleWeight) : 3.0;
+
     const getMonthTotalVisitors = (d) => {
       let v = 0;
       if (d.visitorCalcData) {
         const netVehicles = Math.max(0, parseSafeInt(d.visitorCalcData.totalVehicles) - parseSafeInt(d.visitorCalcData.employeeVehicles));
-        v = Math.max(0, netVehicles * 3 - parseSafeInt(d.visitorCalcData.golfGuests));
+        v = Math.max(0, netVehicles * carPeopleWeight - parseSafeInt(d.visitorCalcData.golfGuests));
       } else {
         const { totalRooms = 175, connectingRooms51 = 85, count51AsTwoRooms = true } = settings || {};
         const dailyInventory = count51AsTwoRooms ? Number(totalRooms) : (Number(totalRooms) - Number(connectingRooms51));
-        const daysInMonth = parseSafeInt(d.daysCountWeekday) + parseSafeInt(d.daysCountWeekend);
+        const daysWd = parseSafeInt(d.daysCountWeekdayLeisure || d.daysCountWeekday);
+        const daysWe = parseSafeInt(d.daysCountWeekendLeisure || d.daysCountWeekend);
+        const daysInMonth = daysWd + daysWe;
         let roomSold = 0;
         if (daysInMonth > 0) roomSold = parseSafeInt(d.soldWd || d.soldWeekday) + parseSafeInt(d.soldWe || d.soldWeekend);
         v = Math.round(roomSold * (globalStats?.avgGuestsPerSoldRoom || 2.5));

@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import useGoogleSheetVisitors from '../hooks/useGoogleSheetVisitors';
-import { Save, Link as LinkIcon, RefreshCw, Lock, ChevronDown, ChevronUp, AlertCircle, TrendingUp, Key, ArrowRight, Shield, DownloadCloud, UploadCloud, PieChart, Activity, Briefcase, Copy, FileText, CheckCircle2 } from 'lucide-react';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { Save, Link as LinkIcon, RefreshCw, Lock, ChevronDown, ChevronUp, AlertCircle, TrendingUp, Key, ArrowRight, Shield, DownloadCloud, UploadCloud, PieChart, Activity, Briefcase, Copy, FileText, CheckCircle2, CloudSun } from 'lucide-react';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import Papa from 'papaparse';
 import toast from 'react-hot-toast';
 import LeisureTicketManager from './LeisureTicketManager';
 import './Settings.css';
 import { getDefaultGroup, calculateGroupedSales } from '../utils/revenueUtils';
+import { fetchWeatherForRange } from '../utils/weatherUtils';
 
 const SectionCard = ({ title, description, isExpanded, onToggle, children, actions }) => (
   <div className="settings-card glass-panel" style={{marginBottom: '20px', padding: 0}}>
@@ -42,7 +43,11 @@ export default function Settings({ monthlyData }) {
     targetAdr16: 0,
     targetAdr35: 0,
     targetAdr51: 0,
-    locationGroups: {}
+    locationGroups: {},
+    guestWeight16: 2.5,
+    guestWeight35: 3.5,
+    guestWeight51: 6.0,
+    carPeopleWeight: 3.0
   });
 
   const [uniqueLocations, setUniqueLocations] = useState([]);
@@ -66,10 +71,13 @@ export default function Settings({ monthlyData }) {
     moto: false,
     capa: false,
     report: true,
-    leisureTicket: false
+    leisureTicket: false,
+    weights: false,
+    weatherMigration: false
   });
 
   const [promptCopied, setPromptCopied] = useState(false);
+  const [isMigratingWeather, setIsMigratingWeather] = useState(false);
 
   const toggleSection = (sec) => setExpandedSections(p => ({...p, [sec]: !p[sec]}));
 
@@ -83,6 +91,58 @@ export default function Settings({ monthlyData }) {
     }
   };
 
+  const handleWeatherMigration = async () => {
+    if (!monthlyData || monthlyData.length === 0) {
+      toast.error('마이그레이션할 기존 데이터가 없습니다.');
+      return;
+    }
+    
+    setIsMigratingWeather(true);
+    const toastId = toast.loading('기존 데이터의 날씨 정보 소급 적용을 시작합니다...');
+    
+    try {
+      let successCount = 0;
+      for (const m of monthlyData) {
+        if (!m.rawRoomRecords || m.rawRoomRecords.length === 0) continue;
+        
+        let minDate = null;
+        let maxDate = null;
+        m.rawRoomRecords.forEach(rec => {
+          if (rec.date) {
+            if (!minDate || rec.date < minDate) minDate = rec.date;
+            if (!maxDate || rec.date > maxDate) maxDate = rec.date;
+          }
+        });
+        
+        if (minDate && maxDate) {
+          const weatherMap = await fetchWeatherForRange(minDate, maxDate);
+          
+          const updatedRawRoomRecords = m.rawRoomRecords.map(rec => {
+            const w = weatherMap[rec.date] || {};
+            return {
+              ...rec,
+              weatherTempMax: w.tempMax !== undefined ? w.tempMax : null,
+              weatherTempMin: w.tempMin !== undefined ? w.tempMin : null,
+              weatherPrecipitation: w.precipitation !== undefined ? w.precipitation : null,
+              weatherCode: w.code !== undefined ? w.code : null,
+              weatherDesc: w.desc !== undefined ? w.desc : '정보없음'
+            };
+          });
+          
+          const docRef = doc(db, 'monthly_records', m.id || m.yearMonth);
+          await updateDoc(docRef, { rawRoomRecords: updatedRawRoomRecords });
+          successCount++;
+        }
+      }
+      toast.success(`총 ${successCount}개 월의 날씨 데이터가 성공적으로 소급 적용되었습니다.`, { id: toastId });
+    } catch (err) {
+      console.error(err);
+      toast.error('마이그레이션 중 오류가 발생했습니다: ' + err.message, { id: toastId });
+    } finally {
+      setIsMigratingWeather(false);
+    }
+  };
+
   useEffect(() => {
     const fetchSettings = async () => {
       setIsLoading(true);
@@ -90,7 +150,15 @@ export default function Settings({ monthlyData }) {
         const docRef = doc(db, 'config', 'mainSettings');
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          setSettings(docSnap.data());
+          const loadedData = docSnap.data();
+          if (Array.isArray(loadedData.customWeekends)) {
+            loadedData.customWeekends = loadedData.customWeekends.join(', ');
+          }
+          if (loadedData.guestWeight16 === undefined) loadedData.guestWeight16 = 2.5;
+          if (loadedData.guestWeight35 === undefined) loadedData.guestWeight35 = 3.5;
+          if (loadedData.guestWeight51 === undefined) loadedData.guestWeight51 = 6.0;
+          if (loadedData.carPeopleWeight === undefined) loadedData.carPeopleWeight = 3.0;
+          setSettings(loadedData);
         }
       } catch (error) {
         console.error("Error fetching settings:", error);
@@ -158,17 +226,10 @@ export default function Settings({ monthlyData }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setSettings(prev => {
-      let parsedValue = value;
-      if (name !== 'resortName' && name !== 'customWeekends') {
-        const num = Number(value);
-        parsedValue = isNaN(num) ? 0 : num;
-      }
-      return {
-        ...prev,
-        [name]: parsedValue
-      };
-    });
+    setSettings(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleSave = async () => {
@@ -183,8 +244,26 @@ export default function Settings({ monthlyData }) {
       return;
     }
     try {
+      const payload = { ...settings };
+      if (typeof payload.customWeekends === 'string') {
+        payload.customWeekends = payload.customWeekends.split(',').map(s => s.trim()).filter(s => s);
+      }
+      
+      const numFields = [
+        'totalRooms', 'connectingRooms51', 'targetAdr16', 'targetAdr35', 'targetAdr51',
+        'guestWeight16', 'guestWeight35', 'guestWeight51', 'carPeopleWeight',
+        'captureRateLeisure', 'captureRateFnb', 'captureRateMoto',
+        'capaLeisure', 'capaMoto', 'capaFnb'
+      ];
+      numFields.forEach(field => {
+        if (payload[field] !== undefined) {
+          const num = Number(payload[field]);
+          payload[field] = isNaN(num) ? 0 : num;
+        }
+      });
+
       const docRef = doc(db, 'config', 'mainSettings');
-      await setDoc(docRef, settings);
+      await setDoc(docRef, payload);
       setIsSaved(true);
       setTimeout(() => setIsSaved(false), 2000);
       toast.success("설정이 저장되었습니다.");
@@ -469,6 +548,64 @@ export default function Settings({ monthlyData }) {
             * 방 2개로 산정 시: 점유율 분모(총 객실)는 설정된 '고정 총 객실 수'를 그대로 사용하며, 판매 객실 수는 51평 판매량 × 2로 계산합니다.<br/>
             * 방 1개로 산정 시: 점유율 분모는 '고정 총 객실 수 - 51평 세트 수'로 줄어들며, 판매 객실 수는 51평 판매량 × 1로 계산합니다.
           </small>
+        </div>
+      </SectionCard>
+
+      <SectionCard
+        title="투숙객 및 차량 가중치 설정"
+        description="평형별 예상 투숙객 및 차량당 탑승 인원 가중치를 설정합니다."
+        isExpanded={expandedSections.weights}
+        onToggle={() => toggleSection('weights')}
+      >
+        <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
+          <div className="form-group" style={{flex: 1, minWidth: '150px'}}>
+            <label htmlFor="guestWeight16">16평형 투숙객 가중치 (명/실)</label>
+            <input 
+              type="number" 
+              step="0.1"
+              id="guestWeight16" 
+              name="guestWeight16" 
+              value={settings.guestWeight16 ?? 2.5} 
+              onChange={handleChange} 
+              placeholder="기본값: 2.5"
+            />
+          </div>
+          <div className="form-group" style={{flex: 1, minWidth: '150px'}}>
+            <label htmlFor="guestWeight35">35평형 투숙객 가중치 (명/실)</label>
+            <input 
+              type="number" 
+              step="0.1"
+              id="guestWeight35" 
+              name="guestWeight35" 
+              value={settings.guestWeight35 ?? 3.5} 
+              onChange={handleChange} 
+              placeholder="기본값: 3.5"
+            />
+          </div>
+          <div className="form-group" style={{flex: 1, minWidth: '150px'}}>
+            <label htmlFor="guestWeight51">51평형 투숙객 가중치 (명/실)</label>
+            <input 
+              type="number" 
+              step="0.1"
+              id="guestWeight51" 
+              name="guestWeight51" 
+              value={settings.guestWeight51 ?? 6.0} 
+              onChange={handleChange} 
+              placeholder="기본값: 6.0"
+            />
+          </div>
+          <div className="form-group" style={{flex: 1, minWidth: '150px'}}>
+            <label htmlFor="carPeopleWeight">차량당 탑승 인원 가중치 (명/대)</label>
+            <input 
+              type="number" 
+              step="0.1"
+              id="carPeopleWeight" 
+              name="carPeopleWeight" 
+              value={settings.carPeopleWeight ?? 3.0} 
+              onChange={handleChange} 
+              placeholder="기본값: 3.0"
+            />
+          </div>
         </div>
       </SectionCard>
 
@@ -930,6 +1067,43 @@ export default function Settings({ monthlyData }) {
           
           <div style={{background: 'rgba(0,0,0,0.3)', padding: '16px', borderRadius: '8px', fontSize: '13px', color: 'rgba(255,255,255,0.7)', whiteSpace: 'pre-wrap', fontFamily: 'monospace'}}>
             {`[미리보기]\n당신은 세계 최고의 전략 컨설팅 펌(맥킨지)의 수석 경영 컨설턴트입니다. 아래 제공된 우리 리조트의 실제 경영 데이터와 분석 인사이트를 바탕으로... (클릭 시 전체 텍스트 복사)`}
+          </div>
+        </div>
+      </SectionCard>
+
+      <SectionCard
+        title="날씨 데이터 소급 적용 (과거 데이터 마이그레이션)"
+        description="데이터베이스에 이미 등록된 과거 매출 데이터의 날짜별 날씨(기온, 강수량, 하늘상태) 정보를 Open-Meteo API에서 가져와 소급 적용합니다."
+        isExpanded={expandedSections.weatherMigration}
+        onToggle={() => toggleSection('weatherMigration')}
+      >
+        <div style={{background: 'rgba(255,255,255,0.05)', borderRadius: '12px', border: '1px solid var(--border-glass)', padding: '20px'}}>
+          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+            <p style={{color: 'var(--text-muted)', fontSize: '14px', margin: 0}}>
+              마이그레이션 시, 벨포레 증평 좌표 기준의 역사 날씨 정보를 조회하여 각 객실 일자별 레코드에 병합합니다.<br/>
+              인터넷 데이터 조회 속도로 인해 데이터 량에 따라 최대 수십 초가 소요될 수 있습니다.
+            </p>
+            <button 
+              onClick={handleWeatherMigration}
+              disabled={isMigratingWeather}
+              style={{
+                background: 'var(--accent-blue)', 
+                color: '#fff', 
+                border: 'none', 
+                padding: '10px 20px', 
+                borderRadius: '8px', 
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontWeight: 'bold',
+                transition: 'all 0.2s',
+                opacity: isMigratingWeather ? 0.6 : 1
+              }}
+            >
+              <CloudSun size={18} />
+              {isMigratingWeather ? '마이그레이션 진행 중...' : '과거 날씨 데이터 소급 적용'}
+            </button>
           </div>
         </div>
       </SectionCard>

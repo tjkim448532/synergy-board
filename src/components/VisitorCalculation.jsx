@@ -48,13 +48,21 @@ export default function VisitorCalculation({ processedData, globalStats, setting
   // Calculate Staying Guests directly from the processedData (just like AdvancedAnalytics)
   const stayingGuests = useMemo(() => {
     if (!targetDoc) return 0;
+    if (targetDoc.guests !== undefined) return targetDoc.guests;
+    
+    const weight16 = settings?.guestWeight16 !== undefined ? Number(settings.guestWeight16) : 2.5;
+    const weight35 = settings?.guestWeight35 !== undefined ? Number(settings.guestWeight35) : 3.5;
+    const weight51 = settings?.guestWeight51 !== undefined ? Number(settings.guestWeight51) : 6.0;
     
     const sold16 = Number(targetDoc.sold16 || targetDoc.standardSold || 0);
     const sold35 = Number(targetDoc.sold35 || 0);
-    const sold51Combined = Number(targetDoc.sold51 || targetDoc.connectingSold || 0);
+    const sold51 = Number(targetDoc.sold51 || targetDoc.connectingSold || 0);
+    const sold51Acc = Number(targetDoc.sold51Acc || 0);
     
-    return Math.round((sold16 * 2.5) + (sold35 * 3.5) + (sold51Combined * 6));
-  }, [targetDoc]);
+    return Math.round((sold16 * weight16) + (sold35 * weight35) + ((sold51 + sold51Acc) * weight51));
+  }, [targetDoc, settings]);
+
+  const carPeopleWeight = settings?.carPeopleWeight !== undefined ? Number(settings.carPeopleWeight) : 3.0;
 
   // Derived calculations
   const numTotalVehicles = Number(totalVehicles) || 0;
@@ -62,15 +70,23 @@ export default function VisitorCalculation({ processedData, globalStats, setting
   const numGolfGuests = Number(golfGuests) || 0;
 
   const netVehicles = Math.max(0, numTotalVehicles - numEmployeeVehicles);
-  const estimatedPeople = netVehicles * 3;
+  const estimatedPeople = netVehicles * carPeopleWeight;
   const totalVisitors = Math.max(0, estimatedPeople - numGolfGuests);
   const walkInGuests = Math.max(0, totalVisitors - stayingGuests);
 
   const getStayingGuestsForDoc = (docData) => {
+    if (docData.guests !== undefined) return docData.guests;
+    
+    const weight16 = settings?.guestWeight16 !== undefined ? Number(settings.guestWeight16) : 2.5;
+    const weight35 = settings?.guestWeight35 !== undefined ? Number(settings.guestWeight35) : 3.5;
+    const weight51 = settings?.guestWeight51 !== undefined ? Number(settings.guestWeight51) : 6.0;
+    
     const sold16 = Number(docData.sold16 || docData.standardSold || 0);
     const sold35 = Number(docData.sold35 || 0);
     const sold51Combined = Number(docData.sold51 || docData.connectingSold || 0);
-    return Math.round((sold16 * 2.5) + (sold35 * 3.5) + (sold51Combined * 6));
+    const sold51Acc = Number(docData.sold51Acc || 0);
+    
+    return Math.round((sold16 * weight16) + (sold35 * weight35) + ((sold51Combined + sold51Acc) * weight51));
   };
 
   const getVisitorStatsForDoc = (docData) => {
@@ -86,7 +102,7 @@ export default function VisitorCalculation({ processedData, globalStats, setting
     }
 
     const nVehicles = Math.max(0, nTotalVehicles - nEmployeeVehicles);
-    const estPeople = nVehicles * 3;
+    const estPeople = nVehicles * carPeopleWeight;
     const tVisitors = Math.max(0, estPeople - nGolfGuests);
     const wInGuests = Math.max(0, tVisitors - sGuests);
 

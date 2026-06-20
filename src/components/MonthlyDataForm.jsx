@@ -5,15 +5,19 @@ import { db } from '../firebase';
 import * as XLSX from 'xlsx';
 import toast from 'react-hot-toast';
 import './MonthlyDataForm.css';
-
 import { isHoliday } from 'korean-holidays';
+import { fetchWeatherForRange } from '../utils/weatherUtils';
 
 const parseSafeInt = (val) => {
   if (val === undefined || val === null || val === '') return 0;
   if (typeof val === 'number') return Math.round(val);
-  const str = val.toString().replace(/[\s,]+/g, '');
-  const parsed = parseFloat(str);
-  return isNaN(parsed) ? 0 : Math.round(parsed);
+  
+  const trimmed = val.toString().trim();
+  const isNegative = /^\(.*\)$/.test(trimmed) || /-\s*$/.test(trimmed) || trimmed.startsWith('-');
+  const cleaned = trimmed.replace(/[^0-9.]/g, '');
+  const num = parseFloat(cleaned);
+  
+  return isNaN(num) ? 0 : Math.round(isNegative ? -num : num);
 };
 
 const parseExcelDate = (val) => {
@@ -143,7 +147,7 @@ export default function MonthlyDataForm({ settings }) {
           }
           if (revIdx !== -1) {
             for(let i=0; i<jData.length; i++){
-              const val = parseInt(String((jData[i] || [])[revIdx] || '').replace(/[\s,]+/g, ''), 10);
+              const val = parseSafeInt((jData[i] || [])[revIdx]);
               if(!isNaN(val)) currentSheetRevSum += val;
             }
           } else {
@@ -313,6 +317,46 @@ export default function MonthlyDataForm({ settings }) {
            }
         });
 
+        // 날씨 데이터 가져오기 및 병합
+        let minDate = null;
+        let maxDate = null;
+        parsedMonthsArray.forEach(m => {
+          if (m.rawRoomRecords) {
+            m.rawRoomRecords.forEach(rec => {
+              if (rec.date) {
+                if (!minDate || rec.date < minDate) minDate = rec.date;
+                if (!maxDate || rec.date > maxDate) maxDate = rec.date;
+              }
+            });
+          }
+        });
+
+        if (minDate && maxDate) {
+          const toastId = toast.loading('날씨 데이터를 인터넷에서 조회하고 있습니다...');
+          try {
+            const weatherMap = await fetchWeatherForRange(minDate, maxDate);
+            parsedMonthsArray.forEach(m => {
+              if (m.rawRoomRecords) {
+                m.rawRoomRecords = m.rawRoomRecords.map(rec => {
+                  const w = weatherMap[rec.date] || {};
+                  return {
+                    ...rec,
+                    weatherTempMax: w.tempMax !== undefined ? w.tempMax : null,
+                    weatherTempMin: w.tempMin !== undefined ? w.tempMin : null,
+                    weatherPrecipitation: w.precipitation !== undefined ? w.precipitation : null,
+                    weatherCode: w.code !== undefined ? w.code : null,
+                    weatherDesc: w.desc !== undefined ? w.desc : '정보없음'
+                  };
+                });
+              }
+            });
+            toast.success('날씨 데이터를 정상적으로 병합했습니다.', { id: toastId });
+          } catch (weatherErr) {
+            console.error('Weather merge failed:', weatherErr);
+            toast.error('날씨 데이터를 가져오는 도중 오류가 발생했습니다. 날씨 정보 없이 데이터를 로드합니다.', { id: toastId });
+          }
+        }
+
         setRoomData(parsedMonthsArray);
 
       } catch (err) {
@@ -321,7 +365,7 @@ export default function MonthlyDataForm({ settings }) {
       }
       e.target.value = null;
     };
-    reader.readAsBinaryString(file);
+    reader.readAsArrayBuffer(file);
   };
 
   const handleLeisureFileUpload = (e) => {
@@ -415,7 +459,6 @@ export default function MonthlyDataForm({ settings }) {
             const colName = headers[j] ? headers[j].toString().trim() : '';
             if (!colName || excludedCols.includes(colName.toUpperCase().replace(/\s+/g, ''))) continue;
             
-            // 할인, 부가세 등은 영업장 이름이 아니므로 제외
             if (excludedKeywords.some(k => colName.includes(k))) continue;
             
             locationCols.push({ index: j, name: mapLocationName(colName) });
@@ -444,7 +487,9 @@ export default function MonthlyDataForm({ settings }) {
                     salesByLocation: {},
                     salesWdByLocation: {},
                     salesWeByLocation: {},
-                    crossCheckRoomSum: 0
+                    crossCheckRoomSum: 0,
+                    uniqueLeisureWdDates: new Set(),
+                    uniqueLeisureWeDates: new Set()
                 };
             }
             
@@ -453,7 +498,6 @@ export default function MonthlyDataForm({ settings }) {
             const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
             const day = d.getDay();
             
-            // 레저 주말: 토(6), 일(0) 및 당일 공휴일
             const isSatOrSun = (day === 0 || day === 6);
             const isTodayHoliday = isHoliday(d);
             const customWeekendsStr = settings?.customWeekends || '';
@@ -463,6 +507,12 @@ export default function MonthlyDataForm({ settings }) {
             if (customWeekendsArray.includes(dateVal) || isSatOrSun || isTodayHoliday) {
               isWe = true;
             }
+
+            if (isWe) {
+               monthData.uniqueLeisureWeDates.add(dateVal);
+             } else {
+               monthData.uniqueLeisureWdDates.add(dateVal);
+             }
 
             let rowLeisureSum = 0;
             locationCols.forEach(col => {
@@ -499,30 +549,43 @@ export default function MonthlyDataForm({ settings }) {
           }
         }
         
-        const parsedMonthsArray = Object.values(monthlyParsedMap).sort((a, b) => (b.id || b.yearMonth || '').localeCompare(a.id || a.yearMonth || ''));
+        const parsedMonthsArray = Object.values(monthlyParsedMap).map(m => {
+          const newObj = {
+            ...m,
+            daysCountWeekdayLeisure: m.uniqueLeisureWdDates ? m.uniqueLeisureWdDates.size : 0,
+            daysCountWeekendLeisure: m.uniqueLeisureWeDates ? m.uniqueLeisureWeDates.size : 0
+          };
+          delete newObj.uniqueLeisureWdDates;
+          delete newObj.uniqueLeisureWeDates;
+          return newObj;
+        }).sort((a, b) => (b.id || b.yearMonth || '').localeCompare(a.id || a.yearMonth || ''));
         if (parsedMonthsArray.length === 0) {
             toast.error('유효한 날짜 데이터를 찾을 수 없습니다.');
             return;
         }
 
-        // 교차 검증 로직 적용 (각 월별로)
         const crossCheckResults = {};
         parsedMonthsArray.forEach(monthData => {
             const existingRecord = records.find(r => r.id === monthData.yearMonth);
             if (existingRecord && existingRecord.totalRoomRevenue) {
                 const dbRoom = existingRecord.totalRoomRevenue;
-                // 기존 객실 데이터와 (ROOM + ROOM OTHER)의 합이 거의 일치하는지 (1000원 미만 오차 허용)
                 const isMatch = Math.abs(dbRoom - monthData.crossCheckRoomSum) < 1000; 
                 crossCheckResults[monthData.yearMonth] = {
                     hasRecord: true,
                     dbRoom,
                     parsedRoom: monthData.crossCheckRoomSum,
-                    isMatch
+                    isMatch,
+                    checkedAt: new Date().toISOString(),
+                    discrepancyAmount: Math.abs(dbRoom - monthData.crossCheckRoomSum),
+                    crossCheckDiscrepancy: !isMatch
                 };
             } else {
                 crossCheckResults[monthData.yearMonth] = {
                     hasRecord: false,
-                    parsedRoom: monthData.crossCheckRoomSum
+                    parsedRoom: monthData.crossCheckRoomSum,
+                    checkedAt: new Date().toISOString(),
+                    discrepancyAmount: 0,
+                    crossCheckDiscrepancy: false
                 };
             }
         });
@@ -554,6 +617,9 @@ export default function MonthlyDataForm({ settings }) {
                ...existingRecord.crossCheckResult,
                dbRoom,
                isMatch,
+               checkedAt: new Date().toISOString(),
+               discrepancyAmount: Math.abs(dbRoom - parsedRoom),
+               crossCheckDiscrepancy: !isMatch,
                hasRecord: true
             };
          }
@@ -586,6 +652,8 @@ export default function MonthlyDataForm({ settings }) {
             leisureSales: data.totalLeisureSales,
             leisureRevWd: data.leisureRevWd,
             leisureRevWe: data.leisureRevWe,
+            daysCountWeekdayLeisure: data.daysCountWeekdayLeisure || 0,
+            daysCountWeekendLeisure: data.daysCountWeekendLeisure || 0,
             leisureSalesByLocation: data.leisureSalesByLocation,
             salesByLocation: data.salesByLocation,
             salesWdByLocation: data.salesWdByLocation,
@@ -594,6 +662,9 @@ export default function MonthlyDataForm({ settings }) {
                dbRoom: dbRoom,
                parsedRoom: data.crossCheckRoomSum,
                isMatch: isMatch,
+               checkedAt: new Date().toISOString(),
+               discrepancyAmount: Math.abs(dbRoom - data.crossCheckRoomSum),
+               crossCheckDiscrepancy: !isMatch,
                hasRecord: !!existingRecord
             }
          };
@@ -619,7 +690,6 @@ export default function MonthlyDataForm({ settings }) {
     setMotoData(null);
     setIsMotoSaved(false);
 
-    // 파일명에서 년도와 월 추출 (예: 25년 1월, 2025년 1월)
     const yearMatch = file.name.match(/(\d{2,4})년/);
     const monthMatch = file.name.match(/(\d+)월?/);
     
@@ -633,11 +703,9 @@ export default function MonthlyDataForm({ settings }) {
             let y = parseInt(yearMatch[1], 10);
             targetYear = y < 100 ? 2000 + y : y;
           } else if (prev) {
-            // 사용자가 이미 연도를 변경해둔 상태라면 그 연도 유지
             targetYear = parseInt(prev.split('-')[0], 10);
           } else {
             const currentMonth = new Date().getMonth() + 1;
-            // 만약 현재 1~3월인데, 올리는 엑셀이 10~12월분이라면 작년 데이터일 확률이 높음!
             if (currentMonth <= 3 && month >= 10) {
               targetYear -= 1;
             }
@@ -662,8 +730,6 @@ export default function MonthlyDataForm({ settings }) {
         const dataArray = new Uint8Array(evt.target.result);
         const workbook = XLSX.read(dataArray, { type: 'array' });
         
-        // 데이터가 가장 많은(가장 줄 수가 많은) 시트 대신, "총합계(매출)가 가장 큰" 시트를 선택합니다.
-        // 월별 요약 시트와 일일 시트가 같이 있을 때 확실하게 월별 요약 시트를 잡기 위함입니다.
         let bestSheetName = workbook.SheetNames[0];
         let maxRevSum = -1;
         let bestJsonData = [];
@@ -672,7 +738,6 @@ export default function MonthlyDataForm({ settings }) {
           const s = workbook.Sheets[sName];
           const jData = XLSX.utils.sheet_to_json(s, { header: 1, raw: false });
           
-          // 대략적인 매출 합계 계산
           let currentSheetRevSum = 0;
           let revIdx = -1;
           for(let i=0; i<Math.min(jData.length, 50); i++){
@@ -689,11 +754,10 @@ export default function MonthlyDataForm({ settings }) {
           }
           if (revIdx !== -1) {
             for(let i=0; i<jData.length; i++){
-              const val = parseInt(String((jData[i] || [])[revIdx] || '').replace(/[\s,]+/g, ''), 10);
+              const val = parseSafeInt((jData[i] || [])[revIdx]);
               if(!isNaN(val)) currentSheetRevSum += val;
             }
           } else {
-            // 헤더를 못 찾은 경우 걍 줄 수로 임시 점수
             currentSheetRevSum = jData.length;
           }
 
@@ -706,14 +770,6 @@ export default function MonthlyDataForm({ settings }) {
 
         const data = bestJsonData;
         
-        let guestRev = 0;
-        let generalRev = 0;
-        let internalRev = 0;
-        let otherRev = 0;
-        let totalRev = 0;
-        
-        const breakdown = { guest: {}, general: {}, internal: {}, other: {} };
-
         let headerRowIdx = -1;
         let txColIdx = -1;
         let revColIdx = -1;
@@ -721,20 +777,17 @@ export default function MonthlyDataForm({ settings }) {
         let venueColIdx = -1;
         let countColIdx = -1;
 
-        // 헤더 행 찾기 (우선순위 1: 엑셀 원본에 있는 '트랜잭션명' 우선 탐색)
         for (let i = 0; i < 50; i++) {
           const r = data[i];
           if (!r) continue;
           const rStr = r.join(' ').replace(/\s+/g, '');
           
-          // '트랜잭션명'이 있으면 무조건 진짜 헤더로 간주 (상단 요약표 스킵 목적)
           if (rStr.includes('트랜잭션명')) {
             headerRowIdx = i;
             break;
           }
         }
 
-        // 우선순위 2: 없으면 다른 키워드로 탐색
         if (headerRowIdx === -1) {
           for (let i = 0; i < 50; i++) {
             const r = data[i];
@@ -747,7 +800,6 @@ export default function MonthlyDataForm({ settings }) {
           }
         }
 
-        // 헤더 인덱스 찾은 후 컬럼 매핑
         if (headerRowIdx !== -1) {
           const r = data[headerRowIdx];
           for (let j = 0; j < r.length; j++) {
@@ -773,7 +825,6 @@ export default function MonthlyDataForm({ settings }) {
           }
         }
 
-        // 만약 정규 헤더를 못 찾았다면, 데이터 행에서 '콘도', '객실', '일반' 등의 키워드가 가장 많이 나오는 컬럼을 찾아 txColIdx로 추정
         if (txColIdx === -1) {
           const colScores = {};
           for (let i = 0; i < Math.min(data.length, 50); i++) {
@@ -796,12 +847,11 @@ export default function MonthlyDataForm({ settings }) {
           
           if (bestCol !== -1) {
              txColIdx = bestCol;
-             headerRowIdx = 1; // 대략 두 번째 줄부터 데이터라고 가정
-             // 매출액 컬럼 추정 (맨 마지막의 숫자 컬럼) - 상위 5줄 검사하여 안전하게
+             headerRowIdx = 1;
              for(let j = data[1].length - 1; j >= 0; j--) {
                 let valid = false;
                 for(let k=1; k<=5 && k<data.length; k++) {
-                   const testVal = parseInt(String(data[k][j] || '').replace(/[\s,]+/g, ''), 10);
+                    const testVal = parseSafeInt(data[k][j]);
                    if (!isNaN(testVal) && testVal > 0) {
                       valid = true;
                       break;
@@ -1072,7 +1122,7 @@ export default function MonthlyDataForm({ settings }) {
                       <span>16/35/51평 판매량</span> <strong>{data.sold16} / {data.sold35} / {data.sold51} 실</strong>
                     </div>
                     <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
-                      <span>예상 투숙객</span> <strong style={{color: 'var(--accent-emerald)'}}>{formatCurrency((data.sold16 * 2.5) + (data.sold35 * 3.5) + (data.sold51 * 6))} 명</strong>
+                      <span>예상 투숙객</span> <strong style={{color: 'var(--accent-emerald)'}}>{formatCurrency((data.sold16 * (settings?.guestWeight16 ?? 2.5)) + (data.sold35 * (settings?.guestWeight35 ?? 3.5)) + (((data.sold51 || 0) + (data.sold51Acc || 0)) * (settings?.guestWeight51 ?? 6.0)))} 명</strong>
                     </div>
                   </div>
                 ))}

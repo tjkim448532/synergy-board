@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import useGoogleSheetVisitors from '../hooks/useGoogleSheetVisitors';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
-  ScatterChart, Scatter, ZAxis, PieChart, Pie, Cell
+  ScatterChart, Scatter, ZAxis, PieChart, Pie, Cell, ComposedChart, Bar
 } from 'recharts';
 import CountUpModule from 'react-countup';
 const CountUp = CountUpModule.default || CountUpModule;
@@ -148,62 +148,117 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
   }, [processedData, selectedMonthFilter, isCumulative]);
 
 
-  const dateRangeStr = useMemo(() => {
-    if (!filteredProcessedData || filteredProcessedData.length === 0) return '';
-    const sorted = [...filteredProcessedData].sort((a, b) => (a.yearMonth || '').localeCompare(b.yearMonth || ''));
-    if (sorted.length === 1) return `(${sorted[0].yearMonth})`;
-    return `(${sorted[0].yearMonth} ~ ${sorted[sorted.length - 1].yearMonth})`;
-  }, [filteredProcessedData]);
-
-  const { displayVisitors, hasMissingVisitorData } = useMemo(() => {
-    if (!filteredProcessedData || filteredProcessedData.length === 0) return { displayVisitors: 0, hasMissingVisitorData: true };
+  const { displayVisitors, hasMissingVisitorData, visitorValidMonths } = useMemo(() => {
+    if (!filteredProcessedData || filteredProcessedData.length === 0) {
+      return { displayVisitors: 0, hasMissingVisitorData: true, visitorValidMonths: [] };
+    }
     
-    let missing = false;
+    const carPeopleWeight = settings?.carPeopleWeight !== undefined ? Number(settings.carPeopleWeight) : 3.0;
+    const validMonths = [];
+    let hasMissing = false;
+    
     const count = filteredProcessedData.reduce((sum, d) => {
-      // 1. 구글 시트 연동 켜져있고, 해당 데이터가 2024년도일 때만 구글 시트 데이터 사용
-      if (isGoogleSheetSyncEnabled && googleSheetData && googleSheetData.visitors && (d.yearMonth || '').startsWith('2024')) {
+      let isGoogleSheetValid = false;
+      let isDbValid = false;
+      let val = 0;
+      
+      // 1. 구글 시트 연동 켜져있고, 해당 데이터가 2026년도일 때만 구글 시트 데이터 사용
+      if (isGoogleSheetSyncEnabled && googleSheetData && googleSheetData.visitors && (d.yearMonth || '').startsWith('2026')) {
          const m = parseInt(d.yearMonth.split('-')[1], 10);
-         if (googleSheetData.visitors[m] === undefined || googleSheetData.visitors[m] === null) {
-           missing = true;
+         if (googleSheetData.visitors[m] !== undefined && googleSheetData.visitors[m] !== null && googleSheetData.visitors[m] > 0) {
+            isGoogleSheetValid = true;
+            val = googleSheetData.visitors[m];
          }
-         return sum + (googleSheetData.visitors[m] || 0);
       }
       
-      // 2. 그 외 (2025년 등 구글시트 미지원 년도) 또는 구글 연동 꺼졌을 때는 기존 DB 기반 Calculation 사용
-      if (d.visitorCalcData) {
+      // 2. 그 외 또는 구글 시트에 데이터가 없는 경우 DB 기반 Calculation 사용
+      if (!isGoogleSheetValid && d.visitorCalcData) {
         const numTotalVehicles = Number(d.visitorCalcData.totalVehicles);
-        if (isNaN(numTotalVehicles) || numTotalVehicles <= 0) {
-          missing = true; // No vehicle data means visitor count is effectively missing
+        if (!isNaN(numTotalVehicles) && numTotalVehicles > 0) {
+          isDbValid = true;
+          const numEmployeeVehicles = Number(d.visitorCalcData.employeeVehicles) || 0;
+          const numGolfGuests = Number(d.visitorCalcData.golfGuests) || 0;
+          const netVehicles = Math.max(0, numTotalVehicles - numEmployeeVehicles);
+          const estimatedPeople = netVehicles * carPeopleWeight;
+          val = Math.max(0, estimatedPeople - numGolfGuests);
         }
-        const numEmployeeVehicles = Number(d.visitorCalcData.employeeVehicles) || 0;
-        const numGolfGuests = Number(d.visitorCalcData.golfGuests) || 0;
-        const netVehicles = Math.max(0, numTotalVehicles - numEmployeeVehicles);
-        const estimatedPeople = netVehicles * 3;
-        const totalVisitors = Math.max(0, estimatedPeople - numGolfGuests);
-        return sum + totalVisitors;
       }
       
-      // No visitorCalcData at all
-      missing = true;
-      return sum;
+      if (isGoogleSheetValid || isDbValid) {
+        validMonths.push({
+          yearMonth: d.yearMonth,
+          visitors: val,
+          subsidiaryRev: d.totalSales || 0,
+          fnbSales: d.fnbSales || 0,
+          salesByLocation: d.salesByLocation || d.leisureSalesByLocation || {}
+        });
+        return sum + val;
+      } else {
+        hasMissing = true;
+        return sum;
+      }
     }, 0);
     
-    // 전체 연도 중 하나라도 빠진 데이터가 있다면, 1인당 식음비 및 소비액을 구할 수 없도록 missing 을 true 로 설정 (count 여부와 무관하게)
-    return { displayVisitors: count, hasMissingVisitorData: missing };
-  }, [filteredProcessedData, isGoogleSheetSyncEnabled, googleSheetData]);
+    const isSpecificMonthSelected = selectedMonthFilter !== 'all' && !selectedMonthFilter.endsWith('-all');
+    const finalMissing = isSpecificMonthSelected ? hasMissing : (validMonths.length === 0);
+    
+    return { displayVisitors: count, hasMissingVisitorData: finalMissing, visitorValidMonths: validMonths };
+  }, [filteredProcessedData, isGoogleSheetSyncEnabled, googleSheetData, settings, selectedMonthFilter]);
+
+  const dateRangeStr = useMemo(() => {
+    if (!visitorValidMonths || visitorValidMonths.length === 0) return '';
+    const sorted = [...visitorValidMonths].sort((a, b) => (a.yearMonth || '').localeCompare(b.yearMonth || ''));
+    if (sorted.length === 1) return `(${sorted[0].yearMonth})`;
+    return `(${sorted[0].yearMonth} ~ ${sorted[sorted.length - 1].yearMonth})`;
+  }, [visitorValidMonths]);
+
+  const visitorKpiData = useMemo(() => {
+    if (!visitorValidMonths || visitorValidMonths.length === 0) return null;
+    
+    let totalSubsidiaryRev = 0;
+    let totalFnbAndPitstopRev = 0;
+    
+    visitorValidMonths.forEach(d => {
+      totalSubsidiaryRev += d.subsidiaryRev;
+      
+      let pitstopRev = 0;
+      Object.entries(d.salesByLocation).forEach(([loc, amt]) => {
+        if (loc.includes('핏스탑')) pitstopRev += (Number(amt) || 0);
+      });
+      
+      totalFnbAndPitstopRev += d.fnbSales + pitstopRev;
+    });
+    
+    return {
+      totalSubsidiaryRev,
+      totalFnbAndPitstopRev
+    };
+  }, [visitorValidMonths]);
 
   const totalHotelGuests = useMemo(() => {
     if (!filteredProcessedData || filteredProcessedData.length === 0) return 0;
+    
+    const weight16 = settings?.guestWeight16 !== undefined ? Number(settings.guestWeight16) : 2.5;
+    const weight35 = settings?.guestWeight35 !== undefined ? Number(settings.guestWeight35) : 3.5;
+    const weight51 = settings?.guestWeight51 !== undefined ? Number(settings.guestWeight51) : 6.0;
+    
     return filteredProcessedData.reduce((sum, d) => {
+      if (d.guests !== undefined) return sum + d.guests;
+      
       const sold16 = Number(d.sold16 || d.standardSold || 0);
       const sold35 = Number(d.sold35 || 0);
       const sold51Combined = Number(d.sold51 || d.connectingSold || 0) + Number(d.sold51Acc || 0);
-      return sum + (sold16 * 2.5) + (sold35 * 3.5) + (sold51Combined * 6);
+      return sum + (sold16 * weight16) + (sold35 * weight35) + (sold51Combined * weight51);
     }, 0);
-  }, [filteredProcessedData]);
+  }, [filteredProcessedData, settings]);
 
   const seminarGuests = useMemo(() => {
     if (!filteredProcessedData || filteredProcessedData.length === 0) return 0;
+    
+    const weight16 = settings?.guestWeight16 !== undefined ? Number(settings.guestWeight16) : 2.5;
+    const weight35 = settings?.guestWeight35 !== undefined ? Number(settings.guestWeight35) : 3.5;
+    const weight51 = settings?.guestWeight51 !== undefined ? Number(settings.guestWeight51) : 6.0;
+    
     let seminar = 0;
     filteredProcessedData.forEach(d => {
       if (d.rawRoomRecords && Array.isArray(d.rawRoomRecords)) {
@@ -212,15 +267,15 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
           if (mType.includes('단체영업') || mType.includes('세미나')) {
             const count = Number(record.count || 0);
             const rType = String(record.roomType || '');
-            if (rType.includes('16평')) seminar += count * 2.5;
-            else if (rType.includes('35평')) seminar += count * 3.5;
-            else if (rType.includes('51평')) seminar += count * 6;
+            if (rType.includes('16평')) seminar += count * weight16;
+            else if (rType.includes('35평')) seminar += count * weight35;
+            else if (rType.includes('51평')) seminar += count * weight51;
           }
         });
       }
     });
     return seminar;
-  }, [filteredProcessedData]);
+  }, [filteredProcessedData, settings]);
 
 
   // 선택된 부문의 전체 상관계수 계산
@@ -229,6 +284,89 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     const targetArr = filteredProcessedData.map(d => d[activeConf.dataKey]);
     return calculateCorrelation(occArr, targetArr);
   }, [filteredProcessedData, activeConf.dataKey]);
+
+  const dailyWeatherSalesData = useMemo(() => {
+    if (!filteredProcessedData || filteredProcessedData.length === 0) return [];
+    
+    const dateMap = {};
+    
+    filteredProcessedData.forEach(m => {
+      if (m.rawRoomRecords && Array.isArray(m.rawRoomRecords)) {
+        m.rawRoomRecords.forEach(rec => {
+          if (!rec.date) return;
+          const dateStr = rec.date;
+          
+          if (!dateMap[dateStr]) {
+            dateMap[dateStr] = {
+              date: dateStr,
+              revenue: 0,
+              roomsSold: 0,
+              tempMax: rec.weatherTempMax !== undefined && rec.weatherTempMax !== null ? Number(rec.weatherTempMax) : null,
+              tempMin: rec.weatherTempMin !== undefined && rec.weatherTempMin !== null ? Number(rec.weatherTempMin) : null,
+              precipitation: rec.weatherPrecipitation !== undefined && rec.weatherPrecipitation !== null ? Number(rec.weatherPrecipitation) : null,
+              code: rec.weatherCode !== undefined && rec.weatherCode !== null ? Number(rec.weatherCode) : null,
+              desc: rec.weatherDesc || '정보없음'
+            };
+          }
+          
+          dateMap[dateStr].revenue += Number(rec.revenue || 0);
+          dateMap[dateStr].roomsSold += Number(rec.count || 0);
+          
+          if (dateMap[dateStr].tempMax === null && rec.weatherTempMax !== undefined && rec.weatherTempMax !== null) {
+            dateMap[dateStr].tempMax = Number(rec.weatherTempMax);
+            dateMap[dateStr].tempMin = Number(rec.weatherTempMin);
+            dateMap[dateStr].precipitation = Number(rec.weatherPrecipitation);
+            dateMap[dateStr].code = Number(rec.weatherCode);
+            dateMap[dateStr].desc = rec.weatherDesc || '정보없음';
+          }
+        });
+      }
+    });
+    
+    return Object.values(dateMap).sort((a, b) => a.date.localeCompare(b.date));
+  }, [filteredProcessedData]);
+
+  const weatherStats = useMemo(() => {
+    const validData = dailyWeatherSalesData.filter(d => d.tempMax !== null && d.desc !== '정보없음');
+    if (validData.length === 0) return null;
+    
+    const revenues = validData.map(d => d.revenue);
+    const temps = validData.map(d => d.tempMax);
+    const precipitations = validData.map(d => d.precipitation);
+    
+    const tempCorr = calculateCorrelation(temps, revenues);
+    const precipCorr = calculateCorrelation(precipitations, revenues);
+    
+    const descGroup = {};
+    validData.forEach(d => {
+      const desc = d.desc || '기타';
+      if (!descGroup[desc]) {
+        descGroup[desc] = {
+          desc,
+          totalRevenue: 0,
+          totalRoomsSold: 0,
+          daysCount: 0
+        };
+      }
+      descGroup[desc].totalRevenue += d.revenue;
+      descGroup[desc].totalRoomsSold += d.roomsSold;
+      descGroup[desc].daysCount += 1;
+    });
+    
+    const descList = Object.values(descGroup).map(g => ({
+      desc: g.desc,
+      avgRevenue: g.totalRevenue / g.daysCount,
+      avgRoomsSold: g.totalRoomsSold / g.daysCount,
+      daysCount: g.daysCount
+    })).sort((a, b) => b.avgRevenue - a.avgRevenue);
+    
+    return {
+      tempCorr,
+      precipCorr,
+      descList,
+      totalValidDays: validData.length
+    };
+  }, [dailyWeatherSalesData]);
 
   const motoCorrelations = useMemo(() => {
     if (activeDivision !== 'moto' || motoLogic !== 'new') return null;
@@ -531,7 +669,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                 <div style={{fontSize: '12px', color: 'var(--text-muted)', opacity: 0.7}}>(골프 및 숙박비 제외 / 부대매출 합산)</div>
               </div>
               <div style={{fontSize: '20px', fontWeight: 'bold', color: hasMissingVisitorData ? 'var(--text-muted)' : 'var(--accent-gold)'}}>
-                {hasMissingVisitorData ? <span style={{fontSize: '14px'}}>N/A (데이터 누락)</span> : (displayVisitors > 0 && kpiData ? `₩${Math.round(kpiData.totalSubsidiaryRev / displayVisitors).toLocaleString()}` : '₩0')}
+                {hasMissingVisitorData ? <span style={{fontSize: '14px'}}>N/A (데이터 누락)</span> : (displayVisitors > 0 && visitorKpiData ? `₩${Math.round(visitorKpiData.totalSubsidiaryRev / displayVisitors).toLocaleString()}` : '₩0')}
               </div>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
@@ -540,7 +678,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                 <div style={{fontSize: '12px', color: 'var(--text-muted)', opacity: 0.7}}>(식음 + 핏스탑 특별 합산 기준)</div>
               </div>
               <div style={{fontSize: '18px', fontWeight: 'bold', color: hasMissingVisitorData ? 'var(--text-muted)' : 'var(--accent-emerald)'}}>
-                {hasMissingVisitorData ? <span style={{fontSize: '14px'}}>N/A (데이터 누락)</span> : (displayVisitors > 0 && kpiData ? `₩${Math.round(kpiData.totalFnbAndPitstopRev / displayVisitors).toLocaleString()}` : '₩0')}
+                {hasMissingVisitorData ? <span style={{fontSize: '14px'}}>N/A (데이터 누락)</span> : (displayVisitors > 0 && visitorKpiData ? `₩${Math.round(visitorKpiData.totalFnbAndPitstopRev / displayVisitors).toLocaleString()}` : '₩0')}
               </div>
             </div>
           </div>
@@ -931,6 +1069,141 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
 
 
       </div>
+
+      {/* 4. 날씨 & 매출 상관관계 분석 */}
+      <div className="glass-panel" style={{padding: '24px', marginTop: '20px'}}>
+        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
+          <div>
+            <h3 style={{margin: 0}}>🌤️ 날씨 및 일별 객실 매출 상관관계 분석</h3>
+            <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: '4px 0 0 0'}}>
+              일자별 최고기온, 강수량 데이터와 당일 객실 매출의 피어슨 상관계수를 분석합니다.
+            </p>
+          </div>
+          {weatherStats && (
+            <div style={{fontSize: '12px', background: 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '6px', color: 'var(--text-muted)'}}>
+              분석 대상: 총 {weatherStats.totalValidDays}일 (날씨 연동 데이터 기준)
+            </div>
+          )}
+        </div>
+
+        {!weatherStats ? (
+          <div style={{
+            background: 'rgba(251, 191, 36, 0.1)', 
+            border: '1px solid var(--accent-gold)', 
+            borderRadius: '12px', 
+            padding: '24px', 
+            textAlign: 'center',
+            color: 'var(--text-main)'
+          }}>
+            <p style={{margin: '0 0 12px 0', fontSize: '15px', fontWeight: 'bold'}}>날씨 데이터가 아직 병합되지 않았습니다.</p>
+            <p style={{margin: 0, fontSize: '13px', color: 'var(--text-muted)'}}>
+              날씨 분석을 시작하려면 <strong>[설정]</strong> 탭으로 이동하여 <strong>과거 날씨 데이터 소급 적용 (과거 데이터 마이그레이션)</strong>을 실행해 주세요.<br/>
+              또는 날씨 정보가 추가된 새 객실 실적 파일을 업로드하시면 자동으로 날씨가 동기화됩니다.
+            </p>
+          </div>
+        ) : (
+          <div style={{display: 'flex', flexDirection: 'column', gap: '24px'}}>
+            {/* 상관계수 및 날씨별 비교 카드 그리드 */}
+            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px'}}>
+              
+              {/* 기온 상관계수 카드 */}
+              <div style={{background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px'}}>
+                <div style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px'}}>최고기온 vs 객실 매출 상관관계</div>
+                <div style={{display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '8px'}}>
+                  <span style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-gold)'}}>
+                    {weatherStats.tempCorr !== null ? weatherStats.tempCorr.toFixed(3) : 'N/A'}
+                  </span>
+                  <span style={{fontSize: '14px', color: 'var(--text-muted)'}}>(r)</span>
+                </div>
+                <div style={{fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)'}}>
+                  해석: {getInterpretation(weatherStats.tempCorr)}
+                </div>
+                <p style={{fontSize: '12px', color: 'var(--text-muted)', margin: '8px 0 0 0', lineHeight: '1.4'}}>
+                  값이 양수(+)이면 더울수록 매출이 증가하고, 음수(-)이면 기온이 낮을수록 매출이 증가함을 나타냅니다.
+                </p>
+              </div>
+
+              {/* 강수량 상관계수 카드 */}
+              <div style={{background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px'}}>
+                <div style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px'}}>강수량 vs 객실 매출 상관관계</div>
+                <div style={{display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '8px'}}>
+                  <span style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-blue)'}}>
+                    {weatherStats.precipCorr !== null ? weatherStats.precipCorr.toFixed(3) : 'N/A'}
+                  </span>
+                  <span style={{fontSize: '14px', color: 'var(--text-muted)'}}>(r)</span>
+                </div>
+                <div style={{fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)'}}>
+                  해석: {getInterpretation(weatherStats.precipCorr)}
+                </div>
+                <p style={{fontSize: '12px', color: 'var(--text-muted)', margin: '8px 0 0 0', lineHeight: '1.4'}}>
+                  대체로 음수(-)의 강한 상관관계를 보이며, 비/눈이 오는 날 객실 수요가 감소하는 경향성을 파악할 수 있습니다.
+                </p>
+              </div>
+
+              {/* 날씨 유형별 통계 카드 */}
+              <div style={{background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px', gridColumn: 'span 2'}}>
+                <div style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '12px'}}>날씨 상태별 일평균 객실 매출 및 판매량</div>
+                <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
+                  {weatherStats.descList.map((g) => (
+                    <div key={g.desc} style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', borderRadius: '6px'}}>
+                      <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                        <span style={{fontWeight: 'bold', minWidth: '60px'}}>{g.desc}</span>
+                        <span style={{fontSize: '12px', color: 'var(--text-muted)'}}>({g.daysCount}일)</span>
+                      </div>
+                      <div style={{display: 'flex', gap: '20px', alignItems: 'center'}}>
+                        <div style={{textAlign: 'right'}}>
+                          <div style={{fontSize: '13px', fontWeight: 'bold'}}>₩{formatCurrency(g.avgRevenue)}</div>
+                          <div style={{fontSize: '11px', color: 'var(--text-muted)'}}>일평균 매출</div>
+                        </div>
+                        <div style={{textAlign: 'right', minWidth: '80px'}}>
+                          <div style={{fontSize: '13px', fontWeight: 'bold', color: 'var(--accent-emerald)'}}>{g.avgRoomsSold.toFixed(1)}실</div>
+                          <div style={{fontSize: '11px', color: 'var(--text-muted)'}}>일평균 판매</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+
+            {/* 일별 매출-기온/강수량 혼합 차트 */}
+            <div style={{background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px'}}>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px'}}>
+                <h4 style={{margin: 0}}>📈 일별 매출 - 기온/강수량 추이 혼합 차트</h4>
+                <div style={{fontSize: '12px', color: 'var(--text-muted)'}}>
+                  * 하단 차트에서 일자별 매출액(막대)과 최고기온(선)을 오버레이하여 기상 변동에 따른 즉각적인 매출 탄력성을 시각화합니다.
+                </div>
+              </div>
+              
+              <div style={{width: '100%', height: '350px'}}>
+                <ResponsiveContainer width="99%" height="100%" minWidth={1} minHeight={1}>
+                  <ComposedChart data={dailyWeatherSalesData} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                    <XAxis dataKey="date" stroke="var(--text-muted)" fontSize={11} tickFormatter={(val) => val.substring(5)} />
+                    <YAxis yAxisId="left" stroke="var(--accent-emerald)" tickFormatter={(v) => `${(v/1000000).toFixed(1)}M`} label={{ value: '객실 매출 (백만)', angle: -90, position: 'insideLeft', style: { fill: 'var(--text-muted)', fontSize: 12 } }} />
+                    <YAxis yAxisId="right" orientation="right" stroke="var(--accent-gold)" tickFormatter={(v) => `${v}°C`} label={{ value: '최고기온 (°C)', angle: 90, position: 'insideRight', style: { fill: 'var(--text-muted)', fontSize: 12 } }} />
+                    <RechartsTooltip 
+                      contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)'}}
+                      formatter={(value, name) => {
+                        if (name === '객실 매출') return `₩${formatCurrency(value)}`;
+                        if (name === '최고기온') return `${value.toFixed(1)}°C`;
+                        if (name === '강수량') return `${value.toFixed(1)}mm`;
+                        return value;
+                      }}
+                    />
+                    <Legend />
+                    <Bar yAxisId="left" dataKey="revenue" name="객실 매출" fill="rgba(16, 185, 129, 0.6)" barSize={16} radius={[4, 4, 0, 0]} />
+                    <Line yAxisId="right" type="monotone" dataKey="tempMax" name="최고기온" stroke="var(--accent-gold)" strokeWidth={2.5} dot={false} />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+          </div>
+        )}
+      </div>
+
     </div>
   );
 }

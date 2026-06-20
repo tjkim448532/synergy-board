@@ -118,21 +118,16 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
   const rawFnbRev = annualSoldRooms * baseMetrics.fnbPerRoom;
 
   const calculateCapaLimit = (rawExpected, totalHistorical, capaStr) => {
-    if (!capaStr || isNaN(Number(capaStr))) return { value: rawExpected, isCapped: false };
     const capa = Number(capaStr);
-    if (capa <= 0 || capa >= 100) {
-      if (capa >= 100) return { value: 0, isCapped: true };
-      return { value: rawExpected, isCapped: false };
-    }
+    if (isNaN(capa) || capa <= 0) return { value: rawExpected, isCapped: false };
     
-    // Annualized current revenue based on historical data
     const currentAnnualRev = (totalHistorical / baseMetrics.monthsCount) * 12;
     if (currentAnnualRev === 0) return { value: rawExpected, isCapped: false };
 
     const maxAnnualCapacity = currentAnnualRev / (capa / 100);
     const remainingCapacity = Math.max(0, maxAnnualCapacity - currentAnnualRev);
     
-    const isCapped = rawExpected > remainingCapacity;
+    const isCapped = rawExpected > remainingCapacity || capa >= 100;
     return { 
       value: isCapped ? remainingCapacity : rawExpected, 
       isCapped

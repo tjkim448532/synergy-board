@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { calculateGroupedSales } from '../utils/revenueUtils';
+import { isHoliday } from 'korean-holidays';
 
 export default function useProcessedData(monthlyData, settings) {
   return useMemo(() => {
@@ -27,18 +28,131 @@ export default function useProcessedData(monthlyData, settings) {
     let total51AccVirtualAll = 0;
 
     const data = [...monthlyData].sort((a, b) => (a.id || a.yearMonth || '').localeCompare(b.id || b.yearMonth || '')).map(d => {
-      const days = d.daysCount || 30;
-      const daysWd = d.daysCountWeekday || 22;
-      const daysWe = d.daysCountWeekend || 8;
-      
-      const sold16 = Number(d.sold16 || d.standardSold || 0);
-      const sold35 = Number(d.sold35 || 0);
-      const sold51 = Number(d.sold51 || d.connectingSold || 0);
-      const sold51Acc = Number(d.sold51Acc || 0);
-      
-      const guests = (sold16 * 2.5) + (sold35 * 3.5) + ((sold51 + sold51Acc) * 6);
-      
       const count51AsTwoRooms = settings?.count51AsTwoRooms !== false;
+
+      let days = d.daysCount || 30;
+      let daysWd = d.daysCountWeekday || 22;
+      let daysWe = d.daysCountWeekend || 8;
+      
+      let sold16 = Number(d.sold16 || d.standardSold || 0);
+      let sold35 = Number(d.sold35 || 0);
+      let sold51 = Number(d.sold51 || d.connectingSold || 0);
+      let sold51Acc = Number(d.sold51Acc || 0);
+      
+      let totalRoomRevenue = Number(d.totalRoomRevenue || 0);
+      let revWd = Number(d.revWeekday || 0);
+      let revWe = Number(d.revWeekend || 0);
+
+      let soldWd = 0;
+      let soldWe = 0;
+
+      if (d.rawRoomRecords && Array.isArray(d.rawRoomRecords)) {
+        const customWeekends = settings?.customWeekends || [];
+        const customWeekendsArray = Array.isArray(customWeekends)
+          ? customWeekends
+          : typeof customWeekends === 'string'
+            ? customWeekends.split(',').map(s => s.trim()).filter(s => s)
+            : [];
+            
+        let calculatedSold16 = 0;
+        let calculatedSold35 = 0;
+        let calculatedSold51 = 0;
+        let calculatedSold51Acc = 0;
+        
+        let calculatedRevWd = 0;
+        let calculatedRevWe = 0;
+        let calculatedSoldWd = 0;
+        let calculatedSoldWe = 0;
+        
+        const uniqueDates = new Set();
+        const uniqueWeekdayDates = new Set();
+        const uniqueWeekendDates = new Set();
+        
+        d.rawRoomRecords.forEach(rec => {
+          const recDate = rec.date;
+          if (!recDate) return;
+          
+          const [yyyy, mm, dd] = recDate.split('-');
+          const dateObj = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+          const day = dateObj.getDay();
+          const nextDay = new Date(dateObj);
+          nextDay.setDate(dateObj.getDate() + 1);
+          
+          const isFriOrSat = (day === 5 || day === 6);
+          const isNextDayHoliday = isHoliday(nextDay);
+          
+          const isWeekend = customWeekendsArray.includes(recDate) || isFriOrSat || isNextDayHoliday;
+          
+          uniqueDates.add(recDate);
+          if (isWeekend) {
+            uniqueWeekendDates.add(recDate);
+          } else {
+            uniqueWeekdayDates.add(recDate);
+          }
+          
+          const roomType = rec.roomType || '';
+          const count = Number(rec.count || 0);
+          const revenue = Number(rec.revenue || 0);
+          
+          if (roomType.includes('16평')) {
+            calculatedSold16 += count;
+          } else if (roomType.includes('35평')) {
+            calculatedSold35 += count;
+          } else if (roomType.includes('51평')) {
+            if (roomType.includes('장애') || roomType.includes('휠체어')) {
+              calculatedSold51Acc += count;
+            } else {
+              calculatedSold51 += count;
+            }
+          }
+          
+          let virtualCount = count;
+          if (roomType.includes('51평') && !(roomType.includes('장애') || roomType.includes('휠체어'))) {
+            virtualCount = count51AsTwoRooms ? count * 2 : count;
+          }
+          
+          if (isWeekend) {
+            calculatedSoldWe += virtualCount;
+            calculatedRevWe += revenue;
+          } else {
+            calculatedSoldWd += virtualCount;
+            calculatedRevWd += revenue;
+          }
+        });
+        
+        days = uniqueDates.size || days;
+        daysWd = uniqueWeekdayDates.size || daysWd;
+        daysWe = uniqueWeekendDates.size || daysWe;
+        
+        sold16 = calculatedSold16;
+        sold35 = calculatedSold35;
+        sold51 = calculatedSold51;
+        sold51Acc = calculatedSold51Acc;
+        
+        soldWd = calculatedSoldWd;
+        soldWe = calculatedSoldWe;
+        
+        totalRoomRevenue = calculatedRevWd + calculatedRevWe;
+        revWd = calculatedRevWd;
+        revWe = calculatedRevWe;
+      } else {
+        const totalSoldFallback = sold16 + sold35 + (count51AsTwoRooms ? sold51 * 2 : sold51) + sold51Acc;
+        const rawSoldWd = Number(d.soldWeekday || 0);
+        const rawSoldWe = Number(d.soldWeekend || 0);
+        const totalRawSold = rawSoldWd + rawSoldWe;
+        
+        soldWd = rawSoldWd;
+        soldWe = rawSoldWe;
+        
+        if (totalRawSold > 0 && totalSoldFallback > 0) {
+          const ratio = totalSoldFallback / totalRawSold;
+          soldWd = rawSoldWd * ratio;
+          soldWe = rawSoldWe * ratio;
+        }
+      }
+
+      const totalSold = sold16 + sold35 + (count51AsTwoRooms ? sold51 * 2 : sold51) + sold51Acc;
+      
       const physicalRooms = Number(settings?.totalRooms) || 175;
       const rooms51Sets = Number(settings?.connectingRooms51) || 85;
       const dailyInventory = count51AsTwoRooms ? physicalRooms : (physicalRooms - rooms51Sets);
@@ -46,24 +160,12 @@ export default function useProcessedData(monthlyData, settings) {
       const totalInventory = dailyInventory * days;
       const invWd = dailyInventory * daysWd;
       const invWe = dailyInventory * daysWe;
-
-      const totalSold = sold16 + sold35 + (count51AsTwoRooms ? sold51 * 2 : sold51) + sold51Acc;
-      const rawSoldWd = Number(d.soldWeekday || 0);
-      const rawSoldWe = Number(d.soldWeekend || 0);
-      const totalRawSold = rawSoldWd + rawSoldWe;
       
-      let soldWd = rawSoldWd;
-      let soldWe = rawSoldWe;
+      const weight16 = settings?.guestWeight16 !== undefined ? Number(settings.guestWeight16) : 2.5;
+      const weight35 = settings?.guestWeight35 !== undefined ? Number(settings.guestWeight35) : 3.5;
+      const weight51 = settings?.guestWeight51 !== undefined ? Number(settings.guestWeight51) : 6.0;
       
-      if (totalRawSold > 0 && totalSold > 0) {
-        const ratio = totalSold / totalRawSold;
-        soldWd = rawSoldWd * ratio;
-        soldWe = rawSoldWe * ratio;
-      }
-
-      const totalRoomRevenue = Number(d.totalRoomRevenue || 0);
-      const revWd = Number(d.revWeekday || 0);
-      const revWe = Number(d.revWeekend || 0);
+      const guests = (sold16 * weight16) + (sold35 * weight35) + ((sold51 + sold51Acc) * weight51);
       
       const locationGroups = settings?.locationGroups || {};
       let leisureSales = 0;
@@ -164,7 +266,13 @@ export default function useProcessedData(monthlyData, settings) {
       let calcMotoInternal = 0;
       let calcMotoOther = 0;
       
-      if (d.venues && d.venues['모토아레나'] && d.venues['모토아레나'].tickets) {
+      if (d.venues && d.venues['모토아레나'] && d.venues['모토아레나'].breakdown) {
+        const breakdown = d.venues['모토아레나'].breakdown;
+        calcMotoGuest = Object.values(breakdown.guest || {}).reduce((sum, v) => sum + Number(v || 0), 0);
+        calcMotoGeneral = Object.values(breakdown.general || {}).reduce((sum, v) => sum + Number(v || 0), 0);
+        calcMotoInternal = Object.values(breakdown.internal || {}).reduce((sum, v) => sum + Number(v || 0), 0);
+        calcMotoOther = Object.values(breakdown.other || {}).reduce((sum, v) => sum + Number(v || 0), 0);
+      } else if (d.venues && d.venues['모토아레나'] && d.venues['모토아레나'].tickets) {
         Object.entries(d.venues['모토아레나'].tickets).forEach(([ticket, amt]) => {
           let group = 'other';
           if (settings?.motoTicketGroups?.[ticket]) {
@@ -214,6 +322,7 @@ export default function useProcessedData(monthlyData, settings) {
         sold51,
         sold51Acc,
         totalSold,
+        guests,
         occupancyRate: occRate,
         occWd,
         occWe,
