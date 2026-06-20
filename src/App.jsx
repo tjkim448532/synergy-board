@@ -32,7 +32,7 @@ const pageTransition = {
 };
 
 function App() {
-  const [activeTab, setActiveTab] = useState('strategy')
+  const [activeTab, setActiveTab] = useState('analytics')
   const [settings, setSettings] = useState({});
   const [allData, setAllData] = useState([]);
 

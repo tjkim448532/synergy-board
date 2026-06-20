@@ -117,7 +117,37 @@ export default function Settings({ monthlyData }) {
         if (minDate && maxDate) {
           const weatherMap = await fetchWeatherForRange(minDate, maxDate);
           
-          const updatedRawRoomRecords = m.rawRoomRecords.map(rec => {
+          const tempMap = {};
+          m.rawRoomRecords.forEach(rec => {
+            const dateVal = rec.date;
+            if (!dateVal) return;
+            const roomType = rec.roomType || '';
+            const rateType = rec.rateType || '';
+            const marketType = rec.marketType || '';
+            const agency = rec.agency || '';
+            const count = Number(rec.count || 0);
+            const rev = Number(rec.revenue || 0);
+            const isCancel = rev < 0;
+            
+            const groupKey = `${dateVal}||${roomType}||${rateType}||${marketType}||${agency}||${isCancel}`;
+            if (!tempMap[groupKey]) {
+              tempMap[groupKey] = {
+                date: dateVal,
+                roomType,
+                rateType,
+                marketType,
+                agency,
+                count: 0,
+                revenue: 0
+              };
+            }
+            tempMap[groupKey].count += count;
+            tempMap[groupKey].revenue += rev;
+          });
+          
+          const aggregatedRecords = Object.values(tempMap).filter(rec => rec.count !== 0 || rec.revenue !== 0);
+          
+          const updatedRawRoomRecords = aggregatedRecords.map(rec => {
             const w = weatherMap[rec.date] || {};
             return {
               ...rec,

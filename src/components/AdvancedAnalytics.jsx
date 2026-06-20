@@ -476,11 +476,66 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       daysCount: g.daysCount
     })).sort((a, b) => b.avgRevenue - a.avgRevenue);
     
+    // 주말/공휴일 필터링 (토, 일, 공휴일)
+    const weekendValidData = validData.filter(d => {
+      const [yyyy, mm, dd] = d.date.split('-');
+      const dateObj = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+      const day = dateObj.getDay();
+      return day === 0 || day === 6 || isHoliday(dateObj);
+    });
+
+    let weekendPrecipCorr = null;
+    let weekendRainyStats = null;
+
+    if (weekendValidData.length >= 2) {
+      const wkRevenues = weekendValidData.map(d => d.revenue);
+      const wkPrecips = weekendValidData.map(d => d.precipitation);
+      weekendPrecipCorr = calculateCorrelation(wkPrecips, wkRevenues);
+
+      const rainyWeekend = weekendValidData.filter(d => d.precipitation > 0);
+      const clearWeekend = weekendValidData.filter(d => d.precipitation === 0);
+
+      weekendRainyStats = {
+        totalDays: weekendValidData.length,
+        rainyDaysCount: rainyWeekend.length,
+        clearDaysCount: clearWeekend.length,
+        avgRainyRevenue: rainyWeekend.length > 0 ? rainyWeekend.reduce((sum, d) => sum + d.revenue, 0) / rainyWeekend.length : 0,
+        avgClearRevenue: clearWeekend.length > 0 ? clearWeekend.reduce((sum, d) => sum + d.revenue, 0) / clearWeekend.length : 0,
+      };
+    }
+
+    const getRainStats = (dataList) => {
+      const rainy = dataList.filter(d => d.precipitation > 0);
+      const clear = dataList.filter(d => d.precipitation === 0);
+      return {
+        clearDays: clear.length,
+        clearAvgRev: clear.length > 0 ? clear.reduce((sum, d) => sum + d.revenue, 0) / clear.length : 0,
+        clearAvgRooms: clear.length > 0 ? clear.reduce((sum, d) => sum + d.roomsSold, 0) / clear.length : 0,
+        rainyDays: rainy.length,
+        rainyAvgRev: rainy.length > 0 ? rainy.reduce((sum, d) => sum + d.revenue, 0) / rainy.length : 0,
+        rainyAvgRooms: rainy.length > 0 ? rainy.reduce((sum, d) => sum + d.roomsSold, 0) / rainy.length : 0,
+      };
+    };
+
+    const overallRainStats = getRainStats(validData);
+
+    const weekdayValidData = validData.filter(d => {
+      const [yyyy, mm, dd] = d.date.split('-');
+      const dateObj = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+      const day = dateObj.getDay();
+      return day !== 0 && day !== 6 && !isHoliday(dateObj);
+    });
+
+    const weekdayRainStats = getRainStats(weekdayValidData);
+    const weekendRainStats = getRainStats(weekendValidData);
+
     return {
       tempCorr,
       precipCorr,
       descList,
-      totalValidDays: validData.length
+      totalValidDays: validData.length,
+      weekendPrecipCorr,
+      weekendRainyStats
     };
   }, [dailyWeatherSalesData]);
 
@@ -1480,8 +1535,43 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                 </p>
               </div>
 
+              {/* 주말/공휴일 우천 영향 분석 카드 */}
+              <div style={{background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px'}}>
+                <div style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px'}}>주말/공휴일 강수량 vs {weatherLabel}</div>
+                <div style={{display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '8px'}}>
+                  <span style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-coral)'}}>
+                    {typeof weatherStats.weekendPrecipCorr === 'number' ? weatherStats.weekendPrecipCorr.toFixed(3) : 'N/A'}
+                  </span>
+                  <span style={{fontSize: '14px', color: 'var(--text-muted)'}}>(r)</span>
+                </div>
+                <div style={{fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '10px'}}>
+                  해석: {getInterpretation(weatherStats.weekendPrecipCorr)}
+                </div>
+                {weatherStats.weekendRainyStats ? (
+                  <div style={{fontSize: '11px', display: 'flex', flexDirection: 'column', gap: '4px', background: 'rgba(0,0,0,0.2)', padding: '8px 12px', borderRadius: '6px', color: 'var(--text-muted)'}}>
+                    <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                      <span>☀️ 맑은 주말/공휴일 ({weatherStats.weekendRainyStats.clearDaysCount}일) 평균:</span>
+                      <strong style={{color: 'var(--text-main)'}}>₩{formatCurrency(weatherStats.weekendRainyStats.avgClearRevenue)}</strong>
+                    </div>
+                    <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '2px'}}>
+                      <span>☔ 비 온 주말/공휴일 ({weatherStats.weekendRainyStats.rainyDaysCount}일) 평균:</span>
+                      <strong style={{color: 'var(--accent-coral)'}}>
+                        {weatherStats.weekendRainyStats.rainyDaysCount > 0 ? `₩${formatCurrency(weatherStats.weekendRainyStats.avgRainyRevenue)}` : '비 온 날 없음'}
+                      </strong>
+                    </div>
+                    {weatherStats.weekendRainyStats.rainyDaysCount > 0 && weatherStats.weekendRainyStats.avgClearRevenue > 0 && (
+                      <div style={{textAlign: 'right', marginTop: '4px', borderTop: '1px dashed rgba(255,255,255,0.1)', paddingTop: '4px', color: 'var(--accent-coral)', fontWeight: 'bold'}}>
+                        비 올 시 일평균 매출 {((1 - (weatherStats.weekendRainyStats.avgRainyRevenue / weatherStats.weekendRainyStats.avgClearRevenue)) * 100).toFixed(1)}% 감소
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div style={{fontSize: '11px', color: 'var(--text-muted)'}}>주말/공휴일 데이터가 충분하지 않습니다.</div>
+                )}
+              </div>
+
               {/* 날씨 유형별 통계 카드 */}
-              <div style={{background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px', gridColumn: 'span 2'}}>
+              <div style={{background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px'}}>
                 <div style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '12px'}}>날씨 상태별 일평균 {weatherDataType === 'room' ? '객실 매출 및 판매량' : weatherLabel}</div>
                 <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
                   {weatherStats.descList.map((g) => (
@@ -1507,6 +1597,66 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                 </div>
               </div>
 
+            </div>
+
+            {/* 우천 여부 비교 표 */}
+            <div style={{background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px', marginTop: '20px'}}>
+              <h4 style={{margin: '0 0 8px 0', color: 'var(--accent-coral)'}}>🌧️ 우천 여부(비 온 날 vs 비 안 온 날)에 따른 일평균 매출 비교</h4>
+              <p style={{fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 16px 0'}}>
+                강수량 크기와 상관없이 단순히 '비가 왔는지(강수량 &gt; 0)'와 '안 왔는지(강수량 = 0)'로 구분하여 주중, 주말/공휴일, 전체 기간의 일평균 {weatherLabel}을 비교 대조합니다.
+              </p>
+              
+              <div style={{overflowX: 'auto'}}>
+                <table style={{width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'center'}}>
+                  <thead>
+                    <tr style={{background: 'rgba(255, 255, 255, 0.05)', borderBottom: '2px solid rgba(255,255,255,0.1)'}}>
+                      <th style={{padding: '10px 6px', color: 'var(--text-muted)', textAlign: 'left'}}>구분</th>
+                      <th style={{padding: '10px 6px', color: 'var(--accent-emerald)'}} colspan="2">비 안 온 날 (강수량 0mm)</th>
+                      <th style={{padding: '10px 6px', color: 'var(--accent-coral)'}} colspan="2">비 온 날 (강수량 &gt; 0mm)</th>
+                      <th style={{padding: '10px 6px', color: 'var(--text-bright)'}} colspan="2">우천 시 매출 차이</th>
+                    </tr>
+                    <tr style={{background: 'rgba(255, 255, 255, 0.02)', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '11px'}}>
+                      <th style={{padding: '6px', textAlign: 'left', color: 'var(--text-muted)'}}>분류</th>
+                      <th style={{padding: '6px', color: 'var(--text-muted)'}}>일수</th>
+                      <th style={{padding: '6px', color: 'var(--text-muted)'}}>일평균 매출</th>
+                      <th style={{padding: '6px', color: 'var(--text-muted)'}}>일수</th>
+                      <th style={{padding: '6px', color: 'var(--text-muted)'}}>일평균 매출</th>
+                      <th style={{padding: '6px', color: 'var(--text-muted)'}}>변동액</th>
+                      <th style={{padding: '6px', color: 'var(--text-muted)'}}>감소율</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { name: '전체 기간 (Overall)', stats: weatherStats.overallRainStats },
+                      { name: '주중 (Weekdays)', stats: weatherStats.weekdayRainStats },
+                      { name: '주말/공휴일 (Weekends & Holidays)', stats: weatherStats.weekendRainStats }
+                    ].map(row => {
+                      const s = row.stats;
+                      if (!s) return null;
+                      const diff = s.rainyAvgRev - s.clearAvgRev;
+                      const pct = s.clearAvgRev > 0 ? (diff / s.clearAvgRev) * 100 : 0;
+                      
+                      return (
+                        <tr key={row.name} style={{borderBottom: '1px solid rgba(255,255,255,0.05)'}}>
+                          <td style={{padding: '12px 6px', textAlign: 'left', fontWeight: 'bold'}}>{row.name}</td>
+                          <td style={{padding: '12px 6px'}}>{s.clearDays}일</td>
+                          <td style={{padding: '12px 6px', fontWeight: 'bold', color: 'var(--text-main)'}}>₩{formatCurrency(s.clearAvgRev)}</td>
+                          <td style={{padding: '12px 6px'}}>{s.rainyDays}일</td>
+                          <td style={{padding: '12px 6px', fontWeight: 'bold', color: 'var(--text-main)'}}>
+                            {s.rainyDays > 0 ? `₩${formatCurrency(s.rainyAvgRev)}` : '-'}
+                          </td>
+                          <td style={{padding: '12px 6px', fontWeight: 'bold', color: diff < 0 ? 'var(--accent-red)' : 'var(--accent-emerald)'}}>
+                            {s.rainyDays > 0 ? `${diff > 0 ? '+' : ''}₩${formatCurrency(diff)}` : '-'}
+                          </td>
+                          <td style={{padding: '12px 6px', fontWeight: 'bold', color: diff < 0 ? 'var(--accent-red)' : 'var(--accent-emerald)'}}>
+                            {s.rainyDays > 0 ? `${pct.toFixed(1)}%` : '-'}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             {/* 일별 매출-기온/강수량 혼합 차트 */}

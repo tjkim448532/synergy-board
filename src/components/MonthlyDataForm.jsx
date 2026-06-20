@@ -257,19 +257,29 @@ export default function MonthlyDataForm({ settings }) {
 
             // 모든 객실 합계를 구하기 위해 continue 조건 제거
 
-            if (!monthData.rawRoomRecords) {
-                monthData.rawRoomRecords = [];
+            if (!monthData.tempRoomMap) {
+                monthData.tempRoomMap = {};
             }
-            monthData.rawRoomRecords.push({
-                date: dateVal,
-                roomType: roomType,
-                count: count,
-                revenue: rev,
-                rateType: rateIdx !== -1 && row[rateIdx] ? row[rateIdx].toString().trim() : '',
-                marketType: marketIdx !== -1 && row[marketIdx] ? row[marketIdx].toString().trim() : '',
-                sourceType: sourceIdx !== -1 && row[sourceIdx] ? row[sourceIdx].toString().trim() : '',
-                agency: agencyIdx !== -1 && row[agencyIdx] ? row[agencyIdx].toString().trim() : ''
-            });
+            const rateType = rateIdx !== -1 && row[rateIdx] ? row[rateIdx].toString().trim() : '';
+            const marketType = marketIdx !== -1 && row[marketIdx] ? row[marketIdx].toString().trim() : '';
+            const agency = agencyIdx !== -1 && row[agencyIdx] ? row[agencyIdx].toString().trim() : '';
+            const isCancel = rev < 0;
+            
+            const groupKey = `${dateVal}||${roomType}||${rateType}||${marketType}||${agency}||${isCancel}`;
+            
+            if (!monthData.tempRoomMap[groupKey]) {
+                monthData.tempRoomMap[groupKey] = {
+                    date: dateVal,
+                    roomType: roomType,
+                    count: 0,
+                    revenue: 0,
+                    rateType: rateType,
+                    marketType: marketType,
+                    agency: agency
+                };
+            }
+            monthData.tempRoomMap[groupKey].count += count;
+            monthData.tempRoomMap[groupKey].revenue += rev;
 
             monthData.totalRoomRevenue += rev;
             if (isWeekend) {
@@ -295,12 +305,15 @@ export default function MonthlyDataForm({ settings }) {
         }
         
         const parsedMonthsArray = Object.values(roomParsedMap).map(m => {
+          const rawRoomRecords = Object.values(m.tempRoomMap || {}).filter(rec => rec.count !== 0 || rec.revenue !== 0);
           const newObj = {
             ...m,
+            rawRoomRecords,
             daysCount: m.uniqueDates.size,
             daysCountWeekday: m.uniqueWeekdayDates.size,
             daysCountWeekend: m.uniqueWeekendDates.size
           };
+          delete newObj.tempRoomMap;
           delete newObj.uniqueDates;
           delete newObj.uniqueWeekdayDates;
           delete newObj.uniqueWeekendDates;
@@ -690,7 +703,44 @@ export default function MonthlyDataForm({ settings }) {
          const docRef = doc(db, 'monthly_records', data.yearMonth);
          const docSnap = await getDoc(docRef);
          if (docSnap.exists()) {
-            await updateDoc(docRef, dataToSave);
+            const existingData = docSnap.data() || {};
+            const updatePayload = { ...dataToSave };
+            if (existingData.rawRoomRecords && existingData.rawRoomRecords.length > 500) {
+               const tempMap = {};
+               existingData.rawRoomRecords.forEach(rec => {
+                  const dateVal = rec.date;
+                  if (!dateVal) return;
+                  const roomType = rec.roomType || '';
+                  const rateType = rec.rateType || '';
+                  const marketType = rec.marketType || '';
+                  const agency = rec.agency || '';
+                  const count = Number(rec.count || 0);
+                  const rev = Number(rec.revenue || 0);
+                  const isCancel = rev < 0;
+                  
+                  const groupKey = `${dateVal}||${roomType}||${rateType}||${marketType}||${agency}||${isCancel}`;
+                  if (!tempMap[groupKey]) {
+                     tempMap[groupKey] = {
+                        date: dateVal,
+                        roomType,
+                        rateType,
+                        marketType,
+                        agency,
+                        count: 0,
+                        revenue: 0,
+                        weatherTempMax: rec.weatherTempMax !== undefined ? rec.weatherTempMax : null,
+                        weatherTempMin: rec.weatherTempMin !== undefined ? rec.weatherTempMin : null,
+                        weatherPrecipitation: rec.weatherPrecipitation !== undefined ? rec.weatherPrecipitation : null,
+                        weatherCode: rec.weatherCode !== undefined ? rec.weatherCode : null,
+                        weatherDesc: rec.weatherDesc !== undefined ? rec.weatherDesc : '정보없음'
+                     };
+                  }
+                  tempMap[groupKey].count += count;
+                  tempMap[groupKey].revenue += rev;
+               });
+               updatePayload.rawRoomRecords = Object.values(tempMap).filter(rec => rec.count !== 0 || rec.revenue !== 0);
+            }
+            await updateDoc(docRef, updatePayload);
          } else {
             await setDoc(docRef, { ...dataToSave, id: data.yearMonth });
          }
@@ -1051,6 +1101,42 @@ export default function MonthlyDataForm({ settings }) {
          }
 
          if (docSnap.exists()) {
+            const existingRecord = docSnap.data() || {};
+            if (existingRecord.rawRoomRecords && existingRecord.rawRoomRecords.length > 500) {
+               const tempMap = {};
+               existingRecord.rawRoomRecords.forEach(rec => {
+                  const dateVal = rec.date;
+                  if (!dateVal) return;
+                  const roomType = rec.roomType || '';
+                  const rateType = rec.rateType || '';
+                  const marketType = rec.marketType || '';
+                  const agency = rec.agency || '';
+                  const count = Number(rec.count || 0);
+                  const rev = Number(rec.revenue || 0);
+                  const isCancel = rev < 0;
+                  
+                  const groupKey = `${dateVal}||${roomType}||${rateType}||${marketType}||${agency}||${isCancel}`;
+                  if (!tempMap[groupKey]) {
+                     tempMap[groupKey] = {
+                        date: dateVal,
+                        roomType,
+                        rateType,
+                        marketType,
+                        agency,
+                        count: 0,
+                        revenue: 0,
+                        weatherTempMax: rec.weatherTempMax !== undefined ? rec.weatherTempMax : null,
+                        weatherTempMin: rec.weatherTempMin !== undefined ? rec.weatherTempMin : null,
+                        weatherPrecipitation: rec.weatherPrecipitation !== undefined ? rec.weatherPrecipitation : null,
+                        weatherCode: rec.weatherCode !== undefined ? rec.weatherCode : null,
+                        weatherDesc: rec.weatherDesc !== undefined ? rec.weatherDesc : '정보없음'
+                     };
+                  }
+                  tempMap[groupKey].count += count;
+                  tempMap[groupKey].revenue += rev;
+               });
+               savePayload.rawRoomRecords = Object.values(tempMap).filter(rec => rec.count !== 0 || rec.revenue !== 0);
+            }
             await updateDoc(docRef, savePayload);
          } else {
             await setDoc(docRef, savePayload);
