@@ -1595,7 +1595,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                         </div>
                         {weatherDataType === 'room' && (
                           <div style={{textAlign: 'right', minWidth: '80px'}}>
-                            <div style={{fontSize: '13px', fontWeight: 'bold', color: 'var(--accent-emerald)'}}>{typeof g.avgQuantity === 'number' ? g.avgQuantity.toFixed(1) : '0.0'}실</div>
+                            <div style={{fontSize: '13px', fontWeight: 'bold', color: 'var(--accent-emerald)'}}>{typeof g.avgRoomsSold === 'number' ? g.avgRoomsSold.toFixed(1) : '0.0'}실</div>
                             <div style={{fontSize: '11px', color: 'var(--text-muted)'}}>일평균 판매</div>
                           </div>
                         )}
