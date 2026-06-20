@@ -430,18 +430,45 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
   }, [filteredProcessedData, weatherDataType, settings?.locationGroups]);
 
   const weatherStats = useMemo(() => {
-    const validData = dailyWeatherSalesData.filter(d => d.tempMax !== null && d.desc !== '정보없음');
-    if (validData.length === 0) return null;
+    const rawValidData = dailyWeatherSalesData.filter(d => d.tempMax !== null && d.desc !== '정보없음');
+    if (rawValidData.length === 0) return null;
     
-    const revenues = validData.map(d => d.revenue);
-    const temps = validData.map(d => d.tempMax);
-    const precipitations = validData.map(d => d.precipitation);
+    // 1. 주말 및 평일 데이터 임시 분리
+    const tempWeekendList = rawValidData.filter(d => {
+      const [yyyy, mm, dd] = d.date.split('-');
+      const dateObj = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+      const day = dateObj.getDay();
+      return day === 0 || day === 6 || isHoliday(dateObj);
+    });
+
+    const tempWeekdayList = rawValidData.filter(d => {
+      const [yyyy, mm, dd] = d.date.split('-');
+      const dateObj = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+      const day = dateObj.getDay();
+      return day !== 0 && day !== 6 && !isHoliday(dateObj);
+    });
+
+    // 2. 평일 평균 구하기 (현재 선택된 매출 유형 기준)
+    const totalWeekdayRevenue = tempWeekdayList.reduce((sum, d) => sum + (d.revenue || 0), 0);
+    const rawWeekdayAvgRevenue = tempWeekdayList.length > 0 ? totalWeekdayRevenue / tempWeekdayList.length : 0;
+
+    // 3. 평일 중 3배 초과 폭증 아웃라이어 제외
+    const cleanWeekdayListGlobal = rawWeekdayAvgRevenue > 0
+      ? tempWeekdayList.filter(d => (d.revenue || 0) < rawWeekdayAvgRevenue * 3)
+      : tempWeekdayList;
+
+    // 4. 날씨 분석(상관계수, 일평균 카드)에 쓰일 글로벌 정제 데이터셋 구성
+    const cleanValidData = [...cleanWeekdayListGlobal, ...tempWeekendList];
+
+    const revenues = cleanValidData.map(d => d.revenue);
+    const temps = cleanValidData.map(d => d.tempMax);
+    const precipitations = cleanValidData.map(d => d.precipitation);
     
     const tempCorr = calculateCorrelation(temps, revenues);
     const precipCorr = calculateCorrelation(precipitations, revenues);
     
     const descGroup = {};
-    validData.forEach(d => {
+    cleanValidData.forEach(d => {
       const desc = d.desc || '기타';
       if (!descGroup[desc]) {
         descGroup[desc] = {
@@ -463,8 +490,8 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       daysCount: g.daysCount
     })).sort((a, b) => b.avgRevenue - a.avgRevenue);
     
-    // 주말/공휴일 필터링 (토, 일, 공휴일)
-    const weekendValidData = validData.filter(d => {
+    // 주말/공휴일 필터링 (토, 일, 공휴일) - 글로벌 정제 데이터 기반
+    const weekendValidData = cleanValidData.filter(d => {
       const [yyyy, mm, dd] = d.date.split('-');
       const dateObj = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
       const day = dateObj.getDay();
@@ -527,11 +554,26 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
 
     const sectorRainStats = {};
     sectors.forEach(sec => {
-      sectorRainStats[sec.key] = {
+      const key = sec.key;
+      const weekdayList = weekdayValidData;
+      
+      // 평일 평균 구하기
+      const totalWeekdayVal = weekdayList.reduce((sum, d) => sum + (d[key] || 0), 0);
+      const rawWeekdayAvg = weekdayList.length > 0 ? totalWeekdayVal / weekdayList.length : 0;
+      
+      // 평일 중 평균 대비 3배 이상 폭증한 아웃라이어 제외
+      const cleanWeekdayList = rawWeekdayAvg > 0
+        ? weekdayList.filter(d => (d[key] || 0) < rawWeekdayAvg * 3)
+        : weekdayList;
+        
+      // 전체 기간 통계도 왜곡 방지를 위해 정제된 평일 리스트를 섞어 산출
+      const cleanOverallList = [...cleanWeekdayList, ...weekendValidData];
+
+      sectorRainStats[key] = {
         name: sec.name,
-        overall: getRainStats(validData, sec.key),
-        weekday: getRainStats(weekdayValidData, sec.key),
-        weekend: getRainStats(weekendValidData, sec.key)
+        overall: getRainStats(cleanOverallList, key),
+        weekday: getRainStats(cleanWeekdayList, key),
+        weekend: getRainStats(weekendValidData, key)
       };
     });
 
