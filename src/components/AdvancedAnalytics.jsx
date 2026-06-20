@@ -433,6 +433,18 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     const rawValidData = dailyWeatherSalesData.filter(d => d.tempMax !== null && d.desc !== '정보없음');
     if (rawValidData.length === 0) return null;
     
+    // IQR (사분위수) 기반 아웃라이어 필터링 함수
+    const filterOutliers = (dataList, key = 'revenue') => {
+      if (dataList.length < 4) return dataList; // 데이터가 너무 적으면 필터링 생략
+      const values = dataList.map(d => d[key]).sort((a, b) => a - b);
+      const q1 = values[Math.floor(values.length * 0.25)];
+      const q3 = values[Math.floor(values.length * 0.75)];
+      const iqr = q3 - q1;
+      const lowerBound = q1 - 1.5 * iqr;
+      const upperBound = q3 + 1.5 * iqr;
+      return dataList.filter(d => d[key] >= lowerBound && d[key] <= upperBound);
+    };
+
     // 1. 주말 및 평일 데이터 임시 분리
     const tempWeekendList = rawValidData.filter(d => {
       const [yyyy, mm, dd] = d.date.split('-');
@@ -448,17 +460,12 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       return day !== 0 && day !== 6 && !isHoliday(dateObj);
     });
 
-    // 2. 평일 평균 구하기 (현재 선택된 매출 유형 기준)
-    const totalWeekdayRevenue = tempWeekdayList.reduce((sum, d) => sum + (d.revenue || 0), 0);
-    const rawWeekdayAvgRevenue = tempWeekdayList.length > 0 ? totalWeekdayRevenue / tempWeekdayList.length : 0;
+    // 2. 현재 활성화된 지표 기준으로 1차 전역 아웃라이어 정제 (차트 표시용)
+    const cleanWeekdayListGlobal = filterOutliers(tempWeekdayList, 'revenue');
+    const cleanWeekendListGlobal = filterOutliers(tempWeekendList, 'revenue');
 
-    // 3. 평일 중 3배 초과 폭증 아웃라이어 제외
-    const cleanWeekdayListGlobal = rawWeekdayAvgRevenue > 0
-      ? tempWeekdayList.filter(d => (d.revenue || 0) < rawWeekdayAvgRevenue * 3)
-      : tempWeekdayList;
-
-    // 4. 날씨 분석(상관계수, 일평균 카드)에 쓰일 글로벌 정제 데이터셋 구성
-    const cleanValidData = [...cleanWeekdayListGlobal, ...tempWeekendList];
+    // 3. 날씨 분석(상관계수, 일평균 카드)에 쓰일 글로벌 정제 데이터셋 구성
+    const cleanValidData = [...cleanWeekdayListGlobal, ...cleanWeekendListGlobal];
 
     const revenues = cleanValidData.map(d => d.revenue);
     const temps = cleanValidData.map(d => d.tempMax);
@@ -490,13 +497,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       daysCount: g.daysCount
     })).sort((a, b) => b.avgRevenue - a.avgRevenue);
     
-    // 주말/공휴일 필터링 (토, 일, 공휴일) - 글로벌 정제 데이터 기반
-    const weekendValidData = cleanValidData.filter(d => {
-      const [yyyy, mm, dd] = d.date.split('-');
-      const dateObj = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
-      const day = dateObj.getDay();
-      return day === 0 || day === 6 || isHoliday(dateObj);
-    });
+    const weekendValidData = cleanWeekendListGlobal;
 
     const RAIN_THRESHOLD = 3.0; // 3.0mm 이상을 실질적인 우천일로 정의 (미량 강수로 인한 통계 희석 방지)
 
@@ -533,14 +534,9 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       };
     };
 
-    const overallRainStats = getRainStats(validData);
+    const overallRainStats = getRainStats(cleanValidData);
 
-    const weekdayValidData = validData.filter(d => {
-      const [yyyy, mm, dd] = d.date.split('-');
-      const dateObj = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
-      const day = dateObj.getDay();
-      return day !== 0 && day !== 6 && !isHoliday(dateObj);
-    });
+    const weekdayValidData = cleanWeekdayListGlobal;
 
     const weekdayRainStats = getRainStats(weekdayValidData);
     const weekendRainStats = getRainStats(weekendValidData);
@@ -555,25 +551,17 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     const sectorRainStats = {};
     sectors.forEach(sec => {
       const key = sec.key;
-      const weekdayList = weekdayValidData;
       
-      // 평일 평균 구하기
-      const totalWeekdayVal = weekdayList.reduce((sum, d) => sum + (d[key] || 0), 0);
-      const rawWeekdayAvg = weekdayList.length > 0 ? totalWeekdayVal / weekdayList.length : 0;
-      
-      // 평일 중 평균 대비 3배 이상 폭증한 아웃라이어 제외
-      const cleanWeekdayList = rawWeekdayAvg > 0
-        ? weekdayList.filter(d => (d[key] || 0) < rawWeekdayAvg * 3)
-        : weekdayList;
-        
-      // 전체 기간 통계도 왜곡 방지를 위해 정제된 평일 리스트를 섞어 산출
-      const cleanOverallList = [...cleanWeekdayList, ...weekendValidData];
+      // 섹터별 집계 시, 해당 섹터 key(매출 부문)에 대해 다시 IQR 아웃라이어 정제 적용
+      const cleanSectorWeekday = filterOutliers(tempWeekdayList, key);
+      const cleanSectorWeekend = filterOutliers(tempWeekendList, key);
+      const cleanSectorOverall = [...cleanSectorWeekday, ...cleanSectorWeekend];
 
       sectorRainStats[key] = {
         name: sec.name,
-        overall: getRainStats(cleanOverallList, key),
-        weekday: getRainStats(cleanWeekdayList, key),
-        weekend: getRainStats(weekendValidData, key)
+        overall: getRainStats(cleanSectorOverall, key),
+        weekday: getRainStats(cleanSectorWeekday, key),
+        weekend: getRainStats(cleanSectorWeekend, key)
       };
     });
 
@@ -581,7 +569,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       tempCorr,
       precipCorr,
       descList,
-      totalValidDays: validData.length,
+      totalValidDays: cleanValidData.length,
       weekendPrecipCorr,
       weekendRainyStats,
       overallRainStats,
