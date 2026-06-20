@@ -340,106 +340,93 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     const dateMap = {};
     const locationGroups = settings?.locationGroups || {};
 
-    if (weatherDataType === 'room') {
-      filteredProcessedData.forEach(m => {
-        if (m.rawRoomRecords && Array.isArray(m.rawRoomRecords)) {
-          m.rawRoomRecords.forEach(rec => {
-            if (!rec.date) return;
-            const dateStr = rec.date;
-            
-            if (!dateMap[dateStr]) {
-              const w = weatherLookup[dateStr] || {};
-              dateMap[dateStr] = {
-                date: dateStr,
-                revenue: 0,
-                roomsSold: 0,
-                tempMax: w.tempMax !== undefined && w.tempMax !== null ? Number(w.tempMax) : null,
-                tempMin: w.tempMin !== undefined && w.tempMin !== null ? Number(w.tempMin) : null,
-                precipitation: w.precipitation !== undefined && w.precipitation !== null ? Number(w.precipitation) : null,
-                code: w.code !== undefined && w.code !== null ? Number(w.code) : null,
-                desc: w.desc || '정보없음'
-              };
-            }
-            dateMap[dateStr].revenue += Number(rec.revenue || 0);
-            dateMap[dateStr].roomsSold += Number(rec.count || 0);
-          });
-        }
-      });
-    } else if (weatherDataType === 'golf') {
-      filteredProcessedData.forEach(m => {
-        if (m.rawLeisureRecords && Array.isArray(m.rawLeisureRecords)) {
-          m.rawLeisureRecords.forEach(rec => {
-            if (!rec.date) return;
-            const dateStr = rec.date;
-            
-            if (!dateMap[dateStr]) {
-              const w = weatherLookup[dateStr] || {};
-              dateMap[dateStr] = {
-                date: dateStr,
-                revenue: 0,
-                roomsSold: 0,
-                tempMax: w.tempMax !== undefined && w.tempMax !== null ? Number(w.tempMax) : null,
-                tempMin: w.tempMin !== undefined && w.tempMin !== null ? Number(w.tempMin) : null,
-                precipitation: w.precipitation !== undefined && w.precipitation !== null ? Number(w.precipitation) : null,
-                code: w.code !== undefined && w.code !== null ? Number(w.code) : null,
-                desc: w.desc || '정보없음'
-              };
-            }
-            
-            if (rec.breakdown) {
-              let golfSum = 0;
-              Object.entries(rec.breakdown).forEach(([locName, amt]) => {
-                const group = locationGroups[locName] || 'leisure';
-                if (group === 'golf') {
-                  golfSum += Number(amt) || 0;
-                }
-              });
-              dateMap[dateStr].revenue += golfSum;
-            } else {
-              dateMap[dateStr].revenue += 0;
-            }
-          });
-        }
-      });
-    } else {
-      filteredProcessedData.forEach(m => {
-        if (m.rawLeisureRecords && Array.isArray(m.rawLeisureRecords)) {
-          m.rawLeisureRecords.forEach(rec => {
-            if (!rec.date) return;
-            const dateStr = rec.date;
-            
-            if (!dateMap[dateStr]) {
-              const w = weatherLookup[dateStr] || {};
-              dateMap[dateStr] = {
-                date: dateStr,
-                revenue: 0,
-                roomsSold: 0,
-                tempMax: w.tempMax !== undefined && w.tempMax !== null ? Number(w.tempMax) : null,
-                tempMin: w.tempMin !== undefined && w.tempMin !== null ? Number(w.tempMin) : null,
-                precipitation: w.precipitation !== undefined && w.precipitation !== null ? Number(w.precipitation) : null,
-                code: w.code !== undefined && w.code !== null ? Number(w.code) : null,
-                desc: w.desc || '정보없음'
-              };
-            }
-            
-            if (rec.breakdown) {
-              let leisureSum = 0;
-              Object.entries(rec.breakdown).forEach(([locName, amt]) => {
-                const group = locationGroups[locName] || 'leisure';
-                if (group === 'leisure') {
-                  leisureSum += Number(amt) || 0;
-                }
-              });
-              dateMap[dateStr].revenue += leisureSum;
-            } else {
-              dateMap[dateStr].revenue += Number(rec.revenue || 0);
-            }
-          });
-        }
-      });
-    }
-    
-    return Object.values(dateMap).sort((a, b) => a.date.localeCompare(b.date));
+    // 1. 객실 매출 및 가동량 처리
+    filteredProcessedData.forEach(m => {
+      if (m.rawRoomRecords && Array.isArray(m.rawRoomRecords)) {
+        m.rawRoomRecords.forEach(rec => {
+          if (!rec.date) return;
+          const dateStr = rec.date;
+          
+          if (!dateMap[dateStr]) {
+            const w = weatherLookup[dateStr] || {};
+            dateMap[dateStr] = {
+              date: dateStr,
+              roomRevenue: 0,
+              roomsSold: 0,
+              leisureRevenue: 0,
+              golfRevenue: 0,
+              totalRevenue: 0,
+              tempMax: w.tempMax !== undefined && w.tempMax !== null ? Number(w.tempMax) : null,
+              tempMin: w.tempMin !== undefined && w.tempMin !== null ? Number(w.tempMin) : null,
+              precipitation: w.precipitation !== undefined && w.precipitation !== null ? Number(w.precipitation) : null,
+              code: w.code !== undefined && w.code !== null ? Number(w.code) : null,
+              desc: w.desc || '정보없음'
+            };
+          }
+          dateMap[dateStr].roomRevenue += Number(rec.revenue || 0);
+          dateMap[dateStr].roomsSold += Number(rec.count || 0);
+          dateMap[dateStr].totalRevenue += Number(rec.revenue || 0);
+        });
+      }
+    });
+
+    // 2. 부대업장(레저/골프/식음 등) 매출 처리
+    filteredProcessedData.forEach(m => {
+      if (m.rawLeisureRecords && Array.isArray(m.rawLeisureRecords)) {
+        m.rawLeisureRecords.forEach(rec => {
+          if (!rec.date) return;
+          const dateStr = rec.date;
+          
+          if (!dateMap[dateStr]) {
+            const w = weatherLookup[dateStr] || {};
+            dateMap[dateStr] = {
+              date: dateStr,
+              roomRevenue: 0,
+              roomsSold: 0,
+              leisureRevenue: 0,
+              golfRevenue: 0,
+              totalRevenue: 0,
+              tempMax: w.tempMax !== undefined && w.tempMax !== null ? Number(w.tempMax) : null,
+              tempMin: w.tempMin !== undefined && w.tempMin !== null ? Number(w.tempMin) : null,
+              precipitation: w.precipitation !== undefined && w.precipitation !== null ? Number(w.precipitation) : null,
+              code: w.code !== undefined && w.code !== null ? Number(w.code) : null,
+              desc: w.desc || '정보없음'
+            };
+          }
+          
+          if (rec.breakdown) {
+            Object.entries(rec.breakdown).forEach(([locName, amt]) => {
+              const val = Number(amt) || 0;
+              const group = locationGroups[locName] || 'leisure';
+              
+              if (group === 'leisure') {
+                dateMap[dateStr].leisureRevenue += val;
+              } else if (group === 'golf') {
+                dateMap[dateStr].golfRevenue += val;
+              }
+              // 전체 통합 매출에 합산
+              dateMap[dateStr].totalRevenue += val;
+            });
+          } else {
+            const val = Number(rec.revenue || 0);
+            dateMap[dateStr].leisureRevenue += val;
+            dateMap[dateStr].totalRevenue += val;
+          }
+        });
+      }
+    });
+
+    // 기존 차트/카드 호환성용 revenue 바인딩
+    return Object.values(dateMap).map(d => {
+      let revenue = 0;
+      if (weatherDataType === 'room') revenue = d.roomRevenue;
+      else if (weatherDataType === 'golf') revenue = d.golfRevenue;
+      else revenue = d.leisureRevenue;
+      return {
+        ...d,
+        revenue
+      };
+    }).sort((a, b) => a.date.localeCompare(b.date));
   }, [filteredProcessedData, weatherDataType, settings?.locationGroups]);
 
   const weatherStats = useMemo(() => {
@@ -504,15 +491,15 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       };
     }
 
-    const getRainStats = (dataList) => {
+    const getRainStats = (dataList, key = 'revenue') => {
       const rainy = dataList.filter(d => d.precipitation > 0);
       const clear = dataList.filter(d => d.precipitation === 0);
       return {
         clearDays: clear.length,
-        clearAvgRev: clear.length > 0 ? clear.reduce((sum, d) => sum + d.revenue, 0) / clear.length : 0,
+        clearAvgRev: clear.length > 0 ? clear.reduce((sum, d) => sum + d[key], 0) / clear.length : 0,
         clearAvgRooms: clear.length > 0 ? clear.reduce((sum, d) => sum + d.roomsSold, 0) / clear.length : 0,
         rainyDays: rainy.length,
-        rainyAvgRev: rainy.length > 0 ? rainy.reduce((sum, d) => sum + d.revenue, 0) / rainy.length : 0,
+        rainyAvgRev: rainy.length > 0 ? rainy.reduce((sum, d) => sum + d[key], 0) / rainy.length : 0,
         rainyAvgRooms: rainy.length > 0 ? rainy.reduce((sum, d) => sum + d.roomsSold, 0) / rainy.length : 0,
       };
     };
@@ -529,6 +516,23 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     const weekdayRainStats = getRainStats(weekdayValidData);
     const weekendRainStats = getRainStats(weekendValidData);
 
+    const sectors = [
+      { key: 'totalRevenue', name: '전체 통합 매출' },
+      { key: 'roomRevenue', name: '객실 매출' },
+      { key: 'leisureRevenue', name: '레저본부 매출' },
+      { key: 'golfRevenue', name: '골프 매출' }
+    ];
+
+    const sectorRainStats = {};
+    sectors.forEach(sec => {
+      sectorRainStats[sec.key] = {
+        name: sec.name,
+        overall: getRainStats(validData, sec.key),
+        weekday: getRainStats(weekdayValidData, sec.key),
+        weekend: getRainStats(weekendValidData, sec.key)
+      };
+    });
+
     return {
       tempCorr,
       precipCorr,
@@ -538,7 +542,8 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       weekendRainyStats,
       overallRainStats,
       weekdayRainStats,
-      weekendRainStats
+      weekendRainStats,
+      sectorRainStats
     };
   }, [dailyWeatherSalesData]);
 
@@ -1606,19 +1611,20 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
             <div style={{background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px', marginTop: '20px'}}>
               <h4 style={{margin: '0 0 8px 0', color: 'var(--accent-coral)'}}>🌧️ 강수 여부(비/눈 온 날 vs 맑은 날)에 따른 일평균 매출 비교</h4>
               <p style={{fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 16px 0'}}>
-                강수량 크기와 상관없이 단순히 '비/눈이 왔는지(강수량 &gt; 0mm)'와 '오지 않았는지(강수량 = 0mm)'로 구분하여 주중, 주말/공휴일, 전체 기간의 일평균 {weatherLabel}을 비교 대조합니다.
+                강수량 크기와 상관없이 단순히 '비/눈이 왔는지(강수량 &gt; 0mm)'와 '오지 않았는지(강수량 = 0mm)'로 구분하여 주중, 주말/공휴일, 전체 기간의 일평균 매출을 4대 핵심 부문별로 나누어 대조 분석합니다.
               </p>
               
               <div style={{overflowX: 'auto'}}>
                 <table style={{width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'center'}}>
                   <thead>
                     <tr style={{background: 'rgba(255, 255, 255, 0.05)', borderBottom: '2px solid rgba(255,255,255,0.1)'}}>
-                      <th style={{padding: '10px 6px', color: 'var(--text-muted)', textAlign: 'left'}}>구분</th>
-                      <th style={{padding: '10px 6px', color: 'var(--accent-emerald)'}} colspan="2">맑음 / 강수 없음 (0mm)</th>
-                      <th style={{padding: '10px 6px', color: 'var(--accent-coral)'}} colspan="2">비 / 눈 온 날 (&gt; 0mm)</th>
-                      <th style={{padding: '10px 6px', color: 'var(--text-bright)'}} colspan="2">강수 시 매출 차이</th>
+                      <th style={{padding: '10px 6px', color: 'var(--text-muted)', textAlign: 'left', width: '150px'}} colSpan="2">구분</th>
+                      <th style={{padding: '10px 6px', color: 'var(--accent-emerald)'}} colSpan="2">맑음 / 강수 없음 (0mm)</th>
+                      <th style={{padding: '10px 6px', color: 'var(--accent-coral)'}} colSpan="2">비 / 눈 온 날 (&gt; 0mm)</th>
+                      <th style={{padding: '10px 6px', color: 'var(--text-bright)'}} colSpan="2">강수 시 매출 차이</th>
                     </tr>
                     <tr style={{background: 'rgba(255, 255, 255, 0.02)', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '11px'}}>
+                      <th style={{padding: '6px', textAlign: 'left', color: 'var(--text-muted)'}}>부문</th>
                       <th style={{padding: '6px', textAlign: 'left', color: 'var(--text-muted)'}}>분류</th>
                       <th style={{padding: '6px', color: 'var(--text-muted)'}}>일수</th>
                       <th style={{padding: '6px', color: 'var(--text-muted)'}}>일평균 매출</th>
@@ -1630,32 +1636,66 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                   </thead>
                   <tbody>
                     {[
-                      { name: '전체 기간 (Overall)', stats: weatherStats.overallRainStats },
-                      { name: '주중 (Weekdays)', stats: weatherStats.weekdayRainStats },
-                      { name: '주말/공휴일 (Weekends & Holidays)', stats: weatherStats.weekendRainStats }
-                    ].map(row => {
-                      const s = row.stats;
-                      if (!s) return null;
-                      const diff = s.rainyAvgRev - s.clearAvgRev;
-                      const pct = s.clearAvgRev > 0 ? (diff / s.clearAvgRev) * 100 : 0;
+                      { key: 'totalRevenue', title: '전체 통합 매출', color: 'var(--accent-gold)' },
+                      { key: 'roomRevenue', title: '객실 매출', color: 'var(--accent-emerald)' },
+                      { key: 'leisureRevenue', title: '레저본부 매출', color: 'var(--accent-purple)' },
+                      { key: 'golfRevenue', title: '골프 매출', color: '#22c55e' }
+                    ].map(sec => {
+                      const sectorData = weatherStats.sectorRainStats?.[sec.key];
+                      if (!sectorData) return null;
                       
-                      return (
-                        <tr key={row.name} style={{borderBottom: '1px solid rgba(255,255,255,0.05)'}}>
-                          <td style={{padding: '12px 6px', textAlign: 'left', fontWeight: 'bold'}}>{row.name}</td>
-                          <td style={{padding: '12px 6px'}}>{s.clearDays}일</td>
-                          <td style={{padding: '12px 6px', fontWeight: 'bold', color: 'var(--text-main)'}}>₩{formatCurrency(s.clearAvgRev)}</td>
-                          <td style={{padding: '12px 6px'}}>{s.rainyDays}일</td>
-                          <td style={{padding: '12px 6px', fontWeight: 'bold', color: 'var(--text-main)'}}>
-                            {s.rainyDays > 0 ? `₩${formatCurrency(s.rainyAvgRev)}` : '-'}
-                          </td>
-                          <td style={{padding: '12px 6px', fontWeight: 'bold', color: diff < 0 ? 'var(--accent-red)' : 'var(--accent-emerald)'}}>
-                            {s.rainyDays > 0 ? `${diff > 0 ? '+' : ''}₩${formatCurrency(diff)}` : '-'}
-                          </td>
-                          <td style={{padding: '12px 6px', fontWeight: 'bold', color: diff < 0 ? 'var(--accent-red)' : 'var(--accent-emerald)'}}>
-                            {s.rainyDays > 0 ? `${pct.toFixed(1)}%` : '-'}
-                          </td>
-                        </tr>
-                      );
+                      const subRows = [
+                        { label: '전체 기간 (Overall)', stats: sectorData.overall },
+                        { label: '주중 (Weekdays)', stats: sectorData.weekday },
+                        { label: '주말/공휴일 (Weekends & Holidays)', stats: sectorData.weekend }
+                      ];
+                      
+                      return subRows.map((sub, subIdx) => {
+                        const s = sub.stats;
+                        if (!s) return null;
+                        const diff = s.rainyAvgRev - s.clearAvgRev;
+                        const pct = s.clearAvgRev > 0 ? (diff / s.clearAvgRev) * 100 : 0;
+                        
+                        return (
+                          <tr 
+                            key={`${sec.key}-${sub.label}`} 
+                            style={{
+                              borderBottom: subIdx === 2 ? '2px solid rgba(255,255,255,0.1)' : '1px solid rgba(255,255,255,0.03)',
+                              background: subIdx === 0 ? 'rgba(255,255,255,0.01)' : 'transparent'
+                            }}
+                          >
+                            {subIdx === 0 && (
+                              <td 
+                                rowSpan="3" 
+                                style={{
+                                  padding: '12px 10px', 
+                                  textAlign: 'left', 
+                                  fontWeight: 'bold', 
+                                  color: sec.color,
+                                  borderRight: '1px solid rgba(255,255,255,0.05)',
+                                  verticalAlign: 'middle',
+                                  background: 'rgba(255,255,255,0.02)'
+                                }}
+                              >
+                                {sec.title}
+                              </td>
+                            )}
+                            <td style={{padding: '12px 10px', textAlign: 'left', fontWeight: subIdx === 0 ? 'bold' : 'normal'}}>{sub.label}</td>
+                            <td style={{padding: '12px 6px'}}>{s.clearDays}일</td>
+                            <td style={{padding: '12px 6px', fontWeight: 'bold', color: 'var(--text-main)'}}>₩{formatCurrency(s.clearAvgRev)}</td>
+                            <td style={{padding: '12px 6px'}}>{s.rainyDays}일</td>
+                            <td style={{padding: '12px 6px', fontWeight: 'bold', color: 'var(--text-main)'}}>
+                              {s.rainyDays > 0 ? `₩${formatCurrency(s.rainyAvgRev)}` : '-'}
+                            </td>
+                            <td style={{padding: '12px 6px', fontWeight: 'bold', color: diff < 0 ? 'var(--accent-red)' : 'var(--accent-emerald)'}}>
+                              {s.rainyDays > 0 ? `${diff > 0 ? '+' : ''}₩${formatCurrency(diff)}` : '-'}
+                            </td>
+                            <td style={{padding: '12px 6px', fontWeight: 'bold', color: diff < 0 ? 'var(--accent-red)' : 'var(--accent-emerald)'}}>
+                              {s.rainyDays > 0 ? `${pct.toFixed(1)}%` : '-'}
+                            </td>
+                          </tr>
+                        );
+                      });
                     })}
                   </tbody>
                 </table>
