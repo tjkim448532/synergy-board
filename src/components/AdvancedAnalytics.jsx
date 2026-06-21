@@ -561,6 +561,15 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       { key: 'golfRevenue', name: '골프 매출' }
     ];
 
+    const getSeason = (dateStr) => {
+      const [yyyy, mm, dd] = dateStr.split('-');
+      const month = parseInt(mm, 10);
+      if (month >= 3 && month <= 5) return '봄 (3~5월)';
+      if (month >= 6 && month <= 8) return '여름 (6~8월)';
+      if (month >= 9 && month <= 11) return '가을 (9~11월)';
+      return '겨울 (12~2월)';
+    };
+
     const sectorRainStats = {};
     sectors.forEach(sec => {
       const key = sec.key;
@@ -570,11 +579,22 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       const cleanSectorWeekend = filterOutliers(tempWeekendList, key);
       const cleanSectorOverall = [...cleanSectorWeekday, ...cleanSectorWeekend];
 
+      const springData = cleanSectorOverall.filter(d => getSeason(d.date) === '봄 (3~5월)');
+      const summerData = cleanSectorOverall.filter(d => getSeason(d.date) === '여름 (6~8월)');
+      const autumnData = cleanSectorOverall.filter(d => getSeason(d.date) === '가을 (9~11월)');
+      const winterData = cleanSectorOverall.filter(d => getSeason(d.date) === '겨울 (12~2월)');
+
       sectorRainStats[key] = {
         name: sec.name,
         overall: getRainStats(cleanSectorOverall, key),
         weekday: getRainStats(cleanSectorWeekday, key),
-        weekend: getRainStats(cleanSectorWeekend, key)
+        weekend: getRainStats(cleanSectorWeekend, key),
+        seasons: [
+          { label: '봄 (3~5월)', stats: getRainStats(springData, key) },
+          { label: '여름 (6~8월)', stats: getRainStats(summerData, key) },
+          { label: '가을 (9~11월)', stats: getRainStats(autumnData, key) },
+          { label: '겨울 (12~2월)', stats: getRainStats(winterData, key) }
+        ]
       };
     });
 
@@ -1726,6 +1746,96 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                               </td>
                             )}
                             <td style={{padding: '12px 10px', textAlign: 'left', fontWeight: subIdx === 0 ? 'bold' : 'normal'}}>{sub.label}</td>
+                            <td style={{padding: '12px 6px'}}>{s.clearDays}일</td>
+                            <td style={{padding: '12px 6px', fontWeight: 'bold', color: 'var(--text-main)'}}>₩{formatCurrency(s.clearAvgRev)}</td>
+                            <td style={{padding: '12px 6px'}}>{s.rainyDays}일</td>
+                            <td style={{padding: '12px 6px', fontWeight: 'bold', color: 'var(--text-main)'}}>
+                              {s.rainyDays > 0 ? `₩${formatCurrency(s.rainyAvgRev)}` : '-'}
+                            </td>
+                            <td style={{padding: '12px 6px', fontWeight: 'bold', color: diff < 0 ? 'var(--accent-red)' : 'var(--accent-emerald)'}}>
+                              {s.rainyDays > 0 ? `${diff > 0 ? '+' : ''}₩${formatCurrency(diff)}` : '-'}
+                            </td>
+                            <td style={{padding: '12px 6px', fontWeight: 'bold', color: diff < 0 ? 'var(--accent-red)' : 'var(--accent-emerald)'}}>
+                              {s.rainyDays > 0 ? `${pct.toFixed(1)}%` : '-'}
+                            </td>
+                          </tr>
+                        );
+                      });
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* 계절(시즌)별 우천 타격 분석 표 */}
+            <div style={{background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px', marginTop: '20px'}}>
+              <h4 style={{margin: '0 0 8px 0', color: 'var(--accent-purple)'}}>🌸🌻🍁❄️ 계절(시즌)별 우천 타격 심층 분석</h4>
+              <p style={{fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 16px 0'}}>
+                여름 성수기의 장마철과 겨울 비수기의 맑은 날이 혼합되어 발생하는 통계적 왜곡을 방지하기 위해, 사계절(봄/여름/가을/겨울)로 그룹화하여 동 시즌 내에서의 우천 타격률을 대조 분석합니다.
+              </p>
+              
+              <div style={{overflowX: 'auto'}}>
+                <table style={{width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'center'}}>
+                  <thead>
+                    <tr style={{background: 'rgba(255, 255, 255, 0.05)', borderBottom: '2px solid rgba(255,255,255,0.1)'}}>
+                      <th style={{padding: '10px 6px', color: 'var(--text-muted)', textAlign: 'left', width: '150px'}} colSpan="2">구분</th>
+                      <th style={{padding: '10px 6px', color: 'var(--accent-emerald)'}} colSpan="2">해당 시즌 맑은 날</th>
+                      <th style={{padding: '10px 6px', color: 'var(--accent-coral)'}} colSpan="2">해당 시즌 비/눈 온 날</th>
+                      <th style={{padding: '10px 6px', color: 'var(--text-bright)'}} colSpan="2">시즌 내 우천 타격</th>
+                    </tr>
+                    <tr style={{background: 'rgba(255, 255, 255, 0.02)', borderBottom: '1px solid rgba(255,255,255,0.1)', fontSize: '11px'}}>
+                      <th style={{padding: '6px', textAlign: 'left', color: 'var(--text-muted)'}}>부문</th>
+                      <th style={{padding: '6px', textAlign: 'left', color: 'var(--text-muted)'}}>시즌</th>
+                      <th style={{padding: '6px', color: 'var(--text-muted)'}}>일수</th>
+                      <th style={{padding: '6px', color: 'var(--text-muted)'}}>일평균 매출</th>
+                      <th style={{padding: '6px', color: 'var(--text-muted)'}}>일수</th>
+                      <th style={{padding: '6px', color: 'var(--text-muted)'}}>일평균 매출</th>
+                      <th style={{padding: '6px', color: 'var(--text-muted)'}}>변동액</th>
+                      <th style={{padding: '6px', color: 'var(--text-muted)'}}>증감률</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { key: 'totalRevenue', title: '전체 통합 매출', color: 'var(--accent-gold)' },
+                      { key: 'roomRevenue', title: '객실 매출', color: 'var(--accent-emerald)' },
+                      { key: 'leisureRevenue', title: '레저본부 매출', color: 'var(--accent-purple)' },
+                      { key: 'golfRevenue', title: '골프 매출', color: '#22c55e' }
+                    ].map(sec => {
+                      const sectorData = weatherStats.sectorRainStats?.[sec.key];
+                      if (!sectorData || !sectorData.seasons) return null;
+                      
+                      return sectorData.seasons.map((seasonItem, seasonIdx) => {
+                        const s = seasonItem.stats;
+                        if (!s || (s.clearDays === 0 && s.rainyDays === 0)) return null;
+                        
+                        const diff = s.rainyAvgRev - s.clearAvgRev;
+                        const pct = s.clearAvgRev > 0 ? (diff / s.clearAvgRev) * 100 : 0;
+                        
+                        return (
+                          <tr 
+                            key={`${sec.key}-${seasonItem.label}`} 
+                            style={{
+                              borderBottom: seasonIdx === sectorData.seasons.length - 1 ? '2px solid rgba(255,255,255,0.1)' : '1px solid rgba(255,255,255,0.03)',
+                              background: 'transparent'
+                            }}
+                          >
+                            {seasonIdx === 0 && (
+                              <td 
+                                rowSpan={sectorData.seasons.filter(si => si.stats.clearDays > 0 || si.stats.rainyDays > 0).length} 
+                                style={{
+                                  padding: '12px 10px', 
+                                  textAlign: 'left', 
+                                  fontWeight: 'bold', 
+                                  color: sec.color,
+                                  borderRight: '1px solid rgba(255,255,255,0.05)',
+                                  verticalAlign: 'middle',
+                                  background: 'rgba(255,255,255,0.02)'
+                                }}
+                              >
+                                {sec.title}
+                              </td>
+                            )}
+                            <td style={{padding: '12px 10px', textAlign: 'left'}}>{seasonItem.label}</td>
                             <td style={{padding: '12px 6px'}}>{s.clearDays}일</td>
                             <td style={{padding: '12px 6px', fontWeight: 'bold', color: 'var(--text-main)'}}>₩{formatCurrency(s.clearAvgRev)}</td>
                             <td style={{padding: '12px 6px'}}>{s.rainyDays}일</td>
