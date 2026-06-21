@@ -106,7 +106,7 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
         m.rawRoomRecords.forEach(rec => {
           if (rec.date && rec.weatherPrecipitation !== undefined && rec.weatherPrecipitation !== null) {
             weatherLookup[rec.date] = {
-              precipitation: Number(rec.weatherPrecipitation)
+              precipitation: rec.weatherDaytimePrecip !== undefined && rec.weatherDaytimePrecip !== null ? Number(rec.weatherDaytimePrecip) : Number(rec.weatherPrecipitation)
             };
           }
         });

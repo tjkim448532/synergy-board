@@ -331,6 +331,8 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
               tempMax: parseSafeNumber(rec.weatherTempMax),
               tempMin: parseSafeNumber(rec.weatherTempMin),
               precipitation: parseSafeNumber(rec.weatherPrecipitation),
+              daytimePrecip: rec.weatherDaytimePrecip !== undefined && rec.weatherDaytimePrecip !== null ? parseSafeNumber(rec.weatherDaytimePrecip) : null,
+              nighttimePrecip: rec.weatherNighttimePrecip !== undefined && rec.weatherNighttimePrecip !== null ? parseSafeNumber(rec.weatherNighttimePrecip) : null,
               code: parseSafeNumber(rec.weatherCode),
               desc: rec.weatherDesc || '정보없음'
             };
@@ -359,6 +361,8 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
               tempMax: w.tempMax !== undefined && w.tempMax !== null ? parseSafeNumber(w.tempMax) : null,
               tempMin: w.tempMin !== undefined && w.tempMin !== null ? parseSafeNumber(w.tempMin) : null,
               precipitation: w.precipitation !== undefined && w.precipitation !== null ? parseSafeNumber(w.precipitation) : null,
+              daytimePrecip: w.daytimePrecip !== undefined && w.daytimePrecip !== null ? parseSafeNumber(w.daytimePrecip) : null,
+              nighttimePrecip: w.nighttimePrecip !== undefined && w.nighttimePrecip !== null ? parseSafeNumber(w.nighttimePrecip) : null,
               code: w.code !== undefined && w.code !== null ? parseSafeNumber(w.code) : null,
               desc: w.desc || '정보없음'
             };
@@ -391,6 +395,8 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
               tempMax: w.tempMax !== undefined && w.tempMax !== null ? parseSafeNumber(w.tempMax) : null,
               tempMin: w.tempMin !== undefined && w.tempMin !== null ? parseSafeNumber(w.tempMin) : null,
               precipitation: w.precipitation !== undefined && w.precipitation !== null ? parseSafeNumber(w.precipitation) : null,
+              daytimePrecip: w.daytimePrecip !== undefined && w.daytimePrecip !== null ? parseSafeNumber(w.daytimePrecip) : null,
+              nighttimePrecip: w.nighttimePrecip !== undefined && w.nighttimePrecip !== null ? parseSafeNumber(w.nighttimePrecip) : null,
               code: w.code !== undefined && w.code !== null ? parseSafeNumber(w.code) : null,
               desc: w.desc || '정보없음'
             };
@@ -433,7 +439,12 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
   }, [filteredProcessedData, weatherDataType, settings?.locationGroups]);
 
   const weatherStats = useMemo(() => {
-    const rawValidData = dailyWeatherSalesData.filter(d => d.tempMax !== null && d.desc !== '정보없음');
+    const rawValidData = dailyWeatherSalesData.filter(d => d.tempMax !== null && d.desc !== '정보없음').map(d => {
+      // 골프/레저의 경우 주간 강수량(daytimePrecip)을 우선 사용
+      const useDaytime = (weatherDataType === 'golf' || weatherDataType === 'leisure');
+      const effPrecip = (useDaytime && d.daytimePrecip !== null) ? d.daytimePrecip : d.precipitation;
+      return { ...d, precipitation: effPrecip };
+    });
     if (rawValidData.length === 0) return null;
     
     // IQR (사분위수) 기반 아웃라이어 필터링 함수
@@ -921,13 +932,22 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     );
   }
 
-  const getInterpretation = (r) => {
-    if (r === null || isNaN(r)) return '분석 불가';
-    const abs = Math.abs(r);
-    if (abs >= 0.7) return '매우 강한 연관성';
-    if (abs >= 0.4) return '뚜렷한 연관성';
-    if (abs >= 0.2) return '약한 연관성';
-    return '거의 무관함';
+  const getTempInterpretation = (r) => {
+    if (r === null || isNaN(r)) return { title: '분석 불가', desc: '데이터가 부족하여 해석할 수 없습니다.' };
+    if (r >= 0.4) return { title: '더울수록 매출 증가 🔥', desc: '기온이 올라갈수록 매출도 뚜렷하게 증가하는 경향이 있습니다. (여름철 매출 호조)' };
+    if (r >= 0.2) return { title: '따뜻할수록 약간 증가', desc: '기온 상승이 매출에 긍정적인 영향을 미치는 편입니다.' };
+    if (r <= -0.4) return { title: '추울수록 매출 증가 ❄️', desc: '기온이 낮아질수록 오히려 매출이 뚜렷하게 증가합니다. (겨울철 매출 호조)' };
+    if (r <= -0.2) return { title: '서늘할수록 약간 증가', desc: '기온이 떨어질 때 매출이 소폭 상승하는 경향이 있습니다.' };
+    return { title: '기온과 큰 상관없음', desc: '날씨가 덥든 춥든 매출에 큰 영향을 주지 않습니다.' };
+  };
+
+  const getPrecipInterpretation = (r) => {
+    if (r === null || isNaN(r)) return { title: '분석 불가', desc: '데이터가 부족하여 해석할 수 없습니다.' };
+    if (r <= -0.4) return { title: '비 올 때 타격 극심 ☔', desc: '비가 많이 올수록 매출이 심각하게 감소합니다. 강력한 우천 대비책이 필요합니다.' };
+    if (r <= -0.2) return { title: '비 올 때 타격 있음 ☂️', desc: '비가 오면 매출이 눈에 띄게 감소하는 경향이 있습니다.' };
+    if (r >= 0.4) return { title: '비 올 때 오히려 증가 📈', desc: '비가 올 때 오히려 매출이 크게 증가하는 특수한 패턴을 보입니다.' };
+    if (r >= 0.2) return { title: '비 올 때 소폭 증가', desc: '우천 시 방문객이 집중되거나 실내 시설 수요가 상승하는 경향이 있습니다.' };
+    return { title: '비 와도 타격 없음 🛡️', desc: '비가 많이 오든 적게 오든 매출이 탄력적으로 잘 방어됩니다.' };
   };
 
   const weatherLabel = weatherDataType === 'room' ? '객실 매출' : weatherDataType === 'golf' ? '골프 매출' : '레저 매출';
@@ -1584,10 +1604,10 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                   <span style={{fontSize: '14px', color: 'var(--text-muted)'}}>(r)</span>
                 </div>
                 <div style={{fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)'}}>
-                  해석: {getInterpretation(weatherStats.tempCorr)}
+                  해석: {getTempInterpretation(weatherStats.tempCorr).title}
                 </div>
                 <p style={{fontSize: '12px', color: 'var(--text-muted)', margin: '8px 0 0 0', lineHeight: '1.4'}}>
-                  값이 양수(+)이면 더울수록 매출이 증가하고, 음수(-)이면 기온이 낮을수록 매출이 증가함을 나타냅니다.
+                  {getTempInterpretation(weatherStats.tempCorr).desc}
                 </p>
               </div>
 
@@ -1601,10 +1621,10 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                   <span style={{fontSize: '14px', color: 'var(--text-muted)'}}>(r)</span>
                 </div>
                 <div style={{fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)'}}>
-                  해석: {getInterpretation(weatherStats.precipCorr)}
+                  해석: {getPrecipInterpretation(weatherStats.precipCorr).title}
                 </div>
                 <p style={{fontSize: '12px', color: 'var(--text-muted)', margin: '8px 0 0 0', lineHeight: '1.4'}}>
-                  값이 음수(-)일 때 비가 올수록 매출이 감소하며, 양수(+)이면 비가 와도 매출이 탄력적으로 유지됨을 뜻합니다.
+                  {getPrecipInterpretation(weatherStats.precipCorr).desc}
                 </p>
               </div>
 
@@ -1618,7 +1638,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                   <span style={{fontSize: '14px', color: 'var(--text-muted)'}}>(r)</span>
                 </div>
                 <div style={{fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '10px'}}>
-                  해석: {getInterpretation(weatherStats.weekendPrecipCorr)}
+                  해석: {getPrecipInterpretation(weatherStats.weekendPrecipCorr).title}
                 </div>
                 {weatherStats.weekendRainyStats ? (
                   <div style={{fontSize: '11px', display: 'flex', flexDirection: 'column', gap: '4px', background: 'rgba(0,0,0,0.2)', padding: '8px 12px', borderRadius: '6px', color: 'var(--text-muted)'}}>

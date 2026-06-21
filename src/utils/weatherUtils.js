@@ -18,13 +18,14 @@ export const fetchWeatherForRange = async (startDate, endDate) => {
   if (!startDate || !endDate) return {};
   const lat = 36.8451;
   const lon = 127.5821;
-  const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${startDate}&end_date=${endDate}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=Asia/Seoul`;
+  const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${startDate}&end_date=${endDate}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&hourly=precipitation&timezone=Asia/Seoul`;
   
   try {
     const response = await fetch(url);
     if (!response.ok) throw new Error(`Weather API HTTP error: ${response.status}`);
     const data = await response.json();
     const daily = data.daily;
+    const hourly = data.hourly;
     const weatherMap = {};
     
     if (daily && daily.time) {
@@ -34,11 +35,31 @@ export const fetchWeatherForRange = async (startDate, endDate) => {
           tempMax: daily.temperature_2m_max[i] !== null ? Number(daily.temperature_2m_max[i]) : null,
           tempMin: daily.temperature_2m_min[i] !== null ? Number(daily.temperature_2m_min[i]) : null,
           precipitation: daily.precipitation_sum[i] !== null ? Number(daily.precipitation_sum[i]) : null,
+          daytimePrecip: 0,
+          nighttimePrecip: 0,
           code: code,
           desc: getWeatherDesc(code)
         };
       });
     }
+
+    if (hourly && hourly.time && hourly.precipitation) {
+      hourly.time.forEach((t, i) => {
+        const [dateStr, timeStr] = t.split('T'); // "2024-01-01" and "05:00"
+        const hour = parseInt(timeStr.split(':')[0], 10);
+        const precip = hourly.precipitation[i] || 0;
+        
+        if (weatherMap[dateStr]) {
+          // 주간: 05:00 ~ 20:00 (5시 포함, 20시 포함)
+          if (hour >= 5 && hour <= 20) {
+            weatherMap[dateStr].daytimePrecip += precip;
+          } else {
+            weatherMap[dateStr].nighttimePrecip += precip;
+          }
+        }
+      });
+    }
+
     return weatherMap;
   } catch (error) {
     console.error("fetchWeatherForRange failed:", error);

@@ -357,6 +357,8 @@ export default function MonthlyDataForm({ settings }) {
                     weatherTempMax: w.tempMax !== undefined ? w.tempMax : null,
                     weatherTempMin: w.tempMin !== undefined ? w.tempMin : null,
                     weatherPrecipitation: w.precipitation !== undefined ? w.precipitation : null,
+                    weatherDaytimePrecip: w.daytimePrecip !== undefined ? w.daytimePrecip : null,
+                    weatherNighttimePrecip: w.nighttimePrecip !== undefined ? w.nighttimePrecip : null,
                     weatherCode: w.code !== undefined ? w.code : null,
                     weatherDesc: w.desc !== undefined ? w.desc : '정보없음'
                   };
@@ -731,6 +733,8 @@ export default function MonthlyDataForm({ settings }) {
                         weatherTempMax: rec.weatherTempMax !== undefined ? rec.weatherTempMax : null,
                         weatherTempMin: rec.weatherTempMin !== undefined ? rec.weatherTempMin : null,
                         weatherPrecipitation: rec.weatherPrecipitation !== undefined ? rec.weatherPrecipitation : null,
+                        weatherDaytimePrecip: rec.weatherDaytimePrecip !== undefined ? rec.weatherDaytimePrecip : null,
+                        weatherNighttimePrecip: rec.weatherNighttimePrecip !== undefined ? rec.weatherNighttimePrecip : null,
                         weatherCode: rec.weatherCode !== undefined ? rec.weatherCode : null,
                         weatherDesc: rec.weatherDesc !== undefined ? rec.weatherDesc : '정보없음'
                      };
@@ -1128,6 +1132,8 @@ export default function MonthlyDataForm({ settings }) {
                         weatherTempMax: rec.weatherTempMax !== undefined ? rec.weatherTempMax : null,
                         weatherTempMin: rec.weatherTempMin !== undefined ? rec.weatherTempMin : null,
                         weatherPrecipitation: rec.weatherPrecipitation !== undefined ? rec.weatherPrecipitation : null,
+                        weatherDaytimePrecip: rec.weatherDaytimePrecip !== undefined ? rec.weatherDaytimePrecip : null,
+                        weatherNighttimePrecip: rec.weatherNighttimePrecip !== undefined ? rec.weatherNighttimePrecip : null,
                         weatherCode: rec.weatherCode !== undefined ? rec.weatherCode : null,
                         weatherDesc: rec.weatherDesc !== undefined ? rec.weatherDesc : '정보없음'
                      };
