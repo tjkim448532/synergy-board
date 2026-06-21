@@ -646,6 +646,72 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       };
     });
 
+        // --- 추가 3대 고급 분석 로직 ---
+    const WIND_THRESHOLD = 10; // 10m/s 이상 강풍
+    const highWindData = cleanValidData.filter(d => parseSafeNumber(d.windSpeed) >= WIND_THRESHOLD);
+    const normalWindData = cleanValidData.filter(d => parseSafeNumber(d.windSpeed) < WIND_THRESHOLD);
+    
+    const windSpeedStats = {
+      highWindDays: highWindData.length,
+      normalWindDays: normalWindData.length,
+      highWindAvgRev: safeAverage(highWindData.map(d => d.revenue), false),
+      normalWindAvgRev: safeAverage(normalWindData.map(d => d.revenue), false),
+    };
+
+    // 장마 피로도 분석
+    const chronData = [...cleanValidData].sort((a,b) => a.date.localeCompare(b.date));
+    let consRain = 0;
+    const rainFatigueGroup = { clear: [], day1: [], day2: [], day3plus: [] };
+    
+    chronData.forEach(d => {
+      if (parseSafeNumber(d.precipitation) >= RAIN_THRESHOLD) {
+        consRain++;
+        if (consRain === 1) rainFatigueGroup.day1.push(d.revenue);
+        else if (consRain === 2) rainFatigueGroup.day2.push(d.revenue);
+        else rainFatigueGroup.day3plus.push(d.revenue);
+      } else {
+        consRain = 0;
+        rainFatigueGroup.clear.push(d.revenue);
+      }
+    });
+
+    const consecutiveRainStats = {
+      clearAvg: safeAverage(rainFatigueGroup.clear, false),
+      day1Avg: safeAverage(rainFatigueGroup.day1, false),
+      day2Avg: safeAverage(rainFatigueGroup.day2, false),
+      day3plusAvg: safeAverage(rainFatigueGroup.day3plus, false),
+      day1Count: rainFatigueGroup.day1.length,
+      day2Count: rainFatigueGroup.day2.length,
+      day3plusCount: rainFatigueGroup.day3plus.length,
+    };
+
+    // 풍선 효과(Substitution) 분석
+    const locNames = new Set();
+    cleanValidData.forEach(d => {
+      if (d.breakdown) Object.keys(d.breakdown).forEach(k => locNames.add(k));
+    });
+
+    const substitutionStats = [];
+    locNames.forEach(loc => {
+      const clearRevs = [];
+      const rainyRevs = [];
+      cleanValidData.forEach(d => {
+        const val = d.breakdown && d.breakdown[loc] ? d.breakdown[loc] : 0;
+        if (parseSafeNumber(d.precipitation) >= RAIN_THRESHOLD) {
+          rainyRevs.push(val);
+        } else {
+          clearRevs.push(val);
+        }
+      });
+      const clearAvg = safeAverage(clearRevs, false);
+      const rainyAvg = safeAverage(rainyRevs, false);
+      if (clearAvg > 0) {
+        const impact = ((rainyAvg - clearAvg) / clearAvg) * 100;
+        substitutionStats.push({ loc, clearAvg, rainyAvg, impact });
+      }
+    });
+    substitutionStats.sort((a, b) => b.impact - a.impact);
+
     return {
       tempCorr,
       precipCorr,
@@ -656,7 +722,10 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       overallRainStats,
       weekdayRainStats,
       weekendRainStats,
-      sectorRainStats
+      sectorRainStats,
+      windSpeedStats,
+      consecutiveRainStats,
+      substitutionStats
     };
   }, [dailyWeatherSalesData]);
 
@@ -2029,7 +2098,97 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
               )}
             </div>
 
-          </div>
+          
+            {/* --- 추가 3대 고급 분석 UI 시작 --- */}
+            {weatherStats && (
+              <div style={{marginTop: '40px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px'}}>
+                
+                {/* 1. 풍속(Wind Speed) 타격 분석 */}
+                <div className="glass-panel" style={{padding: '20px'}}>
+                  <h3 style={{margin: '0 0 16px 0', fontSize: '15px', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px'}}>
+                    <Wind size={18} color="var(--accent-blue)" /> 골프장 강풍(Wind) 타격 분석
+                  </h3>
+                  <div style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px'}}>
+                    초속 10m/s 이상 강풍 발생 시 매출 변화(주간 기준)
+                  </div>
+                  <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)'}}>
+                    <span>평온한 날 ({weatherStats.windSpeedStats.normalWindDays}일)</span>
+                    <strong style={{color: 'var(--text-main)'}}>₩{formatCurrency(weatherStats.windSpeedStats.normalWindAvgRev)}</strong>
+                  </div>
+                  <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px', paddingBottom: '8px'}}>
+                    <span>강풍 발생일 ({weatherStats.windSpeedStats.highWindDays}일)</span>
+                    <strong style={{color: 'var(--accent-red)'}}>₩{formatCurrency(weatherStats.windSpeedStats.highWindAvgRev)}</strong>
+                  </div>
+                  {weatherStats.windSpeedStats.normalWindAvgRev > 0 && (
+                    <div style={{textAlign: 'right', fontSize: '14px', fontWeight: 'bold', color: 'var(--accent-red)', marginTop: '8px'}}>
+                      타격률: {((weatherStats.windSpeedStats.highWindAvgRev - weatherStats.windSpeedStats.normalWindAvgRev) / weatherStats.windSpeedStats.normalWindAvgRev * 100).toFixed(1)}%
+                    </div>
+                  )}
+                </div>
+
+                {/* 2. 연속 강수(장마) 피로도 분석 */}
+                <div className="glass-panel" style={{padding: '20px'}}>
+                  <h3 style={{margin: '0 0 16px 0', fontSize: '15px', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px'}}>
+                    <CloudRain size={18} color="var(--accent-purple)" /> 장마/연속 우천 피로도 모델
+                  </h3>
+                  <div style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px'}}>
+                    비가 연속으로 내릴 때의 일차별 타격률 가중치
+                  </div>
+                  <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '12px'}}>
+                    <span>맑은 날</span>
+                    <strong style={{color: 'var(--text-main)'}}>₩{formatCurrency(weatherStats.consecutiveRainStats.clearAvg)}</strong>
+                  </div>
+                  <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '12px'}}>
+                    <span>우천 1일차 ({weatherStats.consecutiveRainStats.day1Count}일)</span>
+                    <span style={{color: 'var(--accent-red)'}}>₩{formatCurrency(weatherStats.consecutiveRainStats.day1Avg)} 
+                      ({weatherStats.consecutiveRainStats.clearAvg > 0 ? ((weatherStats.consecutiveRainStats.day1Avg - weatherStats.consecutiveRainStats.clearAvg)/weatherStats.consecutiveRainStats.clearAvg * 100).toFixed(1) : 0}%)
+                    </span>
+                  </div>
+                  <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '12px'}}>
+                    <span>우천 2일차 연속 ({weatherStats.consecutiveRainStats.day2Count}일)</span>
+                    <span style={{color: 'var(--accent-red)'}}>₩{formatCurrency(weatherStats.consecutiveRainStats.day2Avg)} 
+                      ({weatherStats.consecutiveRainStats.clearAvg > 0 ? ((weatherStats.consecutiveRainStats.day2Avg - weatherStats.consecutiveRainStats.clearAvg)/weatherStats.consecutiveRainStats.clearAvg * 100).toFixed(1) : 0}%)
+                    </span>
+                  </div>
+                  <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '12px'}}>
+                    <span>우천 3일차 이상 장마 ({weatherStats.consecutiveRainStats.day3plusCount}일)</span>
+                    <span style={{color: 'var(--accent-red)', fontWeight: 'bold'}}>₩{formatCurrency(weatherStats.consecutiveRainStats.day3plusAvg)} 
+                      ({weatherStats.consecutiveRainStats.clearAvg > 0 ? ((weatherStats.consecutiveRainStats.day3plusAvg - weatherStats.consecutiveRainStats.clearAvg)/weatherStats.consecutiveRainStats.clearAvg * 100).toFixed(1) : 0}%)
+                    </span>
+                  </div>
+                </div>
+
+                {/* 3. 부대시설 풍선 효과(Substitution) 분석 */}
+                <div className="glass-panel" style={{padding: '20px'}}>
+                  <h3 style={{margin: '0 0 16px 0', fontSize: '15px', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px'}}>
+                    <Activity size={18} color="var(--accent-gold)" /> 우천 시 대체재(풍선 효과) 탐지
+                  </h3>
+                  <div style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px'}}>
+                    비가 올 때 오히려 매출이 상승(방어)하는 실내/식음 업장 Top 3
+                  </div>
+                  {weatherStats.substitutionStats.filter(s => s.impact > 0).slice(0, 3).map((stat, i) => (
+                    <div key={stat.loc} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.05)'}}>
+                      <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                        <span style={{background: 'rgba(234,179,8,0.2)', color: 'var(--accent-gold)', borderRadius: '4px', padding: '2px 6px', fontSize: '10px', fontWeight: 'bold'}}>#{i+1}</span>
+                        <span style={{fontSize: '13px'}}>{stat.loc}</span>
+                      </div>
+                      <div style={{textAlign: 'right'}}>
+                        <div style={{fontSize: '13px', fontWeight: 'bold', color: 'var(--accent-emerald)'}}>+{stat.impact.toFixed(1)}%</div>
+                        <div style={{fontSize: '10px', color: 'var(--text-muted)'}}>₩{formatCurrency(stat.clearAvg)} ➔ ₩{formatCurrency(stat.rainyAvg)}</div>
+                      </div>
+                    </div>
+                  ))}
+                  {weatherStats.substitutionStats.filter(s => s.impact > 0).length === 0 && (
+                    <div style={{fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', padding: '20px 0'}}>
+                      우천 시 유의미하게 매출이 상승하는 부대업장이 없습니다.
+                    </div>
+                  )}
+                </div>
+
+              </div>
+            )}
+            {/* --- 추가 3대 고급 분석 UI 끝 --- */}
+</div>
         )}
       </div>
 
