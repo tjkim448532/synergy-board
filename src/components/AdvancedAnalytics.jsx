@@ -1658,10 +1658,10 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                   <span style={{fontSize: '14px', color: 'var(--text-muted)'}}>(r)</span>
                 </div>
                 <div style={{fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)'}}>
-                  해석: {getPrecipInterpretation(weatherStats.precipCorr).title}
+                  해석: {getPrecipInterpretation(weatherStats.precipCorr, weatherStats.overallRainStats).title}
                 </div>
                 <p style={{fontSize: '12px', color: 'var(--text-muted)', margin: '8px 0 0 0', lineHeight: '1.4'}}>
-                  {getPrecipInterpretation(weatherStats.precipCorr).desc}
+                  {getPrecipInterpretation(weatherStats.precipCorr, weatherStats.overallRainStats).desc}
                 </p>
               </div>
 
@@ -1675,7 +1675,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                   <span style={{fontSize: '14px', color: 'var(--text-muted)'}}>(r)</span>
                 </div>
                 <div style={{fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '10px'}}>
-                  해석: {getPrecipInterpretation(weatherStats.weekendPrecipCorr).title}
+                  해석: {getPrecipInterpretation(weatherStats.weekendPrecipCorr, weatherStats.weekendRainStats).title}
                 </div>
                 {weatherStats.weekendRainyStats ? (
                   <div style={{fontSize: '11px', display: 'flex', flexDirection: 'column', gap: '4px', background: 'rgba(0,0,0,0.2)', padding: '8px 12px', borderRadius: '6px', color: 'var(--text-muted)'}}>
