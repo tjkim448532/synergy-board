@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Calendar, CloudRain, Sun, AlertTriangle, Users, TrendingDown, ArrowRight } from 'lucide-react';
 import { buildWeatherCoreStats, predictWeatherImpact } from '../utils/weatherCore';
+import { isHospitalityWeekend } from '../utils/revenueUtils';
 
 const formatCurrency = (val) => {
   if (val === undefined || val === null || isNaN(val)) return '0';
@@ -102,7 +103,7 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
     const [yyyy, mm, dd] = selectedDate.split('-');
     const targetDateObj = new Date(selectedDate);
     const day = targetDateObj.getDay();
-    const isWeekendOrHoliday = day === 0 || day === 6 || isHoliday(targetDateObj) || (settings?.customWeekends || []).includes(selectedDate);
+    const isWeekendOrHoliday = isHospitalityWeekend(selectedDate, settings?.customWeekends || []);
 
     // 사용자가 선택한 미래의 달(mm)과 요일 특성(평일/휴일)에 맞는 Baseline 산출
     const targetMonthRecords = processedData.filter(d => d.yearMonth.endsWith(`-${mm}`));
@@ -117,7 +118,7 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
           if (!rec.date) return;
           const recDateObj = new Date(rec.date);
           const recDay = recDateObj.getDay();
-          const recIsWkEnd = recDay === 0 || recDay === 6 || isHoliday(recDateObj) || (settings?.customWeekends || []).includes(rec.date);
+          const recIsWkEnd = isHospitalityWeekend(rec.date, settings?.customWeekends || []);
           
           if (recIsWkEnd === isWeekendOrHoliday) {
             let precipitation = 0;

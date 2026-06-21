@@ -3,6 +3,24 @@
  * 앱 전체 컴포넌트에서 공통으로 사용하는 매출 분류/집계 유틸리티입니다.
  * 골프/식음/기타/레저 매출이 컴포넌트마다 다르게 계산되는(Data Discrepancy) 문제를 방지합니다.
  */
+import { isHoliday } from 'korean-holidays';
+
+export const isHospitalityWeekend = (dateStr, customWeekendsArray = []) => {
+  if (!dateStr) return false;
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return false;
+  
+  const day = d.getDay();
+  // 호스피탈리티 업계 주말: 금요일(5), 토요일(6)
+  const isFriOrSat = (day === 5 || day === 6);
+  
+  // 공휴일 전날(체크인 날)은 주말로 간주
+  const nextDay = new Date(d);
+  nextDay.setDate(d.getDate() + 1);
+  const isNextDayHoliday = isHoliday(nextDay);
+  
+  return customWeekendsArray.includes(dateStr) || isFriOrSat || isNextDayHoliday;
+};
 
 export const getDefaultGroup = (loc) => {
   if (loc.includes('골프') || loc.includes('클럽하우스') || loc.includes('그늘집') || loc === '골프부대' || loc.includes('그린피') || loc.includes('프로샵')) {
