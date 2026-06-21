@@ -2,8 +2,9 @@ import React, { useState, useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
 import CountUpModule from 'react-countup';
 const CountUp = CountUpModule.default || CountUpModule;
-import { Building2, Calculator, ArrowRight } from 'lucide-react';
+import { Calculator, ArrowRight, Building2 } from 'lucide-react';
 import { calculateGroupedSales } from '../utils/revenueUtils';
+import { calculateCorrelation } from '../utils/statUtils';
 
 const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(Math.round(val || 0));
 
@@ -68,17 +69,10 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
     });
 
     const calcR = (points) => {
-      const n = points.length;
-      if (n < 2) return 0;
-      const sumX = points.reduce((acc, p) => acc + p.x, 0);
-      const sumY = points.reduce((acc, p) => acc + p.y, 0);
-      const sumXY = points.reduce((acc, p) => acc + (p.x * p.y), 0);
-      const sumX2 = points.reduce((acc, p) => acc + (p.x * p.x), 0);
-      const sumY2 = points.reduce((acc, p) => acc + (p.y * p.y), 0);
-      const numerator = (n * sumXY) - (sumX * sumY);
-      const denomInside = (n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY);
-      if (denomInside <= 0) return 0;
-      return numerator / Math.sqrt(denomInside);
+      if (!points || points.length < 2) return 0;
+      const xArr = points.map(p => p.x);
+      const yArr = points.map(p => p.y);
+      return calculateCorrelation(xArr, yArr) || 0;
     };
 
     const validLeisure = calcR(pointsLeisure) >= 0.5;

@@ -58,3 +58,80 @@ export const safeRate = (numerator, denominator) => {
   if (den === 0) return 0;
   return num / den;
 };
+
+/**
+ * 피어슨 상관계수 (Pearson Correlation Coefficient)
+ * 큰 숫자(매출액 등) 제곱 시 발생하는 JS의 부동소수점 오버플로 및 
+ * Catastrophic Cancellation(정밀도 손실) 방지를 위해 평균 중심화(Mean-Centering) 방식을 사용합니다.
+ */
+export const calculateCorrelation = (xArray, yArray) => {
+  if (!xArray || !yArray || xArray.length !== yArray.length || xArray.length < 2) return null;
+  const n = xArray.length;
+  
+  const meanX = xArray.reduce((a, b) => a + b, 0) / n;
+  const meanY = yArray.reduce((a, b) => a + b, 0) / n;
+  
+  let numerator = 0;
+  let sumSqX = 0;
+  let sumSqY = 0;
+  
+  for (let i = 0; i < n; i++) {
+    const dx = xArray[i] - meanX;
+    // 매출액 단위가 수십억일 수 있으므로 편차 계산 시 10000 단위로 스케일다운하여 오버플로 사전 차단
+    const dy = (yArray[i] - meanY) / 10000; 
+    const dxScaled = dx / 100; // X(객실수/점유율 등)도 일부 스케일 다운
+    
+    numerator += dxScaled * dy;
+    sumSqX += dxScaled * dxScaled;
+    sumSqY += dy * dy;
+  }
+  
+  if (sumSqX <= 0 || sumSqY <= 0) return 0;
+  return numerator / Math.sqrt(sumSqX * sumSqY);
+};
+
+/**
+ * 단순 선형 회귀 알고리즘 (OLS: Ordinary Least Squares)
+ * 매출 예측을 위한 선형 회귀선의 기울기(slope)와 절편(intercept)을 구합니다.
+ * 피어슨 상관계수와 동일하게 평균 중심화(Mean-Centering) 방식을 사용하여 숫자 오버플로를 방지합니다.
+ */
+export const calculateLinearRegression = (points, xKey, yKey) => {
+  const validPoints = (points || []).filter(p => p[yKey] !== 0 && p[yKey] !== null && p[yKey] !== undefined);
+  const n = validPoints.length;
+  
+  if (n === 0) return { slope: 0, intercept: 0, r: 0, avgYPerX: 0 };
+  if (n === 1) {
+    const p = validPoints[0];
+    const slope = p[xKey] > 0 ? p[yKey] / p[xKey] : 0;
+    return { slope, intercept: 0, r: 1, avgYPerX: slope };
+  }
+
+  const sumX = validPoints.reduce((sum, p) => sum + p[xKey], 0);
+  const sumY = validPoints.reduce((sum, p) => sum + p[yKey], 0);
+  const meanX = sumX / n;
+  const meanY = sumY / n;
+  
+  let covXY = 0;
+  let varX = 0;
+  let varY = 0;
+
+  validPoints.forEach(p => {
+    // JS MAX_SAFE_INTEGER 한계를 초과하는 제곱연산 방지를 위해 스케일링 후 복원 로직 적용
+    const dx = p[xKey] - meanX;
+    const dy = (p[yKey] - meanY) / 10000;  // Y 스케일다운
+    const dxScaled = dx / 100;             // X 스케일다운
+    
+    covXY += dxScaled * dy;
+    varX += dxScaled * dxScaled;
+    varY += dy * dy;
+  });
+
+  // slope = (covXY / varX) * (scaleY / scaleX) = (covXY / varX) * (10000 / 100) = (covXY / varX) * 100
+  const slope = varX > 1e-12 ? (covXY / varX) * 100 : 0;
+  const intercept = meanY - slope * meanX;
+  
+  const r = (varX > 1e-12 && varY > 1e-12) ? covXY / Math.sqrt(varX * varY) : 0;
+  const avgYPerX = sumX > 0 ? sumY / sumX : 0;
+
+  return { slope, intercept, r, avgYPerX };
+};

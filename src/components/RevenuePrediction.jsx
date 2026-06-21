@@ -4,6 +4,7 @@ import {
 } from 'recharts';
 import CountUpModule from 'react-countup';
 import { calculateGroupedSales } from '../utils/revenueUtils';
+import { calculateLinearRegression } from '../utils/statUtils';
 const CountUp = CountUpModule.default || CountUpModule;
 
 const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(Math.round(val || 0));
@@ -18,37 +19,7 @@ export default function RevenuePrediction({ processedData, globalStats, settings
   // 2. 선형 회귀 알고리즘 (Least Squares)
   const { regWd, regWe, regLeisureWd, regLeisureWe, regLeisureTotal, regMotoWd, regMotoWe, regMotoTotal, regMotoGuest, regFnbWd, regFnbWe, regFnbTotal, regOverallRoom } = useMemo(() => {
     const calcRegression = (xKey, yKey) => {
-      const points = processedData.filter(d => d[yKey] !== 0 && d[yKey] !== null && d[yKey] !== undefined);
-      const n = points.length;
-      
-      if (n === 0) return { slope: 0, intercept: 0, r: 0 };
-      if (n === 1) {
-        const p = points[0];
-        const slope = p[xKey] > 0 ? p[yKey] / p[xKey] : 0;
-        return { slope, intercept: 0, r: 1 };
-      }
-
-      let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0, sumY2 = 0;
-      points.forEach(p => {
-        const x = p[xKey];
-        const y = p[yKey];
-        sumX += x;
-        sumY += y;
-        sumXY += x * y;
-        sumX2 += x * x;
-        sumY2 += y * y;
-      });
-
-      const denominator = (n * sumX2 - sumX * sumX);
-      const intercept = Math.abs(denominator) < 1e-9 ? sumY / n : (sumY - ((n * sumXY - sumX * sumY) / denominator) * sumX) / n;
-      const slope = Math.abs(denominator) < 1e-9 ? 0 : (n * sumXY - sumX * sumY) / denominator;
-      const avgYPerX = sumX > 0 ? sumY / sumX : 0;
-      
-      const numerator = (n * sumXY) - (sumX * sumY);
-      const denomInside = (n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY);
-      const r = denomInside > 0 ? numerator / Math.sqrt(denomInside) : 0;
-
-      return { slope, intercept, r, avgYPerX };
+      return calculateLinearRegression(processedData, xKey, yKey);
     };
 
     return {
