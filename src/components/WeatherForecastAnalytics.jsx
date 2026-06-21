@@ -173,6 +173,10 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
 
       const coreImpact = predictWeatherImpact(facName, isWeekendOrHoliday, forecastParam, coreStats, clearAvg);
       
+      const fStat = coreStats.facilities[facName];
+      const baseRainPenalty = fStat ? (isWeekendOrHoliday ? fStat.wePenalty : fStat.wdPenalty) : 0;
+      const trueRainyAvg = clearAvg * (1 + baseRainPenalty);
+      
       const expectedRevenue = coreImpact.expectedRevenue;
       const variance = coreImpact.variance;
       const decreaseRate = coreImpact.decreaseRate;
@@ -204,7 +208,7 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
         name: facName,
         group: fb.group,
         clearAvg,
-        rainyAvg: coreImpact.expectedRevenue,
+        rainyAvg: trueRainyAvg,
         expectedRevenue,
         variance,
         decreaseRate,

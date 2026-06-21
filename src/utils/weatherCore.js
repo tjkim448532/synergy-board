@@ -153,37 +153,65 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
     highWindAvgRev: getAdjAvg(windRatioGroup.high)
   };
 
-  // 3. Facility 별 주중/주말 및 우천 매출
+  // 3. Facility 별 주중/주말 및 우천 매출 (생존자 편향 해결)
   const facilityData = {};
+  
+  // 3-1. 시설별 활성 월(Active Months) 파악
+  // 비가 와서 0원을 기록한 날(결측치)을 평균에 포함하되, 계절성 장기 휴장(겨울 워터파크 등)으로 
+  // 발생한 0원을 제외하기 위해 "해당 월에 단 하루라도 영업했는지"를 먼저 추적합니다.
+  const activeMonths = {}; 
+  processedData.forEach(m => {
+    if (m.rawLeisureRecords) {
+      m.rawLeisureRecords.forEach(rec => {
+        if (!rec.date) return;
+        const monthKey = rec.date.substring(0, 7); // 'YYYY-MM'
+        if (rec.breakdown) {
+          Object.entries(rec.breakdown).forEach(([fac, amount]) => {
+            const val = parseAmount(amount);
+            if (val > 0) {
+              const group = settings?.locationGroups?.[fac] || 'leisure';
+              const isExcluded = excludeKeywords.some(keyword => fac.includes(keyword)) || group === 'fnb';
+              if (!isExcluded || fac.includes('모토아레나')) {
+                if (!activeMonths[fac]) activeMonths[fac] = new Set();
+                activeMonths[fac].add(monthKey);
+              }
+            }
+          });
+        }
+      });
+    }
+  });
+
+  // 3-2. 일별 집계 (우천 휴장/매출 0원 반영)
   processedData.forEach(m => {
     if (m.rawLeisureRecords) {
       m.rawLeisureRecords.forEach(rec => {
         if (!rec.date || !weatherMap[rec.date]) return;
         const w = weatherMap[rec.date];
+        const monthKey = rec.date.substring(0, 7);
 
-        if (rec.breakdown) {
-          Object.entries(rec.breakdown).forEach(([fac, amount]) => {
-            const group = settings?.locationGroups?.[fac] || 'leisure';
-            const isExcluded = excludeKeywords.some(keyword => fac.includes(keyword)) || group === 'fnb';
-            if (isExcluded && !fac.includes('모토아레나')) return;
-
+        Object.keys(activeMonths).forEach(fac => {
+          // 해당 시설이 이번 달에 한 번이라도 오픈한 경우에만(시즌 중) 집계
+          if (activeMonths[fac].has(monthKey)) {
             if (!facilityData[fac]) {
               facilityData[fac] = {
-                wdClear: [], wdRainy: [], weClear: [], weRainy: [], group
+                wdClear: [], wdRainy: [], weClear: [], weRainy: [], 
+                group: settings?.locationGroups?.[fac] || 'leisure'
               };
             }
-            const val = parseAmount(amount);
-            if (val > 0) {
-              if (w.isWeekend) {
-                if (w.isRainy) facilityData[fac].weRainy.push(val);
-                else facilityData[fac].weClear.push(val);
-              } else {
-                if (w.isRainy) facilityData[fac].wdRainy.push(val);
-                else facilityData[fac].wdClear.push(val);
-              }
+            
+            // 결측치(휴장)일 경우 0원으로 강제 기록하여 비로 인한 매출 타격이 0이 되는 것을 평균에 끌어내림
+            const val = rec.breakdown && rec.breakdown[fac] ? parseAmount(rec.breakdown[fac]) : 0;
+            
+            if (w.isWeekend) {
+              if (w.isRainy) facilityData[fac].weRainy.push(val);
+              else facilityData[fac].weClear.push(val);
+            } else {
+              if (w.isRainy) facilityData[fac].wdRainy.push(val);
+              else facilityData[fac].wdClear.push(val);
             }
-          });
-        }
+          }
+        });
       });
     }
   });
