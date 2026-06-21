@@ -20,16 +20,20 @@ const safeAverage = (arr, round = true) => {
   return round ? Math.round(avg) : avg;
 };
 
-// 이상치 제거 (IQR)
+// 이상치 제거 (IQR) - 0원(휴장) 데이터가 IQR을 0으로 만들어 정상 매출을 모두 날리는 버그 수정
 const filterOutliers = (dataList) => {
-  const values = [...dataList].sort((a, b) => a - b);
-  if (values.length < 4) return values;
-  const q1 = values[Math.floor(values.length * 0.25)];
-  const q3 = values[Math.floor(values.length * 0.75)];
+  if (dataList.length < 4) return dataList;
+  // 통계 모수를 산출할 때는 실제 영업이 발생한 양수(>0) 데이터만 기준점으로 잡음
+  const nonZero = dataList.filter(v => v > 0).sort((a, b) => a - b);
+  if (nonZero.length < 4) return dataList; // 유효 모수가 적으면 원본 유지
+  
+  const q1 = nonZero[Math.floor(nonZero.length * 0.25)];
+  const q3 = nonZero[Math.floor(nonZero.length * 0.75)];
   const iqr = q3 - q1;
-  const lowerBound = q1 - 1.5 * iqr;
   const upperBound = q3 + 1.5 * iqr;
-  return values.filter(v => v >= lowerBound && v <= upperBound);
+  
+  // 0원 데이터(휴장 타격)는 무조건 살려서 평균을 깎아먹도록 유지하고, 비정상적 폭증(단체 예약 등)만 커트
+  return dataList.filter(v => v <= upperBound);
 };
 
 /**
@@ -113,6 +117,7 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
 
   allDaysRevs.sort((a,b) => a.date.localeCompare(b.date));
   let consRain = 0;
+  let lastDateObj = null;
   
   const rainRatioGroup = { day1: [], day2: [], day3plus: [] };
   const windRatioGroup = { high: [] };
@@ -122,6 +127,14 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
     if (baseline === 0) return;
     
     const ratio = d.revenue / baseline;
+    const currentObj = new Date(d.date);
+
+    // 날짜 갭 확인 (결측치 날짜 건너뛰기로 인해 가짜 연속우천 카운트 방지)
+    if (lastDateObj) {
+      const diffDays = (currentObj - lastDateObj) / (1000 * 60 * 60 * 24);
+      if (diffDays > 1.5) consRain = 0;
+    }
+    lastDateObj = currentObj;
 
     // 장마
     if (d.isRainy) {
@@ -137,7 +150,7 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
   });
 
   const getAdjAvg = (ratioArr) => {
-    if (ratioArr.length === 0) return 0;
+    if (ratioArr.length === 0) return globalClearAvg; // 표본이 없으면 평소값 반환 (-100% 오류 방지)
     const avgRatio = ratioArr.reduce((a,b) => a + b, 0) / ratioArr.length;
     return Math.round(globalClearAvg * avgRatio);
   };
