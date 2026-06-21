@@ -359,8 +359,9 @@ export default function MonthlyDataForm({ settings }) {
                     weatherPrecipitation: w.precipitation !== undefined ? w.precipitation : null,
                     weatherDaytimePrecip: w.daytimePrecip !== undefined ? w.daytimePrecip : null,
                     weatherNighttimePrecip: w.nighttimePrecip !== undefined ? w.nighttimePrecip : null,
+                    weatherWindSpeed: w.daytimeWindSpeedMax !== undefined ? w.daytimeWindSpeedMax : null,
                     weatherCode: w.code !== undefined ? w.code : null,
-                    weatherDesc: w.desc !== undefined ? w.desc : '정보없음'
+                    weatherDesc: w.desc !== undefined ? w.desc : '알수없음'
                   };
                 });
               }
@@ -735,8 +736,9 @@ export default function MonthlyDataForm({ settings }) {
                         weatherPrecipitation: rec.weatherPrecipitation !== undefined ? rec.weatherPrecipitation : null,
                         weatherDaytimePrecip: rec.weatherDaytimePrecip !== undefined ? rec.weatherDaytimePrecip : null,
                         weatherNighttimePrecip: rec.weatherNighttimePrecip !== undefined ? rec.weatherNighttimePrecip : null,
+                        weatherWindSpeed: rec.weatherWindSpeed !== undefined ? rec.weatherWindSpeed : null,
                         weatherCode: rec.weatherCode !== undefined ? rec.weatherCode : null,
-                        weatherDesc: rec.weatherDesc !== undefined ? rec.weatherDesc : '정보없음'
+                        weatherDesc: rec.weatherDesc !== undefined ? rec.weatherDesc : '알수없음'
                      };
                   }
                   tempMap[groupKey].count += count;
@@ -1134,8 +1136,9 @@ export default function MonthlyDataForm({ settings }) {
                         weatherPrecipitation: rec.weatherPrecipitation !== undefined ? rec.weatherPrecipitation : null,
                         weatherDaytimePrecip: rec.weatherDaytimePrecip !== undefined ? rec.weatherDaytimePrecip : null,
                         weatherNighttimePrecip: rec.weatherNighttimePrecip !== undefined ? rec.weatherNighttimePrecip : null,
+                        weatherWindSpeed: rec.weatherWindSpeed !== undefined ? rec.weatherWindSpeed : null,
                         weatherCode: rec.weatherCode !== undefined ? rec.weatherCode : null,
-                        weatherDesc: rec.weatherDesc !== undefined ? rec.weatherDesc : '정보없음'
+                        weatherDesc: rec.weatherDesc !== undefined ? rec.weatherDesc : '알수없음'
                      };
                   }
                   tempMap[groupKey].count += count;

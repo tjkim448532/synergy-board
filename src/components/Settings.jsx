@@ -156,6 +156,7 @@ export default function Settings({ monthlyData }) {
               weatherPrecipitation: w.precipitation !== undefined ? w.precipitation : null,
               weatherDaytimePrecip: w.daytimePrecip !== undefined ? w.daytimePrecip : null,
               weatherNighttimePrecip: w.nighttimePrecip !== undefined ? w.nighttimePrecip : null,
+              weatherWindSpeed: w.daytimeWindSpeedMax !== undefined ? w.daytimeWindSpeedMax : null,
               weatherCode: w.code !== undefined ? w.code : null,
               weatherDesc: w.desc !== undefined ? w.desc : '정보없음'
             };

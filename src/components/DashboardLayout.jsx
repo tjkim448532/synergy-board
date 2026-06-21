@@ -1,19 +1,27 @@
 import React, { useState } from 'react';
 import { Upload, Settings, PieChart, TrendingUp, BookOpen, Building, ChevronDown, BarChart2, Users, Activity, Target, CloudRain } from 'lucide-react';
+import WeatherAlertBanner from './WeatherAlertBanner';
 import './DashboardLayout.css';
 
 const SIDEBAR_MENU = [
-  { id: 'analytics', icon: PieChart, label: '상관관계 분석' },
-  { id: 'weather-forecast', icon: CloudRain, label: '날씨 기반 인력 배치 시뮬레이터' },
+  { 
+    id: 'weather-parent', 
+    icon: CloudRain, 
+    label: '기상/날씨 종합 분석',
+    subItems: [
+      { id: 'analytics', label: '과거 날씨 타격 분석 (통계)' },
+      { id: 'weather-forecast', label: '우천 타격 예측 (시뮬레이터)' }
+    ]
+  },
   { id: 'division-sales', icon: BarChart2, label: '부문별 매출 분석' },
-  { id: 'leisure-utilization', icon: Activity, label: '레저본부 이용률 심층분석' },
-  { id: 'channel-analysis', icon: PieChart, label: '객실판매채널 심층분석' },
-  { id: 'prediction', icon: TrendingUp, label: '목표 예약률 기반 매출 시뮬레이터' },
-  { id: 'strategy', icon: Target, label: '경영전략 보고서' },
+  { id: 'leisure-utilization', icon: Activity, label: '부대시설 이용 분석' },
+  { id: 'channel-analysis', icon: PieChart, label: '판매채널 분석' },
+  { id: 'prediction', icon: TrendingUp, label: '목표 달성률 및 예측' },
+  { id: 'strategy', icon: Target, label: '경영전략 도출' },
   { 
     id: 'new-business-parent', 
     icon: Building, 
-    label: '신규 사업 시뮬레이터',
+    label: '신규 사업 시뮬레이션',
     subItems: [
       { id: 'new-business', label: '연수원' },
       { id: 'new-business-soccer', label: '축구장(준비중)' }
@@ -22,7 +30,7 @@ const SIDEBAR_MENU = [
   { 
     id: 'settings-parent', 
     icon: Settings, 
-    label: '설정',
+    label: '설정 및 기타',
     subItems: [
       { id: 'settings', label: '기본 설정' },
       { id: 'visitor-calc', label: '방문객 수 계산기' },
@@ -113,9 +121,11 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }) {
           }</h1>
           <div className="user-profile">
             <div className="avatar">L</div>
-            <span>레저본부</span>
+            <span>관리자</span>
           </div>
         </header>
+
+        <WeatherAlertBanner />
         
         <div className="content-area">
           {children}

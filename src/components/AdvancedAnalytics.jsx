@@ -333,6 +333,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
               precipitation: parseSafeNumber(rec.weatherPrecipitation),
               daytimePrecip: rec.weatherDaytimePrecip !== undefined && rec.weatherDaytimePrecip !== null ? parseSafeNumber(rec.weatherDaytimePrecip) : null,
               nighttimePrecip: rec.weatherNighttimePrecip !== undefined && rec.weatherNighttimePrecip !== null ? parseSafeNumber(rec.weatherNighttimePrecip) : null,
+              windSpeed: rec.weatherWindSpeed !== undefined && rec.weatherWindSpeed !== null ? parseSafeNumber(rec.weatherWindSpeed) : null,
               code: parseSafeNumber(rec.weatherCode),
               desc: rec.weatherDesc || '정보없음'
             };
@@ -363,6 +364,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
               precipitation: w.precipitation !== undefined && w.precipitation !== null ? parseSafeNumber(w.precipitation) : null,
               daytimePrecip: w.daytimePrecip !== undefined && w.daytimePrecip !== null ? parseSafeNumber(w.daytimePrecip) : null,
               nighttimePrecip: w.nighttimePrecip !== undefined && w.nighttimePrecip !== null ? parseSafeNumber(w.nighttimePrecip) : null,
+              windSpeed: w.windSpeed !== undefined && w.windSpeed !== null ? parseSafeNumber(w.windSpeed) : null,
               code: w.code !== undefined && w.code !== null ? parseSafeNumber(w.code) : null,
               desc: w.desc || '정보없음'
             };
@@ -397,6 +399,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
               precipitation: w.precipitation !== undefined && w.precipitation !== null ? parseSafeNumber(w.precipitation) : null,
               daytimePrecip: w.daytimePrecip !== undefined && w.daytimePrecip !== null ? parseSafeNumber(w.daytimePrecip) : null,
               nighttimePrecip: w.nighttimePrecip !== undefined && w.nighttimePrecip !== null ? parseSafeNumber(w.nighttimePrecip) : null,
+              windSpeed: w.windSpeed !== undefined && w.windSpeed !== null ? parseSafeNumber(w.windSpeed) : null,
               code: w.code !== undefined && w.code !== null ? parseSafeNumber(w.code) : null,
               desc: w.desc || '정보없음'
             };

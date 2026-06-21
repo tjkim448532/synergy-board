@@ -18,7 +18,7 @@ export const fetchWeatherForRange = async (startDate, endDate) => {
   if (!startDate || !endDate) return {};
   const lat = 36.8451;
   const lon = 127.5821;
-  const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${startDate}&end_date=${endDate}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&hourly=precipitation&timezone=Asia/Seoul`;
+  const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${startDate}&end_date=${endDate}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&hourly=precipitation,wind_speed_10m&timezone=Asia/Seoul`;
   
   try {
     const response = await fetch(url);
@@ -37,6 +37,7 @@ export const fetchWeatherForRange = async (startDate, endDate) => {
           precipitation: daily.precipitation_sum[i] !== null ? Number(daily.precipitation_sum[i]) : null,
           daytimePrecip: 0,
           nighttimePrecip: 0,
+          daytimeWindSpeedMax: 0, // 강풍 분석용 주간 최대 풍속
           code: code,
           desc: getWeatherDesc(code)
         };
@@ -48,11 +49,15 @@ export const fetchWeatherForRange = async (startDate, endDate) => {
         const [dateStr, timeStr] = t.split('T'); // "2024-01-01" and "05:00"
         const hour = parseInt(timeStr.split(':')[0], 10);
         const precip = hourly.precipitation[i] || 0;
+        const wind = hourly.wind_speed_10m ? (hourly.wind_speed_10m[i] || 0) : 0;
         
         if (weatherMap[dateStr]) {
           // 주간: 05:00 ~ 20:00 (5시 포함, 20시 포함)
           if (hour >= 5 && hour <= 20) {
             weatherMap[dateStr].daytimePrecip += precip;
+            if (wind > weatherMap[dateStr].daytimeWindSpeedMax) {
+              weatherMap[dateStr].daytimeWindSpeedMax = wind;
+            }
           } else {
             weatherMap[dateStr].nighttimePrecip += precip;
           }
@@ -92,3 +97,32 @@ export const fetchCurrentWeather = async () => {
   }
 };
 
+export const fetchFutureForecast = async () => {
+  const lat = 36.8451;
+  const lon = 127.5821;
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weather_code,precipitation_sum,wind_speed_10m_max&timezone=Asia/Seoul&forecast_days=14`;
+  
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Weather API HTTP error: ${response.status}`);
+    const data = await response.json();
+    const daily = data.daily;
+    const forecastMap = {};
+    
+    if (daily && daily.time) {
+      daily.time.forEach((t, i) => {
+        forecastMap[t] = {
+          date: t,
+          code: daily.weather_code[i],
+          desc: getWeatherDesc(daily.weather_code[i]),
+          precipitation: daily.precipitation_sum[i] !== null ? Number(daily.precipitation_sum[i]) : 0,
+          windSpeedMax: daily.wind_speed_10m_max[i] !== null ? Number(daily.wind_speed_10m_max[i]) : 0
+        };
+      });
+    }
+    return Object.values(forecastMap);
+  } catch (error) {
+    console.error("fetchFutureForecast failed:", error);
+    return [];
+  }
+};
