@@ -9,6 +9,7 @@ const CountUp = CountUpModule.default || CountUpModule;
 import { isHoliday } from 'korean-holidays';
 import { calculateGroupedSales } from '../utils/revenueUtils';
 import { fetchCurrentWeather } from '../utils/weatherUtils';
+import { parseSafeNumber, safeAverage, filterOutliers } from '../utils/statUtils';
 
 // 피어슨 상관계수 계산 함수
 function calculateCorrelation(xArray, yArray) {
