@@ -67,96 +67,22 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
 
   // 과거 데이터 기반 시뮬레이션
   const simulationResults = useMemo(() => {
-    if (!selectedDate || !processedData || processedData.length === 0) return null;
+    if (!processedData || processedData.length === 0 || !selectedDate) return null;
+    
+    // 코어 엔진을 통해 전체 날씨 통계(평일/주말 및 고급 변수) 빌드
+    const coreStats = buildWeatherCoreStats(processedData, settings);
 
     const [yyyy, mm, dd] = selectedDate.split('-');
-    const dateObj = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
-    const day = dateObj.getDay();
-    const isWeekendOrHoliday = day === 0 || day === 6 || isHoliday(dateObj);
-    const RAIN_THRESHOLD = 3.0;
+    const targetDateObj = new Date(selectedDate);
+    const day = targetDateObj.getDay();
+    const isWeekendOrHoliday = day === 0 || day === 6 || isHoliday(targetDateObj) || (settings?.customWeekends || []).includes(selectedDate);
 
-    // 제외할 F&B 및 임대/리테일 업장 키워드
-    const excludeKeywords = ['투썸', 'BHC', '멕시카나', '핏스탑', '프로샵', '딜라이트', '식당', '카페', 'F&B', '식음', '식음료', '대여품', '펫포레'];
-
-    // 숫자 파싱 유틸리티
-    const parseAmount = (amt) => {
-      if (typeof amt === 'string') return Number(amt.replace(/,/g, '')) || 0;
-      return Number(amt) || 0;
-    };
-
-    // IQR 필터링 함수
-    const filterOutliers = (dataList) => {
-      if (dataList.length < 4) return dataList;
-      const values = [...dataList].sort((a, b) => a - b);
-      const q1 = values[Math.floor(values.length * 0.25)];
-      const q3 = values[Math.floor(values.length * 0.75)];
-      const iqr = q3 - q1;
-      const lowerBound = q1 - 1.5 * iqr;
-      const upperBound = q3 + 1.5 * iqr;
-      return dataList.filter(v => v >= lowerBound && v <= upperBound);
-    };
-
-    // --- 1단계: 전 기간(All-Time) 데이터를 이용해 시설별 '우천 타격률(Penalty Rate)' 산출 ---
-    const allTimeStats = {};
-    const weatherLookup = {};
-    
-    // 1. 전체 데이터에서 날씨 정보를 먼저 추출 (날씨 데이터는 rawRoomRecords에 저장됨)
-    processedData.forEach(m => {
-      if (m.rawRoomRecords && Array.isArray(m.rawRoomRecords)) {
-        m.rawRoomRecords.forEach(rec => {
-          if (rec.date && rec.weatherPrecipitation !== undefined && rec.weatherPrecipitation !== null) {
-            weatherLookup[rec.date] = {
-              precipitation: rec.weatherDaytimePrecip !== undefined && rec.weatherDaytimePrecip !== null ? Number(rec.weatherDaytimePrecip) : Number(rec.weatherPrecipitation)
-            };
-          }
-        });
-      }
-    });
-
-    processedData.forEach(m => {
-      if (m.rawLeisureRecords && Array.isArray(m.rawLeisureRecords)) {
-        m.rawLeisureRecords.forEach(rec => {
-          if (!rec.date) return;
-          
-          const precipitation = weatherLookup[rec.date] ? weatherLookup[rec.date].precipitation : 0;
-          const isRainy = precipitation >= RAIN_THRESHOLD;
-
-          if (rec.breakdown) {
-            Object.entries(rec.breakdown).forEach(([facilityName, amount]) => {
-              const group = settings?.locationGroups?.[facilityName] || 'leisure';
-              const isExcluded = excludeKeywords.some(keyword => facilityName.includes(keyword)) || group === 'fnb';
-              if (isExcluded && !facilityName.includes('모토아레나')) return;
-
-              if (!allTimeStats[facilityName]) {
-                allTimeStats[facilityName] = { clearVals: [], rainyVals: [] };
-              }
-              const val = parseAmount(amount);
-              if (val > 0) {
-                if (isRainy) allTimeStats[facilityName].rainyVals.push(val);
-                else allTimeStats[facilityName].clearVals.push(val);
-              }
-            });
-          }
-        });
-      }
-    });
-
-    const penaltyRates = {};
-    Object.keys(allTimeStats).forEach(fac => {
-      const clearFiltered = filterOutliers(allTimeStats[fac].clearVals);
-      const rainyFiltered = filterOutliers(allTimeStats[fac].rainyVals);
-      
-      const clearAvg = clearFiltered.length > 0 ? clearFiltered.reduce((a, b) => a + b, 0) / clearFiltered.length : 0;
-      const rainyAvg = rainyFiltered.length > 0 ? rainyFiltered.reduce((a, b) => a + b, 0) / rainyFiltered.length : clearAvg;
-      
-      // 타격률: 음수면 하락, 양수면 상승
-      penaltyRates[fac] = clearAvg > 0 ? (rainyAvg - clearAvg) / clearAvg : 0;
-    });
-
-
-    // --- 2단계: 사용자가 선택한 미래의 달(mm)과 요일 특성(평일/휴일)에 맞는 Baseline 산출 ---
+    // 사용자가 선택한 미래의 달(mm)과 요일 특성(평일/휴일)에 맞는 Baseline 산출
     const targetMonthRecords = processedData.filter(d => d.yearMonth.endsWith(`-${mm}`));
     const facilityBaseline = {};
+    const excludeKeywords = ['가족석', '스윙카', '전동킥보드', '1회권', '3회권', '5회권', '2회권'];
+    
+    const RAIN_THRESHOLD = 3.0;
 
     targetMonthRecords.forEach(m => {
       if (m.rawLeisureRecords && Array.isArray(m.rawLeisureRecords)) {
@@ -164,11 +90,16 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
           if (!rec.date) return;
           const recDateObj = new Date(rec.date);
           const recDay = recDateObj.getDay();
-          const recIsWkEnd = recDay === 0 || recDay === 6 || isHoliday(recDateObj);
+          const recIsWkEnd = recDay === 0 || recDay === 6 || isHoliday(recDateObj) || (settings?.customWeekends || []).includes(rec.date);
           
           if (recIsWkEnd === isWeekendOrHoliday) {
-            // Baseline은 맑은 날(정상 영업일) 기준이므로 우천일은 제외하여 순수 기대치 계산
-            const precipitation = weatherLookup[rec.date] ? weatherLookup[rec.date].precipitation : 0;
+            let precipitation = 0;
+            const rmRec = (m.rawRoomRecords || []).find(r => r.date === rec.date);
+            if (rmRec) {
+              precipitation = rmRec.weatherDaytimePrecip !== undefined && rmRec.weatherDaytimePrecip !== null 
+                ? Number(rmRec.weatherDaytimePrecip) : Number(rmRec.weatherPrecipitation || 0);
+            }
+            
             if (precipitation < RAIN_THRESHOLD) {
               Object.entries(rec.breakdown || {}).forEach(([facilityName, amount]) => {
                 const group = settings?.locationGroups?.[facilityName] || 'leisure';
@@ -178,7 +109,7 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
                 if (!facilityBaseline[facilityName]) {
                   facilityBaseline[facilityName] = { group, vals: [] };
                 }
-                const val = parseAmount(amount);
+                const val = typeof amount === 'number' ? Math.round(amount) : parseInt(String(amount).replace(/,/g, ''), 10) || 0;
                 if (val > 0) facilityBaseline[facilityName].vals.push(val);
               });
             }
@@ -189,20 +120,35 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
 
     const isForecastRainy = forecastData && forecastData.precipitation >= RAIN_THRESHOLD;
 
+    const filterOutliers = (dataList) => {
+      const values = [...dataList].sort((a, b) => a - b);
+      if (values.length < 4) return values;
+      const q1 = values[Math.floor(values.length * 0.25)];
+      const q3 = values[Math.floor(values.length * 0.75)];
+      const iqr = q3 - q1;
+      const lowerBound = q1 - 1.5 * iqr;
+      const upperBound = q3 + 1.5 * iqr;
+      return values.filter(v => v >= lowerBound && v <= upperBound);
+    };
+
     const results = Object.keys(facilityBaseline).map(facName => {
       const fb = facilityBaseline[facName];
       const filteredVals = filterOutliers(fb.vals);
       
-      // 해당 동월 동일조건의 맑은 날 평균 기대매출 (A)
       const clearAvg = filteredVals.length > 0 ? filteredVals.reduce((a, b) => a + b, 0) / filteredVals.length : 0;
       
-      // 우천 시 예상 하락률 적용하여 (B) 산출
-      const penaltyRate = penaltyRates[facName] || 0;
-      const rainyAvg = clearAvg * (1 + penaltyRate);
+      const forecastParam = {
+        precipitation: forecastData ? forecastData.precipitation : 0,
+        windSpeedMax: forecastData ? forecastData.windSpeedMax : 0,
+        consecutiveRainCount: forecastData && forecastData.precipitation >= RAIN_THRESHOLD ? 1 : 0
+      };
+
+      const coreImpact = predictWeatherImpact(facName, isWeekendOrHoliday, forecastParam, coreStats, clearAvg);
       
-      const expectedRevenue = isForecastRainy ? rainyAvg : clearAvg;
-      const variance = expectedRevenue - clearAvg;
-      const decreaseRate = clearAvg > 0 ? (variance / clearAvg) * 100 : 0;
+      const expectedRevenue = coreImpact.expectedRevenue;
+      const variance = coreImpact.variance;
+      const decreaseRate = coreImpact.decreaseRate;
+      const tags = coreImpact.tags || [];
       
       let recommendation = "정상 인력 배치";
       let severity = "normal";
@@ -217,8 +163,11 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
         } else if (decreaseRate < -5) {
           recommendation = "타격 예상 (소폭 하락): 기상 상황에 따른 유연한 인력 운영 필요";
           severity = "low";
+        } else if (decreaseRate > 0) {
+          recommendation = "수요 증가 (풍선효과): 평소 이상의 인력 및 준비물 유지 권장";
+          severity = "positive";
         } else {
-          recommendation = "타격 없음/수요 증가: 정상 인력 유지 권장";
+          recommendation = "타격 없음/탄력 방어: 정상 인력 유지 권장";
           severity = "positive";
         }
       }
@@ -227,23 +176,30 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
         name: facName,
         group: fb.group,
         clearAvg,
-        rainyAvg,
+        rainyAvg: coreImpact.expectedRevenue,
         expectedRevenue,
         variance,
         decreaseRate,
         recommendation,
         severity,
-        dataPoints: filteredVals.length
+        tags
       };
-    }).sort((a, b) => a.decreaseRate - b.decreaseRate); // 하락률이 심한 순으로 정렬
+    });
+
+    results.sort((a, b) => b.expectedRevenue - a.expectedRevenue);
 
     return {
+      date: selectedDate,
       isWeekendOrHoliday,
       isForecastRainy,
       month: mm,
-      results
+      results,
+      weatherParam: {
+         wind: forecastData ? forecastData.windSpeedMax : 0,
+         precip: forecastData ? forecastData.precipitation : 0
+      }
     };
-  }, [selectedDate, forecastData, processedData, settings]);
+  }, [processedData, selectedDate, forecastData, settings]);
 
   return (
     <div className="weather-forecast-container" style={{color: 'var(--text-main)'}}>

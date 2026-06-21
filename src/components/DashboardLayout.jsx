@@ -10,6 +10,7 @@ const SIDEBAR_MENU = [
     icon: CloudRain, 
     label: '기상/날씨 종합 분석',
     subItems: [
+      { id: 'weather-stats', label: '과거 타격 통계 (장마/강풍)' },
       { id: 'weather-forecast', label: '우천 타격 예측 (시뮬레이터)' }
     ]
   },
@@ -125,7 +126,7 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }) {
           </div>
         </header>
 
-        {(activeTab === 'weather-parent' || activeTab === 'weather-forecast') && <WeatherAlertBanner />}
+        {(activeTab === 'weather-parent' || activeTab === 'weather-forecast' || activeTab === 'weather-stats') && <WeatherAlertBanner />}
         
         <div className="content-area">
           {children}
