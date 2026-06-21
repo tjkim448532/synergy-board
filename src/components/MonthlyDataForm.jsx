@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import './MonthlyDataForm.css';
 import { isHoliday } from 'korean-holidays';
 import { fetchWeatherForRange } from '../utils/weatherUtils';
+import { isRoomWeekend, isLeisureWeekend } from '../utils/revenueUtils';
 
 const parseSafeInt = (val) => {
   if (val === undefined || val === null || val === '') return 0;
@@ -232,21 +233,9 @@ export default function MonthlyDataForm({ settings }) {
             const monthData = roomParsedMap[monthKey];
             monthData.uniqueDates.add(dateVal);
             
-            const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
-            const day = d.getDay();
-            const nextDay = new Date(d);
-            nextDay.setDate(d.getDate() + 1);
-            
-            const isFriOrSat = (day === 5 || day === 6);
-            const isNextDayHoliday = isHoliday(nextDay);
-            
             const customWeekendsStr = settings?.customWeekends || '';
             const customWeekendsArray = customWeekendsStr.split(',').map(s => s.trim()).filter(s => s);
-            
-            let isWeekend = false;
-            if (customWeekendsArray.includes(dateVal) || isFriOrSat || isNextDayHoliday) {
-              isWeekend = true;
-            }
+            const isWeekend = isRoomWeekend(dateVal, customWeekendsArray);
             
             if (isWeekend) monthData.uniqueWeekendDates.add(dateVal);
             else monthData.uniqueWeekdayDates.add(dateVal);
@@ -511,18 +500,9 @@ export default function MonthlyDataForm({ settings }) {
             
             const monthData = monthlyParsedMap[monthKey];
 
-            const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
-            const day = d.getDay();
-            
-            const isSatOrSun = (day === 0 || day === 6);
-            const isTodayHoliday = isHoliday(d);
             const customWeekendsStr = settings?.customWeekends || '';
             const customWeekendsArray = customWeekendsStr.split(',').map(s => s.trim()).filter(s => s);
-            
-            let isWe = false;
-            if (customWeekendsArray.includes(dateVal) || isSatOrSun || isTodayHoliday) {
-              isWe = true;
-            }
+            const isWe = isLeisureWeekend(dateVal, customWeekendsArray);
 
             if (isWe) {
                monthData.uniqueLeisureWeDates.add(dateVal);

@@ -3,7 +3,7 @@
  * 날씨 4대 고급 로직(풍속 페널티, 장마 피로도, 대체재 풍선효과, 평일/주말 정규화)을
  * 앱 전반(시뮬레이터, 14일 예측, 통계)에 통일되게 적용하기 위한 코어 엔진입니다.
  */
-import { isHospitalityWeekend } from './revenueUtils';
+import { isRoomWeekend, isLeisureWeekend } from './revenueUtils';
 
 const parseAmount = (val) => {
   if (typeof val === 'number') return Math.round(val);
@@ -51,8 +51,9 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
 
   const excludeKeywords = ['가족석', '스윙카', '전동킥보드', '1회권', '3회권', '5회권', '2회권'];
   
-  const isWeekendByConfig = (dateStr) => {
-    return isHospitalityWeekend(dateStr, settings?.customWeekends || []);
+  const getWeekendResolver = (group) => (dateStr) => {
+    if (group === 'room') return isRoomWeekend(dateStr, settings?.customWeekends || []);
+    return isLeisureWeekend(dateStr, settings?.customWeekends || []);
   };
 
   const weatherMap = {};
@@ -71,8 +72,9 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
               precipitation: precip, 
               windSpeed: wind, 
               isRainy: precip >= RAIN_THRESHOLD, 
-              isWindy: wind >= WIND_THRESHOLD, 
-              isWeekend: isWeekendByConfig(rec.date) 
+              isWindy: wind >= WIND_THRESHOLD,
+              isRoomWeekend: isRoomWeekend(rec.date, settings?.customWeekends || []),
+              isLeisureWeekend: isLeisureWeekend(rec.date, settings?.customWeekends || [])
             };
           }
           if (!dailyTotalRevMap[rec.date]) dailyTotalRevMap[rec.date] = 0;
@@ -99,17 +101,15 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
   const allDaysRevs = Object.keys(dailyTotalRevMap).map(date => {
     return {
       date,
-      ...(weatherMap[date] || { isRainy: false, isWindy: false }),
+      ...(weatherMap[date] || { isRainy: false, isWindy: false, isRoomWeekend: false }),
       revenue: dailyTotalRevMap[date]
     };
   }).filter(d => d.precipitation !== undefined); // 날씨 데이터가 있는 날만 필터링
 
   // 2. 심슨의 역설(Simpson's Paradox) 방지 - 요일 편향 정규화
-  // 평일과 주말의 기본 매출 단가가 크게 다르므로, 단순 합산 시 "주말에 비가 많이 온 경우" 
-  // 비오는 날 평균이 맑은 날보다 높아지는 역전 현상이 발생합니다.
-  // 이를 막기 위해 각 날짜를 자신의 요일 기준(Baseline) 대비 비율(Ratio)로 환산하여 집계합니다.
-  const wdClearRevs = allDaysRevs.filter(d => !d.isWeekend && !d.isRainy && !d.isWindy).map(d => d.revenue);
-  const weClearRevs = allDaysRevs.filter(d => d.isWeekend && !d.isRainy && !d.isWindy).map(d => d.revenue);
+  // 전역 집계용(global) 통계는 전체 매출의 다수를 차지하는 Room 기준을 디폴트로 사용
+  const wdClearRevs = allDaysRevs.filter(d => !d.isRoomWeekend && !d.isRainy && !d.isWindy).map(d => d.revenue);
+  const weClearRevs = allDaysRevs.filter(d => d.isRoomWeekend && !d.isRainy && !d.isWindy).map(d => d.revenue);
   
   const wdClearAvg = safeAverage(filterOutliers(wdClearRevs));
   const weClearAvg = safeAverage(filterOutliers(weClearRevs));
@@ -123,7 +123,8 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
   const windRatioGroup = { high: [] };
 
   allDaysRevs.forEach(d => {
-    const baseline = d.isWeekend ? weClearAvg : wdClearAvg;
+    // 전역 집계용이므로 Room 기준 디폴트 사용
+    const baseline = d.isRoomWeekend ? weClearAvg : wdClearAvg;
     if (baseline === 0) return;
     
     const ratio = d.revenue / baseline;
@@ -215,8 +216,10 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
             
             // 결측치(휴장)일 경우 0원으로 강제 기록하여 비로 인한 매출 타격이 0이 되는 것을 평균에 끌어내림
             const val = rec.breakdown && rec.breakdown[fac] ? parseAmount(rec.breakdown[fac]) : 0;
+            const facGroup = settings?.locationGroups?.[fac] || 'leisure';
+            const isThisWeekend = facGroup === 'room' ? w.isRoomWeekend : w.isLeisureWeekend;
             
-            if (w.isWeekend) {
+            if (isThisWeekend) {
               if (w.isRainy) facilityData[fac].weRainy.push(val);
               else facilityData[fac].weClear.push(val);
             } else {

@@ -1,23 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Calendar, CloudRain, Sun, AlertTriangle, Users, TrendingDown, ArrowRight } from 'lucide-react';
 import { buildWeatherCoreStats, predictWeatherImpact } from '../utils/weatherCore';
-import { isHospitalityWeekend } from '../utils/revenueUtils';
+import { isRoomWeekend, isLeisureWeekend } from '../utils/revenueUtils';
 
 const formatCurrency = (val) => {
   if (val === undefined || val === null || isNaN(val)) return '0';
   return Math.round(val).toLocaleString();
-};
-
-const isHoliday = (dateObj) => {
-  const month = dateObj.getMonth() + 1;
-  const date = dateObj.getDate();
-  const holiStr = `${String(month).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
-  
-  // 한국 주요 공휴일 목록
-  const holidays = [
-    '01-01', '03-01', '05-05', '06-06', '08-15', '10-03', '10-09', '12-25'
-  ];
-  return holidays.includes(holiStr);
 };
 
 export default function WeatherForecastAnalytics({ processedData, settings }) {
@@ -101,10 +89,7 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
     const coreStats = buildWeatherCoreStats(processedData, settings);
 
     const [yyyy, mm, dd] = selectedDate.split('-');
-    const targetDateObj = new Date(selectedDate);
-    const day = targetDateObj.getDay();
-    const isWeekendOrHoliday = isHospitalityWeekend(selectedDate, settings?.customWeekends || []);
-
+    
     // 사용자가 선택한 미래의 달(mm)과 요일 특성(평일/휴일)에 맞는 Baseline 산출
     const targetMonthRecords = processedData.filter(d => d.yearMonth.endsWith(`-${mm}`));
     const facilityBaseline = {};
@@ -149,14 +134,14 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
     const isForecastRainy = forecastData && forecastData.precipitation >= RAIN_THRESHOLD;
 
     const filterOutliers = (dataList) => {
-      const values = [...dataList].sort((a, b) => a - b);
-      if (values.length < 4) return values;
-      const q1 = values[Math.floor(values.length * 0.25)];
-      const q3 = values[Math.floor(values.length * 0.75)];
+      if (dataList.length < 4) return dataList;
+      const nonZero = dataList.filter(v => v > 0).sort((a, b) => a - b);
+      if (nonZero.length < 4) return dataList;
+      const q1 = nonZero[Math.floor(nonZero.length * 0.25)];
+      const q3 = nonZero[Math.floor(nonZero.length * 0.75)];
       const iqr = q3 - q1;
-      const lowerBound = q1 - 1.5 * iqr;
       const upperBound = q3 + 1.5 * iqr;
-      return values.filter(v => v >= lowerBound && v <= upperBound);
+      return dataList.filter(v => v <= upperBound);
     };
 
     const results = Object.keys(facilityBaseline).map(facName => {

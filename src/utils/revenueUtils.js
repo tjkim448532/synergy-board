@@ -5,7 +5,7 @@
  */
 import { isHoliday } from 'korean-holidays';
 
-export const isHospitalityWeekend = (dateStr, customWeekendsArray = []) => {
+export const isRoomWeekend = (dateStr, customWeekendsArray = []) => {
   if (!dateStr) return false;
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return false;
@@ -21,6 +21,23 @@ export const isHospitalityWeekend = (dateStr, customWeekendsArray = []) => {
   
   return customWeekendsArray.includes(dateStr) || isFriOrSat || isNextDayHoliday;
 };
+
+export const isLeisureWeekend = (dateStr, customWeekendsArray = []) => {
+  if (!dateStr) return false;
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return false;
+  
+  const day = d.getDay();
+  // 레저 업계 주말: 토요일(6), 일요일(0)
+  const isSatOrSun = (day === 0 || day === 6);
+  
+  // 공휴일 당일은 주말로 간주
+  const isTodayHoliday = isHoliday(d);
+  
+  return customWeekendsArray.includes(dateStr) || isSatOrSun || isTodayHoliday;
+};
+
+export const isHospitalityWeekend = isRoomWeekend;
 
 export const getDefaultGroup = (loc) => {
   if (loc.includes('골프') || loc.includes('클럽하우스') || loc.includes('그늘집') || loc === '골프부대' || loc.includes('그린피') || loc.includes('프로샵')) {

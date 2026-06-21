@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import { isHoliday } from 'korean-holidays';
 import { parseSafeNumber, safeRate, calculateCorrelation } from '../utils/statUtils';
+import { isRoomWeekend } from '../utils/revenueUtils';
 
 const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(Math.round(val || 0));
 
@@ -185,18 +186,7 @@ export default function ChannelAnalysis({ processedData, globalStats, settings }
           
           let isWeekend = false;
           try {
-            const dateObj = new Date(record.date);
-            const dayOfWeek = dateObj.getDay();
-            const isFriOrSat = dayOfWeek === 5 || dayOfWeek === 6;
-            
-            // 휴일 전날(공휴일 전날) 체크 로직은 간단히 구현
-            const nextDay = new Date(dateObj);
-            nextDay.setDate(dateObj.getDate() + 1);
-            const isNextDayHoliday = isHoliday(nextDay);
-
-            if (customWeekendsArray.includes(record.date) || isFriOrSat || isNextDayHoliday) {
-              isWeekend = true;
-            }
+            isWeekend = isRoomWeekend(record.date, customWeekendsArray);
           } catch(e) {}
 
           if (isWeekend) {

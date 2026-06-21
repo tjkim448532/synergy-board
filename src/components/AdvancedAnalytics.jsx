@@ -7,7 +7,7 @@ import {
 import CountUpModule from 'react-countup';
 const CountUp = CountUpModule.default || CountUpModule;
 import { isHoliday } from 'korean-holidays';
-import { calculateGroupedSales } from '../utils/revenueUtils';
+import { calculateGroupedSales, isRoomWeekend, isLeisureWeekend } from '../utils/revenueUtils';
 import { fetchCurrentWeather } from '../utils/weatherUtils';
 import { parseSafeNumber, safeAverage, filterOutliers, calculateCorrelation } from '../utils/statUtils';
 import { Wind, CloudRain, Activity } from 'lucide-react';
@@ -449,26 +449,11 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       return dataList.filter(d => d[key] <= upperBound);
     };
 
-    // 1. 주말 및 평일 데이터 임시 분리
-    const isRoomWeekend = (dateObj) => {
-      const day = dateObj.getDay();
-      const nextDay = new Date(dateObj);
-      nextDay.setDate(dateObj.getDate() + 1);
-      return day === 5 || day === 6 || isHoliday(nextDay);
-    };
-
-    const isNormalWeekend = (dateObj) => {
-      const day = dateObj.getDay();
-      return day === 0 || day === 6 || isHoliday(dateObj);
-    };
-
     const isWeekendByConfig = (dateStr) => {
-      const [yyyy, mm, dd] = dateStr.split('-');
-      const dateObj = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
       if (weatherDataType === 'room') {
-        return isRoomWeekend(dateObj);
+        return isRoomWeekend(dateStr, settings?.customWeekends || []);
       }
-      return isNormalWeekend(dateObj);
+      return isLeisureWeekend(dateStr, settings?.customWeekends || []);
     };
 
     const rawWeekendList = rawValidData.filter(d => isWeekendByConfig(d.date));
