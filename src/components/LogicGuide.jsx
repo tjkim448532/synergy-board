@@ -8,7 +8,8 @@ import {
   CheckCircle2,
   Calculator,
   CalendarDays,
-  Search
+  Search,
+  CloudRain
 } from 'lucide-react';
 import './LogicGuide.css';
 

@@ -4,29 +4,9 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid
 } from 'recharts';
 import { isHoliday } from 'korean-holidays';
-import { parseSafeNumber, safeRate } from '../utils/statUtils';
+import { parseSafeNumber, safeRate, calculateCorrelation } from '../utils/statUtils';
 
 const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(Math.round(val || 0));
-
-// 피어슨 상관계수 계산 함수
-function calculateCorrelation(xArray, yArray) {
-  if (xArray.length !== yArray.length || xArray.length < 2) return null;
-  const n = xArray.length;
-  const normX = xArray.map(v => v / 10000);
-  const normY = yArray.map(v => v / 10000);
-
-  const sumX = normX.reduce((a, b) => a + b, 0);
-  const sumY = normY.reduce((a, b) => a + b, 0);
-  const sumX2 = normX.reduce((a, b) => a + (b * b), 0);
-  const sumY2 = normY.reduce((a, b) => a + (b * b), 0);
-  const sumXY = normX.reduce((acc, val, i) => acc + (val * normY[i]), 0);
-
-  const numerator = (n * sumXY) - (sumX * sumY);
-  const denomInside = (n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY);
-  if (denomInside <= 0) return 0;
-  const denominator = Math.sqrt(denomInside);
-  return denominator === 0 ? 0 : numerator / denominator;
-}
 
 const PIE_COLORS = ['#3b82f6', '#10b981', '#fbbf24', '#a855f7', '#ef4444', '#64748b'];
 
