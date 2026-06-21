@@ -501,6 +501,55 @@ export default function LogicGuide() {
           </div>
         </div>
 
+        {/* Card 11: 날씨 예측 코어 및 4대 고급 시뮬레이션 알고리즘 */}
+        <div className="guide-card glass-panel" style={{gridColumn: '1 / -1', marginTop: '24px'}}>
+          <div className="card-top">
+            <div className="icon-circle" style={{background: 'rgba(14, 165, 233, 0.1)'}}>
+              <CloudRain size={24} className="text-sky" style={{color: '#0ea5e9'}} />
+            </div>
+            <h3>11. 날씨 예측 코어(weatherCore) 및 4대 고급 시뮬레이션 알고리즘</h3>
+          </div>
+          <div className="card-body">
+            <p>
+              단순히 "비가 오면 매출이 떨어진다"는 단편적인 직관을 넘어서, 과거 전체 누적 데이터를 기반으로 **4가지 핵심 날씨 변수**를 입체적으로 분석하고 미래 예측에 반영하는 단일 코어 엔진(`weatherCore.js`) 시스템입니다.
+            </p>
+            
+            <div className="formula-box vertical" style={{marginTop: '16px'}}>
+              <div className="math-step">
+                <span className="step-num">Step 1: 주중/주말 베이스라인 원천 분리 (핵심)</span>
+                <div style={{color: 'var(--text-muted)'}}>
+                  예측일이 평일인지 주말/공휴일인지 먼저 판별한 뒤, 각각 <strong>과거의 평일 맑은 날 평균</strong>과 <strong>주말 맑은 날 평균</strong>을 타겟 베이스라인(A)으로 분리 설정합니다. 주말에 비가 온 적이 없다면 전체 평균 타격률을 빌려오는 안전망(Fallback)이 수학적으로 적용되어 타격률 -100% 오류를 방지합니다.
+                </div>
+              </div>
+              <div className="math-step">
+                <span className="step-num">Step 2: 기본 우천 페널티 & 장마 피로도 누적 타격</span>
+                <div style={{color: 'var(--text-muted)'}}>
+                  날씨 API(open-meteo)를 통해 <strong>과거 2일 전부터 당일까지 3일간의 강수량</strong>을 추적하여 연속 강수(장마)를 판별합니다. 비가 2일, 3일 이상 연속으로 올 경우 과거 데이터의 누적 피로도 비율을 참조하여 매출을 추가로 더 깎아냅니다.
+                </div>
+              </div>
+              <div className="math-step">
+                <span className="step-num">Step 3: 강풍(10m/s 이상) 페널티 (단위 환산 포함)</span>
+                <div style={{color: 'var(--text-muted)'}}>
+                  예보에서 초속 단위(m/s)로 강풍 여부를 판별하여, 전체 매출에서 바람 불 때 떨어지는 낙폭을 비율로 곱합니다.
+                </div>
+              </div>
+              <div className="math-step">
+                <span className="step-num">Step 4: 풍선효과(대체재 상승) 오버라이드</span>
+                <div style={{color: 'var(--text-muted)'}}>
+                  우천 시 매출이 떨어지지 않고 오히려 <strong>과거 맑은 날보다 더 상승했던 실내 매장</strong>의 경우, 우천 페널티를 무시하고 <strong>상승분(%)을 곱하여 기대 매출을 높여 잡는 예외 처리</strong>를 자동 수행합니다.
+                </div>
+              </div>
+            </div>
+            
+            <div className="alert-box info" style={{marginTop: '16px', borderColor: 'rgba(14, 165, 233, 0.3)', background: 'rgba(14, 165, 233, 0.05)'}}>
+              <CheckCircle2 size={16} style={{color: '#0ea5e9'}} />
+              <span style={{color: 'var(--text-main)'}}>
+                <strong>💡 코어 엔진 모듈화의 장점:</strong> 시뮬레이터, 과거 통계표 등 어디에서 날씨 데이터를 부르더라도 오직 하나의 중앙 엔진(`predictWeatherImpact`)만을 통과하므로, 수식과 결과값이 어긋나는 "어디는 되고 어디는 안 되는" 현상을 완벽히 차단합니다.
+              </span>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );
