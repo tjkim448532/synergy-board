@@ -35,6 +35,14 @@ function calculateCorrelation(xArray, yArray) {
 
 const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(Math.round(val || 0));
 
+const getInterpretation = (r) => {
+  if (r === null || r === undefined) return '분석 불가';
+  const abs = Math.abs(r);
+  if (abs >= 0.7) return '강한 상관관계';
+  if (abs >= 0.3) return '뚜렷한 상관관계';
+  return '약한 상관관계';
+};
+
 export default function AdvancedAnalytics({ processedData, globalStats, settings }) {
   const [selectedRoomType, setSelectedRoomType] = useState('all');
   const [activeDivision, setActiveDivision] = useState('all');
