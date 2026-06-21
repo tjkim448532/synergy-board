@@ -449,19 +449,29 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     };
 
     // 1. 주말 및 평일 데이터 임시 분리
-    const tempWeekendList = rawValidData.filter(d => {
-      const [yyyy, mm, dd] = d.date.split('-');
-      const dateObj = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+    const isRoomWeekend = (dateObj) => {
+      const day = dateObj.getDay();
+      const nextDay = new Date(dateObj);
+      nextDay.setDate(dateObj.getDate() + 1);
+      return day === 5 || day === 6 || isHoliday(nextDay);
+    };
+
+    const isNormalWeekend = (dateObj) => {
       const day = dateObj.getDay();
       return day === 0 || day === 6 || isHoliday(dateObj);
-    });
+    };
 
-    const tempWeekdayList = rawValidData.filter(d => {
-      const [yyyy, mm, dd] = d.date.split('-');
+    const isWeekendByConfig = (dateStr) => {
+      const [yyyy, mm, dd] = dateStr.split('-');
       const dateObj = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
-      const day = dateObj.getDay();
-      return day !== 0 && day !== 6 && !isHoliday(dateObj);
-    });
+      if (weatherDataType === 'room') {
+        return isRoomWeekend(dateObj);
+      }
+      return isNormalWeekend(dateObj);
+    };
+
+    const tempWeekendList = rawValidData.filter(d => isWeekendByConfig(d.date));
+    const tempWeekdayList = rawValidData.filter(d => !isWeekendByConfig(d.date));
 
     // 2. 현재 활성화된 지표 기준으로 1차 전역 아웃라이어 정제 (차트 표시용)
     const cleanWeekdayListGlobal = filterOutliers(tempWeekdayList, 'revenue');
