@@ -481,12 +481,30 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       return isNormalWeekend(dateObj);
     };
 
-    const tempWeekendList = rawValidData.filter(d => isWeekendByConfig(d.date));
-    const tempWeekdayList = rawValidData.filter(d => !isWeekendByConfig(d.date));
+    const rawWeekendList = rawValidData.filter(d => isWeekendByConfig(d.date));
+    const rawWeekdayList = rawValidData.filter(d => !isWeekendByConfig(d.date));
 
-    // 2. 현재 활성화된 지표 기준으로 1차 전역 아웃라이어 정제 (차트 표시용)
-    const cleanWeekdayListGlobal = filterOutliers(tempWeekdayList, 'revenue');
-    const cleanWeekendListGlobal = filterOutliers(tempWeekendList, 'revenue');
+    const getSeason = (dateStr) => {
+      const [yyyy, mm, dd] = dateStr.split('-');
+      const month = parseInt(mm, 10);
+      if (month >= 3 && month <= 5) return '봄 (3~5월)';
+      if (month >= 6 && month <= 8) return '여름 (6~8월)';
+      if (month >= 9 && month <= 11) return '가을 (9~11월)';
+      return '겨울 (12~2월)';
+    };
+
+    const seasonsList = ['봄 (3~5월)', '여름 (6~8월)', '가을 (9~11월)', '겨울 (12~2월)'];
+
+    // 2. 계절별로 분리한 후 독립적으로 평일/주말 아웃라이어 필터링 (성수기 맑은날 삭제 방지)
+    let cleanWeekdayListGlobal = [];
+    let cleanWeekendListGlobal = [];
+
+    seasonsList.forEach(seasonLabel => {
+      const seasonWeekdays = rawWeekdayList.filter(d => getSeason(d.date) === seasonLabel);
+      const seasonWeekends = rawWeekendList.filter(d => getSeason(d.date) === seasonLabel);
+      cleanWeekdayListGlobal = [...cleanWeekdayListGlobal, ...filterOutliers(seasonWeekdays, 'revenue')];
+      cleanWeekendListGlobal = [...cleanWeekendListGlobal, ...filterOutliers(seasonWeekends, 'revenue')];
+    });
 
     // 3. 날씨 분석(상관계수, 일평균 카드)에 쓰일 글로벌 정제 데이터셋 구성
     const cleanValidData = [...cleanWeekdayListGlobal, ...cleanWeekendListGlobal];
@@ -559,9 +577,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     };
 
     const overallRainStats = getRainStats(cleanValidData);
-
     const weekdayValidData = cleanWeekdayListGlobal;
-
     const weekdayRainStats = getRainStats(weekdayValidData);
     const weekendRainStats = getRainStats(weekendValidData);
 
@@ -572,39 +588,49 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       { key: 'golfRevenue', name: '골프 매출' }
     ];
 
-    const getSeason = (dateStr) => {
-      const [yyyy, mm, dd] = dateStr.split('-');
-      const month = parseInt(mm, 10);
-      if (month >= 3 && month <= 5) return '봄 (3~5월)';
-      if (month >= 6 && month <= 8) return '여름 (6~8월)';
-      if (month >= 9 && month <= 11) return '가을 (9~11월)';
-      return '겨울 (12~2월)';
-    };
-
     const sectorRainStats = {};
     sectors.forEach(sec => {
       const key = sec.key;
-      
-      // 섹터별 집계 시, 해당 섹터 key(매출 부문)에 대해 다시 IQR 아웃라이어 정제 적용
-      const cleanSectorWeekday = filterOutliers(tempWeekdayList, key);
-      const cleanSectorWeekend = filterOutliers(tempWeekendList, key);
-      const cleanSectorOverall = [...cleanSectorWeekday, ...cleanSectorWeekend];
+      let normalizedYearData = [];
+      const seasonStatsMap = {};
 
-      const springData = cleanSectorOverall.filter(d => getSeason(d.date) === '봄 (3~5월)');
-      const summerData = cleanSectorOverall.filter(d => getSeason(d.date) === '여름 (6~8월)');
-      const autumnData = cleanSectorOverall.filter(d => getSeason(d.date) === '가을 (9~11월)');
-      const winterData = cleanSectorOverall.filter(d => getSeason(d.date) === '겨울 (12~2월)');
+      seasonsList.forEach(seasonLabel => {
+        const seasonWeekdays = rawWeekdayList.filter(d => getSeason(d.date) === seasonLabel);
+        const seasonWeekends = rawWeekendList.filter(d => getSeason(d.date) === seasonLabel);
+
+        // 계절/부문별 독립 IQR 적용
+        const cleanWeekday = filterOutliers(seasonWeekdays, key);
+        const cleanWeekend = filterOutliers(seasonWeekends, key);
+
+        // 주말 정규화 (평일화) 프리미엄 비율 계산
+        const wkdayAvg = safeAverage(cleanWeekday.filter(d => parseSafeNumber(d.precipitation) < RAIN_THRESHOLD).map(d => d[key]), false);
+        const wkndAvg = safeAverage(cleanWeekend.filter(d => parseSafeNumber(d.precipitation) < RAIN_THRESHOLD).map(d => d[key]), false);
+
+        let weekendRatio = 1;
+        if (wkdayAvg > 0 && wkndAvg > 0) {
+          weekendRatio = wkndAvg / wkdayAvg;
+        }
+
+        // 주말 매출을 비율로 나누어 평일화
+        const normalizedWeekday = cleanWeekday.map(d => ({ ...d, _normRev: parseSafeNumber(d[key]) }));
+        const normalizedWeekend = cleanWeekend.map(d => ({ ...d, _normRev: parseSafeNumber(d[key]) / weekendRatio }));
+
+        const cleanSeasonOverall = [...normalizedWeekday, ...normalizedWeekend];
+        normalizedYearData = [...normalizedYearData, ...cleanSeasonOverall];
+
+        seasonStatsMap[seasonLabel] = getRainStats(cleanSeasonOverall, '_normRev');
+      });
 
       sectorRainStats[key] = {
         name: sec.name,
-        overall: getRainStats(cleanSectorOverall, key),
-        weekday: getRainStats(cleanSectorWeekday, key),
-        weekend: getRainStats(cleanSectorWeekend, key),
+        overall: getRainStats(normalizedYearData, '_normRev'),
+        weekday: getRainStats(normalizedYearData.filter(d => !isWeekendByConfig(d.date)), '_normRev'),
+        weekend: getRainStats(normalizedYearData.filter(d => isWeekendByConfig(d.date)), '_normRev'),
         seasons: [
-          { label: '봄 (3~5월)', stats: getRainStats(springData, key) },
-          { label: '여름 (6~8월)', stats: getRainStats(summerData, key) },
-          { label: '가을 (9~11월)', stats: getRainStats(autumnData, key) },
-          { label: '겨울 (12~2월)', stats: getRainStats(winterData, key) }
+          { label: '봄 (3~5월)', stats: seasonStatsMap['봄 (3~5월)'] },
+          { label: '여름 (6~8월)', stats: seasonStatsMap['여름 (6~8월)'] },
+          { label: '가을 (9~11월)', stats: seasonStatsMap['가을 (9~11월)'] },
+          { label: '겨울 (12~2월)', stats: seasonStatsMap['겨울 (12~2월)'] }
         ]
       };
     });
