@@ -111,37 +111,57 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
     };
   }).filter(d => d.precipitation !== undefined); // 날씨 데이터가 있는 날만 필터링
 
-  // 2. Global 장마 피로도 & 강풍 타격 계산
+  // 2. 심슨의 역설(Simpson's Paradox) 방지 - 요일 편향 정규화
+  // 평일과 주말의 기본 매출 단가가 크게 다르므로, 단순 합산 시 "주말에 비가 많이 온 경우" 
+  // 비오는 날 평균이 맑은 날보다 높아지는 역전 현상이 발생합니다.
+  // 이를 막기 위해 각 날짜를 자신의 요일 기준(Baseline) 대비 비율(Ratio)로 환산하여 집계합니다.
+  const wdClearRevs = allDaysRevs.filter(d => !d.isWeekend && !d.isRainy && !d.isWindy).map(d => d.revenue);
+  const weClearRevs = allDaysRevs.filter(d => d.isWeekend && !d.isRainy && !d.isWindy).map(d => d.revenue);
+  
+  const wdClearAvg = safeAverage(filterOutliers(wdClearRevs));
+  const weClearAvg = safeAverage(filterOutliers(weClearRevs));
+  const globalClearAvg = safeAverage(filterOutliers([...wdClearRevs, ...weClearRevs])); // UI 표시용 공통 기준값
+
   allDaysRevs.sort((a,b) => a.date.localeCompare(b.date));
   let consRain = 0;
-  const rainFatigueGroup = { clear: [], day1: [], day2: [], day3plus: [] };
-  const windGroup = { normal: [], high: [] };
+  
+  const rainRatioGroup = { day1: [], day2: [], day3plus: [] };
+  const windRatioGroup = { high: [] };
 
   allDaysRevs.forEach(d => {
+    const baseline = d.isWeekend ? weClearAvg : wdClearAvg;
+    if (baseline === 0) return;
+    
+    const ratio = d.revenue / baseline;
+
     // 장마
     if (d.isRainy) {
       consRain++;
-      if (consRain === 1) rainFatigueGroup.day1.push(d.revenue);
-      else if (consRain === 2) rainFatigueGroup.day2.push(d.revenue);
-      else rainFatigueGroup.day3plus.push(d.revenue);
+      if (consRain === 1) rainRatioGroup.day1.push(ratio);
+      else if (consRain === 2) rainRatioGroup.day2.push(ratio);
+      else rainRatioGroup.day3plus.push(ratio);
     } else {
       consRain = 0;
-      rainFatigueGroup.clear.push(d.revenue);
     }
     // 강풍
-    if (d.isWindy) windGroup.high.push(d.revenue);
-    else windGroup.normal.push(d.revenue);
+    if (d.isWindy) windRatioGroup.high.push(ratio);
   });
 
+  const getAdjAvg = (ratioArr) => {
+    if (ratioArr.length === 0) return 0;
+    const avgRatio = ratioArr.reduce((a,b) => a + b, 0) / ratioArr.length;
+    return Math.round(globalClearAvg * avgRatio);
+  };
+
   coreStats.global.consecutiveRain = {
-    clearAvg: safeAverage(filterOutliers(rainFatigueGroup.clear)),
-    day1Avg: safeAverage(filterOutliers(rainFatigueGroup.day1)),
-    day2Avg: safeAverage(filterOutliers(rainFatigueGroup.day2)),
-    day3plusAvg: safeAverage(filterOutliers(rainFatigueGroup.day3plus))
+    clearAvg: globalClearAvg,
+    day1Avg: getAdjAvg(rainRatioGroup.day1),
+    day2Avg: getAdjAvg(rainRatioGroup.day2),
+    day3plusAvg: getAdjAvg(rainRatioGroup.day3plus)
   };
   coreStats.global.wind = {
-    normalWindAvgRev: safeAverage(filterOutliers(windGroup.normal)),
-    highWindAvgRev: safeAverage(filterOutliers(windGroup.high))
+    normalWindAvgRev: globalClearAvg,
+    highWindAvgRev: getAdjAvg(windRatioGroup.high)
   };
 
   // 3. Facility 별 주중/주말 및 우천 매출
@@ -187,13 +207,18 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
     const weClearAvg = safeAverage(filterOutliers(vals.weClear));
     const weRainyAvg = safeAverage(filterOutliers(vals.weRainy));
 
-    // 전체 맑은날 vs 비오는날 (풍선효과 탐지용)
-    const overallClearAvg = safeAverage(filterOutliers([...vals.wdClear, ...vals.weClear]));
-    const overallRainyAvg = safeAverage(filterOutliers([...vals.wdRainy, ...vals.weRainy]));
+    // 전체 맑은날 vs 비오는날 (풍선효과 탐지용) - 심슨의 역설 제거
+    // 주말/평일 비중 편향을 없애기 위해 비율의 평균을 사용
+    const wdRatio = wdClearAvg > 0 ? (wdRainyAvg / wdClearAvg) : 1;
+    const weRatio = weClearAvg > 0 ? (weRainyAvg / weClearAvg) : 1;
+    const avgRatio = (wdRatio + weRatio) / 2;
+
+    const overallClearAvg = (wdClearAvg + weClearAvg) / 2; 
+    const overallRainyAvg = overallClearAvg * avgRatio;
     
     if (overallClearAvg > 0) {
-      const impact = ((overallRainyAvg - overallClearAvg) / overallClearAvg) * 100;
-      if (impact > 0) { // 비올 때 오르는 경우 풍선효과
+      const impact = (avgRatio - 1) * 100;
+      if (impact > 0) { // 비올 때 실질적으로 오르는 경우 (진짜 풍선효과)
         subStats.push({ loc: fac, clearAvg: overallClearAvg, rainyAvg: overallRainyAvg, impact });
       }
     }
@@ -204,7 +229,7 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
       overallClearAvg, overallRainyAvg,
       wdPenalty: wdClearAvg > 0 ? (wdRainyAvg - wdClearAvg) / wdClearAvg : 0,
       wePenalty: weClearAvg > 0 ? (weRainyAvg - weClearAvg) / weClearAvg : 0,
-      overallPenalty: overallClearAvg > 0 ? (overallRainyAvg - overallClearAvg) / overallClearAvg : 0
+      overallPenalty: avgRatio - 1
     };
   });
   
