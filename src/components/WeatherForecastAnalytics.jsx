@@ -98,12 +98,27 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
 
     // --- 1단계: 전 기간(All-Time) 데이터를 이용해 시설별 '우천 타격률(Penalty Rate)' 산출 ---
     const allTimeStats = {};
+    const weatherLookup = {};
     
+    // 1. 전체 데이터에서 날씨 정보를 먼저 추출 (날씨 데이터는 rawRoomRecords에 저장됨)
+    processedData.forEach(m => {
+      if (m.rawRoomRecords && Array.isArray(m.rawRoomRecords)) {
+        m.rawRoomRecords.forEach(rec => {
+          if (rec.date && rec.weatherPrecipitation !== undefined && rec.weatherPrecipitation !== null) {
+            weatherLookup[rec.date] = {
+              precipitation: Number(rec.weatherPrecipitation)
+            };
+          }
+        });
+      }
+    });
+
     processedData.forEach(m => {
       if (m.rawLeisureRecords && Array.isArray(m.rawLeisureRecords)) {
         m.rawLeisureRecords.forEach(rec => {
           if (!rec.date) return;
-          const precipitation = Number(rec.weatherPrecipitation || 0);
+          
+          const precipitation = weatherLookup[rec.date] ? weatherLookup[rec.date].precipitation : 0;
           const isRainy = precipitation >= RAIN_THRESHOLD;
 
           if (rec.breakdown) {
@@ -153,7 +168,7 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
           
           if (recIsWkEnd === isWeekendOrHoliday) {
             // Baseline은 맑은 날(정상 영업일) 기준이므로 우천일은 제외하여 순수 기대치 계산
-            const precipitation = Number(rec.weatherPrecipitation || 0);
+            const precipitation = weatherLookup[rec.date] ? weatherLookup[rec.date].precipitation : 0;
             if (precipitation < RAIN_THRESHOLD) {
               Object.entries(rec.breakdown || {}).forEach(([facilityName, amount]) => {
                 const group = settings?.locationGroups?.[facilityName] || 'leisure';
