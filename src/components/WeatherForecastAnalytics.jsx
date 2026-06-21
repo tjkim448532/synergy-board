@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Calendar, CloudRain, Sun, AlertTriangle, Users, TrendingDown, ArrowRight } from 'lucide-react';
+import { buildWeatherCoreStats, predictWeatherImpact } from '../utils/weatherCore';
 
 const formatCurrency = (val) => {
   if (val === undefined || val === null || isNaN(val)) return '0';

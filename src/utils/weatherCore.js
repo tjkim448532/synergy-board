@@ -63,21 +63,53 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
   };
 
   const weatherMap = {};
-  const allDaysRevs = [];
+  const dailyTotalRevMap = {};
 
-  // 1. 날씨 정보 매핑 (rawRoomRecords 기준)
+  // 1. 날씨 정보 매핑 및 일일 총매출 병합 (rawRoomRecords & rawLeisureRecords 기준)
   processedData.forEach(m => {
     if (m.rawRoomRecords) {
       m.rawRoomRecords.forEach(rec => {
         if (rec.date) {
           const precip = rec.weatherDaytimePrecip !== undefined && rec.weatherDaytimePrecip !== null ? Number(rec.weatherDaytimePrecip) : Number(rec.weatherPrecipitation || 0);
           const wind = rec.weatherWindSpeed !== undefined && rec.weatherWindSpeed !== null ? Number(rec.weatherWindSpeed) : 0;
-          weatherMap[rec.date] = { precipitation: precip, windSpeed: wind, isRainy: precip >= RAIN_THRESHOLD, isWindy: wind >= WIND_THRESHOLD, isWeekend: isWeekendByConfig(rec.date), revenue: parseAmount(rec.revenue) };
-          if (rec.revenue) allDaysRevs.push({ date: rec.date, ...weatherMap[rec.date] });
+          
+          if (!weatherMap[rec.date]) {
+            weatherMap[rec.date] = { 
+              precipitation: precip, 
+              windSpeed: wind, 
+              isRainy: precip >= RAIN_THRESHOLD, 
+              isWindy: wind >= WIND_THRESHOLD, 
+              isWeekend: isWeekendByConfig(rec.date) 
+            };
+          }
+          if (!dailyTotalRevMap[rec.date]) dailyTotalRevMap[rec.date] = 0;
+          dailyTotalRevMap[rec.date] += parseAmount(rec.revenue);
+        }
+      });
+    }
+
+    // 부대업장(Leisure) 데이터도 일일 총매출에 합산
+    if (m.rawLeisureRecords) {
+      m.rawLeisureRecords.forEach(rec => {
+        if (rec.date) {
+          if (!dailyTotalRevMap[rec.date]) dailyTotalRevMap[rec.date] = 0;
+          if (rec.breakdown) {
+            Object.values(rec.breakdown).forEach(amount => {
+              dailyTotalRevMap[rec.date] += parseAmount(amount);
+            });
+          }
         }
       });
     }
   });
+
+  const allDaysRevs = Object.keys(dailyTotalRevMap).map(date => {
+    return {
+      date,
+      ...(weatherMap[date] || { isRainy: false, isWindy: false }),
+      revenue: dailyTotalRevMap[date]
+    };
+  }).filter(d => d.precipitation !== undefined); // 날씨 데이터가 있는 날만 필터링
 
   // 2. Global 장마 피로도 & 강풍 타격 계산
   allDaysRevs.sort((a,b) => a.date.localeCompare(b.date));
