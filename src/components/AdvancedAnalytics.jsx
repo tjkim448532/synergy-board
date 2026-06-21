@@ -440,13 +440,13 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     // IQR (사분위수) 기반 아웃라이어 필터링 함수
     const filterOutliers = (dataList, key = 'revenue') => {
       if (dataList.length < 4) return dataList; // 데이터가 너무 적으면 필터링 생략
-      const values = dataList.map(d => d[key]).sort((a, b) => a - b);
-      const q1 = values[Math.floor(values.length * 0.25)];
-      const q3 = values[Math.floor(values.length * 0.75)];
+      const nonZero = dataList.filter(d => d[key] > 0).map(d => d[key]).sort((a, b) => a - b);
+      if (nonZero.length < 4) return dataList;
+      const q1 = nonZero[Math.floor(nonZero.length * 0.25)];
+      const q3 = nonZero[Math.floor(nonZero.length * 0.75)];
       const iqr = q3 - q1;
-      const lowerBound = q1 - 1.5 * iqr;
       const upperBound = q3 + 1.5 * iqr;
-      return dataList.filter(d => d[key] >= lowerBound && d[key] <= upperBound);
+      return dataList.filter(d => d[key] <= upperBound);
     };
 
     // 1. 주말 및 평일 데이터 임시 분리
