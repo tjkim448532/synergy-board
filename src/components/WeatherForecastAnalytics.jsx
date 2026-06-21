@@ -42,18 +42,44 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
       setLoading(true);
       setError('');
       try {
+        const targetObj = new Date(selectedDate);
+        const twoDaysAgo = new Date(targetObj);
+        twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+        const y2 = twoDaysAgo.getFullYear();
+        const m2 = String(twoDaysAgo.getMonth() + 1).padStart(2, '0');
+        const d2 = String(twoDaysAgo.getDate()).padStart(2, '0');
+        const startStr = `${y2}-${m2}-${d2}`;
+
         // 안성(팜랜드/시너지 기준) 위경도 대략 37.0079, 127.2797
-        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=37.0079&longitude=127.2797&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=Asia%2FSeoul&start_date=${selectedDate}&end_date=${selectedDate}`);
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=37.0079&longitude=127.2797&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max&timezone=Asia%2FSeoul&start_date=${startStr}&end_date=${selectedDate}&wind_speed_unit=ms`);
         if (!res.ok) throw new Error('날씨 예보를 가져오는데 실패했습니다.');
         
         const data = await res.json();
         if (data && data.daily) {
-          setForecastData({
-            tempMax: data.daily.temperature_2m_max[0],
-            tempMin: data.daily.temperature_2m_min[0],
-            precipitation: data.daily.precipitation_sum[0],
-            code: data.daily.weathercode[0]
-          });
+          const pList = data.daily.precipitation_sum;
+          const wList = data.daily.windspeed_10m_max;
+          const tIdx = data.daily.time.indexOf(selectedDate);
+          
+          if (tIdx !== -1) {
+            let consRain = 0;
+            if (pList[tIdx] >= 3.0) {
+              consRain = 1;
+              if (tIdx >= 1 && pList[tIdx - 1] >= 3.0) {
+                consRain = 2;
+                if (tIdx >= 2 && pList[tIdx - 2] >= 3.0) {
+                  consRain = 3;
+                }
+              }
+            }
+            setForecastData({
+              tempMax: data.daily.temperature_2m_max[tIdx],
+              tempMin: data.daily.temperature_2m_min[tIdx],
+              precipitation: pList[tIdx],
+              windSpeedMax: wList[tIdx] || 0,
+              code: data.daily.weathercode[tIdx],
+              consecutiveRainCount: consRain
+            });
+          }
         }
       } catch (err) {
         setError(err.message);
@@ -140,7 +166,7 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
       const forecastParam = {
         precipitation: forecastData ? forecastData.precipitation : 0,
         windSpeedMax: forecastData ? forecastData.windSpeedMax : 0,
-        consecutiveRainCount: forecastData && forecastData.precipitation >= RAIN_THRESHOLD ? 1 : 0
+        consecutiveRainCount: forecastData ? forecastData.consecutiveRainCount : 0
       };
 
       const coreImpact = predictWeatherImpact(facName, isWeekendOrHoliday, forecastParam, coreStats, clearAvg);

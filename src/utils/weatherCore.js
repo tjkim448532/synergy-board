@@ -45,12 +45,21 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
   };
 
   const excludeKeywords = ['가족석', '스윙카', '전동킥보드', '1회권', '3회권', '5회권', '2회권'];
+  
+  const isHoliday = (dateObj) => {
+    const month = dateObj.getMonth() + 1;
+    const date = dateObj.getDate();
+    const holiStr = `${String(month).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
+    const holidays = ['01-01', '03-01', '05-05', '06-06', '08-15', '10-03', '10-09', '12-25'];
+    return holidays.includes(holiStr);
+  };
+
   const isWeekendByConfig = (dateStr) => {
     const d = new Date(dateStr);
     const day = d.getDay();
     const isSatSun = (day === 0 || day === 6);
     const custom = settings?.customWeekends || [];
-    return isSatSun || custom.includes(dateStr);
+    return isSatSun || isHoliday(d) || custom.includes(dateStr);
   };
 
   const weatherMap = {};
