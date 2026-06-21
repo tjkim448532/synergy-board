@@ -4,12 +4,12 @@ import WeatherAlertBanner from './WeatherAlertBanner';
 import './DashboardLayout.css';
 
 const SIDEBAR_MENU = [
+  { id: 'analytics', icon: PieChart, label: '상관관계분석' },
   { 
     id: 'weather-parent', 
     icon: CloudRain, 
     label: '기상/날씨 종합 분석',
     subItems: [
-      { id: 'analytics', label: '과거 날씨 타격 분석 (통계)' },
       { id: 'weather-forecast', label: '우천 타격 예측 (시뮬레이터)' }
     ]
   },
@@ -125,7 +125,7 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }) {
           </div>
         </header>
 
-        <WeatherAlertBanner />
+        {(activeTab === 'weather-parent' || activeTab === 'weather-forecast') && <WeatherAlertBanner />}
         
         <div className="content-area">
           {children}
