@@ -31,8 +31,10 @@ export default function WeatherAnalytics({ processedData, settings }) {
         });
       }
     });
-    // 가장 타격이 큰(음수가 큰) 순서대로 정렬
-    return penalties.sort((a,b) => a.impact - b.impact);
+    // 매출 규모(clearAvg)가 큰 순서대로 정렬하여 상위 7개 매장만 추출
+    const top7ByRevenue = penalties.sort((a,b) => b.clearAvg - a.clearAvg).slice(0, 7);
+    // 추출된 7개 매장 내에서 타격이 큰 순서대로 다시 정렬 (선택 사항)
+    return top7ByRevenue.sort((a,b) => a.impact - b.impact);
   }, [coreStats]);
 
   return (
@@ -48,53 +50,103 @@ export default function WeatherAnalytics({ processedData, settings }) {
       <div style={{display: 'flex', flexWrap: 'wrap', gap: '20px'}}>
         
         {/* 1. 강풍 타격 카드 */}
-        <div className="glass-panel" style={{flex: '1', minWidth: '300px', padding: '24px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)'}}>
+        <div className="glass-panel" style={{flex: '1', minWidth: '400px', padding: '24px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)'}}>
           <div style={{display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px'}}>
             <Wind size={24} color="var(--accent-blue)" />
             <h3 style={{margin: 0, fontSize: '18px'}}>1. 강풍 타격 (10m/s 이상) 통계</h3>
           </div>
           
-          <div style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>
-            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-              <span style={{color: 'var(--text-muted)'}}>평소 (정상 풍속) 평균 매출</span>
-              <strong style={{fontSize: '18px'}}>₩{formatCurrency(wStat.normalWindAvgRev)}</strong>
-            </div>
-            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-              <span style={{color: 'var(--text-muted)'}}>강풍 발생 (10m/s↑) 평균 매출</span>
-              <strong style={{fontSize: '18px', color: 'var(--accent-coral)'}}>₩{formatCurrency(wStat.highWindAvgRev)}</strong>
+          <div style={{display: 'flex', gap: '20px'}}>
+            {/* 주중 */}
+            <div style={{flex: 1}}>
+              <h4 style={{color: 'var(--text-muted)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px', marginBottom: '12px', marginTop: 0}}>주중</h4>
+              <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
+                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                  <span style={{color: 'var(--text-muted)', fontSize: '13px'}}>평소 매출</span>
+                  <strong style={{fontSize: '15px'}}>₩{formatCurrency(wStat.wd.normalWindAvgRev)}</strong>
+                </div>
+                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                  <span style={{color: 'var(--text-muted)', fontSize: '13px'}}>강풍시 매출</span>
+                  <strong style={{fontSize: '15px', color: 'var(--accent-coral)'}}>₩{formatCurrency(wStat.wd.highWindAvgRev)}</strong>
+                </div>
+                {wStat.wd.normalWindAvgRev > 0 && wStat.wd.highWindAvgRev < wStat.wd.normalWindAvgRev && (
+                  <div style={{marginTop: '4px', padding: '8px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '6px', textAlign: 'center', fontSize: '13px'}}>
+                    <strong style={{color: 'var(--accent-coral)'}}>{((wStat.wd.highWindAvgRev - wStat.wd.normalWindAvgRev) / wStat.wd.normalWindAvgRev * 100).toFixed(1)}% 하락</strong>
+                  </div>
+                )}
+              </div>
             </div>
             
-            {wStat.normalWindAvgRev > 0 && wStat.highWindAvgRev < wStat.normalWindAvgRev && (
-              <div style={{marginTop: '12px', padding: '12px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.2)', textAlign: 'center'}}>
-                평소 대비 <strong style={{color: 'var(--accent-coral)'}}>{((wStat.highWindAvgRev - wStat.normalWindAvgRev) / wStat.normalWindAvgRev * 100).toFixed(1)}% 하락</strong>
+            {/* 주말 */}
+            <div style={{flex: 1}}>
+              <h4 style={{color: 'var(--text-muted)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px', marginBottom: '12px', marginTop: 0}}>주말</h4>
+              <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
+                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                  <span style={{color: 'var(--text-muted)', fontSize: '13px'}}>평소 매출</span>
+                  <strong style={{fontSize: '15px'}}>₩{formatCurrency(wStat.we.normalWindAvgRev)}</strong>
+                </div>
+                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                  <span style={{color: 'var(--text-muted)', fontSize: '13px'}}>강풍시 매출</span>
+                  <strong style={{fontSize: '15px', color: 'var(--accent-coral)'}}>₩{formatCurrency(wStat.we.highWindAvgRev)}</strong>
+                </div>
+                {wStat.we.normalWindAvgRev > 0 && wStat.we.highWindAvgRev < wStat.we.normalWindAvgRev && (
+                  <div style={{marginTop: '4px', padding: '8px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '6px', textAlign: 'center', fontSize: '13px'}}>
+                    <strong style={{color: 'var(--accent-coral)'}}>{((wStat.we.highWindAvgRev - wStat.we.normalWindAvgRev) / wStat.we.normalWindAvgRev * 100).toFixed(1)}% 하락</strong>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
         </div>
 
         {/* 2. 장마/연속 강수 타격 카드 */}
-        <div className="glass-panel" style={{flex: '1', minWidth: '300px', padding: '24px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)'}}>
+        <div className="glass-panel" style={{flex: '1', minWidth: '400px', padding: '24px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)'}}>
           <div style={{display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px'}}>
             <CloudRain size={24} color="var(--accent-purple)" />
             <h3 style={{margin: 0, fontSize: '18px'}}>2. 장마(연속 비) 누적 피로도</h3>
           </div>
           
-          <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
-            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-              <span style={{color: 'var(--text-muted)'}}>맑은 날 평균 매출</span>
-              <strong>₩{formatCurrency(fStat.clearAvg)}</strong>
+          <div style={{display: 'flex', gap: '20px'}}>
+            {/* 주중 */}
+            <div style={{flex: 1, display: 'flex', flexDirection: 'column', gap: '8px'}}>
+              <h4 style={{color: 'var(--text-muted)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px', marginBottom: '4px', marginTop: 0}}>주중</h4>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                <span style={{color: 'var(--text-muted)', fontSize: '13px'}}>맑은 날</span>
+                <strong style={{fontSize: '14px'}}>₩{formatCurrency(fStat.wd.clearAvg)}</strong>
+              </div>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px', background: 'rgba(255,255,255,0.02)', borderRadius: '4px'}}>
+                <span style={{color: 'var(--text-muted)', fontSize: '13px'}}>우천 1일차</span>
+                <strong style={{color: 'var(--accent-gold)', fontSize: '14px'}}>₩{formatCurrency(fStat.wd.day1Avg)}</strong>
+              </div>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px', background: 'rgba(255,255,255,0.02)', borderRadius: '4px'}}>
+                <span style={{color: 'var(--text-muted)', fontSize: '13px'}}>2일차 연속</span>
+                <strong style={{color: 'var(--accent-gold)', fontSize: '14px'}}>₩{formatCurrency(fStat.wd.day2Avg)}</strong>
+              </div>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px', background: 'rgba(255,255,255,0.02)', borderRadius: '4px'}}>
+                <span style={{color: 'var(--text-muted)', fontSize: '13px'}}>장마(3일↑)</span>
+                <strong style={{color: 'var(--accent-coral)', fontSize: '14px'}}>₩{formatCurrency(fStat.wd.day3plusAvg)}</strong>
+              </div>
             </div>
-            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', background: 'rgba(255,255,255,0.02)', borderRadius: '4px'}}>
-              <span style={{color: 'var(--text-muted)'}}>우천 1일차</span>
-              <strong style={{color: 'var(--accent-gold)'}}>₩{formatCurrency(fStat.day1Avg)}</strong>
-            </div>
-            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', background: 'rgba(255,255,255,0.02)', borderRadius: '4px'}}>
-              <span style={{color: 'var(--text-muted)'}}>연속 우천 2일차</span>
-              <strong style={{color: 'var(--accent-gold)'}}>₩{formatCurrency(fStat.day2Avg)}</strong>
-            </div>
-            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', background: 'rgba(255,255,255,0.02)', borderRadius: '4px'}}>
-              <span style={{color: 'var(--text-muted)'}}>장마 (3일 이상 연속 우천)</span>
-              <strong style={{color: 'var(--accent-coral)'}}>₩{formatCurrency(fStat.day3plusAvg)}</strong>
+
+            {/* 주말 */}
+            <div style={{flex: 1, display: 'flex', flexDirection: 'column', gap: '8px'}}>
+              <h4 style={{color: 'var(--text-muted)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px', marginBottom: '4px', marginTop: 0}}>주말</h4>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                <span style={{color: 'var(--text-muted)', fontSize: '13px'}}>맑은 날</span>
+                <strong style={{fontSize: '14px'}}>₩{formatCurrency(fStat.we.clearAvg)}</strong>
+              </div>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px', background: 'rgba(255,255,255,0.02)', borderRadius: '4px'}}>
+                <span style={{color: 'var(--text-muted)', fontSize: '13px'}}>우천 1일차</span>
+                <strong style={{color: 'var(--accent-gold)', fontSize: '14px'}}>₩{formatCurrency(fStat.we.day1Avg)}</strong>
+              </div>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px', background: 'rgba(255,255,255,0.02)', borderRadius: '4px'}}>
+                <span style={{color: 'var(--text-muted)', fontSize: '13px'}}>2일차 연속</span>
+                <strong style={{color: 'var(--accent-gold)', fontSize: '14px'}}>₩{formatCurrency(fStat.we.day2Avg)}</strong>
+              </div>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px', background: 'rgba(255,255,255,0.02)', borderRadius: '4px'}}>
+                <span style={{color: 'var(--text-muted)', fontSize: '13px'}}>장마(3일↑)</span>
+                <strong style={{color: 'var(--accent-coral)', fontSize: '14px'}}>₩{formatCurrency(fStat.we.day3plusAvg)}</strong>
+              </div>
             </div>
           </div>
         </div>

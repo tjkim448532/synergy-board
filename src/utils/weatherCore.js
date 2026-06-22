@@ -134,8 +134,10 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
   let consRain = 0;
   let lastDateObj = null;
   
-  const rainRatioGroup = { day1: [], day2: [], day3plus: [] };
-  const windRatioGroup = { high: [] };
+  const rainRatioWd = { day1: [], day2: [], day3plus: [] };
+  const rainRatioWe = { day1: [], day2: [], day3plus: [] };
+  const windRatioWd = { high: [] };
+  const windRatioWe = { high: [] };
 
   allDaysRevs.forEach(d => {
     // 1. 이상치 상한선을 초과한 비정상적인 데이터(폭증 등)는 분석에서 완전 제외하여 신뢰성 확보
@@ -159,31 +161,49 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
     // 장마
     if (d.isRainy) {
       consRain++;
-      if (consRain === 1) rainRatioGroup.day1.push(ratio);
-      else if (consRain === 2) rainRatioGroup.day2.push(ratio);
-      else rainRatioGroup.day3plus.push(ratio);
+      const group = d.isRoomWeekend ? rainRatioWe : rainRatioWd;
+      if (consRain === 1) group.day1.push(ratio);
+      else if (consRain === 2) group.day2.push(ratio);
+      else group.day3plus.push(ratio);
     } else {
       consRain = 0;
     }
     // 강풍
-    if (d.isWindy) windRatioGroup.high.push(ratio);
+    if (d.isWindy) {
+      if (d.isRoomWeekend) windRatioWe.high.push(ratio);
+      else windRatioWd.high.push(ratio);
+    }
   });
 
-  const getAdjAvg = (ratioArr) => {
-    if (ratioArr.length === 0) return globalClearAvg; // 표본이 없으면 평소값 반환 (-100% 오류 방지)
+  const getAdjAvg = (ratioArr, clearBaseline) => {
+    if (ratioArr.length === 0) return clearBaseline; // 표본이 없으면 평소값 반환 (-100% 오류 방지)
     const avgRatio = ratioArr.reduce((a,b) => a + b, 0) / ratioArr.length;
-    return Math.round(globalClearAvg * avgRatio);
+    return Math.round(clearBaseline * avgRatio);
   };
 
   coreStats.global.consecutiveRain = {
-    clearAvg: globalClearAvg,
-    day1Avg: getAdjAvg(rainRatioGroup.day1),
-    day2Avg: getAdjAvg(rainRatioGroup.day2),
-    day3plusAvg: getAdjAvg(rainRatioGroup.day3plus)
+    wd: {
+      clearAvg: wdClearAvg,
+      day1Avg: getAdjAvg(rainRatioWd.day1, wdClearAvg),
+      day2Avg: getAdjAvg(rainRatioWd.day2, wdClearAvg),
+      day3plusAvg: getAdjAvg(rainRatioWd.day3plus, wdClearAvg)
+    },
+    we: {
+      clearAvg: weClearAvg,
+      day1Avg: getAdjAvg(rainRatioWe.day1, weClearAvg),
+      day2Avg: getAdjAvg(rainRatioWe.day2, weClearAvg),
+      day3plusAvg: getAdjAvg(rainRatioWe.day3plus, weClearAvg)
+    }
   };
   coreStats.global.wind = {
-    normalWindAvgRev: globalClearAvg,
-    highWindAvgRev: getAdjAvg(windRatioGroup.high)
+    wd: {
+      normalWindAvgRev: wdClearAvg,
+      highWindAvgRev: getAdjAvg(windRatioWd.high, wdClearAvg)
+    },
+    we: {
+      normalWindAvgRev: weClearAvg,
+      highWindAvgRev: getAdjAvg(windRatioWe.high, weClearAvg)
+    }
   };
 
   // 3. Facility 별 주중/주말 및 우천 매출 (생존자 편향 해결)
@@ -446,10 +466,11 @@ export const predictWeatherImpact = (facilityName, isWeekend, forecastWeather, c
 
     // 장마 피로도 추가 페널티 적용 (야외 한정, 전역 통계 기반)
     if (consRainDays >= 2 && expectedRevenue < clearBaseline && ['야외 어트랙션', '야외 트랙', '공중/동력', '골프장'].includes(tag)) {
-      const globalClear = coreStats.global.consecutiveRain.clearAvg;
-      const gDay1 = coreStats.global.consecutiveRain.day1Avg;
-      const gDay2 = coreStats.global.consecutiveRain.day2Avg;
-      const gDay3 = coreStats.global.consecutiveRain.day3plusAvg;
+      const gStats = isWeekend ? coreStats.global.consecutiveRain.we : coreStats.global.consecutiveRain.wd;
+      const globalClear = gStats.clearAvg;
+      const gDay1 = gStats.day1Avg;
+      const gDay2 = gStats.day2Avg;
+      const gDay3 = gStats.day3plusAvg;
       
       if (globalClear > 0 && gDay1 > 0) {
         let fatigueRatio = 1;
@@ -467,8 +488,9 @@ export const predictWeatherImpact = (facilityName, isWeekend, forecastWeather, c
 
   // 3. 강풍 (Wind)
   if (isWindy && expectedRevenue > 0) {
-    const normalWind = coreStats.global.wind.normalWindAvgRev;
-    const highWind = coreStats.global.wind.highWindAvgRev;
+    const wStats = isWeekend ? coreStats.global.wind.we : coreStats.global.wind.wd;
+    const normalWind = wStats.normalWindAvgRev;
+    const highWind = wStats.highWindAvgRev;
     const globalWindPenalty = (normalWind > 0 && highWind < normalWind) ? (highWind - normalWind) / normalWind : 0;
     
     applyPenalty(windyPenalty, '강풍 통계반영', globalWindPenalty, '강풍(전역) 통계반영');
