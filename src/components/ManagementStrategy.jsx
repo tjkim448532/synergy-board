@@ -204,6 +204,22 @@ export default function ManagementStrategy({ processedData, globalStats, setting
               </div>
             </div>
           </div>
+
+          <div style={{background: 'linear-gradient(to right, rgba(236, 72, 153, 0.1), transparent)', borderLeft: '3px solid #ec4899', padding: '24px', borderRadius: '0 12px 12px 0'}}>
+            <div style={{fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '12px'}}>가설 3. "날씨(비/눈)와 성수기 효과를 걷어내면 진짜 부대매출 시너지가 보인다."</div>
+            <div style={{display: 'flex', gap: '24px', flexWrap: 'wrap'}}>
+              <div style={{flex: 1, minWidth: '250px'}}>
+                <div style={{fontSize: '13px', color: 'var(--text-muted)'}}>검증 데이터 (일간 MRA 통제 변수)</div>
+                <div style={{fontSize: '16px', color: '#fff', marginTop: '4px'}}>일간(Daily) 기상 악재(비/눈/강풍) 및 성수기(7~8월, 연말) 필터링 적용</div>
+              </div>
+              <div style={{flex: 1, minWidth: '250px'}}>
+                <div style={{fontSize: '13px', color: 'var(--text-muted)'}}>전략적 결론 (Why So?)</div>
+                <div style={{fontSize: '14px', color: '#ec4899', marginTop: '4px', lineHeight: '1.5'}}>
+                  단순 합산 시 여름 휴가철 성수기 매출이 특정 평형의 파급력으로 과대포장되는 '심슨의 역설'을 제거했습니다. 날씨와 성수기 거품을 뺀 "순수한 마케팅 시너지"를 바탕으로 비수기/악천후 전용 헷징(Hedging) 전략을 가동해야 합니다.
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -276,6 +292,13 @@ export default function ManagementStrategy({ processedData, globalStats, setting
             <div style={{color: '#818cf8', fontWeight: 'bold', fontSize: '18px', marginBottom: '12px'}}>Action 3. 선택과 집중</div>
             <p style={{margin: 0, color: 'rgba(255,255,255,0.9)', lineHeight: '1.6'}}>
               수익의 {data.paretoFacilities[0]?.pct.toFixed(0)}% 이상을 차지하는 핵심 캐시카우 시설에 CS(고객만족) 및 마케팅 예산을 2배로 증액하고, 하위 10% 시설의 마케팅은 과감히 중단합니다.
+            </p>
+          </div>
+
+          <div style={{background: 'rgba(0,0,0,0.4)', padding: '24px', borderRadius: '12px', backdropFilter: 'blur(10px)'}}>
+            <div style={{color: '#818cf8', fontWeight: 'bold', fontSize: '18px', marginBottom: '12px'}}>Action 4. 기상 악재 헷징(Hedging)</div>
+            <p style={{margin: 0, color: 'rgba(255,255,255,0.9)', lineHeight: '1.6'}}>
+              눈/비/강풍 등 기상 악화 시 야외 레저 및 골프 매출의 급감을 상쇄하기 위해, 일기예보와 연동된 <strong>실내 F&B 스페셜 바우처(눈/비 오는 날 한정 팝업 프로모션)</strong>를 선제적으로 발송하여 매출을 방어합니다.
             </p>
           </div>
 
