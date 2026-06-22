@@ -28,6 +28,7 @@ export const fetchWeatherForRange = async (startDate, endDate) => {
     const hourly = data.hourly;
     const weatherMap = {};
     
+    // 기존 로직: daily 데이터 매핑
     if (daily && daily.time) {
       daily.time.forEach((t, i) => {
         const code = daily.weather_code[i];
@@ -39,7 +40,8 @@ export const fetchWeatherForRange = async (startDate, endDate) => {
           nighttimePrecip: 0,
           daytimeWindSpeedMax: 0, // 강풍 분석용 주간 최대 풍속
           code: code,
-          desc: getWeatherDesc(code)
+          desc: getWeatherDesc(code),
+          maxHourlyPrecip: 0 // 시간당 최대 강수량 기록용
         };
       });
     }
@@ -61,15 +63,28 @@ export const fetchWeatherForRange = async (startDate, endDate) => {
           } else {
             weatherMap[dateStr].nighttimePrecip += precip;
           }
+          // 시간당 최대 강수량 업데이트
+          if (precip > weatherMap[dateStr].maxHourlyPrecip) {
+            weatherMap[dateStr].maxHourlyPrecip = precip;
+          }
         }
-      });
-    }
+      });    }
 
     return weatherMap;
   } catch (error) {
     console.error("fetchWeatherForRange failed:", error);
     return {};
   }
+};
+
+/**
+ * 주어진 시간대 배열에서 시간당 최대 강수량을 반환합니다.
+ * @param {Array<number>} hourlyPrecipArr - 시간당 강수량 배열 (mm)
+ * @returns {number} 최대 강수량 (mm)
+ */
+export const getMaxHourlyPrecipitation = (hourlyPrecipArr) => {
+  if (!Array.isArray(hourlyPrecipArr) || hourlyPrecipArr.length === 0) return 0;
+  return Math.max(...hourlyPrecipArr.map(v => Number(v) || 0));
 };
 
 export const fetchCurrentWeather = async () => {

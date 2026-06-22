@@ -65,13 +65,15 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
       m.rawRoomRecords.forEach(rec => {
         if (rec.date) {
           const precip = rec.weatherDaytimePrecip !== undefined && rec.weatherDaytimePrecip !== null ? Number(rec.weatherDaytimePrecip) : Number(rec.weatherPrecipitation || 0);
+          const maxHourlyPrecip = rec.maxHourlyPrecip !== undefined && rec.maxHourlyPrecip !== null ? Number(rec.maxHourlyPrecip) : 0;
           const wind = rec.weatherWindSpeed !== undefined && rec.weatherWindSpeed !== null ? Number(rec.weatherWindSpeed) : 0;
           
           if (!weatherMap[rec.date]) {
             weatherMap[rec.date] = { 
               precipitation: precip, 
+              maxHourlyPrecip: maxHourlyPrecip,
               windSpeed: wind, 
-              isRainy: precip >= RAIN_THRESHOLD, 
+              isRainy: precip >= RAIN_THRESHOLD || maxHourlyPrecip >= RAIN_THRESHOLD, 
               isWindy: wind >= WIND_THRESHOLD,
               isRoomWeekend: isRoomWeekend(rec.date, settings?.customWeekends || []),
               isLeisureWeekend: isLeisureWeekend(rec.date, settings?.customWeekends || [])
@@ -220,7 +222,8 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
             if (!facilityData[fac]) {
               facilityData[fac] = {
                 wdAll: [], weAll: [],
-                wdClear: [], wdRainy: [], weClear: [], weRainy: [], 
+                wdClear: [], wdRainy: [], weClear: [], weRainy: [],
+                tier: [], snow: [],
                 group: settings?.locationGroups?.[fac] || 'leisure'
               };
             }
@@ -229,6 +232,10 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
             const val = rec.breakdown && rec.breakdown[fac] ? parseAmount(rec.breakdown[fac]) : 0;
             const facGroup = settings?.locationGroups?.[fac] || 'leisure';
             const isThisWeekend = facGroup === 'room' ? w.isRoomWeekend : w.isLeisureWeekend;
+            
+            if (w.isSnowy) {
+                facilityData[fac].snow.push(val);
+            }
             
             if (isThisWeekend) {
               facilityData[fac].weAll.push(val);
@@ -239,6 +246,7 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
               if (w.isRainy) facilityData[fac].wdRainy.push(val);
               else facilityData[fac].wdClear.push(val);
             }
+            facilityData[fac].tier.push(val);
           }
         });
       });
@@ -255,6 +263,8 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
     const wdRainyAvg = safeAverage(filterOutliers(vals.wdRainy, wdBound));
     const weClearAvg = safeAverage(filterOutliers(vals.weClear, weBound));
     const weRainyAvg = safeAverage(filterOutliers(vals.weRainy, weBound));
+    const snowAvg = safeAverage(vals.snow);
+    const tierAvg = safeAverage(vals.tier);
 
     // 전체 맑은날 vs 비오는날 (풍선효과 탐지용) - 심슨의 역설 제거
     // 주말/평일 비중 편향을 없애기 위해 비율의 평균을 사용
