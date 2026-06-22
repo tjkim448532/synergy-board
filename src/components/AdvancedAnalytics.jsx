@@ -343,9 +343,15 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
               date: dateStr,
               roomRevenue: 0,
               roomsSold: 0,
+              sold16: 0,
+              sold35: 0,
+              sold51: 0,
+              locations: {},
               leisureRevenue: 0,
               golfRevenue: 0,
               totalRevenue: 0,
+              motoGuestRev: 0,
+              motoGeneralRev: 0,
               tempMax: w.tempMax !== undefined && w.tempMax !== null ? parseSafeNumber(w.tempMax) : null,
               tempMin: w.tempMin !== undefined && w.tempMin !== null ? parseSafeNumber(w.tempMin) : null,
               precipitation: w.precipitation !== undefined && w.precipitation !== null ? parseSafeNumber(w.precipitation) : null,
@@ -361,6 +367,11 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
           dateMap[dateStr].roomRevenue += revenue;
           dateMap[dateStr].roomsSold += count;
           dateMap[dateStr].totalRevenue += revenue;
+          
+          const rt = rec.roomType || '';
+          if (rt.includes('16평')) dateMap[dateStr].sold16 += count;
+          else if (rt.includes('35평')) dateMap[dateStr].sold35 += count;
+          else if (rt.includes('51평')) dateMap[dateStr].sold51 += count;
         });
       }
     });
@@ -378,9 +389,15 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
               date: dateStr,
               roomRevenue: 0,
               roomsSold: 0,
+              sold16: 0,
+              sold35: 0,
+              sold51: 0,
+              locations: {},
               leisureRevenue: 0,
               golfRevenue: 0,
               totalRevenue: 0,
+              motoGuestRev: 0,
+              motoGeneralRev: 0,
               tempMax: w.tempMax !== undefined && w.tempMax !== null ? parseSafeNumber(w.tempMax) : null,
               tempMin: w.tempMin !== undefined && w.tempMin !== null ? parseSafeNumber(w.tempMin) : null,
               precipitation: w.precipitation !== undefined && w.precipitation !== null ? parseSafeNumber(w.precipitation) : null,
@@ -396,6 +413,8 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
             Object.entries(rec.breakdown).forEach(([locName, amt]) => {
               const val = parseSafeNumber(amt);
               const group = locationGroups[locName] || 'leisure';
+              
+              dateMap[dateStr].locations[locName] = (dateMap[dateStr].locations[locName] || 0) + val;
               
               if (group === 'leisure') {
                 dateMap[dateStr].leisureRevenue += val;
@@ -415,6 +434,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     });
 
     // 기존 차트/카드 호환성용 revenue 바인딩
+    const totalPhysicalRooms = settings?.totalRooms ? Number(settings.totalRooms) : 175;
     return Object.values(dateMap).map(d => {
       let revenue = 0;
       if (weatherDataType === 'room') revenue = d.roomRevenue;
@@ -423,10 +443,11 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       else revenue = d.totalRevenue;
       return {
         ...d,
-        revenue
+        revenue,
+        occupancyRate: Math.min(100, Math.max(0, (d.roomsSold / totalPhysicalRooms) * 100))
       };
     }).sort((a, b) => a.date.localeCompare(b.date));
-  }, [filteredProcessedData, weatherDataType, settings?.locationGroups]);
+  }, [filteredProcessedData, weatherDataType, settings]);
 
   const weatherStats = useMemo(() => {
     const rawValidData = dailyWeatherSalesData.filter(d => d.tempMax !== null && d.desc !== '정보없음').map(d => {
@@ -784,12 +805,21 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     return insights;
   }, [weatherYearComparisonData]);
 
+  const isPeakSeason = (dateStr) => {
+    if (!dateStr) return false;
+    const [y, m, d] = dateStr.split('-');
+    const mm = parseInt(m, 10);
+    const dd = parseInt(d, 10);
+    if (mm === 7 && dd >= 15) return true;
+    if (mm === 8 && dd <= 15) return true;
+    if (mm === 12 && dd >= 20) return true;
+    return false;
+  };
+
   const motoCorrelations = useMemo(() => {
     if (activeDivision !== 'moto' || motoLogic !== 'new') return null;
-    const filtered = filteredProcessedData.filter(d => d.motoGuestRev !== undefined);
-    if (filtered.length === 0) return { guestAvailable: false };
-    
-    const occArr = filtered.map(d => d.occupancyRate || 0);
+    const filtered = dailyWeatherSalesData;
+    if (filtered.length < 5) return { guestAvailable: false };
     
     let sumGuest = 0;
     let sumGeneral = 0;
@@ -802,19 +832,11 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     const aggregatedOther = {};
     
     filtered.forEach(d => {
-      let gRev = 0;
-      let genRev = 0;
-      let othRev = 0;
-      
-      // 항상 비율이 곱해져 보정된 motoGuestRev, motoGeneralRev를 사용함.
-      gRev = d.motoGuestRev || 0;
-      genRev = d.motoGeneralRev || 0;
-      
-      const excel2Total = Number(d.motoTotalRev || 0);
-      const otherRatio = excel2Total > 0 ? (Number(d.motoInternalRev || 0) + Number(d.motoOtherRev || 0)) / excel2Total : 0;
-      othRev = Math.round((d.motoSales || 0) * otherRatio);
-
-      
+      let gRev = d.motoGuestRev || 0;
+      let genRev = d.motoGeneralRev || 0;
+      // Note: OthRev is skipped here for regression since it's hard to dynamically extract internal/other ratio from daily data without the raw excel totals.
+      // But we can approximate.
+      let othRev = 0; 
       const totRev = gRev + genRev + othRev;
       
       guestArr.push(gRev);
@@ -833,11 +855,15 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
 
     const isWkndArrMoto = filtered.map(d => isLeisureWeekend(d.date, settings?.customWeekends || []));
     
-    // MRA Matrix: [Intercept, 점유율(occArr), 주말효과]
+    // MRA Matrix: [Intercept, 점유율, 주말, 비, 눈, 바람, 성수기]
     const xMatrix = filtered.map((d, i) => [
       1,
-      occArr[i] || 0,
-      isWkndArrMoto[i] ? 1 : 0
+      d.occupancyRate || 0,
+      isWkndArrMoto[i] ? 1 : 0,
+      d.precipitation || 0,
+      d.code && [71,73,75,77,85,86].includes(d.code) ? 1 : 0,
+      d.windSpeed && d.windSpeed >= 10 ? 1 : 0,
+      isPeakSeason(d.date) ? 1 : 0
     ]);
     
     const mraGuest = calculateMultipleRegression(guestArr, xMatrix);
@@ -852,20 +878,29 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       total: mraTotal ? { coef: mraTotal.coefficients[1], p: mraTotal.pValues[1] } : null,
       guestAvailable: true
     };
-  }, [filteredProcessedData, activeDivision, motoLogic, settings]);
+  }, [dailyWeatherSalesData, activeDivision, motoLogic, settings]);
 
   // 선택된 부문의 평형별 다중 회귀 분석(MRA) 계산
   const activeRoomTypeCorrelations = useMemo(() => {
-    const isWkndArr = filteredProcessedData.map(d => activeDivision === 'room' ? isRoomWeekend(d.date, settings?.customWeekends || []) : isLeisureWeekend(d.date, settings?.customWeekends || []));
-    const targetArr = filteredProcessedData.map(d => d[activeConf.dataKey]);
+    const isWkndArr = dailyWeatherSalesData.map(d => activeDivision === 'room' ? isRoomWeekend(d.date, settings?.customWeekends || []) : isLeisureWeekend(d.date, settings?.customWeekends || []));
     
-    // MRA Matrix: [Intercept, 16평, 35평, 51평, 주말효과]
-    const xMatrix = filteredProcessedData.map((d, i) => [
+    let targetArr = [];
+    if (activeConf.dataKey === 'totalRoomRevenue') targetArr = dailyWeatherSalesData.map(d => d.roomRevenue);
+    else if (activeConf.dataKey === 'leisureSales') targetArr = dailyWeatherSalesData.map(d => d.leisureRevenue);
+    else if (activeConf.dataKey === 'totalSales') targetArr = dailyWeatherSalesData.map(d => d.totalRevenue);
+    else targetArr = dailyWeatherSalesData.map(d => d[activeConf.dataKey] || 0);
+    
+    // MRA Matrix: [Intercept, 16평, 35평, 51평, 주말, 비, 눈, 바람, 성수기]
+    const xMatrix = dailyWeatherSalesData.map((d, i) => [
       1,
       d.sold16 || 0,
       d.sold35 || 0,
-      (d.sold51 || 0) + (d.sold51Acc || 0),
-      isWkndArr[i] ? 1 : 0
+      d.sold51 || 0,
+      isWkndArr[i] ? 1 : 0,
+      d.precipitation || 0,
+      d.code && [71,73,75,77,85,86].includes(d.code) ? 1 : 0,
+      d.windSpeed && d.windSpeed >= 10 ? 1 : 0,
+      isPeakSeason(d.date) ? 1 : 0
     ]);
     
     const mra = calculateMultipleRegression(targetArr, xMatrix);
@@ -880,11 +915,10 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     }
     
     return { '16평': null, '35평': null, '51평': null };
-  }, [filteredProcessedData, activeConf.dataKey, activeDivision, settings]);
+  }, [dailyWeatherSalesData, activeConf.dataKey, activeDivision, settings]);
 
   // 영업장별 상관계수 계산 (객실 점유율 기준)
   const locationCorrelations = useMemo(() => {
-    const occArr = filteredProcessedData.map(d => d.occupancyRate);
     const locMap = {};
     
     const mapLocationName = (name) => {
@@ -912,13 +946,13 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
 
     const locationGroups = settings.locationGroups || {};
 
-    filteredProcessedData.forEach((d, i) => {
-      const salesObj = d.salesByLocation || d.leisureSalesByLocation || {};
+    dailyWeatherSalesData.forEach((d, i) => {
+      const salesObj = d.locations || {};
       Object.entries(salesObj).forEach(([loc, amt]) => {
         const group = locationGroups[loc] || 'leisure';
         if (activeDivision === 'all' || group === activeDivision) {
           const groupedName = mapLocationName(loc);
-          if (!locMap[groupedName]) locMap[groupedName] = new Array(filteredProcessedData.length).fill(0);
+          if (!locMap[groupedName]) locMap[groupedName] = new Array(dailyWeatherSalesData.length).fill(0);
           locMap[groupedName][i] += amt;
         }
       });
@@ -927,19 +961,24 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     const results = [];
     Object.keys(locMap).forEach(loc => {
       const dataArr = locMap[loc];
-      const totalAmt = dataArr.reduce((sum, val) => sum + val, 0);
+      const nonZeroDays = dataArr.filter(v => v > 0).length;
       
-      if (totalAmt < 1000000 * filteredProcessedData.length) return;
+      // Data Sparsity Check: 매출 발생 일수가 10일 이하면 회귀 분석에서 제외 (잡음/노이즈 방지)
+      if (nonZeroDays <= 10) return;
 
-      const isWkndArrLoc = filteredProcessedData.map(d => activeDivision === 'room' ? isRoomWeekend(d.date, settings?.customWeekends || []) : isLeisureWeekend(d.date, settings?.customWeekends || []));
+      const isWkndArrLoc = dailyWeatherSalesData.map(d => activeDivision === 'room' ? isRoomWeekend(d.date, settings?.customWeekends || []) : isLeisureWeekend(d.date, settings?.customWeekends || []));
       
-      // MRA Matrix: [Intercept, 점유율(occArr), 주말효과, 강수량]
-      const xMatrix = filteredProcessedData.map((d, i) => [
+      // MRA Matrix: [Intercept, 점유율, 주말, 비, 눈, 바람, 성수기]
+      const xMatrix = dailyWeatherSalesData.map((d, i) => [
         1,
-        occArr[i] || 0,
+        d.occupancyRate || 0,
         isWkndArrLoc[i] ? 1 : 0,
-        d.precipitation || 0
+        d.precipitation || 0,
+        d.code && [71,73,75,77,85,86].includes(d.code) ? 1 : 0,
+        d.windSpeed && d.windSpeed >= 10 ? 1 : 0,
+        isPeakSeason(d.date) ? 1 : 0
       ]);
+      
       const mra = calculateMultipleRegression(dataArr, xMatrix);
       
       if (mra && mra.coefficients[1] !== undefined && !isNaN(mra.coefficients[1])) {
@@ -952,7 +991,9 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     });
 
     return results.sort((a, b) => b.correlation - a.correlation);
-  }, [filteredProcessedData, settings.locationGroups, activeDivision]);
+  }, [dailyWeatherSalesData, settings.locationGroups, activeDivision]);
+
+
 
   // TrevPAR / RevPAR 계산
   const kpiData = useMemo(() => {

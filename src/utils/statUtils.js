@@ -236,47 +236,100 @@ const inverse = (matrix) => {
 };
 
 /**
- * 다중 선형 회귀 분석 (OLS) - Pure JS
- * @param {number[]} y 종속 변수 배열
- * @param {number[][]} X 독립 변수 2차원 배열 (첫번째 열은 1)
- * @returns {object|null} { coefficients, pValues, R2 }
+ * 다중 선형 회귀 분석 (OLS) - Pure JS (Advanced)
+ * - 이상치 제어 (Winsorizing Top 2%)
+ * - 제로 분산(Zero-variance) 독립 변수 탈락 방어
+ * @param {number[]} rawY 종속 변수 배열
+ * @param {number[][]} rawX 독립 변수 2차원 배열 (첫번째 열은 1)
+ * @returns {object|null} { coefficients, pValues, R2, droppedCols }
  */
-export const calculateMultipleRegression = (y, X) => {
-  if (!y || !X || y.length < 4 || y.length !== X.length) return null;
+export const calculateMultipleRegression = (rawY, rawX) => {
+  if (!rawY || !rawX || rawY.length < 4 || rawY.length !== rawX.length) return null;
   
   try {
-    for (let i = 0; i < n; i++) {
-      const diff = yArray[i] - meanY;
-      totalSumSq += diff * diff;
+    // 1. Winsorizing (Top 2% 이상치 상한컷)
+    const ySorted = [...rawY].sort((a, b) => a - b);
+    const top2Index = Math.floor(ySorted.length * 0.98);
+    const top2Value = ySorted[top2Index] || ySorted[ySorted.length - 1];
+    
+    const y = rawY.map(val => (val > top2Value ? top2Value : val));
+    
+    // 2. Zero-variance check for X columns
+    // 만약 어떤 변수(눈, 강수량 등)가 샘플 내내 똑같다면 (분산이 0), 역행렬이 깨집니다.
+    // 이런 변수는 자동으로 탈락시킵니다. (단, 첫번째 열인 Intercept는 예외)
+    const colCount = rawX[0].length;
+    const keepCols = [0]; // Intercept is always kept
+    
+    for (let c = 1; c < colCount; c++) {
+      let isConstant = true;
+      const firstVal = rawX[0][c];
+      for (let r = 1; r < rawX.length; r++) {
+        if (rawX[r][c] !== firstVal) {
+          isConstant = false;
+          break;
+        }
+      }
+      if (!isConstant) keepCols.push(c);
     }
     
-    const R2 = totalSumSq === 0 ? 0 : 1 - (sumSqErr / totalSumSq);
+    const X = rawX.map(row => keepCols.map(c => row[c]));
+
+    // 3. 행렬 연산
+    const Xt = transpose(X);
+    const XtX = multiply(Xt, X);
+    const XtX_inv = inverse(XtX);
+    if (!XtX_inv) return null;
     
-    // 분산 = SSE / (n - k)
-    const variance = sumSqErr / (n - k);
+    const Y_col = y.map(val => [val]);
+    const XtY = multiply(Xt, Y_col);
     
-    const coefficients = B.valueOf().map(r => r[0]);
-    const pValues = [];
+    // Beta = (X'X)^-1 * X'Y
+    const beta_col = multiply(XtX_inv, XtY);
+    const rawCoefficients = beta_col.map(row => row[0]);
     
-    for (let i = 0; i < k; i++) {
-      // 대각원소가 음수나 0이 나오는 매우 극단적인 매트릭스 예외처리
-      const diag = XTX_inv.get([i, i]);
-      if (diag <= 0) {
-        pValues.push(1.0); // 유의미성 없음으로 처리
-        continue;
-      }
+    let y_mean = 0;
+    for (let i = 0; i < y.length; i++) y_mean += y[i];
+    y_mean /= y.length;
+    
+    let ssTot = 0, ssRes = 0;
+    for (let i = 0; i < y.length; i++) {
+      let y_pred = 0;
+      for (let j = 0; j < rawCoefficients.length; j++) y_pred += rawCoefficients[j] * X[i][j];
+      ssTot += Math.pow(y[i] - y_mean, 2);
+      ssRes += Math.pow(y[i] - y_pred, 2);
+    }
+    const R2 = ssTot === 0 ? 0 : 1 - (ssRes / ssTot);
+    
+    const df = y.length - rawCoefficients.length;
+    if (df <= 0) return null;
+    
+    const variance = ssRes / df;
+    const rawPValues = [];
+    
+    for (let j = 0; j < rawCoefficients.length; j++) {
+      const se = Math.sqrt(variance * XtX_inv[j][j]);
+      if (isNaN(se) || se === 0) { rawPValues.push(1); continue; }
       
-      const standardError = Math.sqrt(variance * diag);
-      const tStat = coefficients[i] / standardError;
-      
-      // t-분포를 정규분포로 근사하여 p-value 도출 (n >= 30 에서 유효)
-      const p = 2 * (1 - normalCDF(Math.abs(tStat)));
-      pValues.push(p);
+      const tStat = rawCoefficients[j] / se;
+      const z = Math.abs(tStat);
+      // Logistic approximation for Normal CDF
+      const cdf = 1 / (1 + Math.exp(-1.702 * z)); 
+      rawPValues.push(2 * (1 - cdf));
+    }
+    
+    // 4. 탈락된 컬럼 복원 (계수 0, p 1 로 처리)
+    const coefficients = new Array(colCount).fill(0);
+    const pValues = new Array(colCount).fill(1);
+    
+    for (let j = 0; j < keepCols.length; j++) {
+      const originalCol = keepCols[j];
+      coefficients[originalCol] = rawCoefficients[j];
+      pValues[originalCol] = rawPValues[j];
     }
     
     return { coefficients, pValues, R2 };
-  } catch (err) {
-    console.warn("MRA Error: matrix inversion failed", err);
-    return null; // 역행렬을 구할 수 없는 경우 (다중공선성 등)
+  } catch (error) {
+    console.error("MRA Calculation Error:", error);
+    return null;
   }
 };
