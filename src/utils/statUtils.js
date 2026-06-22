@@ -65,7 +65,7 @@ export const safeRate = (numerator, denominator) => {
  * Catastrophic Cancellation(정밀도 손실) 방지를 위해 평균 중심화(Mean-Centering) 방식을 사용합니다.
  */
 export const calculateCorrelation = (xArray, yArray) => {
-  if (!xArray || !yArray || xArray.length !== yArray.length || xArray.length < 2) return null;
+  if (!xArray || !yArray || xArray.length !== yArray.length || xArray.length < 4) return null;
   const n = xArray.length;
   
   const meanX = xArray.reduce((a, b) => a + b, 0) / n;
