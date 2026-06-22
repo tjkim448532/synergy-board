@@ -95,3 +95,25 @@ export const calculateGroupedSales = (salesObj, locationGroups = {}) => {
 
   return { leisure, fnb, golf, other, moto, dynamicGroups };
 };
+
+export const getDefaultWeatherTag = (loc, group) => {
+  if (loc.includes('미디어아트') || loc.includes('VR') || loc.includes('실내') || loc.includes('전시')) {
+    return '실내/F&B';
+  }
+  if (group === 'fnb') {
+    return '실내/F&B';
+  }
+  if (loc.includes('수영') || loc.includes('워터') || loc.includes('스파')) {
+    return '물놀이/수영장';
+  }
+  if (loc.includes('골프')) {
+    return '골프장';
+  }
+  if (loc.includes('눈썰매') || loc.includes('스노우')) {
+    return '겨울 시설';
+  }
+  if (loc.includes('루지') || loc.includes('카트')) {
+    return '야외 트랙';
+  }
+  return '야외 어트랙션';
+};

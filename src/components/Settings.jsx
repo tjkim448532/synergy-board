@@ -795,8 +795,9 @@ export default function Settings({ monthlyData }) {
           ) : (
             <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
               {uniqueLocations.map(loc => {
-                const currentGroup = (settings.locationGroups && settings.locationGroups[loc]) || getDefaultGroup(loc);
-                const currentTag = (settings.weatherTags && settings.weatherTags[loc]) || '야외 어트랙션';
+                const currentGroup = settings.locationGroups?.[loc] || getDefaultGroup(loc);
+                const defaultTag = getDefaultWeatherTag(loc, currentGroup);
+                const currentTag = (settings.weatherTags && settings.weatherTags[loc]) || defaultTag;
                 return (
                   <div key={loc} style={{display: 'flex', flexDirection: 'column', gap: '8px', padding: '12px 16px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px'}}>
                     <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px'}}>

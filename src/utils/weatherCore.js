@@ -3,7 +3,7 @@
  * 날씨 4대 고급 로직(풍속 페널티, 장마 피로도, 대체재 풍선효과, 평일/주말 정규화)을
  * 앱 전반(시뮬레이터, 14일 예측, 통계)에 통일되게 적용하기 위한 코어 엔진입니다.
  */
-import { isRoomWeekend, isLeisureWeekend } from './revenueUtils.js';
+import { isRoomWeekend, isLeisureWeekend, getDefaultWeatherTag } from './revenueUtils.js';
 
 const parseAmount = (val) => {
   if (typeof val === 'number') return Math.round(val);
@@ -351,7 +351,7 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
     
     const overallRainyAvg = overallClearAvg * avgRatio;
     
-    const tag = settings?.weatherTags?.[fac] || '야외 어트랙션';
+    const tag = settings?.weatherTags?.[fac] || getDefaultWeatherTag(fac, vals.group);
     
     if (overallClearAvg > 0) {
       const impact = (avgRatio - 1) * 100;
@@ -372,7 +372,7 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
 
     coreStats.facilities[fac] = {
       group: vals.group,
-      tag: settings?.weatherTags?.[fac] || '야외 어트랙션',
+      tag: tag,
       wdClearAvg, wdRainyAvg, weClearAvg, weRainyAvg,
       overallClearAvg, overallRainyAvg,
       wdPenalty: (wdClearAvg > 0 && wdRainyAvg !== null) ? (wdRainyAvg - wdClearAvg) / wdClearAvg : null,
@@ -417,7 +417,7 @@ export const predictWeatherImpact = (facilityName, isWeekend, forecastWeather, c
   const fStat = coreStats.facilities[facilityName];
   if (!fStat) return { expectedRevenue: 0, clearBaseline: customBaseline || 0, variance: 0, decreaseRate: 0, tags: [] };
 
-  const tag = fStat.tag || '야외 어트랙션';
+  const tag = fStat.tag || getDefaultWeatherTag(facilityName, fStat.group);
   const isSnowy = forecastWeather.isSnowy || [71,73,75,77,85,86].includes(forecastWeather.code);
   const isRainy = forecastWeather.precipitation >= RAIN_THRESHOLD && !isSnowy;
   const maxHourlyPrecip = forecastWeather.maxHourlyPrecip || 0;
