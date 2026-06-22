@@ -9,7 +9,7 @@ const CountUp = CountUpModule.default || CountUpModule;
 import { isHoliday } from 'korean-holidays';
 import { calculateGroupedSales, isRoomWeekend, isLeisureWeekend } from '../utils/revenueUtils';
 import { fetchCurrentWeather } from '../utils/weatherUtils';
-import { parseSafeNumber, safeAverage, filterOutliers, calculateCorrelation, getAdjustedCorrelation, calculateMultipleRegression } from '../utils/statUtils';
+import { parseSafeNumber, safeAverage, safeMedian, filterOutliers, calculateCorrelation, getAdjustedCorrelation, calculateMultipleRegression } from '../utils/statUtils';
 import { Activity } from 'lucide-react';
 
 const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(Math.round(val || 0));
@@ -599,11 +599,11 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       const clear = dataList.filter(d => parseSafeNumber(d.precipitation) < RAIN_THRESHOLD);
       return {
         clearDays: clear.length,
-        clearAvgRev: safeAverage(clear.map(d => d[key]), false),
-        clearAvgRooms: safeAverage(clear.map(d => d.roomsSold), false),
+        clearAvgRev: safeMedian(clear.map(d => d[key]), false),
+        clearAvgRooms: safeMedian(clear.map(d => d.roomsSold), false),
         rainyDays: rainy.length,
-        rainyAvgRev: safeAverage(rainy.map(d => d[key]), false),
-        rainyAvgRooms: safeAverage(rainy.map(d => d.roomsSold), false),
+        rainyAvgRev: safeMedian(rainy.map(d => d[key]), false),
+        rainyAvgRooms: safeMedian(rainy.map(d => d.roomsSold), false),
       };
     };
 
@@ -1990,13 +1990,13 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                             <td style={{padding: '12px 6px', fontWeight: 'bold', color: 'var(--text-main)'}}>₩{formatCurrency(s.clearAvgRev)}</td>
                             <td style={{padding: '12px 6px'}}>{s.rainyDays}일</td>
                             <td style={{padding: '12px 6px', fontWeight: 'bold', color: 'var(--text-main)'}}>
-                              {s.rainyDays > 0 ? `₩${formatCurrency(s.rainyAvgRev)}` : '-'}
+                              {s.rainyDays >= 5 && s.clearDays >= 5 ? `₩${formatCurrency(s.rainyAvgRev)}` : (s.rainyDays > 0 ? `₩${formatCurrency(s.rainyAvgRev)}` : '-')}
                             </td>
-                            <td style={{padding: '12px 6px', fontWeight: 'bold', color: diff < 0 ? 'var(--accent-red)' : 'var(--accent-emerald)'}}>
-                              {s.rainyDays > 0 ? `${diff > 0 ? '+' : ''}₩${formatCurrency(diff)}` : '-'}
+                            <td style={{padding: '12px 6px', fontWeight: 'bold', color: s.rainyDays >= 5 && s.clearDays >= 5 ? (diff < 0 ? 'var(--accent-red)' : 'var(--accent-emerald)') : 'var(--text-muted)'}}>
+                              {s.rainyDays >= 5 && s.clearDays >= 5 ? `${diff > 0 ? '+' : ''}₩${formatCurrency(diff)}` : (s.rainyDays > 0 ? '데이터 부족' : '-')}
                             </td>
-                            <td style={{padding: '12px 6px', fontWeight: 'bold', color: diff < 0 ? 'var(--accent-red)' : 'var(--accent-emerald)'}}>
-                              {s.rainyDays > 0 ? `${pct.toFixed(1)}%` : '-'}
+                            <td style={{padding: '12px 6px', fontWeight: 'bold', color: s.rainyDays >= 5 && s.clearDays >= 5 ? (diff < 0 ? 'var(--accent-red)' : 'var(--accent-emerald)') : 'var(--text-muted)'}}>
+                              {s.rainyDays >= 5 && s.clearDays >= 5 ? `${pct.toFixed(1)}%` : (s.rainyDays > 0 ? '데이터 부족' : '-')}
                             </td>
                           </tr>
                         );
@@ -2080,13 +2080,13 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                             <td style={{padding: '12px 6px', fontWeight: 'bold', color: 'var(--text-main)'}}>₩{formatCurrency(s.clearAvgRev)}</td>
                             <td style={{padding: '12px 6px'}}>{s.rainyDays}일</td>
                             <td style={{padding: '12px 6px', fontWeight: 'bold', color: 'var(--text-main)'}}>
-                              {s.rainyDays > 0 ? `₩${formatCurrency(s.rainyAvgRev)}` : '-'}
+                              {s.rainyDays >= 5 && s.clearDays >= 5 ? `₩${formatCurrency(s.rainyAvgRev)}` : (s.rainyDays > 0 ? `₩${formatCurrency(s.rainyAvgRev)}` : '-')}
                             </td>
-                            <td style={{padding: '12px 6px', fontWeight: 'bold', color: diff < 0 ? 'var(--accent-red)' : 'var(--accent-emerald)'}}>
-                              {s.rainyDays > 0 ? `${diff > 0 ? '+' : ''}₩${formatCurrency(diff)}` : '-'}
+                            <td style={{padding: '12px 6px', fontWeight: 'bold', color: s.rainyDays >= 5 && s.clearDays >= 5 ? (diff < 0 ? 'var(--accent-red)' : 'var(--accent-emerald)') : 'var(--text-muted)'}}>
+                              {s.rainyDays >= 5 && s.clearDays >= 5 ? `${diff > 0 ? '+' : ''}₩${formatCurrency(diff)}` : (s.rainyDays > 0 ? '데이터 부족' : '-')}
                             </td>
-                            <td style={{padding: '12px 6px', fontWeight: 'bold', color: diff < 0 ? 'var(--accent-red)' : 'var(--accent-emerald)'}}>
-                              {s.rainyDays > 0 ? `${pct.toFixed(1)}%` : '-'}
+                            <td style={{padding: '12px 6px', fontWeight: 'bold', color: s.rainyDays >= 5 && s.clearDays >= 5 ? (diff < 0 ? 'var(--accent-red)' : 'var(--accent-emerald)') : 'var(--text-muted)'}}>
+                              {s.rainyDays >= 5 && s.clearDays >= 5 ? `${pct.toFixed(1)}%` : (s.rainyDays > 0 ? '데이터 부족' : '-')}
                             </td>
                           </tr>
                         );

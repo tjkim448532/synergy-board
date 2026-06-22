@@ -50,6 +50,22 @@ export const safeAverage = (dataArray, useIQR = true) => {
 };
 
 /**
+ * 데이터 배열의 중앙값을 구합니다. (극단치 영향 배제)
+ */
+export const safeMedian = (dataArray, round = true) => {
+  if (!dataArray || dataArray.length === 0) return 0;
+  
+  const validData = dataArray.map(parseSafeNumber).filter(v => !isNaN(v));
+  if (validData.length === 0) return 0;
+  
+  validData.sort((a, b) => a - b);
+  const mid = Math.floor(validData.length / 2);
+  const median = validData.length % 2 !== 0 ? validData[mid] : (validData[mid - 1] + validData[mid]) / 2;
+  
+  return round ? Math.round(median) : median;
+};
+
+/**
  * 분모가 0이 되는 것을 방지하는 안전한 비율(나눗셈) 계산 함수입니다.
  */
 export const safeRate = (numerator, denominator) => {
