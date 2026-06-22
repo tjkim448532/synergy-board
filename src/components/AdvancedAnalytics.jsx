@@ -131,6 +131,10 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       const yearMonths = processedData.filter(d => (d.yearMonth || '').startsWith(year));
       if (yearMonths.length > 0) {
         options.push({ value: `${year}-all`, label: `${year}년 종합 분석` });
+        options.push({ value: `${year}-summer`, label: `${year}년 여름 성수기 (7~8월)` });
+        options.push({ value: `${year}-winter`, label: `${year}년 겨울 시즌 (12~2월)` });
+        options.push({ value: `${year}-spring`, label: `${year}년 봄 시즌 (3~6월)` });
+        options.push({ value: `${year}-fall`, label: `${year}년 가을 시즌 (9~11월)` });
         for (let m = 1; m <= 12; m++) {
           const mm = String(m).padStart(2, '0');
           if (yearMonths.some(d => (d.yearMonth || '').split('-')[1] === mm)) {
@@ -150,6 +154,10 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       const [y, m] = (d.yearMonth || '').split('-');
       if (y !== selYear) return false;
       if (selMonth === 'all') return true;
+      if (selMonth === 'summer') return m === '07' || m === '08';
+      if (selMonth === 'winter') return m === '12' || m === '01' || m === '02';
+      if (selMonth === 'spring') return m >= '03' && m <= '06';
+      if (selMonth === 'fall') return m >= '09' && m <= '11';
       if (isCumulative) {
         return parseInt(m) <= parseInt(selMonth);
       } else {
@@ -157,6 +165,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       }
     });
   }, [processedData, selectedMonthFilter, isCumulative]);
+
 
 
   const { displayVisitors, hasMissingVisitorData, visitorValidMonths } = useMemo(() => {
@@ -215,6 +224,18 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     
     return { displayVisitors: count, hasMissingVisitorData: finalMissing, visitorValidMonths: validMonths };
   }, [filteredProcessedData, isGoogleSheetSyncEnabled, googleSheetData, settings, selectedMonthFilter]);
+
+  const getFilterLabel = useMemo(() => {
+    if (selectedMonthFilter === 'all') return '전체 기간 리조트 통합 고객 수 (골프장 제외)';
+    const [y, m] = selectedMonthFilter.split('-');
+    if (m === 'all') return `${y}년 리조트 통합 고객 수`;
+    if (m === 'summer') return `${y}년 여름 시즌(7~8월) 리조트 고객 수`;
+    if (m === 'winter') return `${y}년 겨울 시즌(12~2월) 리조트 고객 수`;
+    if (m === 'spring') return `${y}년 봄 시즌(3~6월) 리조트 고객 수`;
+    if (m === 'fall') return `${y}년 가을 시즌(9~11월) 리조트 고객 수`;
+    if (isCumulative) return `${y}년 1~${parseInt(m)}월 누적 리조트 고객 수`;
+    return `${y}년 ${parseInt(m)}월 리조트 고객 수`;
+  }, [selectedMonthFilter, isCumulative]);
 
   const dateRangeStr = useMemo(() => {
     if (!visitorValidMonths || visitorValidMonths.length === 0) return '';
@@ -1178,7 +1199,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
             </select>
           </div>
 
-          {selectedMonthFilter !== 'all' && !selectedMonthFilter.endsWith('-all') && (
+          {selectedMonthFilter !== 'all' && !selectedMonthFilter.endsWith('-all') && !['summer','winter','spring','fall'].includes(selectedMonthFilter.split('-')[1]) && (
             <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginLeft: '8px'}}>
               <input type="checkbox" checked={isCumulative} onChange={(e) => setIsCumulative(e.target.checked)} style={{display: 'none'}} />
               <div style={{position: 'relative', width: '40px', height: '20px', background: isCumulative ? 'var(--accent-emerald)' : 'rgba(255,255,255,0.2)', borderRadius: '10px', transition: '0.3s'}}>
@@ -1211,7 +1232,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
             {displayVisitors !== null ? <CountUp end={displayVisitors} duration={2} separator="," /> : '...'}
           </div>
           <p style={{margin: 0, color: 'var(--text-muted)', fontSize: '14px'}}>
-            {selectedMonthFilter === 'all' ? '전체 기간 리조트 통합 고객 수 (골프장 제외)' : (selectedMonthFilter.endsWith('-all') ? `${selectedMonthFilter.split('-')[0]}년 리조트 통합 고객 수` : `${selectedMonthFilter.split('-')[0]}년 ${isCumulative ? `1~${parseInt(selectedMonthFilter.split('-')[1])}월 누적` : `${parseInt(selectedMonthFilter.split('-')[1])}월`} 리조트 고객 수`)} {dateRangeStr}
+            {getFilterLabel} {dateRangeStr}
           </p>
           <div style={{marginTop: 'auto', background: 'rgba(255,255,255,0.05)', padding: '12px 16px', borderRadius: '8px', border: '1px solid rgba(251, 191, 36, 0.2)'}}>
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px dashed rgba(255,255,255,0.1)'}}>
@@ -1245,7 +1266,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
             <CountUp end={totalHotelGuests} duration={2} separator="," />
           </div>
           <p style={{margin: 0, color: 'var(--text-muted)', fontSize: '14px'}}>
-            (16평×2.5인) + (35평×4.5인) + (51평×6인) {isCumulative || selectedMonthFilter === 'all' || selectedMonthFilter.endsWith('-all') ? '누적' : '당월'} 합산 결과 {dateRangeStr}
+            (16평×2.5인) + (35평×4.5인) + (51평×6인) {isCumulative || selectedMonthFilter === 'all' || selectedMonthFilter.includes('-all') || ['summer','winter','spring','fall'].includes(selectedMonthFilter.split('-')[1] || '') ? '누적' : '당월'} 합산 결과 {dateRangeStr}
           </p>
 
           <div style={{position: 'absolute', right: '40px', bottom: '32px', background: 'rgba(0,0,0,0.4)', padding: '12px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end'}}>
