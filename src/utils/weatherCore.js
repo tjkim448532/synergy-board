@@ -230,8 +230,12 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
               facilityData[fac] = {
                 wdAll: [], weAll: [],
                 wdClear: [], wdRainy: [], weClear: [], weRainy: [],
-                tier: [], snow: [], heatwave: [], coldwave: [],
-                extremeRain10: [], extremeRain5: [], windy: [],
+                wdSnow: [], weSnow: [],
+                wdHeatwave: [], weHeatwave: [],
+                wdColdwave: [], weColdwave: [],
+                wdExtremeRain10: [], weExtremeRain10: [],
+                wdExtremeRain5: [], weExtremeRain5: [],
+                wdWindy: [], weWindy: [],
                 group: settings?.locationGroups?.[fac] || 'leisure'
               };
             }
@@ -241,21 +245,28 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
             const facGroup = settings?.locationGroups?.[fac] || 'leisure';
             const isThisWeekend = facGroup === 'room' ? w.isRoomWeekend : w.isLeisureWeekend;
             
-            if (w.isSnowy) facilityData[fac].snow.push(val);
-            if (w.tempMax >= 33) facilityData[fac].heatwave.push(val);
-            if (w.tempMax <= 5 || w.tempMin <= -5) facilityData[fac].coldwave.push(val);
-            if (w.maxHourlyPrecip >= 10) facilityData[fac].extremeRain10.push(val);
-            else if (w.maxHourlyPrecip >= 5) facilityData[fac].extremeRain5.push(val);
-            if (w.isWindy) facilityData[fac].windy.push(val);
-            
             if (isThisWeekend) {
               facilityData[fac].weAll.push(val);
               if (w.isRainy) facilityData[fac].weRainy.push(val);
               else facilityData[fac].weClear.push(val);
+              
+              if (w.isSnowy) facilityData[fac].weSnow.push(val);
+              if (w.tempMax >= 33) facilityData[fac].weHeatwave.push(val);
+              if (w.tempMax <= 5 || w.tempMin <= -5) facilityData[fac].weColdwave.push(val);
+              if (w.maxHourlyPrecip >= 10) facilityData[fac].weExtremeRain10.push(val);
+              else if (w.maxHourlyPrecip >= 5) facilityData[fac].weExtremeRain5.push(val);
+              if (w.isWindy) facilityData[fac].weWindy.push(val);
             } else {
               facilityData[fac].wdAll.push(val);
               if (w.isRainy) facilityData[fac].wdRainy.push(val);
               else facilityData[fac].wdClear.push(val);
+              
+              if (w.isSnowy) facilityData[fac].wdSnow.push(val);
+              if (w.tempMax >= 33) facilityData[fac].wdHeatwave.push(val);
+              if (w.tempMax <= 5 || w.tempMin <= -5) facilityData[fac].wdColdwave.push(val);
+              if (w.maxHourlyPrecip >= 10) facilityData[fac].wdExtremeRain10.push(val);
+              else if (w.maxHourlyPrecip >= 5) facilityData[fac].wdExtremeRain5.push(val);
+              if (w.isWindy) facilityData[fac].wdWindy.push(val);
             }
             facilityData[fac].tier.push(val);
           }
@@ -274,12 +285,19 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
     const wdRainyAvg = safeAverage(filterOutliers(vals.wdRainy, wdBound));
     const weClearAvg = safeAverage(filterOutliers(vals.weClear, weBound));
     const weRainyAvg = safeAverage(filterOutliers(vals.weRainy, weBound));
-    const snowAvg = safeAverage(vals.snow);
-    const heatwaveAvg = safeAverage(vals.heatwave);
-    const coldwaveAvg = safeAverage(vals.coldwave);
-    const extremeRain10Avg = safeAverage(vals.extremeRain10);
-    const extremeRain5Avg = safeAverage(vals.extremeRain5);
-    const windyAvg = safeAverage(vals.windy);
+    
+    const wdSnowAvg = safeAverage(vals.wdSnow);
+    const weSnowAvg = safeAverage(vals.weSnow);
+    const wdHeatwaveAvg = safeAverage(vals.wdHeatwave);
+    const weHeatwaveAvg = safeAverage(vals.weHeatwave);
+    const wdColdwaveAvg = safeAverage(vals.wdColdwave);
+    const weColdwaveAvg = safeAverage(vals.weColdwave);
+    const wdExtremeRain10Avg = safeAverage(vals.wdExtremeRain10);
+    const weExtremeRain10Avg = safeAverage(vals.weExtremeRain10);
+    const wdExtremeRain5Avg = safeAverage(vals.wdExtremeRain5);
+    const weExtremeRain5Avg = safeAverage(vals.weExtremeRain5);
+    const wdWindyAvg = safeAverage(vals.wdWindy);
+    const weWindyAvg = safeAverage(vals.weWindy);
     const tierAvg = safeAverage(vals.tier);
 
     // 전체 맑은날 vs 비오는날 (풍선효과 탐지용) - 심슨의 역설 제거
@@ -332,12 +350,24 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
       wdPenalty: wdClearAvg > 0 ? (wdRainyAvg - wdClearAvg) / wdClearAvg : 0,
       wePenalty: weClearAvg > 0 ? (weRainyAvg - weClearAvg) / weClearAvg : 0,
       overallPenalty: avgRatio - 1,
-      snowPenalty: (vals.snow.length > 0 && overallClearAvg > 0) ? (snowAvg - overallClearAvg) / overallClearAvg : null,
-      heatwavePenalty: (vals.heatwave.length > 0 && overallClearAvg > 0) ? (heatwaveAvg - overallClearAvg) / overallClearAvg : null,
-      coldwavePenalty: (vals.coldwave.length > 0 && overallClearAvg > 0) ? (coldwaveAvg - overallClearAvg) / overallClearAvg : null,
-      extremeRain10Penalty: (vals.extremeRain10.length > 0 && overallClearAvg > 0) ? (extremeRain10Avg - overallClearAvg) / overallClearAvg : null,
-      extremeRain5Penalty: (vals.extremeRain5.length > 0 && overallClearAvg > 0) ? (extremeRain5Avg - overallClearAvg) / overallClearAvg : null,
-      windyPenalty: (vals.windy.length > 0 && overallClearAvg > 0) ? (windyAvg - overallClearAvg) / overallClearAvg : null
+      
+      wdSnowPenalty: (vals.wdSnow.length > 0 && wdClearAvg > 0) ? (wdSnowAvg - wdClearAvg) / wdClearAvg : null,
+      weSnowPenalty: (vals.weSnow.length > 0 && weClearAvg > 0) ? (weSnowAvg - weClearAvg) / weClearAvg : null,
+      
+      wdHeatwavePenalty: (vals.wdHeatwave.length > 0 && wdClearAvg > 0) ? (wdHeatwaveAvg - wdClearAvg) / wdClearAvg : null,
+      weHeatwavePenalty: (vals.weHeatwave.length > 0 && weClearAvg > 0) ? (weHeatwaveAvg - weClearAvg) / weClearAvg : null,
+      
+      wdColdwavePenalty: (vals.wdColdwave.length > 0 && wdClearAvg > 0) ? (wdColdwaveAvg - wdClearAvg) / wdClearAvg : null,
+      weColdwavePenalty: (vals.weColdwave.length > 0 && weClearAvg > 0) ? (weColdwaveAvg - weClearAvg) / weClearAvg : null,
+      
+      wdExtremeRain10Penalty: (vals.wdExtremeRain10.length > 0 && wdClearAvg > 0) ? (wdExtremeRain10Avg - wdClearAvg) / wdClearAvg : null,
+      weExtremeRain10Penalty: (vals.weExtremeRain10.length > 0 && weClearAvg > 0) ? (weExtremeRain10Avg - weClearAvg) / weClearAvg : null,
+      
+      wdExtremeRain5Penalty: (vals.wdExtremeRain5.length > 0 && wdClearAvg > 0) ? (wdExtremeRain5Avg - wdClearAvg) / wdClearAvg : null,
+      weExtremeRain5Penalty: (vals.weExtremeRain5.length > 0 && weClearAvg > 0) ? (weExtremeRain5Avg - weClearAvg) / weClearAvg : null,
+      
+      wdWindyPenalty: (vals.wdWindy.length > 0 && wdClearAvg > 0) ? (wdWindyAvg - wdClearAvg) / wdClearAvg : null,
+      weWindyPenalty: (vals.weWindy.length > 0 && weClearAvg > 0) ? (weWindyAvg - weClearAvg) / weClearAvg : null
     };
   });
   
@@ -388,18 +418,24 @@ export const predictWeatherImpact = (facilityName, isWeekend, forecastWeather, c
   };
 
   const baseRainPenalty = isWeekend ? fStat.wePenalty : fStat.wdPenalty;
+  const snowPenalty = isWeekend ? fStat.weSnowPenalty : fStat.wdSnowPenalty;
+  const extremeRain10Penalty = isWeekend ? fStat.weExtremeRain10Penalty : fStat.wdExtremeRain10Penalty;
+  const extremeRain5Penalty = isWeekend ? fStat.weExtremeRain5Penalty : fStat.wdExtremeRain5Penalty;
+  const heatwavePenalty = isWeekend ? fStat.weHeatwavePenalty : fStat.wdHeatwavePenalty;
+  const coldwavePenalty = isWeekend ? fStat.weColdwavePenalty : fStat.wdColdwavePenalty;
+  const windyPenalty = isWeekend ? fStat.weWindyPenalty : fStat.wdWindyPenalty;
 
   // 1. 강설 (Snow)
   if (isSnowy) {
-    applyPenalty(fStat.snowPenalty, '강설 통계반영', baseRainPenalty, '강설(우천대체) 통계반영');
+    applyPenalty(snowPenalty, '강설 통계반영', baseRainPenalty, '강설(우천대체) 통계반영');
   }
   // 2. 강우 (Rain)
   else if (isRainy || maxHourlyPrecip > 0) {
     let applied = false;
     if (maxHourlyPrecip >= 10) {
-      applied = applyPenalty(fStat.extremeRain10Penalty, '호우 통계반영', fStat.extremeRain5Penalty !== null ? fStat.extremeRain5Penalty : baseRainPenalty, '호우(폭우대체) 통계반영');
+      applied = applyPenalty(extremeRain10Penalty, '호우 통계반영', extremeRain5Penalty !== null ? extremeRain5Penalty : baseRainPenalty, '호우(폭우대체) 통계반영');
     } else if (maxHourlyPrecip >= 5) {
-      applied = applyPenalty(fStat.extremeRain5Penalty, '폭우 통계반영', baseRainPenalty, '폭우(우천대체) 통계반영');
+      applied = applyPenalty(extremeRain5Penalty, '폭우 통계반영', baseRainPenalty, '폭우(우천대체) 통계반영');
     }
     
     if (!applied) {
@@ -434,14 +470,14 @@ export const predictWeatherImpact = (facilityName, isWeekend, forecastWeather, c
     const highWind = coreStats.global.wind.highWindAvgRev;
     const globalWindPenalty = (normalWind > 0 && highWind < normalWind) ? (highWind - normalWind) / normalWind : 0;
     
-    applyPenalty(fStat.windyPenalty, '강풍 통계반영', globalWindPenalty, '강풍(전역) 통계반영');
+    applyPenalty(windyPenalty, '강풍 통계반영', globalWindPenalty, '강풍(전역) 통계반영');
   }
 
   // 4. 기온 (Temperature)
   if (tempMax >= 33 && expectedRevenue > 0) {
-    applyPenalty(fStat.heatwavePenalty, '폭염 통계반영');
+    applyPenalty(heatwavePenalty, '폭염 통계반영');
   } else if ((tempMax <= 5 || tempMin <= -5) && expectedRevenue > 0) {
-    applyPenalty(fStat.coldwavePenalty, '한파 통계반영');
+    applyPenalty(coldwavePenalty, '한파 통계반영');
   }
 
   const variance = expectedRevenue - clearBaseline;
