@@ -3,7 +3,7 @@
  * 날씨 4대 고급 로직(풍속 페널티, 장마 피로도, 대체재 풍선효과, 평일/주말 정규화)을
  * 앱 전반(시뮬레이터, 14일 예측, 통계)에 통일되게 적용하기 위한 코어 엔진입니다.
  */
-import { isRoomWeekend, isLeisureWeekend } from './revenueUtils';
+import { isRoomWeekend, isLeisureWeekend } from './revenueUtils.js';
 
 const parseAmount = (val) => {
   if (typeof val === 'number') return Math.round(val);
@@ -67,6 +67,7 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
           const precip = rec.weatherDaytimePrecip !== undefined && rec.weatherDaytimePrecip !== null ? Number(rec.weatherDaytimePrecip) : Number(rec.weatherPrecipitation || 0);
           const maxHourlyPrecip = rec.maxHourlyPrecip !== undefined && rec.maxHourlyPrecip !== null ? Number(rec.maxHourlyPrecip) : 0;
           const wind = rec.weatherWindSpeed !== undefined && rec.weatherWindSpeed !== null ? Number(rec.weatherWindSpeed) : 0;
+          const code = rec.weatherCode !== undefined && rec.weatherCode !== null ? Number(rec.weatherCode) : 0;
           
           if (!weatherMap[rec.date]) {
             weatherMap[rec.date] = { 
@@ -76,7 +77,9 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
               isRainy: precip >= RAIN_THRESHOLD || maxHourlyPrecip >= RAIN_THRESHOLD, 
               isWindy: wind >= WIND_THRESHOLD,
               isRoomWeekend: isRoomWeekend(rec.date, settings?.customWeekends || []),
-              isLeisureWeekend: isLeisureWeekend(rec.date, settings?.customWeekends || [])
+              isLeisureWeekend: isLeisureWeekend(rec.date, settings?.customWeekends || []),
+              code: code,
+              isSnowy: [71,73,75,77,85,86].includes(code)
             };
           }
           if (!dailyTotalRevMap[rec.date]) dailyTotalRevMap[rec.date] = 0;
@@ -337,7 +340,8 @@ export const predictWeatherImpact = (facilityName, isWeekend, forecastWeather, c
   if (!fStat) return { expectedRevenue: 0, clearBaseline: customBaseline || 0, variance: 0, decreaseRate: 0, tags: [] };
 
   const tag = fStat.tag || '야외 어트랙션';
-  const isRainy = forecastWeather.precipitation >= RAIN_THRESHOLD;
+  const isSnowy = forecastWeather.isSnowy || [71,73,75,77,85,86].includes(forecastWeather.code);
+  const isRainy = forecastWeather.precipitation >= RAIN_THRESHOLD && !isSnowy;
   const maxHourlyPrecip = forecastWeather.maxHourlyPrecip || 0;
   const isWindy = forecastWeather.windSpeedMax >= WIND_THRESHOLD;
   const consRainDays = forecastWeather.consecutiveRainCount || (isRainy ? 1 : 0);
@@ -350,8 +354,27 @@ export const predictWeatherImpact = (facilityName, isWeekend, forecastWeather, c
   let expectedRevenue = clearBaseline;
   const tags = [];
 
-  // 1. 강수량 (Hourly Rainfall) 기준 도메인 룰 반영
-  if (isRainy || maxHourlyPrecip > 0) {
+  // 1-1. 강설(Snow) 기준 도메인 룰 반영
+  if (isSnowy) {
+    if (tag === '골프장') {
+      expectedRevenue = expectedRevenue * 0.05; // 95% 감소 (결빙/휴장)
+      tags.push('강설 전면휴장(-95%)');
+    } else if (tag === '겨울 시설') {
+      expectedRevenue = expectedRevenue * 1.20; // 20% 상승 (특수)
+      tags.push('눈 특수(+20%)');
+    } else if (tag === '야외 어트랙션' || tag === '야외 트랙' || tag === '공중/동력') {
+      expectedRevenue = expectedRevenue * 0.40; // 60% 감소 (안전통제)
+      tags.push('결빙 안전통제(-60%)');
+    } else if (tag === '실내/F&B') {
+      expectedRevenue = expectedRevenue * 1.10; // 10% 상승 (실내 인구 밀집)
+      tags.push('눈 실내특수(+10%)');
+    } else {
+      expectedRevenue = expectedRevenue * 0.70; // 기타 30% 타격
+      tags.push('강설 타격(-30%)');
+    }
+  }
+  // 1-2. 강수량 (Hourly Rainfall) 기준 도메인 룰 반영 (비가 올 때만)
+  else if (isRainy || maxHourlyPrecip > 0) {
     if (tag === '야외 어트랙션' || tag === '야외 트랙' || tag === '공중/동력') {
       if (maxHourlyPrecip >= 10) {
         expectedRevenue = expectedRevenue * 0.3; // 70% 감소
