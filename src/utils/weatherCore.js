@@ -359,9 +359,6 @@ export const predictWeatherImpact = (facilityName, isWeekend, forecastWeather, c
     if (tag === '골프장') {
       expectedRevenue = expectedRevenue * 0.05; // 95% 감소 (결빙/휴장)
       tags.push('강설 전면휴장(-95%)');
-    } else if (tag === '겨울 시설') {
-      expectedRevenue = expectedRevenue * 1.20; // 20% 상승 (특수)
-      tags.push('눈 특수(+20%)');
     } else if (tag === '야외 어트랙션' || tag === '야외 트랙' || tag === '공중/동력') {
       expectedRevenue = expectedRevenue * 0.40; // 60% 감소 (안전통제)
       tags.push('결빙 안전통제(-60%)');
@@ -410,7 +407,7 @@ export const predictWeatherImpact = (facilityName, isWeekend, forecastWeather, c
         }
       }
     } else {
-      // 기타 카테고리(물놀이, 겨울시설 등)는 기존 통계적 페널티 적용
+      // 기타 카테고리(물놀이 등)는 기존 통계적 페널티 적용
       const baseRainPenalty = isWeekend ? fStat.wePenalty : fStat.wdPenalty;
       expectedRevenue = expectedRevenue * (1 + baseRainPenalty);
       tags.push('우천 통계반영');
@@ -463,10 +460,7 @@ export const predictWeatherImpact = (facilityName, isWeekend, forecastWeather, c
       tags.push('폭염 야외기피(-30%)');
     }
   } else if ((tempMax <= 5 || tempMin <= -5) && expectedRevenue > 0) {
-    if (tag === '겨울 시설') {
-      expectedRevenue = expectedRevenue * 1.3; 
-      tags.push('겨울 특수(+30%)');
-    } else if (tag === '야외 어트랙션' || tag === '야외 트랙' || tag === '물놀이/수영장') {
+    if (tag === '야외 어트랙션' || tag === '야외 트랙' || tag === '물놀이/수영장') {
       expectedRevenue = expectedRevenue * 0.6; 
       tags.push('한파 야외기피(-40%)');
     } else if (tag === '실내/F&B') {
