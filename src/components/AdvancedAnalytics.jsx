@@ -9,7 +9,7 @@ const CountUp = CountUpModule.default || CountUpModule;
 import { isHoliday } from 'korean-holidays';
 import { calculateGroupedSales, isRoomWeekend, isLeisureWeekend } from '../utils/revenueUtils';
 import { fetchCurrentWeather } from '../utils/weatherUtils';
-import { parseSafeNumber, safeAverage, filterOutliers, calculateCorrelation, getAdjustedCorrelation } from '../utils/statUtils';
+import { parseSafeNumber, safeAverage, filterOutliers, calculateCorrelation, getAdjustedCorrelation, calculateMultipleRegression } from '../utils/statUtils';
 import { Activity } from 'lucide-react';
 
 const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(Math.round(val || 0));
@@ -492,6 +492,16 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     const tempCorr = getAdjustedCorrelation(temps, revenues, isWkndArrForWeather) || 0;
     const precipCorr = getAdjustedCorrelation(precipitations, revenues, isWkndArrForWeather) || 0;
     
+    // [다중 회귀 분석(MRA) 통계 산출]
+    const xMatrixMra = cleanValidData.map(d => [
+      1,                                   // 절편(Intercept)
+      d.tempMax,                           // 기온
+      d.precipitation,                     // 강수량
+      isWeekendByConfig(d.date) ? 1 : 0,   // 주말효과 통제
+      d.roomsSold || 0                     // 객실 점유(객수) 통제
+    ]);
+    const mraStats = calculateMultipleRegression(revenues, xMatrixMra);
+
     const descGroup = {};
     cleanValidData.forEach(d => {
       const isWknd = isWeekendByConfig(d.date);
@@ -652,6 +662,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     return {
       tempCorr,
       precipCorr,
+      mraStats,
       descList,
       totalValidDays: cleanValidData.length,
       weekendPrecipCorr,
@@ -1575,6 +1586,62 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                 </div>
               )}
             </div>
+            
+            {/* 다중 회귀 분석 (MRA) 카드 */}
+            {weatherStats && weatherStats.mraStats && (
+              <div style={{background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px', marginTop: '16px', gridColumn: '1 / -1'}}>
+                <div style={{fontSize: '15px', fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '4px'}}>
+                  💡 다중 회귀 인과성 분석 (Multivariate Regression)
+                </div>
+                <div style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px'}}>
+                  주말/공휴일 효과와 객실 점유율 등 간섭 요인을 모두 통제했을 때, 날씨가 매출에 미치는 순수하고 독립적인 파급력을 분석합니다.
+                </div>
+                
+                <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px'}}>
+                  
+                  {/* 기온 MRA */}
+                  <div style={{background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '8px'}}>
+                    <div style={{fontSize: '13px', color: 'var(--text-muted)'}}>기온 변화 1°C 당 순수 파급력</div>
+                    <div style={{display: 'flex', alignItems: 'baseline', gap: '8px', margin: '8px 0'}}>
+                      <span style={{fontSize: '24px', fontWeight: 'bold', color: weatherStats.mraStats.coefficients[1] > 0 ? 'var(--accent-gold)' : 'var(--accent-coral)'}}>
+                        {weatherStats.mraStats.coefficients[1] > 0 ? '+' : ''}₩{formatCurrency(weatherStats.mraStats.coefficients[1])}
+                      </span>
+                    </div>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px'}}>
+                      {weatherStats.mraStats.pValues[1] < 0.05 ? (
+                        <span style={{background: 'rgba(76, 175, 80, 0.2)', color: '#4caf50', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold'}}>✅ 유의수준 95% 통과</span>
+                      ) : (
+                        <span style={{background: 'rgba(255, 152, 0, 0.2)', color: '#ff9800', padding: '2px 6px', borderRadius: '4px'}}>⚠️ 신뢰도 미달 (노이즈 가능성)</span>
+                      )}
+                      <span style={{color: 'var(--text-muted)'}}>(p={weatherStats.mraStats.pValues[1].toFixed(3)})</span>
+                    </div>
+                  </div>
+
+                  {/* 강수량 MRA */}
+                  <div style={{background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '8px'}}>
+                    <div style={{fontSize: '13px', color: 'var(--text-muted)'}}>강수량 1mm 당 순수 파급력</div>
+                    <div style={{display: 'flex', alignItems: 'baseline', gap: '8px', margin: '8px 0'}}>
+                      <span style={{fontSize: '24px', fontWeight: 'bold', color: weatherStats.mraStats.coefficients[2] > 0 ? 'var(--accent-blue)' : 'var(--accent-coral)'}}>
+                        {weatherStats.mraStats.coefficients[2] > 0 ? '+' : ''}₩{formatCurrency(weatherStats.mraStats.coefficients[2])}
+                      </span>
+                    </div>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px'}}>
+                      {weatherStats.mraStats.pValues[2] < 0.05 ? (
+                        <span style={{background: 'rgba(76, 175, 80, 0.2)', color: '#4caf50', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold'}}>✅ 유의수준 95% 통과</span>
+                      ) : (
+                        <span style={{background: 'rgba(255, 152, 0, 0.2)', color: '#ff9800', padding: '2px 6px', borderRadius: '4px'}}>⚠️ 신뢰도 미달 (노이즈 가능성)</span>
+                      )}
+                      <span style={{color: 'var(--text-muted)'}}>(p={weatherStats.mraStats.pValues[2].toFixed(3)})</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div style={{marginTop: '12px', fontSize: '12px', color: 'var(--text-muted)', textAlign: 'right'}}>
+                  모델 설명력 (R²): {(weatherStats.mraStats.R2 * 100).toFixed(1)}%
+                </div>
+              </div>
+            )}
+            
             <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: '4px 0 0 0'}}>
               일자별 최고기온, 강수량 데이터와 당일 매출의 피어슨 상관계수를 분석합니다.
             </p>
@@ -1676,40 +1743,6 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
             {/* 상관계수 및 날씨별 비교 카드 그리드 */}
             <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px'}}>
               
-              {/* 기온 상관계수 카드 */}
-              <div style={{background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px'}}>
-                <div style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px'}}>최고기온 vs {weatherLabel} 상관관계</div>
-                <div style={{display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '8px'}}>
-                  <span style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-gold)'}}>
-                    {typeof weatherStats.tempCorr === 'number' ? weatherStats.tempCorr.toFixed(3) : 'N/A'}
-                  </span>
-                  <span style={{fontSize: '14px', color: 'var(--text-muted)'}}>(r)</span>
-                </div>
-                <div style={{fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)'}}>
-                  해석: {getTempInterpretation(weatherStats.tempCorr).title}
-                </div>
-                <p style={{fontSize: '12px', color: 'var(--text-muted)', margin: '8px 0 0 0', lineHeight: '1.4'}}>
-                  {getTempInterpretation(weatherStats.tempCorr).desc}
-                </p>
-              </div>
-
-              {/* 강수량 상관계수 카드 */}
-              <div style={{background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px'}}>
-                <div style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px'}}>강수량 vs {weatherLabel} 상관관계</div>
-                <div style={{display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '8px'}}>
-                  <span style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-blue)'}}>
-                    {typeof weatherStats.precipCorr === 'number' ? weatherStats.precipCorr.toFixed(3) : 'N/A'}
-                  </span>
-                  <span style={{fontSize: '14px', color: 'var(--text-muted)'}}>(r)</span>
-                </div>
-                <div style={{fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)'}}>
-                  해석: {getPrecipInterpretation(weatherStats.precipCorr, weatherStats.overallRainStats, weatherStats.weekdayRainStats, weatherStats.weekendRainStats).title}
-                </div>
-                <p style={{fontSize: '12px', color: 'var(--text-muted)', margin: '8px 0 0 0', lineHeight: '1.4'}}>
-                  {getPrecipInterpretation(weatherStats.precipCorr, weatherStats.overallRainStats, weatherStats.weekdayRainStats, weatherStats.weekendRainStats).desc}
-                </p>
-              </div>
-
               {/* 주말/공휴일 우천 영향 분석 카드 */}
               <div style={{background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px'}}>
                 <div style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px'}}>주말/공휴일 강수량 vs {weatherLabel}</div>

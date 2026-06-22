@@ -1,4 +1,6 @@
 // src/utils/statUtils.js
+import { matrix, multiply, transpose, inv } from 'mathjs';
+
 
 /**
  * 어떤 형태의 값이 들어와도 안전하게 숫자로 파싱합니다.
@@ -168,4 +170,87 @@ export const calculateLinearRegression = (points, xKey, yKey) => {
   const avgYPerX = sumX > 0 ? sumY / sumX : 0;
 
   return { slope, intercept, r, avgYPerX };
+};
+
+// 근사 정규분포 CDF (p-value 계산용)
+function normalCDF(x) {
+  const t = 1 / (1 + 0.2316419 * Math.abs(x));
+  const d = 0.3989423 * Math.exp(-x * x / 2);
+  let prob = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+  if (x > 0) prob = 1 - prob;
+  return prob;
+}
+
+/**
+ * 다중 선형 회귀 분석 (Multiple Linear Regression)
+ * OLS 방식으로 계수(B), 표준오차(SE), t-통계량, p-value, 결정계수(R2)를 산출합니다.
+ * @param {Array} yArray - 종속변수 (e.g. 매출액) 1차원 배열
+ * @param {Array} xMatrix - 독립변수 2차원 배열 (각 행은 [1, x1, x2...])
+ */
+export const calculateMultipleRegression = (yArray, xMatrix) => {
+  if (!yArray || !xMatrix || yArray.length === 0 || yArray.length !== xMatrix.length) return null;
+  
+  const n = yArray.length;
+  const k = xMatrix[0].length;
+  if (n <= k + 1) return null; // 자유도 부족
+
+  try {
+    const X = matrix(xMatrix);
+    // Y를 열 벡터(n x 1)로 변환
+    const Y = matrix(yArray.map(y => [y]));
+    
+    const XT = transpose(X);
+    // B = (X^T * X)^-1 * X^T * Y
+    const XTX = multiply(XT, X);
+    const XTX_inv = inv(XTX);
+    const XTY = multiply(XT, Y);
+    const B = multiply(XTX_inv, XTY);
+    
+    // Y_pred = X * B
+    const Y_pred = multiply(X, B);
+    
+    let sumSqErr = 0;
+    let sumY = 0;
+    for (let i = 0; i < n; i++) {
+      const err = yArray[i] - Y_pred.get([i, 0]);
+      sumSqErr += err * err;
+      sumY += yArray[i];
+    }
+    const meanY = sumY / n;
+    
+    let totalSumSq = 0;
+    for (let i = 0; i < n; i++) {
+      const diff = yArray[i] - meanY;
+      totalSumSq += diff * diff;
+    }
+    
+    const R2 = totalSumSq === 0 ? 0 : 1 - (sumSqErr / totalSumSq);
+    
+    // 분산 = SSE / (n - k)
+    const variance = sumSqErr / (n - k);
+    
+    const coefficients = B.valueOf().map(r => r[0]);
+    const pValues = [];
+    
+    for (let i = 0; i < k; i++) {
+      // 대각원소가 음수나 0이 나오는 매우 극단적인 매트릭스 예외처리
+      const diag = XTX_inv.get([i, i]);
+      if (diag <= 0) {
+        pValues.push(1.0); // 유의미성 없음으로 처리
+        continue;
+      }
+      
+      const standardError = Math.sqrt(variance * diag);
+      const tStat = coefficients[i] / standardError;
+      
+      // t-분포를 정규분포로 근사하여 p-value 도출 (n >= 30 에서 유효)
+      const p = 2 * (1 - normalCDF(Math.abs(tStat)));
+      pValues.push(p);
+    }
+    
+    return { coefficients, pValues, R2 };
+  } catch (err) {
+    console.warn("MRA Error: matrix inversion failed", err);
+    return null; // 역행렬을 구할 수 없는 경우 (다중공선성 등)
+  }
 };
