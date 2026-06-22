@@ -20,6 +20,14 @@ const safeAverage = (arr, round = true) => {
   return round ? Math.round(avg) : avg;
 };
 
+const safeMedian = (arr, round = true) => {
+  if (!arr || arr.length === 0) return 0;
+  const sorted = [...arr].map(val => parseAmount(val)).sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  const median = sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+  return round ? Math.round(median) : median;
+};
+
 const getUpperBound = (dataList) => {
   const nonZero = dataList.filter(v => v > 0).sort((a, b) => a - b);
   if (nonZero.length < 4) return Infinity;
@@ -303,24 +311,24 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
     const weBound = getUpperBound(vals.weAll);
 
     const MIN_SAMPLE = 4;
-    const wdClearAvg = vals.wdClear.length >= MIN_SAMPLE ? safeAverage(filterOutliers(vals.wdClear, wdBound)) : null;
-    const wdRainyAvg = vals.wdRainy.length >= MIN_SAMPLE ? safeAverage(filterOutliers(vals.wdRainy, wdBound)) : null;
-    const weClearAvg = vals.weClear.length >= MIN_SAMPLE ? safeAverage(filterOutliers(vals.weClear, weBound)) : null;
-    const weRainyAvg = vals.weRainy.length >= MIN_SAMPLE ? safeAverage(filterOutliers(vals.weRainy, weBound)) : null;
+    const wdClearAvg = vals.wdClear.length >= MIN_SAMPLE ? safeMedian(filterOutliers(vals.wdClear, wdBound)) : null;
+    const wdRainyAvg = vals.wdRainy.length >= MIN_SAMPLE ? safeMedian(filterOutliers(vals.wdRainy, wdBound)) : null;
+    const weClearAvg = vals.weClear.length >= MIN_SAMPLE ? safeMedian(filterOutliers(vals.weClear, weBound)) : null;
+    const weRainyAvg = vals.weRainy.length >= MIN_SAMPLE ? safeMedian(filterOutliers(vals.weRainy, weBound)) : null;
     
-    const wdSnowAvg = vals.wdSnow.length >= MIN_SAMPLE ? safeAverage(vals.wdSnow) : null;
-    const weSnowAvg = vals.weSnow.length >= MIN_SAMPLE ? safeAverage(vals.weSnow) : null;
-    const wdHeatwaveAvg = vals.wdHeatwave.length >= MIN_SAMPLE ? safeAverage(vals.wdHeatwave) : null;
-    const weHeatwaveAvg = vals.weHeatwave.length >= MIN_SAMPLE ? safeAverage(vals.weHeatwave) : null;
-    const wdColdwaveAvg = vals.wdColdwave.length >= MIN_SAMPLE ? safeAverage(vals.wdColdwave) : null;
-    const weColdwaveAvg = vals.weColdwave.length >= MIN_SAMPLE ? safeAverage(vals.weColdwave) : null;
-    const wdExtremeRain10Avg = vals.wdExtremeRain10.length >= MIN_SAMPLE ? safeAverage(vals.wdExtremeRain10) : null;
-    const weExtremeRain10Avg = vals.weExtremeRain10.length >= MIN_SAMPLE ? safeAverage(vals.weExtremeRain10) : null;
-    const wdExtremeRain5Avg = vals.wdExtremeRain5.length >= MIN_SAMPLE ? safeAverage(vals.wdExtremeRain5) : null;
-    const weExtremeRain5Avg = vals.weExtremeRain5.length >= MIN_SAMPLE ? safeAverage(vals.weExtremeRain5) : null;
-    const wdWindyAvg = vals.wdWindy.length >= MIN_SAMPLE ? safeAverage(vals.wdWindy) : null;
-    const weWindyAvg = vals.weWindy.length >= MIN_SAMPLE ? safeAverage(vals.weWindy) : null;
-    const tierAvg = vals.tier.length > 0 ? safeAverage(vals.tier) : null;
+    const wdSnowAvg = vals.wdSnow.length >= MIN_SAMPLE ? safeMedian(vals.wdSnow) : null;
+    const weSnowAvg = vals.weSnow.length >= MIN_SAMPLE ? safeMedian(vals.weSnow) : null;
+    const wdHeatwaveAvg = vals.wdHeatwave.length >= MIN_SAMPLE ? safeMedian(vals.wdHeatwave) : null;
+    const weHeatwaveAvg = vals.weHeatwave.length >= MIN_SAMPLE ? safeMedian(vals.weHeatwave) : null;
+    const wdColdwaveAvg = vals.wdColdwave.length >= MIN_SAMPLE ? safeMedian(vals.wdColdwave) : null;
+    const weColdwaveAvg = vals.weColdwave.length >= MIN_SAMPLE ? safeMedian(vals.weColdwave) : null;
+    const wdExtremeRain10Avg = vals.wdExtremeRain10.length >= MIN_SAMPLE ? safeMedian(vals.wdExtremeRain10) : null;
+    const weExtremeRain10Avg = vals.weExtremeRain10.length >= MIN_SAMPLE ? safeMedian(vals.weExtremeRain10) : null;
+    const wdExtremeRain5Avg = vals.wdExtremeRain5.length >= MIN_SAMPLE ? safeMedian(vals.wdExtremeRain5) : null;
+    const weExtremeRain5Avg = vals.weExtremeRain5.length >= MIN_SAMPLE ? safeMedian(vals.weExtremeRain5) : null;
+    const wdWindyAvg = vals.wdWindy.length >= MIN_SAMPLE ? safeMedian(vals.wdWindy) : null;
+    const weWindyAvg = vals.weWindy.length >= MIN_SAMPLE ? safeMedian(vals.weWindy) : null;
+    const tierAvg = vals.tier.length > 0 ? safeMedian(vals.tier) : null;
 
     // 전체 맑은날 vs 비오는날 (풍선효과 탐지용) - 심슨의 역설 제거
     // 주말/평일 비중 편향을 없애기 위해 비율의 평균을 사용
@@ -354,7 +362,14 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
     
     const tag = settings?.weatherTags?.[fac] || getDefaultWeatherTag(fac, vals.group);
     
-    if (overallClearAvg > 0) {
+    const isFb = vals.group === 'fnb';
+    const rawClear = vals.wdClear.concat(vals.weClear);
+    const rawClearAvg = safeAverage(rawClear);
+    const rawClearMed = safeMedian(rawClear);
+    const isSparse = isFb && rawClearAvg > 0 && (rawClearMed / rawClearAvg) < 0.15;
+    const isTooSmall = overallClearAvg < 100000; // 10만원 미만 제외
+
+    if (overallClearAvg > 0 && !isSparse && !isTooSmall) {
       const wdPen = (wdClearAvg > 0 && wdRainyAvg !== null ? (wdRainyAvg - wdClearAvg) / wdClearAvg * 100 : 0);
       const wePen = (weClearAvg > 0 && weRainyAvg !== null ? (weRainyAvg - weClearAvg) / weClearAvg * 100 : 0);
       
@@ -369,36 +384,35 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
           weClearAvg, weRainyAvg, wePenalty: wePen
         });
       }
+
+      coreStats.facilities[fac] = {
+        group: vals.group,
+        tag: tag,
+        wdClearAvg, wdRainyAvg, weClearAvg, weRainyAvg,
+        overallClearAvg, overallRainyAvg,
+        wdPenalty: (wdClearAvg > 0 && wdRainyAvg !== null) ? (wdRainyAvg - wdClearAvg) / wdClearAvg : null,
+        wePenalty: (weClearAvg > 0 && weRainyAvg !== null) ? (weRainyAvg - weClearAvg) / weClearAvg : null,
+        overallPenalty: avgRatio - 1,
+        
+        wdSnowPenalty: (wdSnowAvg !== null && wdClearAvg > 0) ? (wdSnowAvg - wdClearAvg) / wdClearAvg : null,
+        weSnowPenalty: (weSnowAvg !== null && weClearAvg > 0) ? (weSnowAvg - weClearAvg) / weClearAvg : null,
+        
+        wdHeatwavePenalty: (wdHeatwaveAvg !== null && wdClearAvg > 0) ? (wdHeatwaveAvg - wdClearAvg) / wdClearAvg : null,
+        weHeatwavePenalty: (weHeatwaveAvg !== null && weClearAvg > 0) ? (weHeatwaveAvg - weClearAvg) / weClearAvg : null,
+        
+        wdColdwavePenalty: (wdColdwaveAvg !== null && wdClearAvg > 0) ? (wdColdwaveAvg - wdClearAvg) / wdClearAvg : null,
+        weColdwavePenalty: (weColdwaveAvg !== null && weClearAvg > 0) ? (weColdwaveAvg - weClearAvg) / weClearAvg : null,
+        
+        wdExtremeRain10Penalty: (wdExtremeRain10Avg !== null && wdClearAvg > 0) ? (wdExtremeRain10Avg - wdClearAvg) / wdClearAvg : null,
+        weExtremeRain10Penalty: (weExtremeRain10Avg !== null && weClearAvg > 0) ? (weExtremeRain10Avg - weClearAvg) / weClearAvg : null,
+        
+        wdExtremeRain5Penalty: (wdExtremeRain5Avg !== null && wdClearAvg > 0) ? (wdExtremeRain5Avg - wdClearAvg) / wdClearAvg : null,
+        weExtremeRain5Penalty: (weExtremeRain5Avg !== null && weClearAvg > 0) ? (weExtremeRain5Avg - weClearAvg) / weClearAvg : null,
+        
+        wdWindyPenalty: (wdWindyAvg !== null && wdClearAvg > 0) ? (wdWindyAvg - wdClearAvg) / wdClearAvg : null,
+        weWindyPenalty: (weWindyAvg !== null && weClearAvg > 0) ? (weWindyAvg - weClearAvg) / weClearAvg : null
+      };
     }
-
-    coreStats.facilities[fac] = {
-      group: vals.group,
-      tag: tag,
-      wdClearAvg, wdRainyAvg, weClearAvg, weRainyAvg,
-      overallClearAvg, overallRainyAvg,
-      wdPenalty: (wdClearAvg > 0 && wdRainyAvg !== null) ? (wdRainyAvg - wdClearAvg) / wdClearAvg : null,
-      wePenalty: (weClearAvg > 0 && weRainyAvg !== null) ? (weRainyAvg - weClearAvg) / weClearAvg : null,
-      overallPenalty: avgRatio - 1,
-      
-      wdSnowPenalty: (wdSnowAvg !== null && wdClearAvg > 0) ? (wdSnowAvg - wdClearAvg) / wdClearAvg : null,
-      weSnowPenalty: (weSnowAvg !== null && weClearAvg > 0) ? (weSnowAvg - weClearAvg) / weClearAvg : null,
-      
-      wdHeatwavePenalty: (wdHeatwaveAvg !== null && wdClearAvg > 0) ? (wdHeatwaveAvg - wdClearAvg) / wdClearAvg : null,
-      weHeatwavePenalty: (weHeatwaveAvg !== null && weClearAvg > 0) ? (weHeatwaveAvg - weClearAvg) / weClearAvg : null,
-      
-      wdColdwavePenalty: (wdColdwaveAvg !== null && wdClearAvg > 0) ? (wdColdwaveAvg - wdClearAvg) / wdClearAvg : null,
-      weColdwavePenalty: (weColdwaveAvg !== null && weClearAvg > 0) ? (weColdwaveAvg - weClearAvg) / weClearAvg : null,
-      
-      wdExtremeRain10Penalty: (wdExtremeRain10Avg !== null && wdClearAvg > 0) ? (wdExtremeRain10Avg - wdClearAvg) / wdClearAvg : null,
-      weExtremeRain10Penalty: (weExtremeRain10Avg !== null && weClearAvg > 0) ? (weExtremeRain10Avg - weClearAvg) / weClearAvg : null,
-      
-      wdExtremeRain5Penalty: (wdExtremeRain5Avg !== null && wdClearAvg > 0) ? (wdExtremeRain5Avg - wdClearAvg) / wdClearAvg : null,
-      weExtremeRain5Penalty: (weExtremeRain5Avg !== null && weClearAvg > 0) ? (weExtremeRain5Avg - weClearAvg) / weClearAvg : null,
-      
-      wdWindyPenalty: (wdWindyAvg !== null && wdClearAvg > 0) ? (wdWindyAvg - wdClearAvg) / wdClearAvg : null,
-      weWindyPenalty: (weWindyAvg !== null && weClearAvg > 0) ? (weWindyAvg - weClearAvg) / weClearAvg : null
-
-    };
   });
   
   subStats.sort((a,b) => b.impact - a.impact);
@@ -416,7 +430,7 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
  */
 export const predictWeatherImpact = (facilityName, isWeekend, forecastWeather, coreStats, customBaseline = null, RAIN_THRESHOLD = 3.0, WIND_THRESHOLD = 10.0) => {
   const fStat = coreStats.facilities[facilityName];
-  if (!fStat) return { expectedRevenue: 0, clearBaseline: customBaseline || 0, variance: 0, decreaseRate: 0, tags: [] };
+  if (!fStat) return { expectedRevenue: customBaseline || 0, clearBaseline: customBaseline || 0, variance: 0, decreaseRate: 0, tags: [] };
 
   const tag = fStat.tag || getDefaultWeatherTag(facilityName, fStat.group);
   const isSnowy = forecastWeather.isSnowy || [71,73,75,77,85,86].includes(forecastWeather.code);
