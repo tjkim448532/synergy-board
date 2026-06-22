@@ -497,22 +497,66 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       if (!descGroup[desc]) {
         descGroup[desc] = {
           desc,
-          totalRevenue: 0,
+          wdTotal: 0, wdCount: 0,
+          weTotal: 0, weCount: 0,
           totalRoomsSold: 0,
           daysCount: 0
         };
       }
-      descGroup[desc].totalRevenue += d.revenue;
+      if (isWeekendByConfig(d.date)) {
+        descGroup[desc].weTotal += d.revenue;
+        descGroup[desc].weCount += 1;
+      } else {
+        descGroup[desc].wdTotal += d.revenue;
+        descGroup[desc].wdCount += 1;
+      }
       descGroup[desc].totalRoomsSold += d.roomsSold;
       descGroup[desc].daysCount += 1;
     });
     
-    const descList = Object.values(descGroup).map(g => ({
-      desc: g.desc,
-      avgRevenue: g.daysCount > 0 ? g.totalRevenue / g.daysCount : 0,
-      avgRoomsSold: g.daysCount > 0 ? g.totalRoomsSold / g.daysCount : 0,
-      daysCount: g.daysCount
-    })).sort((a, b) => b.avgRevenue - a.avgRevenue);
+    // 심슨의 역설 방지를 위한 기준값 (평일/주말 기본 맑은날 평균)
+    const wdClearData = cleanWeekdayListGlobal.filter(d => parseSafeNumber(d.precipitation) < 3.0);
+    const weClearData = cleanWeekendListGlobal.filter(d => parseSafeNumber(d.precipitation) < 3.0);
+    const globalWdClearAvg = safeAverage(wdClearData.map(d => d.revenue), false);
+    const globalWeClearAvg = safeAverage(weClearData.map(d => d.revenue), false);
+
+    const globalWdClearRoomsAvg = safeAverage(wdClearData.map(d => d.roomsSold), false);
+    const globalWeClearRoomsAvg = safeAverage(weClearData.map(d => d.roomsSold), false);
+
+    const descList = Object.values(descGroup).map(g => {
+      const wdAvg = g.wdCount > 0 ? g.wdTotal / g.wdCount : 0;
+      const weAvg = g.weCount > 0 ? g.weTotal / g.weCount : 0;
+      
+      const wdRoomsAvg = g.wdCount > 0 ? g.wdRoomsTotal / g.wdCount : 0;
+      const weRoomsAvg = g.weCount > 0 ? g.weRoomsTotal / g.weCount : 0;
+      
+      let avgRevenue = 0;
+      let avgRoomsSold = 0;
+      if (g.wdCount > 0 && g.weCount > 0) {
+        // 평일/주말 모두 표본이 있으면 5:2 가중 평균
+        avgRevenue = (wdAvg * 5 + weAvg * 2) / 7;
+        avgRoomsSold = (wdRoomsAvg * 5 + weRoomsAvg * 2) / 7;
+      } else if (g.wdCount > 0) {
+        // 평일 표본만 있는 경우 주말을 추정
+        const ratio = globalWdClearAvg > 0 ? globalWeClearAvg / globalWdClearAvg : 1;
+        const roomsRatio = globalWdClearRoomsAvg > 0 ? globalWeClearRoomsAvg / globalWdClearRoomsAvg : 1;
+        avgRevenue = (wdAvg * 5 + (wdAvg * ratio) * 2) / 7;
+        avgRoomsSold = (wdRoomsAvg * 5 + (wdRoomsAvg * roomsRatio) * 2) / 7;
+      } else if (g.weCount > 0) {
+        // 주말 표본만 있는 경우 평일을 추정
+        const ratio = globalWeClearAvg > 0 ? globalWdClearAvg / globalWeClearAvg : 1;
+        const roomsRatio = globalWeClearRoomsAvg > 0 ? globalWdClearRoomsAvg / globalWeClearRoomsAvg : 1;
+        avgRevenue = ((weAvg * ratio) * 5 + weAvg * 2) / 7;
+        avgRoomsSold = ((weRoomsAvg * roomsRatio) * 5 + weRoomsAvg * 2) / 7;
+      }
+
+      return {
+        desc: g.desc,
+        avgRevenue,
+        avgRoomsSold,
+        daysCount: g.daysCount
+      };
+    }).sort((a, b) => b.avgRevenue - a.avgRevenue);
     
     const weekendValidData = cleanWeekendListGlobal;
 
@@ -566,41 +610,76 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     const sectorRainStats = {};
     sectors.forEach(sec => {
       const key = sec.key;
-      let normalizedYearData = [];
       const seasonStatsMap = {};
+      let totalWdClearDays = 0, totalWdRainyDays = 0;
+      let totalWeClearDays = 0, totalWeRainyDays = 0;
+
+      const wdClearAvgs = []; const wdRainyAvgs = [];
+      const weClearAvgs = []; const weRainyAvgs = [];
 
       seasonsList.forEach(seasonLabel => {
         const seasonWeekdays = rawWeekdayList.filter(d => getSeason(d.date) === seasonLabel);
         const seasonWeekends = rawWeekendList.filter(d => getSeason(d.date) === seasonLabel);
 
-        // 계절/부문별 독립 IQR 적용
         const cleanWeekday = filterOutliers(seasonWeekdays, key);
         const cleanWeekend = filterOutliers(seasonWeekends, key);
 
-        // 주말 정규화 (평일화) 프리미엄 비율 계산
-        const wkdayAvg = safeAverage(cleanWeekday.filter(d => parseSafeNumber(d.precipitation) < RAIN_THRESHOLD).map(d => d[key]), false);
-        const wkndAvg = safeAverage(cleanWeekend.filter(d => parseSafeNumber(d.precipitation) < RAIN_THRESHOLD).map(d => d[key]), false);
+        const wdStats = getRainStats(cleanWeekday, key);
+        const weStats = getRainStats(cleanWeekend, key);
+        
+        totalWdClearDays += wdStats.clearDays; totalWdRainyDays += wdStats.rainyDays;
+        totalWeClearDays += weStats.clearDays; totalWeRainyDays += weStats.rainyDays;
 
-        let weekendRatio = 1;
-        if (wkdayAvg > 0 && wkndAvg > 0) {
-          weekendRatio = wkndAvg / wkdayAvg;
-        }
+        if (wdStats.clearDays > 0) wdClearAvgs.push(wdStats.clearAvgRev);
+        if (wdStats.rainyDays > 0) wdRainyAvgs.push(wdStats.rainyAvgRev);
+        if (weStats.clearDays > 0) weClearAvgs.push(weStats.clearAvgRev);
+        if (weStats.rainyDays > 0) weRainyAvgs.push(weStats.rainyAvgRev);
 
-        // 주말 매출을 비율로 나누어 평일화
-        const normalizedWeekday = cleanWeekday.map(d => ({ ...d, _normRev: parseSafeNumber(d[key]) }));
-        const normalizedWeekend = cleanWeekend.map(d => ({ ...d, _normRev: parseSafeNumber(d[key]) / weekendRatio }));
+        // 계절별 통계는 합산된 raw 기반 (이 역시 계절 내 심슨역설 방지를 위해 5:2 혼합 사용)
+        const seasonOverallClear = wdStats.clearDays > 0 && weStats.clearDays > 0 
+          ? (wdStats.clearAvgRev * 5 + weStats.clearAvgRev * 2) / 7 
+          : wdStats.clearAvgRev || weStats.clearAvgRev || 0;
+          
+        const seasonOverallRainy = wdStats.rainyDays > 0 && weStats.rainyDays > 0 
+          ? (wdStats.rainyAvgRev * 5 + weStats.rainyAvgRev * 2) / 7 
+          : wdStats.rainyAvgRev || weStats.rainyAvgRev || 0;
 
-        const cleanSeasonOverall = [...normalizedWeekday, ...normalizedWeekend];
-        normalizedYearData = [...normalizedYearData, ...cleanSeasonOverall];
-
-        seasonStatsMap[seasonLabel] = getRainStats(cleanSeasonOverall, '_normRev');
+        seasonStatsMap[seasonLabel] = {
+          clearDays: wdStats.clearDays + weStats.clearDays,
+          clearAvgRev: seasonOverallClear,
+          rainyDays: wdStats.rainyDays + weStats.rainyDays,
+          rainyAvgRev: seasonOverallRainy
+        };
       });
+
+      const avgWdClear = safeAverage(wdClearAvgs, false);
+      const avgWdRainy = safeAverage(wdRainyAvgs, false);
+      const avgWeClear = safeAverage(weClearAvgs, false);
+      const avgWeRainy = safeAverage(weRainyAvgs, false);
+
+      const overallClear = (avgWdClear * 5 + avgWeClear * 2) / 7;
+      const overallRainy = (avgWdRainy * 5 + avgWeRainy * 2) / 7;
 
       sectorRainStats[key] = {
         name: sec.name,
-        overall: getRainStats(normalizedYearData, '_normRev'),
-        weekday: getRainStats(normalizedYearData.filter(d => !isWeekendByConfig(d.date)), '_normRev'),
-        weekend: getRainStats(normalizedYearData.filter(d => isWeekendByConfig(d.date)), '_normRev'),
+        overall: {
+          clearDays: totalWdClearDays + totalWeClearDays,
+          clearAvgRev: overallClear,
+          rainyDays: totalWdRainyDays + totalWeRainyDays,
+          rainyAvgRev: overallRainy
+        },
+        weekday: {
+          clearDays: totalWdClearDays,
+          clearAvgRev: avgWdClear,
+          rainyDays: totalWdRainyDays,
+          rainyAvgRev: avgWdRainy
+        },
+        weekend: {
+          clearDays: totalWeClearDays,
+          clearAvgRev: avgWeClear,
+          rainyDays: totalWeRainyDays,
+          rainyAvgRev: avgWeRainy
+        },
         seasons: [
           { label: '봄 (3~5월)', stats: seasonStatsMap['봄 (3~5월)'] },
           { label: '여름 (6~8월)', stats: seasonStatsMap['여름 (6~8월)'] },
