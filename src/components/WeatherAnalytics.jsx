@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Wind, CloudRain, Activity } from 'lucide-react';
 import { buildWeatherCoreStats } from '../utils/weatherCore';
+import { getDefaultGroup } from '../utils/revenueUtils';
 
 const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(Math.round(val || 0));
 
@@ -15,14 +16,22 @@ export default function WeatherAnalytics({ processedData, settings }) {
 
   const wStat = coreStats.global.wind;
   const fStat = coreStats.global.consecutiveRain;
-  const subStats = coreStats.global.substitutionStats;
+  const subStats = useMemo(() => {
+    if (!coreStats) return [];
+    const raw = coreStats.global.substitutionStats || [];
+    return raw.filter(sub => {
+      const group = coreStats.facilities[sub.loc]?.group || getDefaultGroup(sub.loc);
+      return group === 'leisure' || group === 'fnb' || group === 'moto';
+    });
+  }, [coreStats]);
 
   const rainPenaltyStats = useMemo(() => {
     if (!coreStats) return [];
     const penalties = [];
     Object.entries(coreStats.facilities).forEach(([fac, stat]) => {
-      // 1% 이상 매출이 하락한 곳만 (노이즈 방지)
-      if (stat.overallPenalty < -0.01 && stat.group !== 'exclude') {
+      const group = stat.group || getDefaultGroup(fac);
+      // 레져, 식음, 모토아레나 본부만 적용 & 1% 이상 매출이 하락한 곳만 (노이즈 방지)
+      if ((group === 'leisure' || group === 'fnb' || group === 'moto') && stat.overallPenalty < -0.01 && stat.group !== 'exclude') {
         penalties.push({
           loc: fac,
           clearAvg: stat.overallClearAvg,

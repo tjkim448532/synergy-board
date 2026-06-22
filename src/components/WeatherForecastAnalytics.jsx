@@ -131,8 +131,8 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
             Object.entries(rec.breakdown || {}).forEach(([facilityName, amount]) => {
               const group = settings?.locationGroups?.[facilityName] || getDefaultGroup(facilityName);
               
-              // 레져본부(leisure)와 모토아레나(moto)만 적용
-              if (group !== 'leisure' && group !== 'moto') return;
+              // 레져본부(leisure), 식음본부(fnb), 모토아레나(moto)만 적용
+              if (group !== 'leisure' && group !== 'moto' && group !== 'fnb') return;
 
               // 시설 그룹에 맞는 미래(목표일)와 과거(실적일) 주말 판별
               const isTargetWeekend = group === 'room' ? isRoomWeekend(selectedDate, settings?.customWeekends || []) : isLeisureWeekend(selectedDate, settings?.customWeekends || []);
