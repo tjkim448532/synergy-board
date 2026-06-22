@@ -302,24 +302,24 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
     const wdBound = getUpperBound(vals.wdAll);
     const weBound = getUpperBound(vals.weAll);
 
-    const wdClearAvg = safeAverage(filterOutliers(vals.wdClear, wdBound));
-    const wdRainyAvg = safeAverage(filterOutliers(vals.wdRainy, wdBound));
-    const weClearAvg = safeAverage(filterOutliers(vals.weClear, weBound));
-    const weRainyAvg = safeAverage(filterOutliers(vals.weRainy, weBound));
+    const wdClearAvg = vals.wdClear.length > 0 ? safeAverage(filterOutliers(vals.wdClear, wdBound)) : null;
+    const wdRainyAvg = vals.wdRainy.length > 0 ? safeAverage(filterOutliers(vals.wdRainy, wdBound)) : null;
+    const weClearAvg = vals.weClear.length > 0 ? safeAverage(filterOutliers(vals.weClear, weBound)) : null;
+    const weRainyAvg = vals.weRainy.length > 0 ? safeAverage(filterOutliers(vals.weRainy, weBound)) : null;
     
-    const wdSnowAvg = safeAverage(vals.wdSnow);
-    const weSnowAvg = safeAverage(vals.weSnow);
-    const wdHeatwaveAvg = safeAverage(vals.wdHeatwave);
-    const weHeatwaveAvg = safeAverage(vals.weHeatwave);
-    const wdColdwaveAvg = safeAverage(vals.wdColdwave);
-    const weColdwaveAvg = safeAverage(vals.weColdwave);
-    const wdExtremeRain10Avg = safeAverage(vals.wdExtremeRain10);
-    const weExtremeRain10Avg = safeAverage(vals.weExtremeRain10);
-    const wdExtremeRain5Avg = safeAverage(vals.wdExtremeRain5);
-    const weExtremeRain5Avg = safeAverage(vals.weExtremeRain5);
-    const wdWindyAvg = safeAverage(vals.wdWindy);
-    const weWindyAvg = safeAverage(vals.weWindy);
-    const tierAvg = safeAverage(vals.tier);
+    const wdSnowAvg = vals.wdSnow.length > 0 ? safeAverage(vals.wdSnow) : null;
+    const weSnowAvg = vals.weSnow.length > 0 ? safeAverage(vals.weSnow) : null;
+    const wdHeatwaveAvg = vals.wdHeatwave.length > 0 ? safeAverage(vals.wdHeatwave) : null;
+    const weHeatwaveAvg = vals.weHeatwave.length > 0 ? safeAverage(vals.weHeatwave) : null;
+    const wdColdwaveAvg = vals.wdColdwave.length > 0 ? safeAverage(vals.wdColdwave) : null;
+    const weColdwaveAvg = vals.weColdwave.length > 0 ? safeAverage(vals.weColdwave) : null;
+    const wdExtremeRain10Avg = vals.wdExtremeRain10.length > 0 ? safeAverage(vals.wdExtremeRain10) : null;
+    const weExtremeRain10Avg = vals.weExtremeRain10.length > 0 ? safeAverage(vals.weExtremeRain10) : null;
+    const wdExtremeRain5Avg = vals.wdExtremeRain5.length > 0 ? safeAverage(vals.wdExtremeRain5) : null;
+    const weExtremeRain5Avg = vals.weExtremeRain5.length > 0 ? safeAverage(vals.weExtremeRain5) : null;
+    const wdWindyAvg = vals.wdWindy.length > 0 ? safeAverage(vals.wdWindy) : null;
+    const weWindyAvg = vals.weWindy.length > 0 ? safeAverage(vals.weWindy) : null;
+    const tierAvg = vals.tier.length > 0 ? safeAverage(vals.tier) : null;
 
     // 전체 맑은날 vs 비오는날 (풍선효과 탐지용) - 심슨의 역설 제거
     // 주말/평일 비중 편향을 없애기 위해 비율의 평균을 사용
@@ -327,12 +327,12 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
     let validRatios = 0;
     let sumRatio = 0;
     
-    if (wdClearAvg > 0) {
+    if (wdClearAvg > 0 && wdRainyAvg !== null) {
       wdRatio = wdRainyAvg / wdClearAvg;
       sumRatio += wdRatio;
       validRatios++;
     }
-    if (weClearAvg > 0) {
+    if (weClearAvg > 0 && weRainyAvg !== null) {
       weRatio = weRainyAvg / weClearAvg;
       sumRatio += weRatio;
       validRatios++;
@@ -364,8 +364,13 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
           clearAvg: overallClearAvg, 
           rainyAvg: overallRainyAvg, 
           impact,
-          wdClearAvg, wdRainyAvg, wdPenalty: (wdClearAvg > 0 ? (wdRainyAvg - wdClearAvg) / wdClearAvg * 100 : 0),
-          weClearAvg, weRainyAvg, wePenalty: (weClearAvg > 0 ? (weRainyAvg - weClearAvg) / weClearAvg * 100 : 0)
+        subStats.push({ 
+          loc: fac, 
+          clearAvg: overallClearAvg, 
+          rainyAvg: overallRainyAvg, 
+          impact,
+          wdClearAvg, wdRainyAvg, wdPenalty: (wdClearAvg > 0 && wdRainyAvg !== null ? (wdRainyAvg - wdClearAvg) / wdClearAvg * 100 : 0),
+          weClearAvg, weRainyAvg, wePenalty: (weClearAvg > 0 && weRainyAvg !== null ? (weRainyAvg - weClearAvg) / weClearAvg * 100 : 0)
         });
       }
     }
@@ -375,27 +380,28 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
       tag: settings?.weatherTags?.[fac] || '야외 어트랙션',
       wdClearAvg, wdRainyAvg, weClearAvg, weRainyAvg,
       overallClearAvg, overallRainyAvg,
-      wdPenalty: wdClearAvg > 0 ? (wdRainyAvg - wdClearAvg) / wdClearAvg : 0,
-      wePenalty: weClearAvg > 0 ? (weRainyAvg - weClearAvg) / weClearAvg : 0,
+      wdPenalty: (wdClearAvg > 0 && wdRainyAvg !== null) ? (wdRainyAvg - wdClearAvg) / wdClearAvg : null,
+      wePenalty: (weClearAvg > 0 && weRainyAvg !== null) ? (weRainyAvg - weClearAvg) / weClearAvg : null,
       overallPenalty: avgRatio - 1,
       
-      wdSnowPenalty: (vals.wdSnow.length > 0 && wdClearAvg > 0) ? (wdSnowAvg - wdClearAvg) / wdClearAvg : null,
-      weSnowPenalty: (vals.weSnow.length > 0 && weClearAvg > 0) ? (weSnowAvg - weClearAvg) / weClearAvg : null,
+      wdSnowPenalty: (wdSnowAvg !== null && wdClearAvg > 0) ? (wdSnowAvg - wdClearAvg) / wdClearAvg : null,
+      weSnowPenalty: (weSnowAvg !== null && weClearAvg > 0) ? (weSnowAvg - weClearAvg) / weClearAvg : null,
       
-      wdHeatwavePenalty: (vals.wdHeatwave.length > 0 && wdClearAvg > 0) ? (wdHeatwaveAvg - wdClearAvg) / wdClearAvg : null,
-      weHeatwavePenalty: (vals.weHeatwave.length > 0 && weClearAvg > 0) ? (weHeatwaveAvg - weClearAvg) / weClearAvg : null,
+      wdHeatwavePenalty: (wdHeatwaveAvg !== null && wdClearAvg > 0) ? (wdHeatwaveAvg - wdClearAvg) / wdClearAvg : null,
+      weHeatwavePenalty: (weHeatwaveAvg !== null && weClearAvg > 0) ? (weHeatwaveAvg - weClearAvg) / weClearAvg : null,
       
-      wdColdwavePenalty: (vals.wdColdwave.length > 0 && wdClearAvg > 0) ? (wdColdwaveAvg - wdClearAvg) / wdClearAvg : null,
-      weColdwavePenalty: (vals.weColdwave.length > 0 && weClearAvg > 0) ? (weColdwaveAvg - weClearAvg) / weClearAvg : null,
+      wdColdwavePenalty: (wdColdwaveAvg !== null && wdClearAvg > 0) ? (wdColdwaveAvg - wdClearAvg) / wdClearAvg : null,
+      weColdwavePenalty: (weColdwaveAvg !== null && weClearAvg > 0) ? (weColdwaveAvg - weClearAvg) / weClearAvg : null,
       
-      wdExtremeRain10Penalty: (vals.wdExtremeRain10.length > 0 && wdClearAvg > 0) ? (wdExtremeRain10Avg - wdClearAvg) / wdClearAvg : null,
-      weExtremeRain10Penalty: (vals.weExtremeRain10.length > 0 && weClearAvg > 0) ? (weExtremeRain10Avg - weClearAvg) / weClearAvg : null,
+      wdExtremeRain10Penalty: (wdExtremeRain10Avg !== null && wdClearAvg > 0) ? (wdExtremeRain10Avg - wdClearAvg) / wdClearAvg : null,
+      weExtremeRain10Penalty: (weExtremeRain10Avg !== null && weClearAvg > 0) ? (weExtremeRain10Avg - weClearAvg) / weClearAvg : null,
       
-      wdExtremeRain5Penalty: (vals.wdExtremeRain5.length > 0 && wdClearAvg > 0) ? (wdExtremeRain5Avg - wdClearAvg) / wdClearAvg : null,
-      weExtremeRain5Penalty: (vals.weExtremeRain5.length > 0 && weClearAvg > 0) ? (weExtremeRain5Avg - weClearAvg) / weClearAvg : null,
+      wdExtremeRain5Penalty: (wdExtremeRain5Avg !== null && wdClearAvg > 0) ? (wdExtremeRain5Avg - wdClearAvg) / wdClearAvg : null,
+      weExtremeRain5Penalty: (weExtremeRain5Avg !== null && weClearAvg > 0) ? (weExtremeRain5Avg - weClearAvg) / weClearAvg : null,
       
-      wdWindyPenalty: (vals.wdWindy.length > 0 && wdClearAvg > 0) ? (wdWindyAvg - wdClearAvg) / wdClearAvg : null,
-      weWindyPenalty: (vals.weWindy.length > 0 && weClearAvg > 0) ? (weWindyAvg - weClearAvg) / weClearAvg : null
+      wdWindyPenalty: (wdWindyAvg !== null && wdClearAvg > 0) ? (wdWindyAvg - wdClearAvg) / wdClearAvg : null,
+      weWindyPenalty: (weWindyAvg !== null && weClearAvg > 0) ? (weWindyAvg - weClearAvg) / weClearAvg : null
+
     };
   });
   
@@ -445,13 +451,13 @@ export const predictWeatherImpact = (facilityName, isWeekend, forecastWeather, c
     return false;
   };
 
-  const baseRainPenalty = isWeekend ? fStat.wePenalty : fStat.wdPenalty;
-  const snowPenalty = isWeekend ? fStat.weSnowPenalty : fStat.wdSnowPenalty;
-  const extremeRain10Penalty = isWeekend ? fStat.weExtremeRain10Penalty : fStat.wdExtremeRain10Penalty;
-  const extremeRain5Penalty = isWeekend ? fStat.weExtremeRain5Penalty : fStat.wdExtremeRain5Penalty;
-  const heatwavePenalty = isWeekend ? fStat.weHeatwavePenalty : fStat.wdHeatwavePenalty;
-  const coldwavePenalty = isWeekend ? fStat.weColdwavePenalty : fStat.wdColdwavePenalty;
-  const windyPenalty = isWeekend ? fStat.weWindyPenalty : fStat.wdWindyPenalty;
+  const baseRainPenalty = (isWeekend ? fStat.wePenalty : fStat.wdPenalty) ?? fStat.overallPenalty;
+  const snowPenalty = (isWeekend ? fStat.weSnowPenalty : fStat.wdSnowPenalty) ?? (isWeekend ? fStat.wdSnowPenalty : fStat.weSnowPenalty);
+  const extremeRain10Penalty = (isWeekend ? fStat.weExtremeRain10Penalty : fStat.wdExtremeRain10Penalty) ?? (isWeekend ? fStat.wdExtremeRain10Penalty : fStat.weExtremeRain10Penalty);
+  const extremeRain5Penalty = (isWeekend ? fStat.weExtremeRain5Penalty : fStat.wdExtremeRain5Penalty) ?? (isWeekend ? fStat.wdExtremeRain5Penalty : fStat.weExtremeRain5Penalty);
+  const heatwavePenalty = (isWeekend ? fStat.weHeatwavePenalty : fStat.wdHeatwavePenalty) ?? (isWeekend ? fStat.wdHeatwavePenalty : fStat.weHeatwavePenalty);
+  const coldwavePenalty = (isWeekend ? fStat.weColdwavePenalty : fStat.wdColdwavePenalty) ?? (isWeekend ? fStat.wdColdwavePenalty : fStat.weColdwavePenalty);
+  const windyPenalty = (isWeekend ? fStat.weWindyPenalty : fStat.wdWindyPenalty) ?? (isWeekend ? fStat.wdWindyPenalty : fStat.weWindyPenalty);
 
   // 1. 강설 (Snow)
   if (isSnowy) {
