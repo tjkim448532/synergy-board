@@ -348,6 +348,17 @@ export const predictWeatherImpact = (facilityName, isWeekend, forecastWeather, c
         expectedRevenue = expectedRevenue * 0.85; // 15% 감소
         tags.push('우천 예약취소(-15%)');
       }
+    } else if (tag === '골프장') {
+      if (maxHourlyPrecip >= 5) {
+        expectedRevenue = expectedRevenue * 0.15; // 85% 감소
+        tags.push('호우 전면취소(-85%)');
+      } else if (maxHourlyPrecip >= 2) {
+        expectedRevenue = expectedRevenue * 0.55; // 45% 감소
+        tags.push('우천 라운딩차질(-45%)');
+      } else if (maxHourlyPrecip >= 0.1 || isRainy) {
+        expectedRevenue = expectedRevenue * 0.85; // 15% 감소
+        tags.push('우천 노쇼(-15%)');
+      }
     } else if (tag === '실내/F&B') {
       if (maxHourlyPrecip >= 10) {
         expectedRevenue = expectedRevenue * 1.15; // 15% 상승
@@ -368,7 +379,7 @@ export const predictWeatherImpact = (facilityName, isWeekend, forecastWeather, c
     }
 
     // 장마 피로도 추가 페널티 적용 (야외 한정)
-    if (consRainDays >= 2 && expectedRevenue < clearBaseline && ['야외 어트랙션', '야외 트랙', '공중/동력'].includes(tag)) {
+    if (consRainDays >= 2 && expectedRevenue < clearBaseline && ['야외 어트랙션', '야외 트랙', '공중/동력', '골프장'].includes(tag)) {
       const globalClear = coreStats.global.consecutiveRain.clearAvg;
       const gDay1 = coreStats.global.consecutiveRain.day1Avg;
       const gDay2 = coreStats.global.consecutiveRain.day2Avg;

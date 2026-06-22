@@ -816,6 +816,7 @@ export default function Settings({ monthlyData }) {
                         <option value="실내/F&B" style={{color:'black'}}>실내 시설 및 식당</option>
                         <option value="물놀이/수영장" style={{color:'black'}}>물놀이/수영장</option>
                         <option value="겨울 시설" style={{color:'black'}}>겨울 시설 (눈썰매 등)</option>
+                        <option value="골프장" style={{color:'black'}}>골프장 (CC)</option>
                       </select>
                     </div>
                     <div style={{display: 'flex', gap: '16px', flexWrap: 'wrap', flex: '2 1 auto'}}>
