@@ -980,19 +980,24 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     return { title: '기온과 큰 상관없음', desc: '날씨가 덥든 춥든 매출에 큰 영향을 주지 않습니다.' };
   };
 
-  const getPrecipInterpretation = (r, rainStats) => {
+  const getPrecipInterpretation = (r, rainStats, wdStats, weStats) => {
     if ((r === null || isNaN(r)) && !rainStats) return { title: '분석 불가', desc: '데이터가 부족하여 해석할 수 없습니다.' };
     
     let dropRate = 0;
-    if (rainStats && rainStats.clearAvgRev > 0) {
+    if (wdStats && weStats) {
+      // 심슨의 역설 방지: 주중/주말 각각의 타격률을 평균내어 전체 타격률 산출
+      const wdDrop = wdStats.clearAvgRev > 0 ? (wdStats.clearAvgRev - wdStats.rainyAvgRev) / wdStats.clearAvgRev : 0;
+      const weDrop = weStats.clearAvgRev > 0 ? (weStats.clearAvgRev - weStats.rainyAvgRev) / weStats.clearAvgRev : 0;
+      dropRate = (wdDrop + weDrop) / 2;
+    } else if (rainStats && rainStats.clearAvgRev > 0) {
       dropRate = (rainStats.clearAvgRev - rainStats.rainyAvgRev) / rainStats.clearAvgRev;
     }
 
     // 1. 평균 매출 감소율(dropRate) 우선 판단 (심슨의 역설 및 비선형적 타격 방지)
-    if (dropRate >= 0.3) return { title: '비 올 때 타격 극심 ☔', desc: '비 올 시 평균 매출이 30% 이상 급감합니다. 강력한 우천 대비책이 필요합니다.' };
-    if (dropRate >= 0.1) return { title: '비 올 때 타격 있음 ☂️', desc: '비가 오면 평균 매출이 10% 이상 눈에 띄게 감소합니다.' };
-    if (dropRate <= -0.15) return { title: '비 올 때 오히려 증가 📈', desc: '우천 시 오히려 수요가 상승하여 평균 매출이 15% 이상 증가합니다.' };
-    if (dropRate <= -0.05) return { title: '비 올 때 소폭 증가', desc: '우천 시 방문객이 몰려 매출이 소폭 상승하는 경향이 있습니다.' };
+    if (dropRate >= 0.3) return { title: '비 올 때 타격 극심 ☔', desc: `비 올 시 평균 매출이 ${Math.round(dropRate*100)}% 이상 급감합니다. 강력한 우천 대비책이 필요합니다.` };
+    if (dropRate >= 0.1) return { title: '비 올 때 타격 있음 ☂️', desc: `비가 오면 평균 매출이 ${Math.round(dropRate*100)}% 이상 눈에 띄게 감소합니다.` };
+    if (dropRate <= -0.15) return { title: '비 올 때 오히려 증가 📈', desc: `우천 시 오히려 수요가 상승하여 평균 매출이 ${Math.round(Math.abs(dropRate)*100)}% 이상 증가합니다.` };
+    if (dropRate <= -0.05) return { title: '비 올 때 소폭 증가', desc: `우천 시 방문객이 몰려 매출이 소폭 상승하는 경향이 있습니다.` };
     
     // 2. 감소율이 뚜렷하지 않을 경우(±10% 이내), 강수량과의 상관계수(r)로 보조 판단
     if (r <= -0.4) return { title: '강수량 비례 타격 극심 ☔', desc: '비가 많이 내릴수록 매출이 심각하게 감소합니다.' };
@@ -1673,10 +1678,10 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                   <span style={{fontSize: '14px', color: 'var(--text-muted)'}}>(r)</span>
                 </div>
                 <div style={{fontSize: '13px', fontWeight: 'bold', color: 'var(--text-main)'}}>
-                  해석: {getPrecipInterpretation(weatherStats.precipCorr, weatherStats.overallRainStats).title}
+                  해석: {getPrecipInterpretation(weatherStats.precipCorr, weatherStats.overallRainStats, weatherStats.weekdayRainStats, weatherStats.weekendRainStats).title}
                 </div>
                 <p style={{fontSize: '12px', color: 'var(--text-muted)', margin: '8px 0 0 0', lineHeight: '1.4'}}>
-                  {getPrecipInterpretation(weatherStats.precipCorr, weatherStats.overallRainStats).desc}
+                  {getPrecipInterpretation(weatherStats.precipCorr, weatherStats.overallRainStats, weatherStats.weekdayRainStats, weatherStats.weekendRainStats).desc}
                 </p>
               </div>
 
