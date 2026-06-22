@@ -9,7 +9,7 @@ const CountUp = CountUpModule.default || CountUpModule;
 import { isHoliday } from 'korean-holidays';
 import { calculateGroupedSales, isRoomWeekend, isLeisureWeekend } from '../utils/revenueUtils';
 import { fetchCurrentWeather } from '../utils/weatherUtils';
-import { parseSafeNumber, safeAverage, filterOutliers, calculateCorrelation } from '../utils/statUtils';
+import { parseSafeNumber, safeAverage, filterOutliers, calculateCorrelation, getAdjustedCorrelation } from '../utils/statUtils';
 import { Activity } from 'lucide-react';
 
 const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(Math.round(val || 0));
@@ -488,8 +488,9 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     const temps = cleanValidData.map(d => d.tempMax);
     const precipitations = cleanValidData.map(d => d.precipitation);
     
-    const tempCorr = calculateCorrelation(temps, revenues);
-    const precipCorr = calculateCorrelation(precipitations, revenues);
+    const isWkndArrForWeather = cleanValidData.map(d => isWeekendByConfig(d.date));
+    const tempCorr = getAdjustedCorrelation(temps, revenues, isWkndArrForWeather) || 0;
+    const precipCorr = getAdjustedCorrelation(precipitations, revenues, isWkndArrForWeather) || 0;
     
     const descGroup = {};
     cleanValidData.forEach(d => {
@@ -819,26 +820,28 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     const generalRatio = sumTotal > 0 ? (sumGeneral / sumTotal) * 100 : 0;
     const otherRatio = sumTotal > 0 ? (sumOther / sumTotal) * 100 : 0;
 
+    const isWkndArrMoto = filtered.map(d => isLeisureWeekend(d.date, settings?.customWeekends || []));
     return {
-      guest: calculateCorrelation(occArr, guestArr),
+      guest: getAdjustedCorrelation(occArr, guestArr, isWkndArrMoto),
       guestRatio: guestRatio,
       generalRatio: generalRatio,
       otherRatio: otherRatio,
       aggregatedOther: aggregatedOther,
-      total: calculateCorrelation(occArr, totalArr),
+      total: getAdjustedCorrelation(occArr, totalArr, isWkndArrMoto),
       guestAvailable: true
     };
-  }, [filteredProcessedData, activeDivision, motoLogic]);
+  }, [filteredProcessedData, activeDivision, motoLogic, settings]);
 
   // 선택된 부문의 평형별 상관계수 계산
   const activeRoomTypeCorrelations = useMemo(() => {
+    const isWkndArr = filteredProcessedData.map(d => activeDivision === 'room' ? isRoomWeekend(d.date, settings?.customWeekends || []) : isLeisureWeekend(d.date, settings?.customWeekends || []));
     const targetArr = filteredProcessedData.map(d => d[activeConf.dataKey]);
     return {
-      '16평': calculateCorrelation(filteredProcessedData.map(d => d.sold16), targetArr),
-      '35평': calculateCorrelation(filteredProcessedData.map(d => d.sold35), targetArr),
-      '51평': calculateCorrelation(filteredProcessedData.map(d => d.sold51 + (d.sold51Acc || 0)), targetArr)
+      '16평': getAdjustedCorrelation(filteredProcessedData.map(d => d.sold16), targetArr, isWkndArr),
+      '35평': getAdjustedCorrelation(filteredProcessedData.map(d => d.sold35), targetArr, isWkndArr),
+      '51평': getAdjustedCorrelation(filteredProcessedData.map(d => d.sold51 + (d.sold51Acc || 0)), targetArr, isWkndArr)
     };
-  }, [filteredProcessedData, activeConf.dataKey]);
+  }, [filteredProcessedData, activeConf.dataKey, activeDivision, settings]);
 
   // 영업장별 상관계수 계산 (객실 점유율 기준)
   const locationCorrelations = useMemo(() => {
@@ -889,7 +892,8 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       
       if (totalAmt < 1000000 * filteredProcessedData.length) return;
 
-      const corr = calculateCorrelation(occArr, dataArr);
+      const isWkndArrLoc = filteredProcessedData.map(d => activeDivision === 'room' ? isRoomWeekend(d.date, settings?.customWeekends || []) : isLeisureWeekend(d.date, settings?.customWeekends || []));
+      const corr = getAdjustedCorrelation(occArr, dataArr, isWkndArrLoc);
       if (corr !== null && !isNaN(corr)) {
         results.push({ name: loc, correlation: corr });
       }

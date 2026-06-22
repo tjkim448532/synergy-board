@@ -91,6 +91,40 @@ export const calculateCorrelation = (xArray, yArray) => {
 };
 
 /**
+ * 심슨의 역설 방지용 주중/주말 보정 상관계수 산출
+ * 주중과 주말 데이터를 분리하여 상관계수를 각각 계산한 후, 두 값을 평균냅니다.
+ * 데이터 세트가 혼합되어 발생하는 범주형 변수(요일)에 의한 거품을 제거합니다.
+ */
+export const getAdjustedCorrelation = (xArray, yArray, isWeekendArray) => {
+  if (!xArray || !yArray || !isWeekendArray || xArray.length !== yArray.length || xArray.length !== isWeekendArray.length) return null;
+  
+  const wdX = [], wdY = [], weX = [], weY = [];
+  for (let i = 0; i < xArray.length; i++) {
+    if (isWeekendArray[i]) {
+      weX.push(xArray[i]);
+      weY.push(yArray[i]);
+    } else {
+      wdX.push(xArray[i]);
+      wdY.push(yArray[i]);
+    }
+  }
+  
+  const wdCorr = calculateCorrelation(wdX, wdY);
+  const weCorr = calculateCorrelation(weX, weY);
+  
+  const isValidWd = wdCorr !== null && !isNaN(wdCorr);
+  const isValidWe = weCorr !== null && !isNaN(weCorr);
+  
+  if (isValidWd && isValidWe) {
+    return (wdCorr + weCorr) / 2;
+  }
+  if (isValidWd) return wdCorr;
+  if (isValidWe) return weCorr;
+  
+  return null;
+};
+
+/**
  * 단순 선형 회귀 알고리즘 (OLS: Ordinary Least Squares)
  * 매출 예측을 위한 선형 회귀선의 기울기(slope)와 절편(intercept)을 구합니다.
  * 피어슨 상관계수와 동일하게 평균 중심화(Mean-Centering) 방식을 사용하여 숫자 오버플로를 방지합니다.
