@@ -493,70 +493,29 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     
     const descGroup = {};
     cleanValidData.forEach(d => {
-      const desc = d.desc || '기타';
+      const isWknd = isWeekendByConfig(d.date);
+      const rawDesc = d.desc || '기타';
+      const desc = `${rawDesc} (${isWknd ? '주말' : '평일'})`;
+      
       if (!descGroup[desc]) {
         descGroup[desc] = {
           desc,
-          wdTotal: 0, wdCount: 0,
-          weTotal: 0, weCount: 0,
+          totalRevenue: 0,
           totalRoomsSold: 0,
           daysCount: 0
         };
       }
-      if (isWeekendByConfig(d.date)) {
-        descGroup[desc].weTotal += d.revenue;
-        descGroup[desc].weCount += 1;
-      } else {
-        descGroup[desc].wdTotal += d.revenue;
-        descGroup[desc].wdCount += 1;
-      }
+      descGroup[desc].totalRevenue += d.revenue;
       descGroup[desc].totalRoomsSold += d.roomsSold;
       descGroup[desc].daysCount += 1;
     });
-    
-    // 심슨의 역설 방지를 위한 기준값 (평일/주말 기본 맑은날 평균)
-    const wdClearData = cleanWeekdayListGlobal.filter(d => parseSafeNumber(d.precipitation) < 3.0);
-    const weClearData = cleanWeekendListGlobal.filter(d => parseSafeNumber(d.precipitation) < 3.0);
-    const globalWdClearAvg = safeAverage(wdClearData.map(d => d.revenue), false);
-    const globalWeClearAvg = safeAverage(weClearData.map(d => d.revenue), false);
 
-    const globalWdClearRoomsAvg = safeAverage(wdClearData.map(d => d.roomsSold), false);
-    const globalWeClearRoomsAvg = safeAverage(weClearData.map(d => d.roomsSold), false);
-
-    const descList = Object.values(descGroup).map(g => {
-      const wdAvg = g.wdCount > 0 ? g.wdTotal / g.wdCount : 0;
-      const weAvg = g.weCount > 0 ? g.weTotal / g.weCount : 0;
-      
-      const wdRoomsAvg = g.wdCount > 0 ? g.wdRoomsTotal / g.wdCount : 0;
-      const weRoomsAvg = g.weCount > 0 ? g.weRoomsTotal / g.weCount : 0;
-      
-      let avgRevenue = 0;
-      let avgRoomsSold = 0;
-      if (g.wdCount > 0 && g.weCount > 0) {
-        // 평일/주말 모두 표본이 있으면 5:2 가중 평균
-        avgRevenue = (wdAvg * 5 + weAvg * 2) / 7;
-        avgRoomsSold = (wdRoomsAvg * 5 + weRoomsAvg * 2) / 7;
-      } else if (g.wdCount > 0) {
-        // 평일 표본만 있는 경우 주말을 추정
-        const ratio = globalWdClearAvg > 0 ? globalWeClearAvg / globalWdClearAvg : 1;
-        const roomsRatio = globalWdClearRoomsAvg > 0 ? globalWeClearRoomsAvg / globalWdClearRoomsAvg : 1;
-        avgRevenue = (wdAvg * 5 + (wdAvg * ratio) * 2) / 7;
-        avgRoomsSold = (wdRoomsAvg * 5 + (wdRoomsAvg * roomsRatio) * 2) / 7;
-      } else if (g.weCount > 0) {
-        // 주말 표본만 있는 경우 평일을 추정
-        const ratio = globalWeClearAvg > 0 ? globalWdClearAvg / globalWeClearAvg : 1;
-        const roomsRatio = globalWeClearRoomsAvg > 0 ? globalWdClearRoomsAvg / globalWeClearRoomsAvg : 1;
-        avgRevenue = ((weAvg * ratio) * 5 + weAvg * 2) / 7;
-        avgRoomsSold = ((weRoomsAvg * roomsRatio) * 5 + weRoomsAvg * 2) / 7;
-      }
-
-      return {
-        desc: g.desc,
-        avgRevenue,
-        avgRoomsSold,
-        daysCount: g.daysCount
-      };
-    }).sort((a, b) => b.avgRevenue - a.avgRevenue);
+    const descList = Object.values(descGroup).map(g => ({
+      desc: g.desc,
+      avgRevenue: g.daysCount > 0 ? g.totalRevenue / g.daysCount : 0,
+      avgRoomsSold: g.daysCount > 0 ? g.totalRoomsSold / g.daysCount : 0,
+      daysCount: g.daysCount
+    })).sort((a, b) => b.avgRevenue - a.avgRevenue);
     
     const weekendValidData = cleanWeekendListGlobal;
 
