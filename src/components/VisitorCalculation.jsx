@@ -72,8 +72,8 @@ export default function VisitorCalculation({ processedData, globalStats, setting
 
   const netVehicles = Math.max(0, numTotalVehicles - numEmployeeVehicles);
   const estimatedPeople = netVehicles * carPeopleWeight;
-  const totalVisitors = Math.max(0, estimatedPeople - numGolfGuests);
-  const walkInGuests = Math.max(0, totalVisitors - stayingGuests);
+  const totalVisitors = estimatedPeople - numGolfGuests;
+  const walkInGuests = totalVisitors - stayingGuests;
 
   const getStayingGuestsForDoc = (docData) => {
     if (docData.guests !== undefined) return docData.guests;
@@ -104,8 +104,8 @@ export default function VisitorCalculation({ processedData, globalStats, setting
 
     const nVehicles = Math.max(0, nTotalVehicles - nEmployeeVehicles);
     const estPeople = nVehicles * carPeopleWeight;
-    const tVisitors = Math.max(0, estPeople - nGolfGuests);
-    const wInGuests = Math.max(0, tVisitors - sGuests);
+    const tVisitors = estPeople - nGolfGuests;
+    const wInGuests = tVisitors - sGuests;
 
     return {
       numTotalVehicles: nTotalVehicles,
@@ -344,8 +344,15 @@ export default function VisitorCalculation({ processedData, globalStats, setting
                 </div>
                 <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px' }}>총 방문객에서 숙박객({formatNumber(stayingGuests)}명)을 제외한 외부 유입 순수 고객입니다.</div>
               </div>
-              <div style={{ fontSize: '40px', fontWeight: 'bold', color: 'var(--accent-emerald)', textShadow: '0 0 20px rgba(16, 185, 129, 0.4)' }}>
-                {formatNumber(walkInGuests)} 명
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '40px', fontWeight: 'bold', color: walkInGuests < 0 ? 'var(--accent-coral)' : 'var(--accent-emerald)', textShadow: `0 0 20px ${walkInGuests < 0 ? 'rgba(244, 63, 94, 0.4)' : 'rgba(16, 185, 129, 0.4)'}` }}>
+                  {formatNumber(walkInGuests)} 명
+                </div>
+                {walkInGuests < 0 && (
+                  <div style={{ fontSize: '12px', color: 'var(--accent-coral)', marginTop: '4px' }}>
+                    ⚠️ [경고] 워크인이 음수입니다. [설정] 탭의 객실당 투숙 인원 가중치가 너무 높게 잡혀있을 수 있습니다.
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>

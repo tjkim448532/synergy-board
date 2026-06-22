@@ -223,7 +223,7 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
             const val = parseAmount(amount);
             if (val > 0) {
               const group = settings?.locationGroups?.[fac] || 'leisure';
-              const isExcluded = excludeKeywords.some(keyword => fac.includes(keyword)) || group === 'fnb';
+              const isExcluded = excludeKeywords.some(keyword => fac.includes(keyword));
               if (!isExcluded || fac.includes('모토아레나')) {
                 if (!activeMonths[fac]) activeMonths[fac] = new Set();
                 activeMonths[fac].add(monthKey);
@@ -302,23 +302,24 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
     const wdBound = getUpperBound(vals.wdAll);
     const weBound = getUpperBound(vals.weAll);
 
-    const wdClearAvg = vals.wdClear.length > 0 ? safeAverage(filterOutliers(vals.wdClear, wdBound)) : null;
-    const wdRainyAvg = vals.wdRainy.length > 0 ? safeAverage(filterOutliers(vals.wdRainy, wdBound)) : null;
-    const weClearAvg = vals.weClear.length > 0 ? safeAverage(filterOutliers(vals.weClear, weBound)) : null;
-    const weRainyAvg = vals.weRainy.length > 0 ? safeAverage(filterOutliers(vals.weRainy, weBound)) : null;
+    const MIN_SAMPLE = 4;
+    const wdClearAvg = vals.wdClear.length >= MIN_SAMPLE ? safeAverage(filterOutliers(vals.wdClear, wdBound)) : null;
+    const wdRainyAvg = vals.wdRainy.length >= MIN_SAMPLE ? safeAverage(filterOutliers(vals.wdRainy, wdBound)) : null;
+    const weClearAvg = vals.weClear.length >= MIN_SAMPLE ? safeAverage(filterOutliers(vals.weClear, weBound)) : null;
+    const weRainyAvg = vals.weRainy.length >= MIN_SAMPLE ? safeAverage(filterOutliers(vals.weRainy, weBound)) : null;
     
-    const wdSnowAvg = vals.wdSnow.length > 0 ? safeAverage(vals.wdSnow) : null;
-    const weSnowAvg = vals.weSnow.length > 0 ? safeAverage(vals.weSnow) : null;
-    const wdHeatwaveAvg = vals.wdHeatwave.length > 0 ? safeAverage(vals.wdHeatwave) : null;
-    const weHeatwaveAvg = vals.weHeatwave.length > 0 ? safeAverage(vals.weHeatwave) : null;
-    const wdColdwaveAvg = vals.wdColdwave.length > 0 ? safeAverage(vals.wdColdwave) : null;
-    const weColdwaveAvg = vals.weColdwave.length > 0 ? safeAverage(vals.weColdwave) : null;
-    const wdExtremeRain10Avg = vals.wdExtremeRain10.length > 0 ? safeAverage(vals.wdExtremeRain10) : null;
-    const weExtremeRain10Avg = vals.weExtremeRain10.length > 0 ? safeAverage(vals.weExtremeRain10) : null;
-    const wdExtremeRain5Avg = vals.wdExtremeRain5.length > 0 ? safeAverage(vals.wdExtremeRain5) : null;
-    const weExtremeRain5Avg = vals.weExtremeRain5.length > 0 ? safeAverage(vals.weExtremeRain5) : null;
-    const wdWindyAvg = vals.wdWindy.length > 0 ? safeAverage(vals.wdWindy) : null;
-    const weWindyAvg = vals.weWindy.length > 0 ? safeAverage(vals.weWindy) : null;
+    const wdSnowAvg = vals.wdSnow.length >= MIN_SAMPLE ? safeAverage(vals.wdSnow) : null;
+    const weSnowAvg = vals.weSnow.length >= MIN_SAMPLE ? safeAverage(vals.weSnow) : null;
+    const wdHeatwaveAvg = vals.wdHeatwave.length >= MIN_SAMPLE ? safeAverage(vals.wdHeatwave) : null;
+    const weHeatwaveAvg = vals.weHeatwave.length >= MIN_SAMPLE ? safeAverage(vals.weHeatwave) : null;
+    const wdColdwaveAvg = vals.wdColdwave.length >= MIN_SAMPLE ? safeAverage(vals.wdColdwave) : null;
+    const weColdwaveAvg = vals.weColdwave.length >= MIN_SAMPLE ? safeAverage(vals.weColdwave) : null;
+    const wdExtremeRain10Avg = vals.wdExtremeRain10.length >= MIN_SAMPLE ? safeAverage(vals.wdExtremeRain10) : null;
+    const weExtremeRain10Avg = vals.weExtremeRain10.length >= MIN_SAMPLE ? safeAverage(vals.weExtremeRain10) : null;
+    const wdExtremeRain5Avg = vals.wdExtremeRain5.length >= MIN_SAMPLE ? safeAverage(vals.wdExtremeRain5) : null;
+    const weExtremeRain5Avg = vals.weExtremeRain5.length >= MIN_SAMPLE ? safeAverage(vals.weExtremeRain5) : null;
+    const wdWindyAvg = vals.wdWindy.length >= MIN_SAMPLE ? safeAverage(vals.wdWindy) : null;
+    const weWindyAvg = vals.weWindy.length >= MIN_SAMPLE ? safeAverage(vals.weWindy) : null;
     const tierAvg = vals.tier.length > 0 ? safeAverage(vals.tier) : null;
 
     // 전체 맑은날 vs 비오는날 (풍선효과 탐지용) - 심슨의 역설 제거

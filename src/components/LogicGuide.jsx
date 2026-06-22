@@ -9,7 +9,9 @@ import {
   Calculator,
   CalendarDays,
   Search,
-  CloudRain
+  CloudRain,
+  Smile,
+  Zap
 } from 'lucide-react';
 import './LogicGuide.css';
 
@@ -18,197 +20,148 @@ export default function LogicGuide() {
     <div className="logic-guide-container">
       <div className="guide-header glass-panel">
         <div className="header-icon-wrapper">
-          <Calculator size={32} className="text-emerald" />
+          <Smile size={32} className="text-emerald" />
         </div>
         <div>
-          <h2>분석 로직 가이드</h2>
+          <h2>분석 로직 가이드 (완전 쉬운 버전 🐣)</h2>
           <p className="text-muted" style={{marginTop: '8px'}}>
-            시너지 보드가 어떻게 점유율을 계산하고 매출을 예측하는지, 수학적 원리와 데이터 처리 로직을 직관적으로 설명합니다.
+            "컴퓨터가 도대체 어떻게 숫자를 뽑아내는 거지?" 궁금하셨죠? 경영진부터 신입사원까지, 누구나 이해할 수 있게 시너지 보드의 작동 원리를 아주 쉽게 설명해 드립니다.
           </p>
         </div>
       </div>
 
       <div className="guide-cards">
         
-        {/* Card 0: 엑셀 데이터 파이프라인 */}
+        {/* 0. 재료 손질하기 */}
         <div className="guide-card glass-panel" style={{gridColumn: '1 / -1', marginBottom: '12px'}}>
           <div className="card-top">
             <div className="icon-circle" style={{background: 'rgba(16, 185, 129, 0.1)'}}>
               <Search size={24} className="text-emerald" style={{color: '#10b981'}} />
             </div>
-            <h3>0. 데이터 파이프라인 (엑셀 추출 및 정제 로직)</h3>
+            <h3>0. 요리 준비! (데이터 재료 손질하기)</h3>
           </div>
           <div className="card-body">
             <p>
-              시너지 보드는 정확도 높은 교차 분석을 위해 성격이 다른 <strong>총 3종류의 엑셀 파일</strong>을 업로드받아 병합(Merge)합니다. 각 파일의 스키마 구조와 어떤 데이터를 어떻게 긁어와서 이용하는지 명확히 정의합니다.
+              맛있는 요리(경영 전략)를 만들려면 신선한 재료(데이터)가 필요합니다. 시너지 보드는 여러분이 올려주신 엑셀 파일들을 어떻게 요리할까요?
             </p>
             
             <div className="toggle-explanation" style={{marginTop: '16px', display: 'flex', gap: '16px', flexWrap: 'wrap'}}>
-              
-              {/* File A */}
               <div className="toggle-state active" style={{flex: '1 1 100%', margin: 0}}>
-                <h4 style={{color: 'var(--accent-blue)', marginBottom: '8px'}}>A. 객실 판매 엑셀 (상세 데이터)</h4>
+                <h4 style={{color: 'var(--accent-blue)', marginBottom: '8px'}}>A. 객실 엑셀 (몇 명이 어디서 자고 갔나?)</h4>
                 <ul style={{fontSize: '13px', lineHeight: '1.6'}}>
-                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>원본 스키마:</strong> 예약건 단위 혹은 일자 단위로 기록된 세로형 리포트 (필수 열: 일자, 객실타입, 수량, 실매출 등)</li>
-                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>추출 로직:</strong> '일자'를 기준으로 행을 찾고, '객실타입(16평/35평/51평)', '판매객실수', '실매출(Net Revenue)', '요금제', '마켓/소스타입(채널)'을 추출합니다.</li>
-                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>시스템 내 활용처:</strong> 
-                    <br/>- 전체 대시보드의 '객실당 평균가(ADR)', '가용객실당 매출(RevPAR)' 자동 역산 및 시계열 분석 기준점
-                    <br/>- 예약 채널별(OTA, 홈페이지 등), 요일별 심층 판매 분석
-                  </li>
+                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>무엇을 보나요?</strong> 날짜별로 16평, 35평, 51평이 몇 개 팔렸고, 얼마 벌었는지 쏙쏙 골라냅니다.</li>
+                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>어디에 쓰나요?</strong> "오늘 우리 객실 점유율이 몇 프로지?" 계산하는 가장 중요한 기초 자료가 됩니다.</li>
                 </ul>
               </div>
               
-              {/* File B */}
               <div className="toggle-state active" style={{flex: '1 1 100%', margin: 0}}>
-                <h4 style={{color: 'var(--accent-gold)', marginBottom: '8px'}}>B. 전체 영업장 총매출 파일 (부대업장/POS 데이터)</h4>
+                <h4 style={{color: 'var(--accent-gold)', marginBottom: '8px'}}>B. 영업장 엑셀 (다들 식당이랑 골프장에서 얼마 썼나?)</h4>
                 <ul style={{fontSize: '13px', lineHeight: '1.6'}}>
-                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>원본 스키마:</strong> 가로로 넓게 퍼진 피벗 테이블 형태 (좌측 첫 열: 영업일자 / 이후 우측으로 수십 개의 영업장명 열 나열)</li>
-                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>추출 로직:</strong> 첫 열에서 '날짜(yyyy-mm-dd)'를 파싱한 뒤, 가로로 쭉 읽어가며 각 부대업장(수십 개) 열에 적힌 '실매출액'을 수집합니다. <code>ROOM</code>, <code>ROOM OTHER</code>, <code>합계</code> 열은 제외합니다.</li>
-                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>시스템 내 활용처:</strong> 
-                    <br/>- 추출된 수십 개의 영업장 매출을 [설정] 탭의 매핑 로직에 따라 <strong>'레저', '식음', '모토아레나', '골프', '기타', '제외업장'</strong> 6개 그룹으로 동적 병합(Grouping)합니다.
-                    <br/>- 이 그룹화된 데이터를 바탕으로 부문별 매출 분석, 상관관계 교차 분석(객실 매출과 어떤 부대가 함께 오르는지), 예측 모델링(Pacing)에 투입합니다.
-                  </li>
+                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>무엇을 보나요?</strong> 수십 개의 매장 이름을 보고 똑똑하게 <strong>[식음, 레저, 골프, 모토, 기타]</strong> 5개 바구니로 착착 나눠 담습니다.</li>
                 </ul>
                 <div className="alert-box success" style={{marginTop: '12px', borderColor: 'rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.05)', padding: '10px'}}>
                   <Info size={14} style={{color: '#ef4444', flexShrink: 0}} />
                   <span style={{color: 'var(--text-main)', fontSize: '13px', lineHeight: '1.5'}}>
-                    <strong>💡 [중요] [B파일] 안의 객실 매출 취급 로직:</strong><br/>
-                    이 엑셀 안에도 <code>ROOM</code> 매출이 찍혀 나오지만 실적 합산에서는 <strong>고의로 버립니다(필터링).</strong> 대신 여기서 뽑아낸 ROOM 총액은, 앞서 올린 <strong>[A. 객실 엑셀]의 합계액과 1원 단위까지 일치하는지 백그라운드에서 교차 대조(Cross-check)</strong>하여 엑셀 추출 누락이나 조작이 없었는지 판별하는 '정합성 검증용 잣대'로만 강력하게 쓰입니다.
+                    <strong>💡 명탐정 기능:</strong> 영업장 엑셀에도 '객실 매출'이 적혀 있는데, 컴퓨터는 이걸 A파일의 객실 매출과 1원 단위까지 비교해 봅니다. 두 개가 다르면 "어? 누군가 엑셀을 잘못 뽑았는데?" 하고 찾아내는 감시 카메라 역할을 합니다.
                   </span>
                 </div>
               </div>
-
-              {/* File C */}
-              <div className="toggle-state active" style={{flex: '1 1 100%', margin: 0}}>
-                <h4 style={{color: 'var(--accent-purple)', marginBottom: '8px'}}>C. 모토아레나 티켓 판매 엑셀 (고객군 상세 데이터)</h4>
-                <ul style={{fontSize: '13px', lineHeight: '1.6'}}>
-                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>원본 스키마:</strong> 모토아레나에서 팔린 티켓별/고객유형별 거래 내역 리포트 (필수 열: 상품명/트랜잭션명, 실매출액)</li>
-                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>추출 로직:</strong> '상품명' 열에 적힌 텍스트를 파싱하여 키워드 매칭을 수행합니다. (예: '객실', '콘도' 키워드 → 투숙객 / '일반', '단체' → 일반객 / '임직원', '회원' → 내부객 / 나머지 → 기타)</li>
-                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>시스템 내 활용처:</strong> 
-                    <br/>- 모토아레나 전체 매출 중, <strong>실제로 리조트에 숙박하면서 모토아레나를 이용한 '투숙객 비중(Captive Rate)'</strong>을 분리하여 별도의 전환율(Conversion Rate) 심층 분석 화면에 제공합니다.
-                  </li>
-                </ul>
-              </div>
-
             </div>
           </div>
         </div>
 
-        {/* Card 1: 물리적 객실 인벤토리 */}
+        {/* 1. 방 갯수 세기 */}
         <div className="guide-card glass-panel">
           <div className="card-top">
             <div className="icon-circle">
               <Building2 size={24} />
             </div>
-            <h3>1. 물리적 객실 모수 통제</h3>
+            <h3>1. 기준점 세우기 (우리에겐 방이 몇 개?)</h3>
           </div>
           <div className="card-body">
             <p>
-              오류를 방지하기 위해 외부 데이터에 의존하지 않고, <strong>가장 정확한 물리적 수치를 시스템 내부에 고정 설정</strong>하여 기준점으로 삼습니다.
+              "오늘 방 50개 팔았다!" 이게 잘한 걸까요? 전체 방이 50개면 100점이지만, 1000개면 50점입니다. 그래서 컴퓨터는 <strong>'총 방 갯수'</strong>를 꽉 붙들고 있습니다.
             </p>
             <div className="formula-box">
               <div className="formula-item">
-                <span className="label">총 객실 수</span>
-                <span className="value text-accent">175 실</span>
-              </div>
-              <div className="formula-item">
-                <span className="label">51평형(커넥팅)</span>
-                <span className="value text-accent">85 세트</span>
+                <span className="label">우리의 총 객실</span>
+                <span className="value text-accent">175 개</span>
               </div>
             </div>
             <div className="alert-box info">
               <Info size={16} />
-              <span>어떤 데이터를 업로드하든, 모든 점유율 분모의 근간은 이 175실에서 출발합니다.</span>
+              <span>모든 점유율 계산은 무조건 이 175개에서 출발합니다. 절대로 흔들리지 않는 든든한 주춧돌이죠.</span>
             </div>
           </div>
         </div>
 
-        {/* Card 2: 51평형 점유율 산정 방식 */}
+        {/* 2. 51평 방 쪼개기 */}
         <div className="guide-card glass-panel">
           <div className="card-top">
             <div className="icon-circle">
               <SplitSquareHorizontal size={24} />
             </div>
-            <h3>2. 51평형(커넥팅 룸) 산정 스위치</h3>
+            <h3>2. 51평형 쪼개기 마술 (방 1개야? 2개야?)</h3>
           </div>
           <div className="card-body">
             <p>
-              [설정] 탭의 <strong>'51평형 점유율 산정 방식'</strong> 옵션에 따라 일일 총 객실(분모)과 판매 객실(분자)이 유기적으로 연동되어 변환됩니다.
+              51평형은 문을 열면 방이 2개(커넥팅 룸)입니다. 이걸 1개로 칠까요, 2개로 칠까요? 설정에서 마음대로 바꿀 수 있습니다!
             </p>
-            
             <div className="toggle-explanation">
               <div className="toggle-state active">
-                <h4>방 2개로 산정 시 (기본)</h4>
+                <h4>방 2개로 칠게요! (기본)</h4>
                 <ul>
-                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>분모(인벤토리):</strong> 175실 전체</li>
-                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>분자(판매량):</strong> 16평 + 35평 + (51평 예약 × 2)</li>
+                  <li><CheckCircle2 size={14} className="text-emerald" /> 175개 중에서 하나 팔리면 "방 2개 나갔어!" 하고 카운트합니다.</li>
                 </ul>
               </div>
-              
               <div className="toggle-state">
-                <h4>방 1개로 산정 시</h4>
+                <h4>방 1개로 칠게요!</h4>
                 <ul>
-                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>분모(인벤토리):</strong> 90실 (175실 - 85세트)</li>
-                  <li><CheckCircle2 size={14} className="text-emerald" /> <strong>분자(판매량):</strong> 16평 + 35평 + (51평 예약 × 1)</li>
+                  <li><CheckCircle2 size={14} className="text-emerald" /> 총 객실을 아예 90개(175 - 85)로 줄여버리고, 하나 팔리면 "방 1개 나갔네" 합니다.</li>
                 </ul>
               </div>
             </div>
-            
             <div className="alert-box success">
               <Info size={16} />
               <span>
-                <strong>💡 장애인 객실 예외 처리:</strong> 51평형 예약 중 '장애' 또는 '휠체어' 키워드가 포함된 예약은 물리적 단일 키(Key)이므로 <strong>스위치 설정과 무관하게 무조건 1객실로만 카운트</strong>되도록 스마트 분류 로직이 적용되어 있습니다.
+                <strong>💡 휠체어방 예외:</strong> 단, 휠체어 손님이 쓰는 장애인 객실은 무조건 방 1개로만 칩니다. 컴퓨터가 똑똑하게 알아서 예외 처리합니다.
               </span>
             </div>
           </div>
         </div>
 
-        {/* Card 3: 주중/주말 보정 로직 */}
+        {/* 3. 주중/주말 억울함 풀기 */}
         <div className="guide-card glass-panel">
           <div className="card-top">
             <div className="icon-circle">
               <CalendarDays size={24} />
             </div>
-            <h3>3. 주중/주말 가중치 분배 알고리즘</h3>
+            <h3>3. 주중/주말 억울함 풀어주기</h3>
           </div>
           <div className="card-body">
             <p>
-              엑셀 업로드 시 주중/주말로 쪼개지는 예약 건수(Raw Data)는 51평형 예약이 방 1개로 기록되어 점유율이 과소평가되는 현상이 발생했습니다. 이를 해결하기 위해 <strong>비례 배분(Proportional Scaling) 알고리즘</strong>이 적용되었습니다.
+              예약 기록을 보면 주중이랑 주말을 나눌 때 "예약 건수"로만 엑셀에 찍힙니다. 그러면 방이 2개짜리인 51평형이 많이 팔린 날은 손해를 봅니다.
             </p>
-            <div className="formula-box vertical">
-              <div className="math-step">
-                <span className="step-num">Step 1</span>
-                <div>
-                  <strong>보정 계수(Multiplier) 산출</strong>
-                  <code>(16평+35평+51평×2) ÷ (총 예약 건수)</code>
-                </div>
-              </div>
-              <div className="math-step">
-                <span className="step-num">Step 2</span>
-                <div>
-                  <strong>주중 점유율 계산</strong>
-                  <code>(주중 예약 건수 × 보정 계수) ÷ 주중 인벤토리</code>
-                </div>
-              </div>
-            </div>
             <div className="alert-box success">
               <CheckCircle2 size={16} />
-              <span>이 보정을 통해 주중/주말 점유율의 가중 평균이 전체 월평균 점유율과 수학적으로 100% 완벽하게 일치하게 됩니다.</span>
+              <span>
+                <strong>컴퓨터의 해결책:</strong> "어? 주말 예약에 51평이 많이 껴있네? 그럼 주말 점수에 가산점(가중치)을 더 줄게!" 이렇게 해서 전체 한 달 점유율과 딱 맞아떨어지게 공평하게 계산해 줍니다.
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Card 4: 선형 회귀 예측 */}
+        {/* 4. 과거를 보고 미래 맞추기 */}
         <div className="guide-card glass-panel">
           <div className="card-top">
             <div className="icon-circle">
               <TrendingUp size={24} />
             </div>
-            <h3>4. 선형 회귀(Linear Regression) 기반 예측</h3>
+            <h3>4. 미래 예측하기 (과거를 보면 미래가 보인다)</h3>
           </div>
           <div className="card-body">
             <p>
-              [매출 예측 시뮬레이터]의 타겟 예측선은 단순한 평균이 아닌, 과거 누적 데이터를 바탕으로 한 <strong>기계학습 통계 모델(최소제곱법 선형 회귀)</strong>을 따릅니다.
+              시뮬레이터에서 점유율 슬라이더를 슥 밀면 매출이 바로 뜹니다. 어떻게 아는 걸까요?
             </p>
             <div className="visual-diagram">
               <div className="diagram-dot dot-1"></div>
@@ -216,11 +169,11 @@ export default function LogicGuide() {
               <div className="diagram-dot dot-3"></div>
               <div className="diagram-dot dot-4"></div>
               <div className="diagram-line"></div>
-              <span className="diagram-label x-axis">목표 점유율 (X)</span>
-              <span className="diagram-label y-axis">예상 매출 (Y)</span>
+              <span className="diagram-label x-axis">객실 찬 비율(점유율)</span>
+              <span className="diagram-label y-axis">얼마나 벌었나?(매출)</span>
             </div>
             <p className="text-small text-muted" style={{marginTop: '12px', lineHeight: '1.5'}}>
-              과거 데이터(점)들의 오차 제곱합을 최소화하는 최적의 추세선(y = ax + b)을 도출하여, 사용자가 주중/주말 슬라이더를 조작해 목표 점유율을 맞추면 해당 추세선 위에 위치하는 예상 매출값을 실시간으로 반환합니다.
+              단순하게 곱하기를 하는 게 아닙니다. 컴퓨터가 지난 몇 달 동안 "점유율이 이정도일 때 밥은 얼마나 먹었지?"를 점으로 다 찍어보고, <strong>가장 정확한 중심선(추세선)</strong>을 그어놓고 대답해주는 겁니다.
             </p>
           </div>
         </div>
@@ -228,325 +181,133 @@ export default function LogicGuide() {
       </div>
 
       <div className="guide-cards" style={{marginTop: '24px'}}>
-        {/* Card 5: 평형별 목표 객단가(ADR) 예측 */}
+        
+        {/* 6. 진짜 시너지 찾기 (심슨의 역설 제거) */}
         <div className="guide-card glass-panel" style={{gridColumn: '1 / -1'}}>
           <div className="card-top">
-            <div className="icon-circle">
-              <BarChart3 size={24} />
+            <div className="icon-circle" style={{background: 'rgba(236, 72, 153, 0.1)'}}>
+              <Zap size={24} className="text-pink" style={{color: '#ec4899'}} />
             </div>
-            <h3>5. 목표 객단가(Target ADR) 예측 모델 (수익 관리 기법)</h3>
+            <h3>6. 진짜 파급력 찾기 (거품 걷어내기 대작전)</h3>
           </div>
           <div className="card-body">
             <p>
-              [설정] 메뉴에서 <strong>평형별 목표 객단가</strong>를 입력하면, 단순 선형 회귀를 넘어선 <strong>'가중 평균 기반 수익 관리(Yield Management)'</strong> 알고리즘이 가동되어 전략적 예상 매출을 계산합니다.
+              "51평 손님들이 수영장(레저) 매출을 엄청 올려준다!" 정말일까요? 어쩌면 <strong>'여름 휴가철 성수기'</strong>라서 51평도 많이 팔리고 수영장도 장사가 잘 된 건 아닐까요?
             </p>
             
             <div className="formula-box vertical" style={{marginTop: '16px'}}>
               <div className="math-step">
-                <span className="step-num">Step 1: 과거 판매 비중(Room Mix) 추출</span>
+                <span className="step-num">Step 1: 심슨의 역설(착시 현상) 발견</span>
                 <div style={{color: 'var(--text-muted)'}}>
-                  전체 누적 엑셀 데이터에서 16평, 35평, 51평이 각각 몇 퍼센트 비율로 팔렸는지 역사적 비중을 계산합니다. (예: 16평 45%, 35평 40%, 51평 15%)
+                  여름 피크 시즌에 놀러온 사람들이 물놀이를 많이 한 걸 가지고, 51평형 객실 자체가 레저 매출을 끌어올린다고 착각하는 것을 통계학에서는 '심슨의 역설'이라고 부릅니다.
                 </div>
               </div>
               <div className="math-step">
-                <span className="step-num">Step 2: 타겟 점유율 객실 할당</span>
+                <span className="step-num">Step 2: AI 명탐정의 거품 걷어내기 (다중 회귀 분석 MRA)</span>
                 <div style={{color: 'var(--text-muted)'}}>
-                  사용자가 슬라이더로 목표 점유율을 지정하면 산출되는 <code>예상 총 판매 객실 수</code>를 Step 1의 판매 비중에 따라 분배합니다.
+                  그래서 시너지 보드는 <strong>매일매일(365일)</strong> 데이터를 분석합니다. 그리고 <strong>"그날 비가 왔나? 눈이 왔나? 바람이 불었나? 여름 성수기였나?"</strong>를 전부 체크해서, 그 효과들을 빼버립니다(통제합니다).
                 </div>
               </div>
               <div className="math-step">
-                <span className="step-num">Step 3: 물리적 객실 환산 및 평형별 매출 합산</span>
+                <span className="step-num">Step 3: 순수 마케팅 파급력 도출</span>
                 <div style={{color: 'var(--text-muted)'}}>
-                  가상으로 분배된 객실 수를 <strong>물리적 키(Key) 개수</strong>로 환원한 뒤 목표 단가를 곱합니다. (예: 51평 커넥팅룸이 가상 2객실로 잡혔다면, 1개로 환원하여 51평 단가를 1번만 곱해 매출 중복 과대계상를 방지합니다.)<br/>
-                  <code>(16평 물리판매량 × 16평 목표단가) + (35평 물리판매량 × 35평 목표단가) + (51평 물리판매량 × 51평 목표단가)</code>
+                  날씨 핑계, 성수기 핑계를 다 빼고 남은 숫자가 대시보드에 <strong>1%당 파급력(₩)</strong>으로 뜹니다. 진짜배기 마케팅 실력을 뜻하는 숫자입니다!
                 </div>
               </div>
-            </div>
-            
-            <div className="alert-box info" style={{marginTop: '16px'}}>
-              <Info size={16} />
-              <span>
-                과거의 "할인 프로모션" 등으로 인해 낮아진 평균 단가를 벗어나, <strong>"점유율을 조금 포기하더라도 제값을 다 받으면 수익이 얼마나 개선되는지(추가수익)"</strong>를 과거 추세선과 비교 분석할 수 있게 해줍니다.
-              </span>
             </div>
           </div>
         </div>
-        {/* Card 6: 판매채널-부대시설 거시적 상관관계 */}
-        <div className="guide-card glass-panel" style={{gridColumn: '1 / -1', marginTop: '24px'}}>
-          <div className="card-top">
-            <div className="icon-circle" style={{background: 'rgba(59, 130, 246, 0.1)'}}>
-              <SplitSquareHorizontal size={24} className="text-blue" style={{color: '#3b82f6'}} />
-            </div>
-            <h3>6. 예약 채널별 ↔ 부대시설 거시적 상관관계 (Macro-Correlation)</h3>
-          </div>
-          <div className="card-body">
-            <p>
-              "온라인으로 예약한 사람이 모토아레나에서 매출을 발생시켰는가?"를 직접 1:1로 추적하려면 객실 시스템(PMS)과 업장 포스(POS) 데이터가 고객 단위로 연동되어야 합니다. 그러나 현재 엑셀 업로드 방식은 독립된 월별 총합계 데이터이므로, <strong>'월별 채널 매출의 흐름'</strong>과 <strong>'월별 부대시설 매출의 흐름'</strong> 간의 거시적 통계 상관계수(Pearson Correlation)를 도출하여 이를 극복합니다.
-            </p>
-            
-            <div className="formula-box vertical" style={{marginTop: '16px'}}>
-              <div className="math-step">
-                <span className="step-num">Step 1: 데이터 분리 및 월간 집계</span>
-                <div style={{color: 'var(--text-muted)'}}>
-                  매월 객실 데이터에서 '마켓타입' 항목을 추출해 <strong>채널별(온라인, 세미나, 휴양소 등) 월 총매출 배열 X</strong>를 생성하고, 영업장 데이터에서 <strong>부문별(식음, 레저, 모토) 월 총매출 배열 Y</strong>를 생성합니다.
-                </div>
-              </div>
-              <div className="math-step">
-                <span className="step-num">Step 2: 피어슨 상관계수 (r) 적용</span>
-                <div style={{color: 'var(--text-muted)'}}>
-                  공분산을 표준편차의 곱으로 나눈 통계학적 공식을 사용하여 두 배열(X, Y)이 얼마나 함께 오르고 내리는지 -1.0 부터 1.0 사이의 수치로 반환합니다.<br/>
-                  <code>r = Cov(X,Y) / (StdDev(X) * StdDev(Y))</code>
-                </div>
-              </div>
-            </div>
-            
-            <div className="alert-box success" style={{marginTop: '16px', borderColor: 'rgba(59, 130, 246, 0.3)', background: 'rgba(59, 130, 246, 0.05)'}}>
-              <CheckCircle2 size={16} style={{color: '#3b82f6'}} />
-              <span style={{color: 'var(--text-main)'}}>
-                <strong>💡 해석 팁:</strong> 상관계수가 0.7 이상이면 매우 강한 연관성(특정 채널 투숙객이 해당 영업장 매출을 견인할 확률이 매우 높음), 0.4 이상이면 유의미한 연관성으로 해석할 수 있습니다. 단, 현재 누적된 개월 수(데이터 포인트)가 적을 때는 경향성 파악 용도로만 참고하세요.
-              </span>
-            </div>
-          </div>
-        </div>
-        {/* Card 7: 핵심 성과 지표 (TrevPAR, RevPAR) */}
+
+        {/* 7. 진짜 돈벌이 지표 */}
         <div className="guide-card glass-panel" style={{gridColumn: '1 / -1', marginTop: '24px'}}>
           <div className="card-top">
             <div className="icon-circle" style={{background: 'rgba(234, 179, 8, 0.1)'}}>
               <CheckCircle2 size={24} className="text-yellow" style={{color: '#eab308'}} />
             </div>
-            <h3>7. 리조트 수익성 평가 핵심 지표 (RevPAR & TrevPAR)</h3>
+            <h3>7. 진짜 돈벌이 지표 (RevPAR & TrevPAR)</h3>
           </div>
           <div className="card-body">
             <p>
-              단순히 '총매출'이나 '점유율'만으로는 객실 영업 효율을 제대로 파악하기 어렵습니다. 이에 <strong>PAR(Per Available Room, 가용 객실당)</strong> 개념을 도입하여, 방 1개를 기준으로 창출되는 수익을 정확히 측정합니다.
+              총매출만 보면 우리 리조트가 장사를 잘하고 있는지 모릅니다. 그래서 <strong>"방 1개"</strong>를 기준으로 성적표를 매깁니다.
             </p>
             
             <div className="formula-box vertical" style={{marginTop: '16px'}}>
               <div className="math-step">
-                <span className="step-num">기본 전제: 분모(가용 객실 수)의 무결성</span>
+                <span className="step-num">RevPAR (객실 성적표)</span>
                 <div style={{color: 'var(--text-muted)'}}>
-                  모든 지표의 분모가 되는 <code>총 가용 객실 수 = 일일 객실 인벤토리 × 해당 월의 일수</code> 입니다. 51평 스위치 설정에 따라 '방 1개' 또는 '방 2개'로 모수(Denominator)가 다이내믹하게 변화하며 지표를 재계산합니다.
+                  <code>객실 총매출 ÷ 전체 빈방+찬방</code><br/>
+                  방 1개가 벌어들인 순수 숙박비입니다. 방을 싸게 많이 파는 게 나은지, 비싸게 적게 파는 게 나은지 알려줍니다.
                 </div>
               </div>
               <div className="math-step">
-                <span className="step-num">지표 1: RevPAR (객실 수익만)</span>
+                <span className="step-num">Gross TrevPAR (리조트 전체 성적표)</span>
                 <div style={{color: 'var(--text-muted)'}}>
-                  <code>(월간 총 객실 매출) ÷ (총 가용 객실 수)</code><br/>
-                  방 1개가 하루에 벌어들이는 '평균 객실료'입니다. 공실(비어있는 방)까지 모두 포함하여 평균을 내므로, 무리한 할인(ADR 하락)으로 방을 채우는 게 유리한지, 비싸게 적게 파는 게 유리한지 평가하는 기준이 됩니다.
+                  <code>(객실 + 모든 부대매출) ÷ 전체 방</code><br/>
+                  동네 주민(워크인)이 식당에서 밥 먹은 것까지 다 합쳐서 방 1개당 가치로 나눈 '리조트 덩치' 성적표입니다.
                 </div>
               </div>
               <div className="math-step">
-                <span className="step-num">지표 2: Gross TrevPAR (워크인 포함 전체)</span>
+                <span className="step-num">순수(Pure) TrevPAR (진짜배기 성적표)</span>
                 <div style={{color: 'var(--text-muted)'}}>
-                  <code>(객실 + 식음 + 레저 + 모토아레나 + 기타 총매출) ÷ (총 가용 객실 수)</code><br/>
-                  투숙객과 워크인(비투숙 외부 방문객)을 가리지 않고, 리조트라는 거대한 공간 시설 전체가 하루에 뿜어내는 총체적인 '공간 수익성'을 객실 모수로 나누어 직관적으로 보여줍니다.
+                  동네 주민이 쓴 돈은 싹 빼고, 오직 <strong>우리 방에서 자고 간 손님이 밥 먹고 수영한 돈</strong>만 더해서 성적을 냅니다. 우리가 진짜 고객을 얼마나 잘 쥐어짰는지(?) 보여줍니다!
                 </div>
               </div>
-              <div className="math-step">
-                <span className="step-num">지표 3: 순수(Pure) TrevPAR (객실 + 투숙객 부대매출)</span>
-                <div style={{color: 'var(--text-muted)'}}>
-                  <code>[ (총 객실 매출) + (레저매출 × 비중) + (식음매출 × 비중) + (모토 투숙객매출) ] ÷ (총 가용 객실 수)</code><br/>
-                  방 1개를 채웠을 때, 오직 <strong>'그 투숙객'</strong>이 식당, 레저, 모토아레나 등에서 소비할 것으로 기대되는 수익을 합친 <strong>진짜 객실 1개의 연계 가치</strong>입니다.
-                </div>
-              </div>
-            </div>
-            
-            <div className="alert-box warning" style={{marginTop: '16px', borderColor: 'rgba(234, 179, 8, 0.3)', background: 'rgba(234, 179, 8, 0.05)'}}>
-              <Info size={16} style={{color: '#eab308'}} />
-              <span style={{color: 'var(--text-main)'}}>
-                <strong>💡 '순수'와 'Gross'가 벌어지는 원리 (워크인 변수 통제):</strong><br/>
-                현재 엑셀의 결제 데이터에는 '투숙객'과 '워크인'이 섞여 있습니다. 시스템은 [설정] 탭에 입력된 <strong>투숙객 매출 비중(Capture Rate %)</strong>이라는 돋보기를 통해 전체 매출에서 수학적으로 투숙객 지분만 제외하여(필터링) 순수 TrevPAR를 계산합니다. 따라서, Gross와 순수 TrevPAR 사이의 금액 격차는 온전히 <strong>외부 나들이객(워크인)이 기여한 매출분</strong>을 의미합니다.
-              </span>
             </div>
           </div>
         </div>
 
-        {/* Card 8: AI 기반 투숙객 비중 자동 추정 */}
-        <div className="guide-card glass-panel" style={{gridColumn: '1 / -1', marginTop: '24px'}}>
-          <div className="card-top">
-            <div className="icon-circle" style={{background: 'rgba(16, 185, 129, 0.1)'}}>
-              <Calculator size={24} className="text-emerald" style={{color: '#10b981'}} />
-            </div>
-            <h3>8. AI 기반 투숙객 매출 비중(Capture Rate) 통계적 추정 알고리즘</h3>
-          </div>
-          <div className="card-body">
-            <p>
-              [설정] 탭의 <strong>'데이터 기반 AI 추정'</strong> 기능은 사용자가 임의의 감이나 직관으로 입력하던 투숙객 비중을, 실제 업로드된 매출 데이터의 상관관계 흐름 속에서 수학적으로 역산해내는 고도화된 기능입니다.
-            </p>
-            
-            <div className="formula-box vertical" style={{marginTop: '16px'}}>
-              <div className="math-step">
-                <span className="step-num">Step 1: 데이터 분산(Scatter) 매핑</span>
-                <div style={{color: 'var(--text-muted)'}}>
-                  누적된 모든 월별 데이터를 바탕으로 X축을 <code>객실 점유율(%)</code>, Y축을 <code>해당 부대시설의 매출액(원)</code>으로 설정하여 좌표 평면에 점을 찍습니다.
-                </div>
-              </div>
-              <div className="math-step">
-                <span className="step-num">Step 2: 최소제곱법(OLS) 선형 회귀 모형 구축</span>
-                <div style={{color: 'var(--text-muted)'}}>
-                  찍힌 점들의 오차 제곱합을 최소화하는 최적의 추세선 <code>Y = mX + b</code>를 찾습니다.<br/>
-                  여기서 <strong>기울기(m)</strong>는 객실 점유율 1%가 오를 때 추가로 발생하는 부대시설 매출을 의미하며, <strong>Y절편(b)</strong>은 점유율이 0%일 때(투숙객이 없을 때) 발생하는 순수 '워크인(외부 고객)' 매출을 의미합니다.
-                </div>
-              </div>
-              <div className="math-step">
-                <span className="step-num">Step 3: 비중(Capture Rate) 역산 도출</span>
-                <div style={{color: 'var(--text-muted)'}}>
-                  <code>(기울기 × 평균 점유율) ÷ 평균 총매출</code><br/>
-                  평균적인 달력 월을 기준으로, <strong>'점유율에 의해 견인된 변동 매출(투숙객 기여분)'</strong>이 <strong>'전체 매출(투숙객 + 워크인)'</strong>에서 차지하는 정확한 비율(%)을 수학적으로 분리해냅니다.
-                </div>
-              </div>
-            </div>
-            
-            <div className="alert-box success" style={{marginTop: '16px', borderColor: 'rgba(16, 185, 129, 0.3)', background: 'rgba(16, 185, 129, 0.05)'}}>
-              <CheckCircle2 size={16} style={{color: '#10b981'}} />
-              <span style={{color: 'var(--text-main)'}}>
-                <strong>💡 AI 추정의 가치:</strong> 데이터가 쌓이면 쌓일수록 (최소 2개월 이상, 권장 6개월 이상) 선형 회귀 모델의 정확도는 무한히 상승하며, 계절적 요인이나 일시적 마케팅 변수에 흔들리지 않는 <strong>'가장 신뢰도 높은 순수 객실 연계 가치'</strong>를 평가할 수 있게 됩니다.
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 9: 모토아레나 동적 그룹핑 파싱 및 허수 판별 */}
-        <div className="guide-card glass-panel" style={{gridColumn: '1 / -1', marginTop: '24px'}}>
-          <div className="card-top">
-            <div className="icon-circle" style={{background: 'rgba(168, 85, 247, 0.1)'}}>
-              <Search size={24} className="text-purple" style={{color: '#a855f7'}} />
-            </div>
-            <h3>9. 모토아레나 동적 그룹핑(Dynamic Grouping) 및 분류 알고리즘</h3>
-          </div>
-          <div className="card-body">
-            <p>
-              단일 영업장 중 이질적인 성격을 띄는 '모토아레나'의 데이터는 단순 총합계가 아닌, <strong>개별 결제 티켓의 명칭을 바탕으로 한 동적 분류(Dynamic Grouping)</strong>를 거쳐 투숙객 매출과 일반객 매출로 완전 분리됩니다.
-            </p>
-            
-            <div className="formula-box vertical" style={{marginTop: '16px'}}>
-              <div className="math-step">
-                <span className="step-num">Step 1: 설정 화면 커스텀 핀셋 매핑</span>
-                <div style={{color: 'var(--text-muted)'}}>
-                  고정된 규칙에 의존하지 않고, [설정] 화면에서 사용자가 전체 모토아레나 티켓 종류를 직접 <code>투숙객 매출</code>, <code>일반객 매출</code>, <code>기타 매출</code> 로 지정하여 유연하게 분류할 수 있습니다.
-                </div>
-              </div>
-              <div className="math-step">
-                <span className="step-num">Step 2: 일반객 매출 과대계상 방지</span>
-                <div style={{color: 'var(--text-muted)'}}>
-                  신규 객실에 따른 모토아레나 창출 매출을 예측할 때, 단순 합산 방식의 오류를 방지하고 오직 <strong>Step 1에서 투숙객으로 분류된 매출액의 합계</strong>만을 추출하여 객단가 분모로 사용합니다. 이를 통해 일반객 비중이 객실 수익으로 과대계상되는 치명적인 오류를 원천 차단합니다.
-                </div>
-              </div>
-              <div className="math-step">
-                <span className="step-num">Step 3: 비중 + 상관관계 결합에 의한 '허수 판별' (핵심)</span>
-                <div style={{color: 'var(--text-muted)'}}>
-                  투숙객 매출을 객실 매출과 비교하여 피어슨 상관계수(r)를 구합니다. 단, <strong>상관계수(r)가 1에 가깝게 높게 나오더라도, 티켓 판매 전체에서 투숙객이 차지하는 비중(%) 자체가 매우 미미하다면 이는 비즈니스 성장을 이끌 수 없는 '통계적 착시(허수)'</strong>로 규정합니다.
-                </div>
-              </div>
-            </div>
-            
-            <div className="alert-box warning" style={{marginTop: '16px', borderColor: 'rgba(168, 85, 247, 0.3)', background: 'rgba(168, 85, 247, 0.05)'}}>
-              <Info size={16} style={{color: '#a855f7'}} />
-              <span style={{color: 'var(--text-main)'}}>
-                <strong>💡 허수 판별 자동 경고 시스템:</strong><br/>
-                상관관계 분석 UI에서는 위 알고리즘이 실시간 가동됩니다. 상관관계가 높더라도 매출 비중이 기준치 미만일 경우 ⚠️ <strong>[통계적 착시 주의]</strong> 경고를 띄워, 데이터 해석 오류를 시스템 차원에서 원천 차단합니다.
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 10: 시뮬레이터 가동률 상한선(Capa Ceiling) */}
+        {/* 10. 밥그릇 한계 인정 */}
         <div className="guide-card glass-panel" style={{gridColumn: '1 / -1', marginTop: '24px'}}>
           <div className="card-top">
             <div className="icon-circle" style={{background: 'rgba(244, 63, 94, 0.1)'}}>
               <Building2 size={24} className="text-rose" style={{color: '#f43f5e'}} />
             </div>
-            <h3>10. 미래 창출 매출 가동률 상한선(Capa Ceiling Limit) 알고리즘</h3>
+            <h3>10. 밥그릇 크기 인정하기 (시뮬레이터 상한선 방어벽)</h3>
           </div>
           <div className="card-body">
             <p>
-              단순한 곱셈기의 가장 큰 모순인 <strong>"객실이 무한정 늘어난다고 식당 테이블과 레저 시설의 수용력도 무한정 늘어나는가?"</strong>에 대한 물리적 한계를 수학적 수식으로 방어하는 안전장치입니다.
+              우리가 객실을 천 개, 만 개 짓는다고 식당 매출이 무한정 늘어날까요? 식당 테이블은 10개 뿐인데요!
             </p>
-            
-            <div className="formula-box vertical" style={{marginTop: '16px'}}>
-              <div className="math-step">
-                <span className="step-num">Step 1: 시설별 현재 가동률(Capa %) 입력</span>
-                <div style={{color: 'var(--text-muted)'}}>
-                  [설정] 메뉴에서 식음, 레저, 모토아레나 각각의 현재 체감 가동률(이용률)을 0~100% 사이로 직접 지정합니다. (예: 현재 식당이 80% 정도 꽉 차서 돌아가고 있다)
-                </div>
-              </div>
-              <div className="math-step">
-                <span className="step-num">Step 2: 최대 수용 가능 매출(Max Capa) 역산</span>
-                <div style={{color: 'var(--text-muted)'}}>
-                  <code>최대 가능 매출 = 과거 연간 총매출 ÷ (현재 가동률 % / 100)</code><br/>
-                  현재 80% 가동률로 8억을 번다면, 100% 꽉 찼을 때의 물리적 최대 가능 매출은 10억이라는 수치를 수학적으로 역산해냅니다.
-                </div>
-              </div>
-              <div className="math-step">
-                <span className="step-num">Step 3: 남은 성장 여력(Remaining Capacity) 산출</span>
-                <div style={{color: 'var(--text-muted)'}}>
-                  <code>남은 성장 여력 = 최대 가능 매출(10억) - 과거 연간 총매출(8억) = 2억</code><br/>
-                  신규 객실로 인해 더 벌어들일 수 있는 부대매출의 한계선(Cap)을 그어줍니다.
-                </div>
-              </div>
-              <div className="math-step">
-                <span className="step-num">Step 4: 매출 증가량 방어(Cap) 적용</span>
-                <div style={{color: 'var(--text-muted)'}}>
-                  <code>실제 창출 매출 = MIN (객실 증가에 따른 단순 기대 창출 매출, 남은 성장 여력)</code><br/>
-                  아무리 객실을 많이 지어도 창출 매출은 2억에서 멈추며(버려짐), 시뮬레이터 화면에는 <strong>*Capa 상한 도달 (초과분 버림)</strong>이라는 강력한 알림이 표시됩니다.
-                </div>
-              </div>
-            </div>
-            
-            <div className="alert-box success" style={{marginTop: '16px', borderColor: 'rgba(244, 63, 94, 0.3)', background: 'rgba(244, 63, 94, 0.05)'}}>
-              <CheckCircle2 size={16} style={{color: '#f43f5e'}} />
+            <div className="alert-box warning" style={{marginTop: '16px', borderColor: 'rgba(244, 63, 94, 0.3)', background: 'rgba(244, 63, 94, 0.05)'}}>
+              <Info size={16} style={{color: '#f43f5e'}} />
               <span style={{color: 'var(--text-main)'}}>
-                <strong>💡 이 방어벽의 가치:</strong> 신규 사업(연수원) 건립 타당성을 검토할 때, 과도하게 부풀려진 장밋빛 창출 매출에 속아 잘못된 투자를 결정하는 리스크를 시스템이 선제적으로 완벽하게 막아줍니다.
+                컴퓨터는 이 현실을 알고 있습니다. 설정에서 "식당 테이블이 80% 차있어"라고 알려주면, 컴퓨터는 "아, 그럼 앞으로 식음 매출은 지금보다 조금밖에 더 못 오르겠네!" 하고 매출이 너무 뻥튀기되지 않게 알아서 가위질(Cap)을 해줍니다. 경영진이 엉뚱한 장밋빛 전망에 속지 않게 지켜주는 든든한 방어벽이죠.
               </span>
             </div>
           </div>
         </div>
 
-        {/* Card 11: 날씨 예측 코어 및 4대 고급 시뮬레이션 알고리즘 */}
+        {/* 11. 날씨 요정 */}
         <div className="guide-card glass-panel" style={{gridColumn: '1 / -1', marginTop: '24px'}}>
           <div className="card-top">
             <div className="icon-circle" style={{background: 'rgba(14, 165, 233, 0.1)'}}>
               <CloudRain size={24} className="text-sky" style={{color: '#0ea5e9'}} />
             </div>
-            <h3>11. 날씨 예측 코어(weatherCore) 및 4대 고급 시뮬레이션 알고리즘</h3>
+            <h3>11. 날씨 요정의 마법 (장마와 비오는 날 예측)</h3>
           </div>
           <div className="card-body">
             <p>
-              단순히 "비가 오면 매출이 떨어진다"는 단편적인 직관을 넘어서, 과거 전체 누적 데이터를 기반으로 **4가지 핵심 날씨 변수**를 입체적으로 분석하고 미래 예측에 반영하는 단일 코어 엔진(`weatherCore.js`) 시스템입니다.
+              시뮬레이터에 날씨를 넣으면 아주 똑똑하게 매출을 깎아줍니다. 
             </p>
-            
             <div className="formula-box vertical" style={{marginTop: '16px'}}>
               <div className="math-step">
-                <span className="step-num">Step 1: 주중/주말 베이스라인 원천 분리 (핵심)</span>
+                <span className="step-num">마법 1: 평일 비 vs 주말 비</span>
                 <div style={{color: 'var(--text-muted)'}}>
-                  예측일이 평일인지 주말/공휴일인지 먼저 판별한 뒤, 각각 <strong>과거의 평일 맑은 날 평균</strong>과 <strong>주말 맑은 날 평균</strong>을 타겟 베이스라인(A)으로 분리 설정합니다. 주말에 비가 온 적이 없다면 전체 평균 타격률을 빌려오는 안전망(Fallback)이 수학적으로 적용되어 타격률 -100% 오류를 방지합니다.
+                  원래 사람 없는 평일에 비 오는 것과, 대목인 주말에 비 오는 건 타격이 다릅니다. 컴퓨터는 평일 기준선과 주말 기준선을 따로 잡고 계산합니다.
                 </div>
               </div>
               <div className="math-step">
-                <span className="step-num">Step 2: 기본 우천 페널티 & 장마 피로도 누적 타격</span>
+                <span className="step-num">마법 2: 장마철 지침 현상</span>
                 <div style={{color: 'var(--text-muted)'}}>
-                  날씨 API(open-meteo)를 통해 <strong>과거 2일 전부터 당일까지 3일간의 강수량</strong>을 추적하여 연속 강수(장마)를 판별합니다. 비가 2일, 3일 이상 연속으로 올 경우 과거 데이터의 누적 피로도 비율을 참조하여 매출을 추가로 더 깎아냅니다.
+                  어제도 비, 그제도 비, 오늘도 비? 사람들이 지쳐서 더 안 옵니다. 3일 연속 비가 오면 매출을 한 번 더 깎아냅니다.
                 </div>
               </div>
               <div className="math-step">
-                <span className="step-num">Step 3: 강풍(10m/s 이상) 페널티 (단위 환산 포함)</span>
+                <span className="step-num">마법 3: 실내 매장의 반란 (풍선 효과)</span>
                 <div style={{color: 'var(--text-muted)'}}>
-                  예보에서 초속 단위(m/s)로 강풍 여부를 판별하여, 전체 매출에서 바람 불 때 떨어지는 낙폭을 비율로 곱합니다.
+                  레저(야외)는 비 오면 망하지만, 실내 식당은 비 오면 오히려 손님이 멉니다! 컴퓨터는 이걸 알아채고 실내 매장 매출은 오히려 팍팍 올려주는 센스를 발휘합니다.
                 </div>
               </div>
-              <div className="math-step">
-                <span className="step-num">Step 4: 풍선효과(대체재 상승) 오버라이드</span>
-                <div style={{color: 'var(--text-muted)'}}>
-                  우천 시 매출이 떨어지지 않고 오히려 <strong>과거 맑은 날보다 더 상승했던 실내 매장</strong>의 경우, 우천 페널티를 무시하고 <strong>상승분(%)을 곱하여 기대 매출을 높여 잡는 예외 처리</strong>를 자동 수행합니다.
-                </div>
-              </div>
-            </div>
-            
-            <div className="alert-box info" style={{marginTop: '16px', borderColor: 'rgba(14, 165, 233, 0.3)', background: 'rgba(14, 165, 233, 0.05)'}}>
-              <CheckCircle2 size={16} style={{color: '#0ea5e9'}} />
-              <span style={{color: 'var(--text-main)'}}>
-                <strong>💡 코어 엔진 모듈화의 장점:</strong> 시뮬레이터, 과거 통계표 등 어디에서 날씨 데이터를 부르더라도 오직 하나의 중앙 엔진(`predictWeatherImpact`)만을 통과하므로, 수식과 결과값이 어긋나는 "어디는 되고 어디는 안 되는" 현상을 완벽히 차단합니다.
-              </span>
             </div>
           </div>
         </div>
