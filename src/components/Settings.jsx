@@ -65,7 +65,6 @@ export default function Settings({ monthlyData }) {
     visitorValidation: true,
     basic: true,
     weekend: false,
-    capture: false,
     adr: false,
     advanced: false,
     moto: false,
@@ -295,7 +294,6 @@ export default function Settings({ monthlyData }) {
       const numFields = [
         'totalRooms', 'connectingRooms51', 'targetAdr16', 'targetAdr35', 'targetAdr51',
         'guestWeight16', 'guestWeight35', 'guestWeight51', 'carPeopleWeight',
-        'captureRateLeisure', 'captureRateFnb', 'captureRateMoto',
         'capaLeisure', 'capaMoto', 'capaFnb'
       ];
       numFields.forEach(field => {
@@ -368,107 +366,7 @@ export default function Settings({ monthlyData }) {
     }
   };
 
-  const handleAiEstimate = () => {
-    if (!monthlyData || monthlyData.length < 2) {
-      toast.error("상관관계를 분석하기 위해 최소 2개월 이상의 데이터가 필요합니다.");
-      return;
-    }
 
-    const count51AsTwoRooms = settings.count51AsTwoRooms !== false;
-    const physicalRooms = Number(settings.totalRooms) || 175;
-    const rooms51Sets = Number(settings.connectingRooms51) || 85;
-    const dailyInventory = count51AsTwoRooms ? physicalRooms : (physicalRooms - rooms51Sets);
-    const locationGroups = settings.locationGroups || {};
-
-    let dataPoints = monthlyData.map(d => {
-      const [year, month] = d.id.split('-');
-      const days = new Date(year, month, 0).getDate();
-      const totalInventory = dailyInventory * days;
-
-      const sold16 = Number(d.sold16 || d.standardSold || 0);
-      const sold35 = Number(d.sold35 || 0);
-      const sold51 = Number(d.sold51 || d.connectingSold || 0);
-      const sold51Acc = Number(d.sold51Acc || 0);
-      const totalSold = sold16 + sold35 + (count51AsTwoRooms ? sold51 * 2 : sold51) + sold51Acc;
-      
-      const occRate = totalInventory > 0 ? (totalSold / totalInventory) * 100 : 0;
-
-      let leisureSales = 0;
-      let motoSales = 0;
-      let fnbSales = 0;
-
-      if (d.salesByLocation || d.leisureSalesByLocation || d.venues) {
-        const salesObj = { ...(d.salesByLocation || d.leisureSalesByLocation || {}) };
-        
-        if (d.motoTotalRev && !salesObj['모토아레나']) {
-          salesObj['모토아레나(티켓)'] = Number(d.motoTotalRev);
-        }
-
-        if (d.venues && !salesObj['모토아레나']) {
-          Object.entries(d.venues).forEach(([vName, vData]) => {
-            const ignoreList = ['모토아레나', 'ROOM', 'ROOM OTHER', '합계'];
-            if (!ignoreList.includes(vName) && !salesObj[vName]) { 
-              salesObj[`${vName}(티켓)`] = Number(vData.totalRev || 0);
-            }
-          });
-        }
-
-        const calculated = calculateGroupedSales(salesObj, locationGroups);
-        leisureSales = calculated.leisure;
-        motoSales = calculated.moto || 0;
-        fnbSales = calculated.fnb;
-      } else {
-        leisureSales = Number(d.totalLeisureSales || d.leisureSales || 0);
-        motoSales = Number(d.motoSales || d.motoTotalRev || d.totalMotoSales || 0);
-        fnbSales = Number(d.fnbSales || d.totalFnbSales || 0);
-      }
-
-      return { occRate, leisureSales, motoSales, fnbSales };
-    });
-
-    const calculateCaptureRate = (yKey) => {
-      const n = dataPoints.length;
-      let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
-      dataPoints.forEach(p => {
-        sumX += p.occRate;
-        sumY += p[yKey];
-        sumXY += p.occRate * p[yKey];
-        sumX2 += p.occRate * p.occRate;
-      });
-
-      const denominator = (n * sumX2 - sumX * sumX);
-      if (denominator === 0) return null;
-      
-      const slope = (n * sumXY - sumX * sumY) / denominator;
-      
-      const avgOcc = sumX / n;
-      const avgY = sumY / n;
-      
-      if (avgY <= 0) return 0;
-      
-      let captureRate = (slope * avgOcc) / avgY;
-      captureRate = Math.max(0, Math.min(1, captureRate));
-      return Math.round(captureRate * 100);
-    };
-
-    const estLeisure = calculateCaptureRate('leisureSales');
-    const estFnb = calculateCaptureRate('fnbSales');
-    const estMoto = calculateCaptureRate('motoSales');
-
-    if (estLeisure === null) {
-      toast.error("데이터 편차가 부족하여 회귀 분석을 수행할 수 없습니다.");
-      return;
-    }
-
-    if (window.confirm(`📊 [AI 데이터 기반 추정 결과]\n\n업로드된 전체 엑셀 데이터를 선형 회귀 분석한 결과, 다음의 투숙객 매출 비중(Capture Rate)이 가장 통계적으로 유력합니다:\n\n- 레저본부 투숙객 비중: ${estLeisure}%\n- 식음 부문 투숙객 비중: ${estFnb}%\n- 모토아레나 투숙객 비중: ${estMoto}%\n\n이 추정값을 설정에 덮어쓰고 적용하시겠습니까?`)) {
-      setSettings(prev => ({
-        ...prev,
-        captureRateLeisure: estLeisure,
-        captureRateFnb: estFnb,
-        captureRateMoto: estMoto
-      }));
-    }
-  };
 
   if (isLoading) {
     return <div style={{padding: '32px', color: 'white'}}>설정 불러오는 중...</div>;
@@ -650,6 +548,9 @@ export default function Settings({ monthlyData }) {
             />
           </div>
         </div>
+        <div style={{color: 'var(--accent-gold)', fontSize: '13px', marginTop: '16px', fontWeight: 'bold', lineHeight: '1.4'}}>
+          ※ 위 가중치는 '추정 방문객 분석' 메뉴에서만 작동하며, 메인 대시보드(상관관계분석, 부대시설 이용분석 등)의 실제 데이터에는 영향을 주지 않습니다.
+        </div>
       </SectionCard>
 
       <SectionCard
@@ -670,61 +571,7 @@ export default function Settings({ monthlyData }) {
         </div>
       </SectionCard>
 
-      <SectionCard
-        title="투숙객 매출 비중 설정 (Capture Rate)"
-        description="각 부대시설 총매출 중 '객실 투숙객'이 결제한 비중(%)을 설정합니다. (순수 TrevPAR 산출용)"
-        isExpanded={expandedSections.capture}
-        onToggle={() => toggleSection('capture')}
-        actions={
-          <button 
-            type="button" 
-            onClick={(e) => { e.stopPropagation(); handleAiEstimate(); }} 
-            className="action-button primary" 
-            style={{display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: 'var(--accent-purple)', borderColor: 'var(--accent-purple)', fontSize: '13px'}}
-          >
-            <RefreshCw size={14} /> AI 추정
-          </button>
-        }
-      >
-        <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
-          <div className="form-group" style={{flex: 1, minWidth: '150px'}}>
-            <label htmlFor="captureRateLeisure">레저본부 투숙객 비중 (%)</label>
-            <input 
-              type="number" 
-              id="captureRateLeisure" 
-              name="captureRateLeisure" 
-              value={settings.captureRateLeisure ?? 85} 
-              onChange={handleChange} 
-              placeholder="예: 90"
-              min="0" max="100"
-            />
-          </div>
-          <div className="form-group" style={{flex: 1, minWidth: '150px'}}>
-            <label htmlFor="captureRateFnb">식음 부문 투숙객 비중 (%)</label>
-            <input 
-              type="number" 
-              id="captureRateFnb" 
-              name="captureRateFnb" 
-              value={settings.captureRateFnb ?? 75} 
-              onChange={handleChange} 
-              placeholder="예: 80"
-              min="0" max="100"
-            />
-          </div>
-          <div className="form-group" style={{flex: 1, minWidth: '150px'}}>
-            <label htmlFor="captureRateMoto">모토아레나 투숙객 비중 (%)</label>
-            <input 
-              type="number" 
-              id="captureRateMoto" 
-              name="captureRateMoto" 
-              value={settings.captureRateMoto ?? 25} 
-              onChange={handleChange} 
-              placeholder="예: 30"
-              min="0" max="100"
-            />
-          </div>
-        </div>
-      </SectionCard>
+
 
       <SectionCard
         title="목표 객단가(Target ADR) 설정"
@@ -1079,9 +926,6 @@ export default function Settings({ monthlyData }) {
               onClick={() => {
                 const totalRooms = monthlyData.reduce((acc, m) => acc + (Number(m.totalRoomRevenue) || 0), 0);
                 const avgOcc = (monthlyData.reduce((acc, m) => acc + (Number(m.occupancyRate) || 0), 0) / (monthlyData.length || 1)).toFixed(1);
-                const lCap = settings.captureRateLeisure || 0;
-                const fCap = settings.captureRateFnb || 0;
-                const mCap = settings.captureRateMoto || 0;
 
                 const prompt = `당신은 세계 최고의 전략 컨설팅 펌(맥킨지)의 수석 경영 컨설턴트입니다. 
 아래 제공된 우리 리조트의 실제 경영 데이터와 분석 인사이트를 바탕으로, 경영진 보고용 5슬라이드짜리 전략 프레젠테이션(PPT) 대본과 슬라이드 구성을 작성해 주세요. 
@@ -1091,19 +935,14 @@ export default function Settings({ monthlyData }) {
 - 최근 누적 평균 객실 가동률: ${avgOcc}%
 - 최근 총 객실 매출액: ${totalRooms.toLocaleString()}원
 
-[2. 투숙객 캡쳐율 (Capture Rate) 데이터]
-- 레저본부 투숙객 캡쳐율: ${lCap}%
-- 식음(F&B) 부문 투숙객 캡쳐율: ${fCap}%
-- 모토아레나 투숙객 캡쳐율: ${mCap}%
-
-[3. 구글 및 맥킨지 관점의 경영진 제안 및 전략 방향성]
+[2. 구글 및 맥킨지 관점의 경영진 제안 및 전략 방향성]
 - 포트폴리오 믹스 최적화 제안: "레저본부의 점유율이 80%를 넘어서는 병목 구간(주말)에서, 식음(F&B) 및 모토아레나로의 전환율 추세를 보았을 때 투숙객의 추가 지출(Share of Wallet)을 유도하기 위한 패키징 전략 재설계가 시급합니다."
 - 신사업(연수원 등) 타당성: "기존 데이터의 주중/주말 매출 상관관계를 통해 볼 때, 신사업(B2B 연수원)의 도입은 주중 공실률을 채우는 핵심 '캐시카우' 역할을 할 것이며, 이는 전체 리조트의 BEP(손익분기점) 달성 시기를 앞당길 가장 강력한 레버리지입니다."
 - 디지털 트랜스포메이션 방향: "현재의 인메모리 대시보드 구조에서 나아가, 구글 Cloud Functions 기반의 서버리스 데이터 파이프라인(ETL)을 구축하여 예측 모델의 정확도를 BigQuery ML 수준으로 고도화해야 합니다."
 
 [요청 사항]
 1. 위 내용을 바탕으로 Gamma(AI PPT 서비스)에 바로 붙여넣을 수 있는 마크다운 형태의 슬라이드 구성을 짜주세요.
-2. 슬라이드는 1) Executive Summary 2) 실적 현황 3) 부문별 캡쳐율 분석 4) 맥킨지 전략 제안 5) Next Steps 로 구성해주세요.
+2. 슬라이드는 1) Executive Summary 2) 실적 현황 3) 부문별 매출 기여액 분석 4) 맥킨지 전략 제안 5) Next Steps 로 구성해주세요.
 `;
                 navigator.clipboard.writeText(prompt);
                 setPromptCopied(true);

@@ -182,11 +182,28 @@ export default function VisitorCalculation({ processedData, globalStats, setting
       <div className="section-header" style={{ marginBottom: '32px' }}>
         <h2 style={{ fontSize: '28px', color: 'var(--text-light)', display: 'flex', alignItems: 'center', gap: '12px', margin: 0 }}>
           <Users size={32} color="var(--accent-blue)" />
-          전체 방문객 수 역산 (Walk-in 도출)
+          추정 방문객 분석
         </h2>
         <p style={{ color: 'var(--text-muted)', marginTop: '8px' }}>
-          차량 입차 기록과 기숙사/직원 차량, 그리고 골프/숙박 고객 데이터를 역산하여 리조트를 방문한 순수 워크인(Walk-in) 고객을 도출합니다.
+          차량 입차 기록과 기숙사/직원 차량, 그리고 골프/숙박 고객 데이터를 가중치 연산하여 리조트를 방문한 순수 워크인(Walk-in) 고객 및 추정 인원을 도출합니다.
         </p>
+      </div>
+
+      {/* ⚠️ 추정치 주의 배너 */}
+      <div className="glass-panel" style={{
+        padding: '16px 24px', 
+        marginBottom: '24px', 
+        background: 'rgba(245, 158, 11, 0.1)', 
+        border: '1px solid rgba(245, 158, 11, 0.3)', 
+        borderRadius: '8px',
+        color: 'var(--accent-gold)',
+        fontSize: '14px',
+        fontWeight: 'bold',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px'
+      }}>
+        <span>⚠️ 추정치 주의: 본 화면의 인원 지표는 입차량 및 객실 가중치를 활용하여 수식으로 추산한 추정치(Heuristic Estimation)이며, 실제 실측된 순수 방문자 수와 오차가 발생할 수 있습니다. 경영 판단 시 참고용 변수로만 활용해 주십시오.</span>
       </div>
 
       {/* Month Selection */}

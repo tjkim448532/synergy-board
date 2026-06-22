@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import useGoogleSheetVisitors from '../hooks/useGoogleSheetVisitors';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
   ScatterChart, Scatter, ZAxis, PieChart, Pie, Cell, ComposedChart, Bar
@@ -28,11 +27,9 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
   const [motoLogic, setMotoLogic] = useState('new');
   const [selectedMonthFilter, setSelectedMonthFilter] = useState('all');
   const [isCumulative, setIsCumulative] = useState(false);
-  const [isGoogleSheetSyncEnabled, setIsGoogleSheetSyncEnabled] = useState(true);
   const [weatherDataType, setWeatherDataType] = useState('room');
   const [currentWeather, setCurrentWeather] = useState(null);
   const [isLoadingWeather, setIsLoadingWeather] = useState(false);
-  const { googleSheetData } = useGoogleSheetVisitors();
 
   // 실시간 날씨 데이터 로드
   useEffect(() => {
@@ -168,104 +165,12 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
 
 
 
-  const { displayVisitors, hasMissingVisitorData, visitorValidMonths } = useMemo(() => {
-    if (!filteredProcessedData || filteredProcessedData.length === 0) {
-      return { displayVisitors: 0, hasMissingVisitorData: true, visitorValidMonths: [] };
-    }
-    
-    const carPeopleWeight = settings?.carPeopleWeight !== undefined ? Number(settings.carPeopleWeight) : 3.0;
-    const validMonths = [];
-    let hasMissing = false;
-    
-    const count = filteredProcessedData.reduce((sum, d) => {
-      let isGoogleSheetValid = false;
-      let isDbValid = false;
-      let val = 0;
-      
-      // 1. 구글 시트 연동 켜져있고, 해당 데이터가 2026년도일 때만 구글 시트 데이터 사용
-      if (isGoogleSheetSyncEnabled && googleSheetData && googleSheetData.visitors && (d.yearMonth || '').startsWith('2026')) {
-         const m = parseInt(d.yearMonth.split('-')[1], 10);
-         if (googleSheetData.visitors[m] !== undefined && googleSheetData.visitors[m] !== null && googleSheetData.visitors[m] > 0) {
-            isGoogleSheetValid = true;
-            val = googleSheetData.visitors[m];
-         }
-      }
-      
-      // 2. 그 외 또는 구글 시트에 데이터가 없는 경우 DB 기반 Calculation 사용
-      if (!isGoogleSheetValid && d.visitorCalcData) {
-        const numTotalVehicles = Number(d.visitorCalcData.totalVehicles);
-        if (!isNaN(numTotalVehicles) && numTotalVehicles > 0) {
-          isDbValid = true;
-          const numEmployeeVehicles = Number(d.visitorCalcData.employeeVehicles) || 0;
-          const numGolfGuests = Number(d.visitorCalcData.golfGuests) || 0;
-          const netVehicles = Math.max(0, numTotalVehicles - numEmployeeVehicles);
-          const estimatedPeople = netVehicles * carPeopleWeight;
-          val = Math.max(0, estimatedPeople - numGolfGuests);
-        }
-      }
-      
-      if (isGoogleSheetValid || isDbValid) {
-        validMonths.push({
-          yearMonth: d.yearMonth,
-          visitors: val,
-          subsidiaryRev: d.totalSales || 0,
-          fnbSales: d.fnbSales || 0,
-          salesByLocation: d.salesByLocation || d.leisureSalesByLocation || {}
-        });
-        return sum + val;
-      } else {
-        hasMissing = true;
-        return sum;
-      }
-    }, 0);
-    
-    const isSpecificMonthSelected = selectedMonthFilter !== 'all' && !selectedMonthFilter.endsWith('-all');
-    const finalMissing = isSpecificMonthSelected ? hasMissing : (validMonths.length === 0);
-    
-    return { displayVisitors: count, hasMissingVisitorData: finalMissing, visitorValidMonths: validMonths };
-  }, [filteredProcessedData, isGoogleSheetSyncEnabled, googleSheetData, settings, selectedMonthFilter]);
-
-  const getFilterLabel = useMemo(() => {
-    if (selectedMonthFilter === 'all') return '전체 기간 리조트 통합 고객 수 (골프장 제외)';
-    const [y, m] = selectedMonthFilter.split('-');
-    if (m === 'all') return `${y}년 리조트 통합 고객 수`;
-    if (m === 'summer') return `${y}년 여름 시즌(7~8월) 리조트 고객 수`;
-    if (m === 'winter') return `${y}년 겨울 시즌(12~2월) 리조트 고객 수`;
-    if (m === 'spring') return `${y}년 봄 시즌(3~6월) 리조트 고객 수`;
-    if (m === 'fall') return `${y}년 가을 시즌(9~11월) 리조트 고객 수`;
-    if (isCumulative) return `${y}년 1~${parseInt(m)}월 누적 리조트 고객 수`;
-    return `${y}년 ${parseInt(m)}월 리조트 고객 수`;
-  }, [selectedMonthFilter, isCumulative]);
-
   const dateRangeStr = useMemo(() => {
-    if (!visitorValidMonths || visitorValidMonths.length === 0) return '';
-    const sorted = [...visitorValidMonths].sort((a, b) => (a.yearMonth || '').localeCompare(b.yearMonth || ''));
+    if (!filteredProcessedData || filteredProcessedData.length === 0) return '';
+    const sorted = [...filteredProcessedData].sort((a, b) => (a.yearMonth || '').localeCompare(b.yearMonth || ''));
     if (sorted.length === 1) return `(${sorted[0].yearMonth})`;
     return `(${sorted[0].yearMonth} ~ ${sorted[sorted.length - 1].yearMonth})`;
-  }, [visitorValidMonths]);
-
-  const visitorKpiData = useMemo(() => {
-    if (!visitorValidMonths || visitorValidMonths.length === 0) return null;
-    
-    let totalSubsidiaryRev = 0;
-    let totalFnbAndPitstopRev = 0;
-    
-    visitorValidMonths.forEach(d => {
-      totalSubsidiaryRev += d.subsidiaryRev;
-      
-      let pitstopRev = 0;
-      Object.entries(d.salesByLocation).forEach(([loc, amt]) => {
-        if (loc.includes('핏스탑')) pitstopRev += (Number(amt) || 0);
-      });
-      
-      totalFnbAndPitstopRev += d.fnbSales + pitstopRev;
-    });
-    
-    return {
-      totalSubsidiaryRev,
-      totalFnbAndPitstopRev
-    };
-  }, [visitorValidMonths]);
+  }, [filteredProcessedData]);
 
   const totalHotelGuests = useMemo(() => {
     if (!filteredProcessedData || filteredProcessedData.length === 0) return 0;
@@ -1019,18 +924,13 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
   // TrevPAR / RevPAR 계산
   const kpiData = useMemo(() => {
     if (!filteredProcessedData || filteredProcessedData.length === 0) return null;
-    
-    // settings에서 캡처 레이트 가져오기 (없으면 기본값)
-    const capLeisure = (settings.captureRateLeisure ?? 85) / 100;
-    const capFnb = (settings.captureRateFnb ?? 75) / 100;
-    const capMoto = (settings.captureRateMoto ?? 25) / 100;
 
     let totalAvailableRooms = 0;
     let totalRoomRev = 0;
     let totalGrossTrev = 0;
-    let totalPureTrev = 0;
     let totalSubsidiaryRev = 0;
     let totalFnbAndPitstopRev = 0;
+    let totalRoomsSold = 0;
 
     filteredProcessedData.forEach(d => {
       const physicalRooms = Number(settings.totalRooms) || 175;
@@ -1043,6 +943,12 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
 
       totalAvailableRooms += monthlyInv;
       totalRoomRev += (d.totalRoomRevenue || 0);
+
+      const sold16 = Number(d.sold16 || d.standardSold || 0);
+      const sold35 = Number(d.sold35 || 0);
+      const sold51 = Number(d.sold51 || d.connectingSold || 0);
+      const sold51Acc = Number(d.sold51Acc || 0);
+      totalRoomsSold += sold16 + sold35 + (count51AsTwo ? sold51 * 2 : sold51) + sold51Acc;
 
       const leisureGross = d.leisureSales || 0;
       const fnbGross = d.fnbSales || 0;
@@ -1061,8 +967,6 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       const dynamicGrossSum = Math.max(0, (d.totalSales || 0) - (leisureGross + fnbGross + motoGross + otherGross));
       
       totalGrossTrev += (d.totalRoomRevenue || 0) + (d.totalSales || 0); // 기존 4대 매출 + 커스텀 그룹 자동 합산
-      // 모토아레나는 캡쳐율 추정이 아닌 실제 투숙객 데이터(motoGuestRev)가 우선이나, 없을 경우 capMoto 적용
-      totalPureTrev += (d.totalRoomRevenue || 0) + (leisureGross * capLeisure) + (fnbGross * capFnb) + (d.motoGuestRev || (motoGross * capMoto)) + otherGross + dynamicGrossSum;
       totalSubsidiaryRev += (d.totalSales || 0);
       totalFnbAndPitstopRev += fnbGross + pitstopRev;
     });
@@ -1072,12 +976,11 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     return {
       revPar: Math.round(totalRoomRev / totalAvailableRooms),
       grossTrevPar: Math.round(totalGrossTrev / totalAvailableRooms),
-      pureTrevPar: Math.round(totalPureTrev / totalAvailableRooms),
-      capLeisure: capLeisure * 100,
-      capFnb: capFnb * 100,
-      capMoto: capMoto * 100,
-      totalSubsidiaryRev: totalSubsidiaryRev,
-      totalFnbAndPitstopRev: totalFnbAndPitstopRev
+      adr: totalRoomsSold > 0 ? Math.round(totalRoomRev / totalRoomsSold) : 0,
+      totalRoomsSold,
+      totalRoomRev,
+      totalSubsidiaryRev,
+      totalFnbAndPitstopRev
     };
   }, [filteredProcessedData, settings]);
 
@@ -1211,46 +1114,35 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
         </div>
       </div>
 
-      {/* 🚀 최상단 핵심 지표 대형 배너 */}
-      <div className="glass-panel" style={{display: 'flex', flexWrap: 'wrap', overflow: 'hidden', border: '1px solid var(--accent-gold)'}}>
-        <div style={{flex: 1, minWidth: '300px', padding: '32px 40px', background: 'rgba(251, 191, 36, 0.1)', display: 'flex', flexDirection: 'column', gap: '12px'}}>
-          <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px'}}>
-            <h2 style={{margin: 0, color: 'var(--accent-gold)', fontSize: '24px', display: 'flex', alignItems: 'center', gap: '12px'}}>
-              👥 총 방문객 <span style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.3)', padding: '4px 8px', borderRadius: '4px'}}>
-                {isGoogleSheetSyncEnabled ? 'Google Sheet 연동' : 'Calculated'}
-              </span>
-            </h2>
-            <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px'}}>
-              <input type="checkbox" checked={isGoogleSheetSyncEnabled} onChange={(e) => setIsGoogleSheetSyncEnabled(e.target.checked)} style={{display: 'none'}} />
-              <span style={{fontSize: '12px', color: isGoogleSheetSyncEnabled ? 'var(--accent-emerald)' : 'var(--text-muted)'}}>구글 시트 연동</span>
-              <div style={{position: 'relative', width: '32px', height: '16px', background: isGoogleSheetSyncEnabled ? 'var(--accent-emerald)' : 'rgba(255,255,255,0.2)', borderRadius: '8px', transition: '0.3s'}}>
-                <div style={{position: 'absolute', top: '2px', left: isGoogleSheetSyncEnabled ? '18px' : '2px', width: '12px', height: '12px', background: 'white', borderRadius: '50%', transition: '0.3s'}} />
-              </div>
-            </label>
-          </div>
-          <div style={{fontSize: '48px', fontWeight: '900', color: 'var(--text-main)', textShadow: '0 0 20px rgba(251,191,36,0.5)'}}>
-            {displayVisitors !== null ? <CountUp end={displayVisitors} duration={2} separator="," /> : '...'}
+      {/* 🚀 최상단 핵심 지표 대형 배너 (100% 실측 팩트) */}
+      <div className="glass-panel" style={{display: 'flex', flexWrap: 'wrap', overflow: 'hidden', border: '1px solid var(--accent-emerald)'}}>
+        <div style={{flex: 1, minWidth: '300px', padding: '32px 40px', background: 'rgba(52, 211, 153, 0.05)', display: 'flex', flexDirection: 'column', gap: '12px'}}>
+          <h2 style={{margin: 0, color: 'var(--accent-emerald)', fontSize: '24px', display: 'flex', alignItems: 'center', gap: '12px'}}>
+            🛏️ 실측 객실 판매 수 <span style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.3)', padding: '4px 8px', borderRadius: '4px'}}>실측 팩트</span>
+          </h2>
+          <div style={{fontSize: '48px', fontWeight: '900', color: 'var(--text-main)', textShadow: '0 0 20px rgba(52,211,153,0.3)'}}>
+            {kpiData ? <CountUp end={kpiData.totalRoomsSold} duration={2} separator="," /> : '...'}
           </div>
           <p style={{margin: 0, color: 'var(--text-muted)', fontSize: '14px'}}>
-            {getFilterLabel} {dateRangeStr}
+            선택된 기간 동안의 총 객실 판매량 {dateRangeStr}
           </p>
-          <div style={{marginTop: 'auto', background: 'rgba(255,255,255,0.05)', padding: '12px 16px', borderRadius: '8px', border: '1px solid rgba(251, 191, 36, 0.2)'}}>
+          <div style={{marginTop: 'auto', background: 'rgba(255,255,255,0.05)', padding: '12px 16px', borderRadius: '8px', border: '1px solid rgba(52, 211, 153, 0.2)'}}>
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px dashed rgba(255,255,255,0.1)'}}>
               <div>
-                <div style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '2px'}}>방문객 1인당 평균 소비액</div>
-                <div style={{fontSize: '12px', color: 'var(--text-muted)', opacity: 0.7}}>(골프 및 숙박비 제외 / 부대매출 합산)</div>
+                <div style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '2px'}}>1실당 부대매출 시너지</div>
+                <div style={{fontSize: '12px', color: 'var(--text-muted)', opacity: 0.7}}>(객실당 평균 부대매출 총합)</div>
               </div>
-              <div style={{fontSize: '20px', fontWeight: 'bold', color: hasMissingVisitorData ? 'var(--text-muted)' : 'var(--accent-gold)'}}>
-                {hasMissingVisitorData ? <span style={{fontSize: '14px'}}>N/A (데이터 누락)</span> : (displayVisitors > 0 && visitorKpiData ? `₩${Math.round(visitorKpiData.totalSubsidiaryRev / displayVisitors).toLocaleString()}` : '₩0')}
+              <div style={{fontSize: '20px', fontWeight: 'bold', color: 'var(--accent-emerald)'}}>
+                {kpiData && kpiData.totalRoomsSold > 0 ? `₩${Math.round(kpiData.totalSubsidiaryRev / kpiData.totalRoomsSold).toLocaleString()}` : '₩0'}
               </div>
             </div>
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
               <div>
-                <div style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '2px'}}>1인당 식음비</div>
-                <div style={{fontSize: '12px', color: 'var(--text-muted)', opacity: 0.7}}>(식음 + 핏스탑 특별 합산 기준)</div>
+                <div style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '2px'}}>1실당 식음/핏스탑 매출</div>
+                <div style={{fontSize: '12px', color: 'var(--text-muted)', opacity: 0.7}}>(식음 + 핏스탑 매출 기준)</div>
               </div>
-              <div style={{fontSize: '18px', fontWeight: 'bold', color: hasMissingVisitorData ? 'var(--text-muted)' : 'var(--accent-emerald)'}}>
-                {hasMissingVisitorData ? <span style={{fontSize: '14px'}}>N/A (데이터 누락)</span> : (displayVisitors > 0 && visitorKpiData ? `₩${Math.round(visitorKpiData.totalFnbAndPitstopRev / displayVisitors).toLocaleString()}` : '₩0')}
+              <div style={{fontSize: '18px', fontWeight: 'bold', color: 'var(--accent-blue)'}}>
+                {kpiData && kpiData.totalRoomsSold > 0 ? `₩${Math.round(kpiData.totalFnbAndPitstopRev / kpiData.totalRoomsSold).toLocaleString()}` : '₩0'}
               </div>
             </div>
           </div>
@@ -1258,36 +1150,38 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
         
         <div style={{width: '1px', background: 'var(--border-glass)'}} />
 
-        <div style={{flex: 1, minWidth: '300px', padding: '32px 40px', background: 'rgba(52, 211, 153, 0.1)', display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative'}}>
-          <h2 style={{margin: 0, color: 'var(--accent-emerald)', fontSize: '24px', display: 'flex', alignItems: 'center', gap: '12px'}}>
-            🛏️ {isCumulative || selectedMonthFilter === 'all' || selectedMonthFilter.endsWith('-all') ? '누적 숙박객' : '월간 숙박객'} <span style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.3)', padding: '4px 8px', borderRadius: '4px'}}>DB 기반 연산</span>
+        <div style={{flex: 1, minWidth: '300px', padding: '32px 40px', background: 'rgba(96, 165, 250, 0.05)', display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative'}}>
+          <h2 style={{margin: 0, color: 'var(--accent-blue)', fontSize: '24px', display: 'flex', alignItems: 'center', gap: '12px'}}>
+            💰 실측 객실 판매 매출 <span style={{fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.3)', padding: '4px 8px', borderRadius: '4px'}}>실측 팩트</span>
           </h2>
-          <div style={{fontSize: '48px', fontWeight: '900', color: 'var(--text-main)', textShadow: '0 0 20px rgba(52,211,153,0.5)'}}>
-            <CountUp end={totalHotelGuests} duration={2} separator="," />
+          <div style={{fontSize: '48px', fontWeight: '900', color: 'var(--text-main)', textShadow: '0 0 20px rgba(96,165,250,0.3)'}}>
+            {kpiData ? <CountUp end={kpiData.totalRoomRev} duration={2} separator="," /> : '...'}
           </div>
           <p style={{margin: 0, color: 'var(--text-muted)', fontSize: '14px'}}>
-            (16평×2.5인) + (35평×4.5인) + (51평×6인) {isCumulative || selectedMonthFilter === 'all' || selectedMonthFilter.includes('-all') || ['summer','winter','spring','fall'].includes(selectedMonthFilter.split('-')[1] || '') ? '누적' : '당월'} 합산 결과 {dateRangeStr}
+            객실 판매를 통해 거둔 순수 실제 매출액 {dateRangeStr}
           </p>
 
           <div style={{position: 'absolute', right: '40px', bottom: '32px', background: 'rgba(0,0,0,0.4)', padding: '12px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end'}}>
-            <div style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px'}}>이 중 단체/세미나 고객</div>
-            <div style={{fontSize: '24px', fontWeight: 'bold', color: 'var(--accent-blue)'}}>
-              <CountUp end={seminarGuests} duration={2} separator="," /> <span style={{fontSize: '14px', color: 'var(--text-muted)', fontWeight: 'normal'}}>명</span>
+            <div style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px'}}>평형별 판매량 누적</div>
+            <div style={{fontSize: '13px', color: 'var(--text-main)', display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'flex-end'}}>
+              <div>16평형: <strong>{filteredProcessedData.reduce((sum, d) => sum + Number(d.sold16 || d.standardSold || 0), 0).toLocaleString()}</strong>실</div>
+              <div>35평형: <strong>{filteredProcessedData.reduce((sum, d) => sum + Number(d.sold35 || 0), 0).toLocaleString()}</strong>실</div>
+              <div>51평형: <strong>{filteredProcessedData.reduce((sum, d) => sum + (Number(d.sold51 || d.connectingSold || 0) + Number(d.sold51Acc || 0)), 0).toLocaleString()}</strong>실</div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* KPI Dashboard (TrevPAR & RevPAR) */}
+      {/* KPI Dashboard (RevPAR, Gross TrevPAR & ADR) */}
       {kpiData && (
         <div className="glass-panel" style={{padding: '24px', display: 'flex', gap: '32px', flexWrap: 'wrap'}}>
           <div style={{flex: '1 1 300px', minWidth: '280px', display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
             <h3 style={{margin: '0 0 16px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px'}}>
-              <span style={{color: 'var(--accent-gold)'}}>⚡</span> 경영 핵심 KPI (월평균)
+              <span style={{color: 'var(--accent-emerald)'}}>⚡</span> 경영 핵심 KPI (실측 기준)
             </h3>
             <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: '1.5', wordBreak: 'keep-all'}}>
-              방 1개를 팔았을 때 하루에 창출되는 평균 수익입니다. [설정]에 입력된 '투숙객 비중'을 바탕으로 워크인 매출을 제외한 <strong>순수 객실 연계 가치(Pure TrevPAR)</strong>를 분리하여 측정합니다.<br/>
-              <span style={{color: 'var(--accent-gold)', fontSize: '12px'}}>* 모토아레나는 판매상품 구분으로 계산된 낮은 상관관계가 반영되었습니다.(골프관련매출제외)</span>
+              리조트 운영 효율성과 객실당 실제 가치를 평가하는 100% 실측 핵심 지표입니다.<br/>
+              임의의 비중(Capture Rate)이나 보정치가 개입되지 않은 순수 실제 지표만 표출합니다.
             </p>
           </div>
           
@@ -1298,7 +1192,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                   RevPAR<br/>
                   <span style={{fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.2', display: 'inline-block', marginTop: '2px'}}>
                     Revenue Per Available Room<br/>
-                    (객실 판매로만 거둔 객실당 수익)
+                    (가용 객실 1실당 객실 판매 매출)
                   </span>
                 </div>
               </div>
@@ -1310,30 +1204,30 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
             <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
               <div style={{fontSize: '14px', color: 'var(--text-muted)', minHeight: '60px', wordBreak: 'keep-all', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end'}}>
                 <div>
-                  <span style={{color: 'var(--accent-emerald)'}}>●</span> 순수 TrevPAR<br/>
+                  Gross TrevPAR<br/>
                   <span style={{fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.2', display: 'inline-block', marginTop: '2px'}}>
-                    Total Revenue Per Available Room<br/>
-                    (투숙객이 지출한 객실당 총수익)
+                    Gross Total Revenue Per Available Room<br/>
+                    (비투숙객 포함 전체 매출 대비 객실당 매출)
                   </span>
                 </div>
               </div>
               <div style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-emerald)', letterSpacing: '-0.5px'}}>
-                ₩<CountUp end={kpiData.pureTrevPar} formattingFn={formatCurrency} duration={1} preserveValue />
+                ₩<CountUp end={kpiData.grossTrevPar} formattingFn={formatCurrency} duration={1} preserveValue />
               </div>
             </div>
 
             <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
               <div style={{fontSize: '14px', color: 'var(--text-muted)', minHeight: '60px', wordBreak: 'keep-all', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end'}}>
                 <div>
-                  Gross TrevPAR<br/>
+                  ADR<br/>
                   <span style={{fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.2', display: 'inline-block', marginTop: '2px'}}>
-                    Gross Total Revenue Per Available Room<br/>
-                    (비투숙객 포함 호텔 전체 객실당 총수익)
+                    Average Daily Rate<br/>
+                    (실제 판매된 객실 1실당 평균 객단가)
                   </span>
                 </div>
               </div>
               <div style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--text-main)', letterSpacing: '-0.5px'}}>
-                ₩<CountUp end={kpiData.grossTrevPar} formattingFn={formatCurrency} duration={1} preserveValue />
+                ₩<CountUp end={kpiData.adr} formattingFn={formatCurrency} duration={1} preserveValue />
               </div>
             </div>
           </div>
@@ -1390,9 +1284,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                         객실에 투숙하며 구매한 티켓 비율 (콘도/객실 티켓합계)
                       </div>
 
-                      <div style={{fontSize: '13px', color: 'var(--accent-emerald)', background: 'rgba(52, 211, 153, 0.1)', padding: '10px 12px', borderRadius: '6px', marginBottom: '16px'}}>
-                        💡 <strong>[추천]</strong> 이 수치({(motoCorrelations.guestRatio !== null && motoCorrelations.guestRatio !== undefined && typeof motoCorrelations.guestRatio === 'number') ? motoCorrelations.guestRatio.toFixed(1) : '0'}%)를 <strong>[설정] 탭의 '모토아레나 캡처 레이트'</strong>에 입력하시면, 가장 정확한 투숙객 순수 TrevPAR가 자동 계산됩니다.
-                      </div>
+
                       
                       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '12px'}}>
                         <span style={{fontSize: '14px', color: 'var(--text-main)'}}>객실 점유율 1% 상승당 순수 파급력</span>
