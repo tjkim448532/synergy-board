@@ -295,6 +295,7 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
 
     coreStats.facilities[fac] = {
       group: vals.group,
+      tag: settings?.weatherTags?.[fac] || '야외 어트랙션',
       wdClearAvg, wdRainyAvg, weClearAvg, weRainyAvg,
       overallClearAvg, overallRainyAvg,
       wdPenalty: wdClearAvg > 0 ? (wdRainyAvg - wdClearAvg) / wdClearAvg : 0,
@@ -320,25 +321,54 @@ export const predictWeatherImpact = (facilityName, isWeekend, forecastWeather, c
   const fStat = coreStats.facilities[facilityName];
   if (!fStat) return { expectedRevenue: 0, clearBaseline: customBaseline || 0, variance: 0, decreaseRate: 0, tags: [] };
 
+  const tag = fStat.tag || '야외 어트랙션';
   const isRainy = forecastWeather.precipitation >= RAIN_THRESHOLD;
+  const maxHourlyPrecip = forecastWeather.maxHourlyPrecip || 0;
   const isWindy = forecastWeather.windSpeedMax >= WIND_THRESHOLD;
   const consRainDays = forecastWeather.consecutiveRainCount || (isRainy ? 1 : 0);
+  const tempMax = forecastWeather.tempMax || 20;
+  const tempMin = forecastWeather.tempMin || 10;
 
-  // 1. 기본 베이스라인: 평일이면 평일 맑음 평균, 주말이면 주말 맑음 평균! (핵심 개선)
   const clearBaseline = customBaseline !== null ? customBaseline : (isWeekend ? fStat.weClearAvg : fStat.wdClearAvg);
   if (clearBaseline === 0) return { expectedRevenue: 0, clearBaseline: 0, variance: 0, decreaseRate: 0, tags: [] };
 
   let expectedRevenue = clearBaseline;
   const tags = [];
 
-  // 2. 우천 페널티 적용 (주중/주말 분리 페널티)
-  if (isRainy) {
-    const baseRainPenalty = isWeekend ? fStat.wePenalty : fStat.wdPenalty;
-    expectedRevenue = clearBaseline * (1 + baseRainPenalty);
-    tags.push('우천반영');
+  // 1. 강수량 (Hourly Rainfall) 기준 도메인 룰 반영
+  if (isRainy || maxHourlyPrecip > 0) {
+    if (tag === '야외 어트랙션' || tag === '야외 트랙' || tag === '공중/동력') {
+      if (maxHourlyPrecip >= 10) {
+        expectedRevenue = expectedRevenue * 0.3; // 70% 감소
+        tags.push('호우 통제(-70%)');
+      } else if (maxHourlyPrecip >= 5) {
+        expectedRevenue = expectedRevenue * 0.6; // 40% 감소
+        tags.push('우천 운영차질(-40%)');
+      } else if (maxHourlyPrecip >= 0.1 || isRainy) {
+        expectedRevenue = expectedRevenue * 0.85; // 15% 감소
+        tags.push('우천 예약취소(-15%)');
+      }
+    } else if (tag === '실내/F&B') {
+      if (maxHourlyPrecip >= 10) {
+        expectedRevenue = expectedRevenue * 1.15; // 15% 상승
+        tags.push('실내 특수(+15%)');
+      } else {
+        // 기존 통계적 풍선효과 적용
+        const subEffect = coreStats.global.substitutionStats.find(s => s.loc === facilityName);
+        if (subEffect && subEffect.impact > 0) {
+          expectedRevenue = expectedRevenue * (1 + (subEffect.impact / 100));
+          tags.push('풍선효과(매출상승)');
+        }
+      }
+    } else {
+      // 기타 카테고리(물놀이, 겨울시설 등)는 기존 통계적 페널티 적용
+      const baseRainPenalty = isWeekend ? fStat.wePenalty : fStat.wdPenalty;
+      expectedRevenue = expectedRevenue * (1 + baseRainPenalty);
+      tags.push('우천 통계반영');
+    }
 
-    // 3. 장마 피로도 추가 페널티 적용 (Global 비율 참조)
-    if (consRainDays >= 2) {
+    // 장마 피로도 추가 페널티 적용 (야외 한정)
+    if (consRainDays >= 2 && expectedRevenue < clearBaseline && ['야외 어트랙션', '야외 트랙', '공중/동력'].includes(tag)) {
       const globalClear = coreStats.global.consecutiveRain.clearAvg;
       const gDay1 = coreStats.global.consecutiveRain.day1Avg;
       const gDay2 = coreStats.global.consecutiveRain.day2Avg;
@@ -349,31 +379,50 @@ export const predictWeatherImpact = (facilityName, isWeekend, forecastWeather, c
         if (consRainDays === 2 && gDay2 > 0) fatigueRatio = gDay2 / gDay1;
         if (consRainDays >= 3 && gDay3 > 0) fatigueRatio = gDay3 / gDay1;
         
-        if (fatigueRatio < 1 && fatigueRatio > 0.5) { // 하락하는 추세라면
+        if (fatigueRatio < 1 && fatigueRatio > 0.5) { 
           const additionalPenalty = 1 - fatigueRatio;
           expectedRevenue = expectedRevenue * (1 - additionalPenalty);
           tags.push(`장마피로도(${consRainDays}일차)`);
         }
       }
     }
+  }
 
-    // 4. 대체재(풍선효과) 검증
-    const subEffect = coreStats.global.substitutionStats.find(s => s.loc === facilityName);
-    if (subEffect && subEffect.impact > 0) {
-      // 풍선효과가 확인된 시설은 우천 시 오히려 상승!
-      expectedRevenue = clearBaseline * (1 + (subEffect.impact / 100));
-      tags.push('풍선효과(매출상승)');
+  // 2. 강풍 페널티 (Wind Speed)
+  if (isWindy && expectedRevenue > 0) {
+    if (tag === '공중/동력' && forecastWeather.windSpeedMax >= 15) {
+      expectedRevenue = 0;
+      tags.push('강풍 전면운휴(-100%)');
+    } else {
+      const normalWind = coreStats.global.wind.normalWindAvgRev;
+      const highWind = coreStats.global.wind.highWindAvgRev;
+      if (normalWind > 0 && highWind < normalWind) {
+        const windDropRatio = (normalWind - highWind) / normalWind;
+        expectedRevenue = expectedRevenue * (1 - windDropRatio);
+        tags.push('강풍 타격');
+      }
     }
   }
 
-  // 5. 강풍 페널티 (바람 10m/s 이상 시 전체 매출의 하락 비율 적용)
-  if (isWindy && expectedRevenue > 0) {
-    const normalWind = coreStats.global.wind.normalWindAvgRev;
-    const highWind = coreStats.global.wind.highWindAvgRev;
-    if (normalWind > 0 && highWind < normalWind) {
-      const windDropRatio = (normalWind - highWind) / normalWind; // e.g. 0.15 (15% drop)
-      expectedRevenue = expectedRevenue * (1 - windDropRatio);
-      tags.push('강풍타격');
+  // 3. 기온 (Temperature) 믹스 변화
+  if (tempMax >= 33 && expectedRevenue > 0) {
+    if (tag === '물놀이/수영장') {
+      expectedRevenue = expectedRevenue * 1.5; 
+      tags.push('폭염 특수(+50%)');
+    } else if (tag === '야외 어트랙션' || tag === '야외 트랙') {
+      expectedRevenue = expectedRevenue * 0.7; 
+      tags.push('폭염 야외기피(-30%)');
+    }
+  } else if ((tempMax <= 5 || tempMin <= -5) && expectedRevenue > 0) {
+    if (tag === '겨울 시설') {
+      expectedRevenue = expectedRevenue * 1.3; 
+      tags.push('겨울 특수(+30%)');
+    } else if (tag === '야외 어트랙션' || tag === '야외 트랙' || tag === '물놀이/수영장') {
+      expectedRevenue = expectedRevenue * 0.6; 
+      tags.push('한파 야외기피(-40%)');
+    } else if (tag === '실내/F&B') {
+      expectedRevenue = expectedRevenue * 1.1; 
+      tags.push('한파 실내선호(+10%)');
     }
   }
 

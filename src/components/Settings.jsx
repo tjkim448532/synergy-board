@@ -40,10 +40,10 @@ export default function Settings({ monthlyData }) {
     connectingRooms51: 85,
     count51AsTwoRooms: true,
     customWeekends: '',
-    targetAdr16: 0,
     targetAdr35: 0,
     targetAdr51: 0,
     locationGroups: {},
+    weatherTags: {},
     guestWeight16: 2.5,
     guestWeight35: 3.5,
     guestWeight51: 6.0,
@@ -243,6 +243,16 @@ export default function Settings({ monthlyData }) {
       locationGroups: {
         ...(prev.locationGroups || {}),
         [loc]: group
+      }
+    }));
+  };
+
+  const handleWeatherTagChange = (loc, tag) => {
+    setSettings(prev => ({
+      ...prev,
+      weatherTags: {
+        ...(prev.weatherTags || {}),
+        [loc]: tag
       }
     }));
   };
@@ -786,9 +796,28 @@ export default function Settings({ monthlyData }) {
             <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
               {uniqueLocations.map(loc => {
                 const currentGroup = (settings.locationGroups && settings.locationGroups[loc]) || getDefaultGroup(loc);
+                const currentTag = (settings.weatherTags && settings.weatherTags[loc]) || '야외 어트랙션';
                 return (
-                  <div key={loc} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', padding: '10px 16px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px'}}>
-                    <strong style={{fontSize: '16px', flex: '1 1 150px'}}>{loc}</strong>
+                  <div key={loc} style={{display: 'flex', flexDirection: 'column', gap: '8px', padding: '12px 16px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px'}}>
+                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px'}}>
+                      <strong style={{fontSize: '16px', flex: '1 1 150px'}}>{loc}</strong>
+                      
+                      <select
+                        value={currentTag}
+                        onChange={(e) => handleWeatherTagChange(loc, e.target.value)}
+                        style={{
+                          background: 'rgba(255,255,255,0.1)', color: 'var(--text-main)', border: '1px solid rgba(255,255,255,0.2)', 
+                          padding: '6px 10px', borderRadius: '6px', outline: 'none', fontSize: '13px'
+                        }}
+                      >
+                        <option value="야외 어트랙션" style={{color:'black'}}>야외 어트랙션 (기본)</option>
+                        <option value="야외 트랙" style={{color:'black'}}>야외 트랙 (카트/루지 등)</option>
+                        <option value="공중/동력" style={{color:'black'}}>공중/동력 (리프트 등)</option>
+                        <option value="실내/F&B" style={{color:'black'}}>실내 시설 및 식당</option>
+                        <option value="물놀이/수영장" style={{color:'black'}}>물놀이/수영장</option>
+                        <option value="겨울 시설" style={{color:'black'}}>겨울 시설 (눈썰매 등)</option>
+                      </select>
+                    </div>
                     <div style={{display: 'flex', gap: '16px', flexWrap: 'wrap', flex: '2 1 auto'}}>
                       <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', whiteSpace: 'normal', wordBreak: 'keep-all', overflowWrap: 'anywhere', color: currentGroup === 'leisure' ? 'var(--accent-emerald)' : 'var(--text-muted)'}}>
                         <input 

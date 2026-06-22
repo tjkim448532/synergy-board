@@ -41,7 +41,7 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
         const startStr = `${y2}-${m2}-${d2}`;
 
         // 안성(팜랜드/시너지 기준) 위경도 대략 37.0079, 127.2797
-        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=37.0079&longitude=127.2797&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max&timezone=Asia%2FSeoul&start_date=${startStr}&end_date=${selectedDate}&wind_speed_unit=ms`);
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=37.0079&longitude=127.2797&hourly=precipitation&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max&timezone=Asia%2FSeoul&start_date=${startStr}&end_date=${selectedDate}&wind_speed_unit=ms`);
         if (!res.ok) throw new Error('날씨 예보를 가져오는데 실패했습니다.');
         
         const data = await res.json();
@@ -61,10 +61,28 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
                 }
               }
             }
+            
+            let maxHourlyPrecip = 0;
+            if (data.hourly && data.hourly.time && data.hourly.precipitation) {
+              for (let i = 0; i < data.hourly.time.length; i++) {
+                const hTime = data.hourly.time[i]; 
+                if (hTime.startsWith(selectedDate)) {
+                  const hourStr = hTime.substring(11, 13);
+                  const hour = parseInt(hourStr, 10);
+                  if (hour >= 9 && hour <= 18) {
+                    if (data.hourly.precipitation[i] > maxHourlyPrecip) {
+                      maxHourlyPrecip = data.hourly.precipitation[i];
+                    }
+                  }
+                }
+              }
+            }
+
             setForecastData({
               tempMax: data.daily.temperature_2m_max[tIdx],
               tempMin: data.daily.temperature_2m_min[tIdx],
               precipitation: pList[tIdx],
+              maxHourlyPrecip: maxHourlyPrecip,
               windSpeedMax: wList[tIdx] || 0,
               code: data.daily.weathercode[tIdx],
               consecutiveRainCount: consRain
@@ -154,8 +172,11 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
       
       const forecastParam = {
         precipitation: forecastData ? forecastData.precipitation : 0,
+        maxHourlyPrecip: forecastData ? forecastData.maxHourlyPrecip : 0,
         windSpeedMax: forecastData ? forecastData.windSpeedMax : 0,
-        consecutiveRainCount: forecastData ? forecastData.consecutiveRainCount : 0
+        consecutiveRainCount: forecastData ? forecastData.consecutiveRainCount : 0,
+        tempMax: forecastData ? forecastData.tempMax : 0,
+        tempMin: forecastData ? forecastData.tempMin : 0
       };
 
       const coreImpact = predictWeatherImpact(facName, fb.isWeekend, forecastParam, coreStats, clearAvg);
@@ -265,7 +286,10 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
                 )}
               </div>
               <div style={{fontSize: '24px', fontWeight: 'bold', marginBottom: '8px'}}>
-                예상 강수량: <span style={{color: forecastData.precipitation >= 3.0 ? 'var(--accent-coral)' : 'var(--text-bright)'}}>{forecastData.precipitation.toFixed(1)}mm</span>
+                예상 강수량: <span style={{color: forecastData.precipitation >= 3.0 ? 'var(--accent-coral)' : 'var(--text-bright)'}}>{forecastData.precipitation.toFixed(1)}mm/일</span>
+              </div>
+              <div style={{color: 'var(--text-muted)', fontSize: '14px', marginBottom: '8px'}}>
+                시간당 최대 강수량(09~18시): <span style={{color: forecastData.maxHourlyPrecip >= 5.0 ? 'var(--accent-coral)' : forecastData.maxHourlyPrecip >= 1.0 ? 'var(--accent-gold)' : 'var(--text-bright)'}}>{forecastData.maxHourlyPrecip.toFixed(1)}mm/h</span>
               </div>
               <div style={{color: 'var(--text-muted)', fontSize: '14px'}}>
                 최고 기온: {forecastData.tempMax}°C / 최저 기온: {forecastData.tempMin}°C
