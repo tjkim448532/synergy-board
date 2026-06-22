@@ -1,5 +1,4 @@
 // src/utils/statUtils.js
-import { matrix, multiply, transpose, inv } from 'mathjs';
 
 
 /**
@@ -181,44 +180,71 @@ function normalCDF(x) {
   return prob;
 }
 
-/**
- * 다중 선형 회귀 분석 (Multiple Linear Regression)
- * OLS 방식으로 계수(B), 표준오차(SE), t-통계량, p-value, 결정계수(R2)를 산출합니다.
- * @param {Array} yArray - 종속변수 (e.g. 매출액) 1차원 배열
- * @param {Array} xMatrix - 독립변수 2차원 배열 (각 행은 [1, x1, x2...])
- */
-export const calculateMultipleRegression = (yArray, xMatrix) => {
-  if (!yArray || !xMatrix || yArray.length === 0 || yArray.length !== xMatrix.length) return null;
-  
-  const n = yArray.length;
-  const k = xMatrix[0].length;
-  if (n <= k + 1) return null; // 자유도 부족
+// Pure JS Matrix Operations
+const transpose = (matrix) => matrix[0].map((_, colIndex) => matrix.map(row => row[colIndex]));
 
-  try {
-    const X = matrix(xMatrix);
-    // Y를 열 벡터(n x 1)로 변환
-    const Y = matrix(yArray.map(y => [y]));
-    
-    const XT = transpose(X);
-    // B = (X^T * X)^-1 * X^T * Y
-    const XTX = multiply(XT, X);
-    const XTX_inv = inv(XTX);
-    const XTY = multiply(XT, Y);
-    const B = multiply(XTX_inv, XTY);
-    
-    // Y_pred = X * B
-    const Y_pred = multiply(X, B);
-    
-    let sumSqErr = 0;
-    let sumY = 0;
-    for (let i = 0; i < n; i++) {
-      const err = yArray[i] - Y_pred.get([i, 0]);
-      sumSqErr += err * err;
-      sumY += yArray[i];
+const multiply = (a, b) => {
+  const aRows = a.length, aCols = a[0].length, bCols = b[0].length;
+  const m = new Array(aRows);
+  for (let r = 0; r < aRows; ++r) {
+    m[r] = new Array(bCols);
+    for (let c = 0; c < bCols; ++c) {
+      m[r][c] = 0;
+      for (let i = 0; i < aCols; ++i) {
+        m[r][c] += a[r][i] * b[i][c];
+      }
     }
-    const meanY = sumY / n;
+  }
+  return m;
+};
+
+// Gauss-Jordan Elimination for Matrix Inverse
+const inverse = (matrix) => {
+  let m = matrix.length;
+  let identity = [];
+  let aug = [];
+  
+  for (let i = 0; i < m; i++) {
+    identity[i] = [];
+    aug[i] = [];
+    for (let j = 0; j < m; j++) {
+      identity[i][j] = (i === j) ? 1 : 0;
+      aug[i][j] = matrix[i][j];
+    }
+  }
+  
+  for (let i = 0; i < m; i++) {
+    let pivot = aug[i][i];
+    if (pivot === 0) return null; // Singular matrix
     
-    let totalSumSq = 0;
+    for (let j = 0; j < m; j++) {
+      aug[i][j] /= pivot;
+      identity[i][j] /= pivot;
+    }
+    
+    for (let k = 0; k < m; k++) {
+      if (k !== i) {
+        let factor = aug[k][i];
+        for (let j = 0; j < m; j++) {
+          aug[k][j] -= factor * aug[i][j];
+          identity[k][j] -= factor * identity[i][j];
+        }
+      }
+    }
+  }
+  return identity;
+};
+
+/**
+ * 다중 선형 회귀 분석 (OLS) - Pure JS
+ * @param {number[]} y 종속 변수 배열
+ * @param {number[][]} X 독립 변수 2차원 배열 (첫번째 열은 1)
+ * @returns {object|null} { coefficients, pValues, R2 }
+ */
+export const calculateMultipleRegression = (y, X) => {
+  if (!y || !X || y.length < 4 || y.length !== X.length) return null;
+  
+  try {
     for (let i = 0; i < n; i++) {
       const diff = yArray[i] - meanY;
       totalSumSq += diff * diff;

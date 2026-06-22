@@ -832,26 +832,54 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     const otherRatio = sumTotal > 0 ? (sumOther / sumTotal) * 100 : 0;
 
     const isWkndArrMoto = filtered.map(d => isLeisureWeekend(d.date, settings?.customWeekends || []));
+    
+    // MRA Matrix: [Intercept, 점유율(occArr), 주말효과]
+    const xMatrix = filtered.map((d, i) => [
+      1,
+      occArr[i] || 0,
+      isWkndArrMoto[i] ? 1 : 0
+    ]);
+    
+    const mraGuest = calculateMultipleRegression(guestArr, xMatrix);
+    const mraTotal = calculateMultipleRegression(totalArr, xMatrix);
+
     return {
-      guest: getAdjustedCorrelation(occArr, guestArr, isWkndArrMoto),
+      guest: mraGuest ? { coef: mraGuest.coefficients[1], p: mraGuest.pValues[1] } : null,
       guestRatio: guestRatio,
       generalRatio: generalRatio,
       otherRatio: otherRatio,
       aggregatedOther: aggregatedOther,
-      total: getAdjustedCorrelation(occArr, totalArr, isWkndArrMoto),
+      total: mraTotal ? { coef: mraTotal.coefficients[1], p: mraTotal.pValues[1] } : null,
       guestAvailable: true
     };
   }, [filteredProcessedData, activeDivision, motoLogic, settings]);
 
-  // 선택된 부문의 평형별 상관계수 계산
+  // 선택된 부문의 평형별 다중 회귀 분석(MRA) 계산
   const activeRoomTypeCorrelations = useMemo(() => {
     const isWkndArr = filteredProcessedData.map(d => activeDivision === 'room' ? isRoomWeekend(d.date, settings?.customWeekends || []) : isLeisureWeekend(d.date, settings?.customWeekends || []));
     const targetArr = filteredProcessedData.map(d => d[activeConf.dataKey]);
-    return {
-      '16평': getAdjustedCorrelation(filteredProcessedData.map(d => d.sold16), targetArr, isWkndArr),
-      '35평': getAdjustedCorrelation(filteredProcessedData.map(d => d.sold35), targetArr, isWkndArr),
-      '51평': getAdjustedCorrelation(filteredProcessedData.map(d => d.sold51 + (d.sold51Acc || 0)), targetArr, isWkndArr)
-    };
+    
+    // MRA Matrix: [Intercept, 16평, 35평, 51평, 주말효과]
+    const xMatrix = filteredProcessedData.map((d, i) => [
+      1,
+      d.sold16 || 0,
+      d.sold35 || 0,
+      (d.sold51 || 0) + (d.sold51Acc || 0),
+      isWkndArr[i] ? 1 : 0
+    ]);
+    
+    const mra = calculateMultipleRegression(targetArr, xMatrix);
+    
+    if (mra) {
+      return {
+        '16평': { coef: mra.coefficients[1], p: mra.pValues[1] },
+        '35평': { coef: mra.coefficients[2], p: mra.pValues[2] },
+        '51평': { coef: mra.coefficients[3], p: mra.pValues[3] },
+        R2: mra.R2
+      };
+    }
+    
+    return { '16평': null, '35평': null, '51평': null };
   }, [filteredProcessedData, activeConf.dataKey, activeDivision, settings]);
 
   // 영업장별 상관계수 계산 (객실 점유율 기준)
@@ -904,9 +932,22 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       if (totalAmt < 1000000 * filteredProcessedData.length) return;
 
       const isWkndArrLoc = filteredProcessedData.map(d => activeDivision === 'room' ? isRoomWeekend(d.date, settings?.customWeekends || []) : isLeisureWeekend(d.date, settings?.customWeekends || []));
-      const corr = getAdjustedCorrelation(occArr, dataArr, isWkndArrLoc);
-      if (corr !== null && !isNaN(corr)) {
-        results.push({ name: loc, correlation: corr });
+      
+      // MRA Matrix: [Intercept, 점유율(occArr), 주말효과, 강수량]
+      const xMatrix = filteredProcessedData.map((d, i) => [
+        1,
+        occArr[i] || 0,
+        isWkndArrLoc[i] ? 1 : 0,
+        d.precipitation || 0
+      ]);
+      const mra = calculateMultipleRegression(dataArr, xMatrix);
+      
+      if (mra && mra.coefficients[1] !== undefined && !isNaN(mra.coefficients[1])) {
+        results.push({ 
+          name: loc, 
+          correlation: mra.coefficients[1], // 점유율 1% 증가당 순수 매출 파급력(₩)
+          p: mra.pValues[1]
+        });
       }
     });
 
@@ -1292,20 +1333,20 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                       </div>
                       
                       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '12px'}}>
-                        <span style={{fontSize: '14px', color: 'var(--text-main)'}}>객실 점유율과의 상관계수 (r)</span>
-                        <span style={{fontSize: '24px', fontWeight: 'bold', color: (motoCorrelations.guest !== null && motoCorrelations.guest >= 0.4) ? 'var(--accent-emerald)' : 'var(--text-main)'}}>
-                          {typeof motoCorrelations.guest === 'number' ? motoCorrelations.guest.toFixed(3) : 'N/A'}
+                        <span style={{fontSize: '14px', color: 'var(--text-main)'}}>객실 점유율 1% 상승당 순수 파급력</span>
+                        <span style={{fontSize: '24px', fontWeight: 'bold', color: (motoCorrelations.guest && motoCorrelations.guest.coef > 0) ? 'var(--accent-emerald)' : 'var(--text-main)'}}>
+                          {motoCorrelations.guest && typeof motoCorrelations.guest.coef === 'number' ? `+₩${formatCurrency(motoCorrelations.guest.coef)}` : 'N/A'}
                         </span>
                       </div>
                       
                       <div style={{fontSize: '13px', padding: '16px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', lineHeight: '1.5'}}>
-                        {motoCorrelations.guest !== null && motoCorrelations.guest >= 0.4 && motoCorrelations.guestRatio < 20 ? (
-                          <span>⚠️ <strong style={{color: 'var(--accent-red)'}}>[통계적 착시 주의]</strong> 객실 점유율과 흐름은 유사하나, 투숙객 매출이 차지하는 파이가 너무 작아 실질적인 매출 견인 효과는 미미합니다 (허수 가능성).</span>
-                        ) : motoCorrelations.guest !== null && motoCorrelations.guest >= 0.4 && motoCorrelations.guestRatio >= 20 ? (
-                          <span>✅ <strong style={{color: 'var(--accent-emerald)'}}>[핵심 동력]</strong> 객실 점유율 증가 시 뚜렷하게 함께 오르며, 비중 또한 유의미하여 모토아레나 성장을 든든하게 받쳐주고 있습니다.</span>
-                        ) : motoCorrelations.guest !== null ? (
-                          <span style={{color: 'var(--text-muted)'}}>📉 객실 점유율 증감과 투숙객 티켓 판매량 간의 유의미한 동기화가 확인되지 않습니다.</span>
-                        ) : null}
+                        {motoCorrelations.guest && motoCorrelations.guest.p < 0.05 ? (
+                          <span>✅ <strong style={{color: 'var(--accent-emerald)'}}>[핵심 동력]</strong> 점유율이 견인하는 확고한 모토아레나 매출 창출 동력입니다 (유의수준 95% 이상 통과).</span>
+                        ) : motoCorrelations.guest && motoCorrelations.guest.p >= 0.05 ? (
+                          <span>⚠️ <strong style={{color: 'var(--accent-red)'}}>[통계적 착시 주의]</strong> 객실 점유율과 동반 상승하는 듯 보이나 통계적으로 무의미한 노이즈이거나 다른 요인의 개입이 큽니다.</span>
+                        ) : (
+                          <span style={{color: 'var(--text-muted)'}}>📉 분석 데이터가 부족합니다.</span>
+                        )}
                       </div>
                     </div>
 
@@ -1416,18 +1457,22 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
         </div>
 
         <div className="glass-panel" style={{padding: '24px', gridColumn: 'span 2'}}>
-          <h3 style={{margin: '0 0 10px 0', color: 'var(--text-muted)'}}>{activeConf.title} 매출과 가장 연관 깊은 객실 평형</h3>
+          <h3 style={{margin: '0 0 10px 0', color: 'var(--text-muted)'}}>{activeConf.title} 매출에 대한 평형별 1실당 순수 파급력 (MRA)</h3>
           <div style={{display: 'flex', gap: '20px', height: '100%', alignItems: 'center'}}>
-            {Object.entries(activeRoomTypeCorrelations).map(([type, r]) => (
+            {Object.entries(activeRoomTypeCorrelations).filter(([type]) => type !== 'R2').map(([type, stats]) => (
               <div key={type} style={{flex: 1, background: 'rgba(255,255,255,0.05)', padding: '16px', borderRadius: '8px', textAlign: 'center'}}>
                 <div style={{fontSize: '18px', fontWeight: 'bold'}}>{type}</div>
-                <div style={{fontSize: '24px', color: (r && r > 0.5) ? activeConf.color : 'var(--text-main)', margin: '8px 0'}}>
-                  {typeof r === 'number' ? r.toFixed(2) : '-'}
+                <div style={{fontSize: '24px', color: (stats && stats.coef > 0) ? activeConf.color : 'var(--text-main)', margin: '8px 0'}}>
+                  {stats && typeof stats.coef === 'number' ? `+₩${formatCurrency(stats.coef)}` : '-'}
                 </div>
-                <div style={{fontSize: '12px', color: 'var(--text-muted)'}}>{getInterpretation(r)}</div>
+                <div style={{fontSize: '12px', color: 'var(--text-muted)'}}>1실 추가 판매당 기여액</div>
+                <div style={{marginTop: '8px', fontSize: '11px'}}>
+                  {stats && stats.p < 0.05 ? <span style={{color: '#4caf50'}}>✅ 신뢰도 95% 이상</span> : <span style={{color: '#ff9800'}}>⚠️ 통계적 노이즈(p≥0.05)</span>}
+                </div>
               </div>
             ))}
           </div>
+          <div style={{textAlign: 'right', fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px'}}>MRA 모델 설명력(R²): {activeRoomTypeCorrelations.R2 ? (activeRoomTypeCorrelations.R2 * 100).toFixed(1) : 0}%</div>
         </div>
       </div>
 
@@ -1511,21 +1556,19 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
 
         {/* 영업장별 상관관계 TOP */}
         <div className="glass-panel" style={{padding: '24px'}}>
-          <h3 style={{marginBottom: '20px'}}>{activeConf.title} 내 영업장별 점유율 민감도 TOP 5</h3>
-          <p style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '15px'}}>객실에 투숙객이 많을 때 가장 직접적으로 매출이 뛰는 영업장 순위입니다.</p>
+          <h3 style={{marginBottom: '20px'}}>{activeConf.title} 내 투숙객 점유율 파급력 TOP 5 (MRA)</h3>
+          <p style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '15px'}}>점유율 1% 증가 시 각 영업장에서 순수하게 발생하는 연계 매출액(₩)입니다.</p>
           
           <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
             {locationCorrelations.slice(0, 5).map((loc, idx) => (
               <div key={loc.name} style={{display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.05)', padding: '12px 16px', borderRadius: '8px'}}>
                 <div style={{width: '24px', fontWeight: 'bold', color: idx === 0 ? activeConf.color : 'var(--text-muted)'}}>{idx + 1}</div>
                 <div style={{flex: 1, fontWeight: 'bold'}}>{loc.name}</div>
-                <div style={{width: '100px', display: 'flex', alignItems: 'center'}}>
-                  <div style={{flex: 1, height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden'}}>
-                    <div style={{height: '100%', background: activeConf.color, width: `${Math.max(0, loc.correlation * 100)}%`}}></div>
-                  </div>
+                <div style={{width: '100px', display: 'flex', alignItems: 'center', marginRight: '10px'}}>
+                  {loc.p < 0.05 ? <span style={{fontSize: '11px', color: '#4caf50'}}>✅ 95% 통과</span> : <span style={{fontSize: '11px', color: '#ff9800'}}>⚠️ 노이즈</span>}
                 </div>
-                <div style={{width: '60px', textAlign: 'right', fontWeight: 'bold', color: activeConf.color}}>
-                  {typeof loc.correlation === 'number' ? loc.correlation.toFixed(2) : 'N/A'}
+                <div style={{width: '100px', textAlign: 'right', fontWeight: 'bold', color: activeConf.color}}>
+                  {typeof loc.correlation === 'number' ? `+₩${formatCurrency(loc.correlation)}` : 'N/A'}
                 </div>
               </div>
             ))}
