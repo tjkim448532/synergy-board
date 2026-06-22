@@ -7,7 +7,8 @@ import { isHoliday } from 'korean-holidays';
 
 export const isRoomWeekend = (dateStr, customWeekendsArray = []) => {
   if (!dateStr) return false;
-  const d = new Date(dateStr);
+  const parts = dateStr.split('-');
+  const d = new Date(parts[0], parts[1] - 1, parts[2]);
   if (isNaN(d.getTime())) return false;
   
   const day = d.getDay();
@@ -24,7 +25,8 @@ export const isRoomWeekend = (dateStr, customWeekendsArray = []) => {
 
 export const isLeisureWeekend = (dateStr, customWeekendsArray = []) => {
   if (!dateStr) return false;
-  const d = new Date(dateStr);
+  const parts = dateStr.split('-');
+  const d = new Date(parts[0], parts[1] - 1, parts[2]);
   if (isNaN(d.getTime())) return false;
   
   const day = d.getDay();

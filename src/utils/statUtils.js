@@ -29,7 +29,7 @@ export const filterOutliers = (dataList) => {
   const q3 = values[Math.floor(values.length * 0.75)];
   const iqr = q3 - q1;
   const lowerBound = q1 - 1.5 * iqr;
-  const upperBound = q3 + 1.5 * iqr;
+  const upperBound = Math.max(q3 + 1.5 * iqr, q3 * 1.2);
   
   return dataList.filter(v => v >= lowerBound && v <= upperBound);
 };

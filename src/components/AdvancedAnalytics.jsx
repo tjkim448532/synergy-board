@@ -445,7 +445,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       const q1 = nonZero[Math.floor(nonZero.length * 0.25)];
       const q3 = nonZero[Math.floor(nonZero.length * 0.75)];
       const iqr = q3 - q1;
-      const upperBound = q3 + 1.5 * iqr;
+      const upperBound = Math.max(q3 + 1.5 * iqr, q3 * 1.2);
       return dataList.filter(d => d[key] <= upperBound);
     };
 
