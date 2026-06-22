@@ -286,9 +286,14 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
     
     const overallRainyAvg = overallClearAvg * avgRatio;
     
+    const tag = settings?.weatherTags?.[fac] || '야외 어트랙션';
+    
     if (overallClearAvg > 0) {
       const impact = (avgRatio - 1) * 100;
-      if (impact > 0) { // 비올 때 실질적으로 오르는 경우 (진짜 풍선효과)
+      const isOutdoorTag = ['야외 어트랙션', '야외 트랙', '공중/동력', '골프장'].includes(tag);
+      
+      // 진짜 풍선효과: 1% 이상 오르고 야외 관련 태그가 아닐 때만 (통계적 노이즈/생존자 편향 차단)
+      if (impact > 1 && !isOutdoorTag && vals.group !== 'exclude') { 
         subStats.push({ loc: fac, clearAvg: overallClearAvg, rainyAvg: overallRainyAvg, impact });
       }
     }

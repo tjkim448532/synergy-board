@@ -17,6 +17,24 @@ export default function WeatherAnalytics({ processedData, settings }) {
   const fStat = coreStats.global.consecutiveRain;
   const subStats = coreStats.global.substitutionStats;
 
+  const rainPenaltyStats = useMemo(() => {
+    if (!coreStats) return [];
+    const penalties = [];
+    Object.entries(coreStats.facilities).forEach(([fac, stat]) => {
+      // 1% 이상 매출이 하락한 곳만 (노이즈 방지)
+      if (stat.overallPenalty < -0.01 && stat.group !== 'exclude') {
+        penalties.push({
+          loc: fac,
+          clearAvg: stat.overallClearAvg,
+          rainyAvg: stat.overallRainyAvg,
+          impact: stat.overallPenalty * 100
+        });
+      }
+    });
+    // 가장 타격이 큰(음수가 큰) 순서대로 정렬
+    return penalties.sort((a,b) => a.impact - b.impact);
+  }, [coreStats]);
+
   return (
     <div style={{color: 'var(--text-main)', display: 'flex', flexDirection: 'column', gap: '24px'}}>
       <div style={{marginBottom: '16px'}}>
@@ -103,6 +121,33 @@ export default function WeatherAnalytics({ processedData, settings }) {
             )) : (
               <div style={{color: 'var(--text-muted)', textAlign: 'center', padding: '20px'}}>
                 우천 시 매출이 상승하는 대체재 시설이 아직 발견되지 않았습니다.
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 4. 우천 시 타격 매장 카드 */}
+        <div className="glass-panel" style={{flex: '1', minWidth: '300px', padding: '24px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)'}}>
+          <div style={{display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px'}}>
+            <CloudRain size={24} color="var(--accent-coral)" />
+            <h3 style={{margin: 0, fontSize: '18px'}}>4. 비올 때 타격받는 매장 (우천 페널티)</h3>
+          </div>
+          
+          <div style={{display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '400px', overflowY: 'auto', paddingRight: '4px'}}>
+            {rainPenaltyStats.length > 0 ? rainPenaltyStats.map((sub, i) => (
+              <div key={i} style={{padding: '12px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.2)'}}>
+                <div style={{fontSize: '16px', fontWeight: 'bold', marginBottom: '8px', color: 'var(--text-main)'}}>{sub.loc}</div>
+                <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--text-muted)'}}>
+                  <span>맑은 날: ₩{formatCurrency(sub.clearAvg)}</span>
+                  <span>비오는 날: <span style={{color: 'var(--accent-coral)'}}>₩{formatCurrency(sub.rainyAvg)}</span></span>
+                </div>
+                <div style={{marginTop: '4px', textAlign: 'right', fontWeight: 'bold', color: 'var(--accent-coral)'}}>
+                  우천 시 {Math.abs(sub.impact).toFixed(1)}% 매출 하락
+                </div>
+              </div>
+            )) : (
+              <div style={{color: 'var(--text-muted)', textAlign: 'center', padding: '20px'}}>
+                우천 시 뚜렷하게 매출이 하락하는 시설이 데이터에 없습니다.
               </div>
             )}
           </div>
