@@ -7,7 +7,7 @@ import Papa from 'papaparse';
 import toast from 'react-hot-toast';
 import LeisureTicketManager from './LeisureTicketManager';
 import './Settings.css';
-import { getDefaultGroup, calculateGroupedSales } from '../utils/revenueUtils';
+import { getDefaultGroup, calculateGroupedSales, getDefaultWeatherTag } from '../utils/revenueUtils';
 import { fetchWeatherForRange } from '../utils/weatherUtils';
 
 const SectionCard = ({ title, description, isExpanded, onToggle, children, actions }) => (
