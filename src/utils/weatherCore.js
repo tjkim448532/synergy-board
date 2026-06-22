@@ -236,6 +236,7 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
                 wdExtremeRain10: [], weExtremeRain10: [],
                 wdExtremeRain5: [], weExtremeRain5: [],
                 wdWindy: [], weWindy: [],
+                tier: [],
                 group: settings?.locationGroups?.[fac] || 'leisure'
               };
             }
