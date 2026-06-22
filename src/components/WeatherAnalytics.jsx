@@ -27,7 +27,13 @@ export default function WeatherAnalytics({ processedData, settings }) {
           loc: fac,
           clearAvg: stat.overallClearAvg,
           rainyAvg: stat.overallRainyAvg,
-          impact: stat.overallPenalty * 100
+          impact: stat.overallPenalty * 100,
+          wdClearAvg: stat.wdClearAvg,
+          wdRainyAvg: stat.wdRainyAvg,
+          wdPenalty: stat.wdPenalty * 100,
+          weClearAvg: stat.weClearAvg,
+          weRainyAvg: stat.weRainyAvg,
+          wePenalty: stat.wePenalty * 100
         });
       }
     });
@@ -161,14 +167,30 @@ export default function WeatherAnalytics({ processedData, settings }) {
           <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
             {subStats.length > 0 ? subStats.map((sub, i) => (
               <div key={i} style={{padding: '12px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.2)'}}>
-                <div style={{fontSize: '16px', fontWeight: 'bold', marginBottom: '8px', color: 'var(--text-main)'}}>{sub.loc}</div>
+                <div style={{fontSize: '16px', fontWeight: 'bold', marginBottom: '8px', color: 'var(--text-main)', display: 'flex', justifyContent: 'space-between'}}>
+                  {sub.loc}
+                  <span style={{color: 'var(--accent-emerald)', fontSize: '14px'}}>전체 시너지: {sub.impact.toFixed(1)}%↑</span>
+                </div>
+                
+                {/* 주중 */}
+                {sub.wdClearAvg > 0 && (
+                <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '4px'}}>
+                  <span>[주중] 맑은 날: ₩{formatCurrency(sub.wdClearAvg)} <span style={{opacity: 0.5}}>→</span> 비: ₩{formatCurrency(sub.wdRainyAvg)}</span>
+                  <strong style={{color: sub.wdPenalty > 0 ? 'var(--accent-emerald)' : 'var(--text-muted)'}}>
+                    {sub.wdPenalty > 0 ? '+' : ''}{sub.wdPenalty.toFixed(1)}%
+                  </strong>
+                </div>
+                )}
+                
+                {/* 주말 */}
+                {sub.weClearAvg > 0 && (
                 <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--text-muted)'}}>
-                  <span>맑은 날: ₩{formatCurrency(sub.clearAvg)}</span>
-                  <span>비오는 날: <span style={{color: 'var(--accent-emerald)'}}>₩{formatCurrency(sub.rainyAvg)}</span></span>
+                  <span>[주말] 맑은 날: ₩{formatCurrency(sub.weClearAvg)} <span style={{opacity: 0.5}}>→</span> 비: ₩{formatCurrency(sub.weRainyAvg)}</span>
+                  <strong style={{color: sub.wePenalty > 0 ? 'var(--accent-emerald)' : 'var(--text-muted)'}}>
+                    {sub.wePenalty > 0 ? '+' : ''}{sub.wePenalty.toFixed(1)}%
+                  </strong>
                 </div>
-                <div style={{marginTop: '4px', textAlign: 'right', fontWeight: 'bold', color: 'var(--accent-emerald)'}}>
-                  우천 시 {sub.impact.toFixed(1)}% 매출 상승!
-                </div>
+                )}
               </div>
             )) : (
               <div style={{color: 'var(--text-muted)', textAlign: 'center', padding: '20px'}}>
@@ -188,14 +210,30 @@ export default function WeatherAnalytics({ processedData, settings }) {
           <div style={{display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '400px', overflowY: 'auto', paddingRight: '4px'}}>
             {rainPenaltyStats.length > 0 ? rainPenaltyStats.map((sub, i) => (
               <div key={i} style={{padding: '12px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.2)'}}>
-                <div style={{fontSize: '16px', fontWeight: 'bold', marginBottom: '8px', color: 'var(--text-main)'}}>{sub.loc}</div>
+                <div style={{fontSize: '16px', fontWeight: 'bold', marginBottom: '8px', color: 'var(--text-main)', display: 'flex', justifyContent: 'space-between'}}>
+                  {sub.loc}
+                  <span style={{color: 'var(--accent-coral)', fontSize: '14px'}}>전체 타격: {Math.abs(sub.impact).toFixed(1)}%↓</span>
+                </div>
+                
+                {/* 주중 */}
+                {sub.wdClearAvg > 0 && (
+                <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '4px'}}>
+                  <span>[주중] 맑은 날: ₩{formatCurrency(sub.wdClearAvg)} <span style={{opacity: 0.5}}>→</span> 비: ₩{formatCurrency(sub.wdRainyAvg)}</span>
+                  <strong style={{color: sub.wdPenalty < 0 ? 'var(--accent-coral)' : 'var(--text-muted)'}}>
+                    {sub.wdPenalty > 0 ? '+' : ''}{sub.wdPenalty.toFixed(1)}%
+                  </strong>
+                </div>
+                )}
+                
+                {/* 주말 */}
+                {sub.weClearAvg > 0 && (
                 <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--text-muted)'}}>
-                  <span>맑은 날: ₩{formatCurrency(sub.clearAvg)}</span>
-                  <span>비오는 날: <span style={{color: 'var(--accent-coral)'}}>₩{formatCurrency(sub.rainyAvg)}</span></span>
+                  <span>[주말] 맑은 날: ₩{formatCurrency(sub.weClearAvg)} <span style={{opacity: 0.5}}>→</span> 비: ₩{formatCurrency(sub.weRainyAvg)}</span>
+                  <strong style={{color: sub.wePenalty < 0 ? 'var(--accent-coral)' : 'var(--text-muted)'}}>
+                    {sub.wePenalty > 0 ? '+' : ''}{sub.wePenalty.toFixed(1)}%
+                  </strong>
                 </div>
-                <div style={{marginTop: '4px', textAlign: 'right', fontWeight: 'bold', color: 'var(--accent-coral)'}}>
-                  우천 시 {Math.abs(sub.impact).toFixed(1)}% 매출 하락
-                </div>
+                )}
               </div>
             )) : (
               <div style={{color: 'var(--text-muted)', textAlign: 'center', padding: '20px'}}>

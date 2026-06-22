@@ -359,7 +359,14 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
       
       // 진짜 풍선효과: 1% 이상 오르고 야외 관련 태그가 아닐 때만 (통계적 노이즈/생존자 편향 차단)
       if (impact > 1 && !isOutdoorTag && vals.group !== 'exclude') { 
-        subStats.push({ loc: fac, clearAvg: overallClearAvg, rainyAvg: overallRainyAvg, impact });
+        subStats.push({ 
+          loc: fac, 
+          clearAvg: overallClearAvg, 
+          rainyAvg: overallRainyAvg, 
+          impact,
+          wdClearAvg, wdRainyAvg, wdPenalty: (wdClearAvg > 0 ? (wdRainyAvg - wdClearAvg) / wdClearAvg * 100 : 0),
+          weClearAvg, weRainyAvg, wePenalty: (weClearAvg > 0 ? (weRainyAvg - weClearAvg) / weClearAvg * 100 : 0)
+        });
       }
     }
 
