@@ -86,7 +86,7 @@ export const calculateCorrelation = (xArray, yArray) => {
     sumSqY += dy * dy;
   }
   
-  if (sumSqX <= 0 || sumSqY <= 0) return 0;
+  if (sumSqX <= 0 || sumSqY <= 0) return null;
   return numerator / Math.sqrt(sumSqX * sumSqY);
 };
 

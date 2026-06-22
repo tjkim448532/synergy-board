@@ -990,10 +990,20 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     let dropRate = 0;
     if (wdStats && weStats) {
       // 심슨의 역설 방지: 주중/주말 각각의 타격률을 평균내어 전체 타격률 산출
-      const wdDrop = wdStats.clearAvgRev > 0 ? (wdStats.clearAvgRev - wdStats.rainyAvgRev) / wdStats.clearAvgRev : 0;
-      const weDrop = weStats.clearAvgRev > 0 ? (weStats.clearAvgRev - weStats.rainyAvgRev) / weStats.clearAvgRev : 0;
-      dropRate = (wdDrop + weDrop) / 2;
-    } else if (rainStats && rainStats.clearAvgRev > 0) {
+      let validDrops = 0;
+      let totalDrop = 0;
+      
+      if (wdStats.clearAvgRev > 0 && wdStats.rainyDays > 0) {
+        totalDrop += (wdStats.clearAvgRev - wdStats.rainyAvgRev) / wdStats.clearAvgRev;
+        validDrops++;
+      }
+      if (weStats.clearAvgRev > 0 && weStats.rainyDays > 0) {
+        totalDrop += (weStats.clearAvgRev - weStats.rainyAvgRev) / weStats.clearAvgRev;
+        validDrops++;
+      }
+      
+      dropRate = validDrops > 0 ? totalDrop / validDrops : 0;
+    } else if (rainStats && rainStats.clearAvgRev > 0 && rainStats.rainyDays > 0) {
       dropRate = (rainStats.clearAvgRev - rainStats.rainyAvgRev) / rainStats.clearAvgRev;
     }
 
