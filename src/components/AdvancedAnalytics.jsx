@@ -10,7 +10,7 @@ import { isHoliday } from 'korean-holidays';
 import { calculateGroupedSales, isRoomWeekend, isLeisureWeekend } from '../utils/revenueUtils';
 import { fetchCurrentWeather } from '../utils/weatherUtils';
 import { parseSafeNumber, safeAverage, filterOutliers, calculateCorrelation } from '../utils/statUtils';
-import { Wind, CloudRain, Activity } from 'lucide-react';
+import { Activity } from 'lucide-react';
 
 const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(Math.round(val || 0));
 

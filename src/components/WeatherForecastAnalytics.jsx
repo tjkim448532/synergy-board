@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Calendar, CloudRain, Sun, AlertTriangle, Users, TrendingDown, ArrowRight } from 'lucide-react';
+import { Calendar, CloudRain, Sun, AlertTriangle, Users, TrendingDown } from 'lucide-react';
 import { buildWeatherCoreStats, predictWeatherImpact } from '../utils/weatherCore';
 import { isRoomWeekend, isLeisureWeekend } from '../utils/revenueUtils';
 
@@ -101,31 +101,33 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
       if (m.rawLeisureRecords && Array.isArray(m.rawLeisureRecords)) {
         m.rawLeisureRecords.forEach(rec => {
           if (!rec.date) return;
-          const recDateObj = new Date(rec.date);
-          const recDay = recDateObj.getDay();
-          const recIsWkEnd = isHospitalityWeekend(rec.date, settings?.customWeekends || []);
           
-          if (recIsWkEnd === isWeekendOrHoliday) {
-            let precipitation = 0;
-            const rmRec = (m.rawRoomRecords || []).find(r => r.date === rec.date);
-            if (rmRec) {
-              precipitation = rmRec.weatherDaytimePrecip !== undefined && rmRec.weatherDaytimePrecip !== null 
-                ? Number(rmRec.weatherDaytimePrecip) : Number(rmRec.weatherPrecipitation || 0);
-            }
-            
-            if (precipitation < RAIN_THRESHOLD) {
-              Object.entries(rec.breakdown || {}).forEach(([facilityName, amount]) => {
-                const group = settings?.locationGroups?.[facilityName] || 'leisure';
-                const isExcluded = excludeKeywords.some(keyword => facilityName.includes(keyword)) || group === 'fnb';
-                if (isExcluded && !facilityName.includes('모토아레나')) return;
+          let precipitation = 0;
+          const rmRec = (m.rawRoomRecords || []).find(r => r.date === rec.date);
+          if (rmRec) {
+            precipitation = rmRec.weatherDaytimePrecip !== undefined && rmRec.weatherDaytimePrecip !== null 
+              ? Number(rmRec.weatherDaytimePrecip) : Number(rmRec.weatherPrecipitation || 0);
+          }
+          
+          if (precipitation < RAIN_THRESHOLD) {
+            Object.entries(rec.breakdown || {}).forEach(([facilityName, amount]) => {
+              const group = settings?.locationGroups?.[facilityName] || 'leisure';
+              const isExcluded = excludeKeywords.some(keyword => facilityName.includes(keyword)) || group === 'fnb';
+              if (isExcluded && !facilityName.includes('모토아레나')) return;
 
+              // 시설 그룹에 맞는 미래(목표일)와 과거(실적일) 주말 판별
+              const isTargetWeekend = group === 'room' ? isRoomWeekend(selectedDate, settings?.customWeekends || []) : isLeisureWeekend(selectedDate, settings?.customWeekends || []);
+              const isRecWeekend = group === 'room' ? isRoomWeekend(rec.date, settings?.customWeekends || []) : isLeisureWeekend(rec.date, settings?.customWeekends || []);
+
+              // 목표 날짜와 과거 날짜의 휴일 속성이 동일할 때만 Baseline 샘플로 사용
+              if (isTargetWeekend === isRecWeekend) {
                 if (!facilityBaseline[facilityName]) {
-                  facilityBaseline[facilityName] = { group, vals: [] };
+                  facilityBaseline[facilityName] = { group, isWeekend: isTargetWeekend, vals: [] };
                 }
                 const val = typeof amount === 'number' ? Math.round(amount) : parseInt(String(amount).replace(/,/g, ''), 10) || 0;
                 if (val > 0) facilityBaseline[facilityName].vals.push(val);
-              });
-            }
+              }
+            });
           }
         });
       }
@@ -156,10 +158,10 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
         consecutiveRainCount: forecastData ? forecastData.consecutiveRainCount : 0
       };
 
-      const coreImpact = predictWeatherImpact(facName, isWeekendOrHoliday, forecastParam, coreStats, clearAvg);
+      const coreImpact = predictWeatherImpact(facName, fb.isWeekend, forecastParam, coreStats, clearAvg);
       
       const fStat = coreStats.facilities[facName];
-      const baseRainPenalty = fStat ? (isWeekendOrHoliday ? fStat.wePenalty : fStat.wdPenalty) : 0;
+      const baseRainPenalty = fStat ? (fb.isWeekend ? fStat.wePenalty : fStat.wdPenalty) : 0;
       const trueRainyAvg = clearAvg * (1 + baseRainPenalty);
       
       const expectedRevenue = coreImpact.expectedRevenue;
@@ -207,7 +209,7 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
 
     return {
       date: selectedDate,
-      isWeekendOrHoliday,
+      isTargetWeekend: isLeisureWeekend(selectedDate, settings?.customWeekends || []),
       isForecastRainy,
       month: mm,
       results,
@@ -277,7 +279,7 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
           <div className="glass-panel" style={{flex: '1', minWidth: '300px', padding: '24px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
             <div style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px'}}>분석 기준 모델</div>
             <div style={{fontSize: '20px', fontWeight: 'bold', marginBottom: '20px'}}>
-              과거 <span style={{color: 'var(--accent-blue)'}}>{simulationResults.month}월</span>의 <span style={{color: 'var(--accent-gold)'}}>{simulationResults.isWeekendOrHoliday ? '주말 및 공휴일' : '평일'}</span> 패턴
+              과거 <span style={{color: 'var(--accent-blue)'}}>{simulationResults.month}월</span>의 <span style={{color: 'var(--accent-gold)'}}>{simulationResults.isTargetWeekend ? '주말 및 공휴일' : '평일'}</span> 패턴
             </div>
             
             <div style={{fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px'}}>예상 임팩트 요약</div>

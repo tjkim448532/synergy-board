@@ -20,20 +20,20 @@ const safeAverage = (arr, round = true) => {
   return round ? Math.round(avg) : avg;
 };
 
-// 이상치 제거 (IQR) - 0원(휴장) 데이터가 IQR을 0으로 만들어 정상 매출을 모두 날리는 버그 수정
-const filterOutliers = (dataList) => {
-  if (dataList.length < 4) return dataList;
-  // 통계 모수를 산출할 때는 실제 영업이 발생한 양수(>0) 데이터만 기준점으로 잡음
+const getUpperBound = (dataList) => {
   const nonZero = dataList.filter(v => v > 0).sort((a, b) => a - b);
-  if (nonZero.length < 4) return dataList; // 유효 모수가 적으면 원본 유지
-  
+  if (nonZero.length < 4) return Infinity;
   const q1 = nonZero[Math.floor(nonZero.length * 0.25)];
   const q3 = nonZero[Math.floor(nonZero.length * 0.75)];
   const iqr = q3 - q1;
-  const upperBound = q3 + 1.5 * iqr;
-  
-  // 0원 데이터(휴장 타격)는 무조건 살려서 평균을 깎아먹도록 유지하고, 비정상적 폭증(단체 예약 등)만 커트
-  return dataList.filter(v => v <= upperBound);
+  return q3 + 1.5 * iqr;
+};
+
+// 이상치 제거 (IQR)
+const filterOutliers = (dataList, upperBound = null) => {
+  if (upperBound !== null) return dataList.filter(v => v <= upperBound);
+  const bound = getUpperBound(dataList);
+  return dataList.filter(v => v <= bound);
 };
 
 /**
@@ -108,12 +108,18 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
 
   // 2. 심슨의 역설(Simpson's Paradox) 방지 - 요일 편향 정규화
   // 전역 집계용(global) 통계는 전체 매출의 다수를 차지하는 Room 기준을 디폴트로 사용
-  const wdClearRevs = allDaysRevs.filter(d => !d.isRoomWeekend && !d.isRainy && !d.isWindy).map(d => d.revenue);
-  const weClearRevs = allDaysRevs.filter(d => d.isRoomWeekend && !d.isRainy && !d.isWindy).map(d => d.revenue);
+  const wdAllRevs = allDaysRevs.filter(d => !d.isRoomWeekend).map(d => d.revenue);
+  const weAllRevs = allDaysRevs.filter(d => d.isRoomWeekend).map(d => d.revenue);
   
-  const wdClearAvg = safeAverage(filterOutliers(wdClearRevs));
-  const weClearAvg = safeAverage(filterOutliers(weClearRevs));
-  const globalClearAvg = safeAverage(filterOutliers([...wdClearRevs, ...weClearRevs])); // UI 표시용 공통 기준값
+  const wdUpperBound = getUpperBound(wdAllRevs);
+  const weUpperBound = getUpperBound(weAllRevs);
+
+  const wdClearRevs = allDaysRevs.filter(d => !d.isRoomWeekend && !d.isRainy && !d.isWindy && d.revenue <= wdUpperBound).map(d => d.revenue);
+  const weClearRevs = allDaysRevs.filter(d => d.isRoomWeekend && !d.isRainy && !d.isWindy && d.revenue <= weUpperBound).map(d => d.revenue);
+  
+  const wdClearAvg = safeAverage(wdClearRevs);
+  const weClearAvg = safeAverage(weClearRevs);
+  const globalClearAvg = safeAverage([...wdClearRevs, ...weClearRevs]); // UI 표시용 공통 기준값
 
   allDaysRevs.sort((a,b) => a.date.localeCompare(b.date));
   let consRain = 0;
@@ -123,6 +129,10 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
   const windRatioGroup = { high: [] };
 
   allDaysRevs.forEach(d => {
+    // 1. 이상치 상한선을 초과한 비정상적인 데이터(폭증 등)는 분석에서 완전 제외하여 신뢰성 확보
+    const upperBound = d.isRoomWeekend ? weUpperBound : wdUpperBound;
+    if (d.revenue > upperBound) return;
+
     // 전역 집계용이므로 Room 기준 디폴트 사용
     const baseline = d.isRoomWeekend ? weClearAvg : wdClearAvg;
     if (baseline === 0) return;
@@ -209,6 +219,7 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
           if (activeMonths[fac].has(monthKey)) {
             if (!facilityData[fac]) {
               facilityData[fac] = {
+                wdAll: [], weAll: [],
                 wdClear: [], wdRainy: [], weClear: [], weRainy: [], 
                 group: settings?.locationGroups?.[fac] || 'leisure'
               };
@@ -220,9 +231,11 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
             const isThisWeekend = facGroup === 'room' ? w.isRoomWeekend : w.isLeisureWeekend;
             
             if (isThisWeekend) {
+              facilityData[fac].weAll.push(val);
               if (w.isRainy) facilityData[fac].weRainy.push(val);
               else facilityData[fac].weClear.push(val);
             } else {
+              facilityData[fac].wdAll.push(val);
               if (w.isRainy) facilityData[fac].wdRainy.push(val);
               else facilityData[fac].wdClear.push(val);
             }
@@ -235,18 +248,42 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
   // 4. Facility Stats 및 풍선효과 종합
   const subStats = [];
   Object.entries(facilityData).forEach(([fac, vals]) => {
-    const wdClearAvg = safeAverage(filterOutliers(vals.wdClear));
-    const wdRainyAvg = safeAverage(filterOutliers(vals.wdRainy));
-    const weClearAvg = safeAverage(filterOutliers(vals.weClear));
-    const weRainyAvg = safeAverage(filterOutliers(vals.weRainy));
+    const wdBound = getUpperBound(vals.wdAll);
+    const weBound = getUpperBound(vals.weAll);
+
+    const wdClearAvg = safeAverage(filterOutliers(vals.wdClear, wdBound));
+    const wdRainyAvg = safeAverage(filterOutliers(vals.wdRainy, wdBound));
+    const weClearAvg = safeAverage(filterOutliers(vals.weClear, weBound));
+    const weRainyAvg = safeAverage(filterOutliers(vals.weRainy, weBound));
 
     // 전체 맑은날 vs 비오는날 (풍선효과 탐지용) - 심슨의 역설 제거
     // 주말/평일 비중 편향을 없애기 위해 비율의 평균을 사용
-    const wdRatio = wdClearAvg > 0 ? (wdRainyAvg / wdClearAvg) : 1;
-    const weRatio = weClearAvg > 0 ? (weRainyAvg / weClearAvg) : 1;
-    const avgRatio = (wdRatio + weRatio) / 2;
+    let wdRatio = 1, weRatio = 1;
+    let validRatios = 0;
+    let sumRatio = 0;
+    
+    if (wdClearAvg > 0) {
+      wdRatio = wdRainyAvg / wdClearAvg;
+      sumRatio += wdRatio;
+      validRatios++;
+    }
+    if (weClearAvg > 0) {
+      weRatio = weRainyAvg / weClearAvg;
+      sumRatio += weRatio;
+      validRatios++;
+    }
+    
+    const avgRatio = validRatios > 0 ? sumRatio / validRatios : 1;
 
-    const overallClearAvg = (wdClearAvg + weClearAvg) / 2; 
+    let overallClearAvg = 0;
+    if (wdClearAvg > 0 && weClearAvg > 0) {
+      overallClearAvg = (wdClearAvg * 5 + weClearAvg * 2) / 7;
+    } else if (wdClearAvg > 0) {
+      overallClearAvg = wdClearAvg;
+    } else if (weClearAvg > 0) {
+      overallClearAvg = weClearAvg;
+    }
+    
     const overallRainyAvg = overallClearAvg * avgRatio;
     
     if (overallClearAvg > 0) {

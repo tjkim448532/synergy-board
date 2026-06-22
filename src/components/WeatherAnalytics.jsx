@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Wind, CloudRain, Activity, TrendingDown, Sun } from 'lucide-react';
+import { Wind, CloudRain, Activity } from 'lucide-react';
 import { buildWeatherCoreStats } from '../utils/weatherCore';
 
 const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(Math.round(val || 0));
