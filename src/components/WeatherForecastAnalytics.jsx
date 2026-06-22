@@ -215,6 +215,7 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
       return {
         name: facName,
         group: fb.group,
+        isWeekend: fb.isWeekend,
         clearAvg,
         rainyAvg: trueRainyAvg,
         expectedRevenue,
@@ -345,7 +346,10 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
               <tbody>
                 {simulationResults.results.map((fac, idx) => (
                   <tr key={idx} style={{borderBottom: '1px solid rgba(255,255,255,0.05)', background: idx % 2 === 0 ? 'rgba(255,255,255,0.01)' : 'transparent'}}>
-                    <td style={{padding: '12px', fontWeight: 'bold'}}>{fac.name}</td>
+                    <td style={{padding: '12px', fontWeight: 'bold'}}>
+                      <span style={{color: fac.isWeekend ? 'var(--accent-gold)' : 'var(--accent-blue)', fontSize: '12px', marginRight: '6px'}}>[{fac.isWeekend ? '주말/휴일' : '평일'}]</span>
+                      {fac.name}
+                    </td>
                     <td style={{padding: '12px', color: 'var(--text-muted)'}}>₩{formatCurrency(fac.clearAvg)}</td>
                     <td style={{padding: '12px', color: 'var(--text-muted)'}}>₩{formatCurrency(fac.rainyAvg)}</td>
                     <td style={{padding: '12px', fontWeight: 'bold', color: simulationResults.isForecastRainy && fac.decreaseRate < 0 ? 'var(--accent-coral)' : 'var(--text-main)'}}>
