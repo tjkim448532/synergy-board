@@ -1007,13 +1007,24 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       dropRate = (rainStats.clearAvgRev - rainStats.rainyAvgRev) / rainStats.clearAvgRev;
     }
 
-    // 1. 평균 매출 감소율(dropRate) 우선 판단 (심슨의 역설 및 비선형적 타격 방지)
-    if (dropRate >= 0.3) return { title: '비 올 때 타격 극심 ☔', desc: `비 올 시 평균 매출이 ${Math.round(dropRate*100)}% 이상 급감합니다. 강력한 우천 대비책이 필요합니다.` };
-    if (dropRate >= 0.1) return { title: '비 올 때 타격 있음 ☂️', desc: `비가 오면 평균 매출이 ${Math.round(dropRate*100)}% 이상 눈에 띄게 감소합니다.` };
-    if (dropRate <= -0.15) return { title: '비 올 때 오히려 증가 📈', desc: `우천 시 오히려 수요가 상승하여 평균 매출이 ${Math.round(Math.abs(dropRate)*100)}% 이상 증가합니다.` };
-    if (dropRate <= -0.05) return { title: '비 올 때 소폭 증가', desc: `우천 시 방문객이 몰려 매출이 소폭 상승하는 경향이 있습니다.` };
+    const roundedDrop = Math.round(dropRate * 100);
+
+    // 상관계수 r이 -0.1 ~ 0.1 사이로 0에 가까우면 통계적 유의미성이 매우 낮음 (표본 부족 등 노이즈)
+    if (r !== null && Math.abs(r) <= 0.1) {
+      if (dropRate >= 0.1) {
+        return { title: '통계적 유의미성 낮음 ⚠️', desc: `우천 시 평균 매출이 ${roundedDrop}% 감소한 것으로 계산되나, 상관계수(r)가 0에 가까워 비로 인한 직접적인 타격이라 단정하기 어렵습니다. (표본 부족 혹은 다른 변수 영향)` };
+      }
+      return { title: '비 와도 타격 없음 🛡️', desc: '강수량과 매출 사이에 유의미한 상관관계가 없으며, 매출 방어가 잘 되고 있습니다.' };
+    }
+
+    // 1. 평균 매출 감소율(dropRate) 우선 판단
+    if (dropRate >= 0.3) return { title: '비 올 때 타격 극심 ☔', desc: `비 올 시 평균 매출이 ${roundedDrop}% 이상 급감합니다. 강력한 우천 대비책이 필요합니다.` };
+    if (dropRate >= 0.1) return { title: '비 올 때 타격 있음 ☂️', desc: `비가 오면 평균 매출이 ${roundedDrop}% 이상 눈에 띄게 감소합니다.` };
+    if (dropRate > 0.05) return { title: '비 올 때 소폭 감소 ☔', desc: `우천 시 평균 매출이 ${roundedDrop}% 가량 소폭 감소하는 경향이 있습니다.` };
+    if (dropRate <= -0.15) return { title: '비 올 때 오히려 증가 📈', desc: `우천 시 오히려 수요가 상승하여 평균 매출이 ${Math.abs(roundedDrop)}% 이상 증가합니다.` };
+    if (dropRate <= -0.05) return { title: '비 올 때 소폭 증가 📈', desc: `우천 시 방문객이 몰려 매출이 소폭 상승하는 경향이 있습니다.` };
     
-    // 2. 감소율이 뚜렷하지 않을 경우(±10% 이내), 강수량과의 상관계수(r)로 보조 판단
+    // 2. 감소율이 뚜렷하지 않을 경우(±5% 이내), 강수량과의 상관계수(r)로 보조 판단
     if (r <= -0.4) return { title: '강수량 비례 타격 극심 ☔', desc: '비가 많이 내릴수록 매출이 심각하게 감소합니다.' };
     if (r <= -0.2) return { title: '비 올 때 타격 있음 ☂️', desc: '강수량이 늘어날수록 매출이 비례하여 감소하는 경향이 있습니다.' };
     if (r >= 0.3) return { title: '강수량 비례 매출 증가 📈', desc: '비가 올 때 오히려 매출이 비례하여 증가하는 패턴을 보입니다.' };
