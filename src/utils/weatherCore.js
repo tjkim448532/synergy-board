@@ -364,11 +364,6 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
           clearAvg: overallClearAvg, 
           rainyAvg: overallRainyAvg, 
           impact,
-        subStats.push({ 
-          loc: fac, 
-          clearAvg: overallClearAvg, 
-          rainyAvg: overallRainyAvg, 
-          impact,
           wdClearAvg, wdRainyAvg, wdPenalty: (wdClearAvg > 0 && wdRainyAvg !== null ? (wdRainyAvg - wdClearAvg) / wdClearAvg * 100 : 0),
           weClearAvg, weRainyAvg, wePenalty: (weClearAvg > 0 && weRainyAvg !== null ? (weRainyAvg - weClearAvg) / weClearAvg * 100 : 0)
         });
