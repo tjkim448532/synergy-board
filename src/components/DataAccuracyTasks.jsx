@@ -1,5 +1,5 @@
 import React from 'react';
-import { Database, Link as LinkIcon, DollarSign, Filter } from 'lucide-react';
+import { Database, Link as LinkIcon, DollarSign, Filter, TrendingUp, Info } from 'lucide-react';
 import './LogicGuide.css';
 
 export default function DataAccuracyTasks() {
@@ -124,6 +124,43 @@ export default function DataAccuracyTasks() {
                   이는 비용 없이 내일부터 당장 실천할 수 있는 <strong>가장 가성비 높은 조치</strong>입니다. 시너지 보드가 엑셀을 읽어 들일 때 발생하는 파싱(Parsing) 에러와 '기타' 분류 누락을 원천 차단하여, 데이터 분석의 신뢰도를 100%로 보장합니다.
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 과제 5 */}
+        <div className="guide-card glass-panel" style={{gridColumn: '1 / -1'}}>
+          <div className="card-top">
+            <div className="icon-circle" style={{background: 'rgba(16, 185, 129, 0.1)'}}>
+              <TrendingUp size={24} style={{color: '#10b981'}} />
+            </div>
+            <h3>5. 분석엔진 이해하기: MRA 기법과 통계적 노이즈(결측치) 제어</h3>
+          </div>
+          <div className="card-body">
+            <p style={{marginBottom: '12px'}}>
+              예측치와 실제 수치의 오차를 극소화하기 위해 보드에 내장된 <strong>MRA 분석 엔진</strong>과 <strong>통계 노이즈 차단 장치</strong>의 핵심 작동 원리입니다.
+            </p>
+            
+            <div className="formula-box vertical" style={{marginTop: '16px'}}>
+              <div className="math-step">
+                <span className="step-num" style={{background: 'rgba(59, 130, 246, 0.2)', color: '#3b82f6'}}>MRA (다중 회귀 분석) 엔진이란?</span>
+                <div style={{color: 'var(--text-main)', fontSize: '13px', lineHeight: '1.6'}}>
+                  "여름 성수기인데 주말이고, 비까지 쏟아졌다"처럼 현실에서는 여러 상황이 동시에 일어납니다. MRA(Multiple Regression Analysis) 엔진은 복잡하게 뒤엉킨 변수들을 수학적으로 통제하여, <strong>"오직 비로 인해서만 발생한 순수 매출 타격(또는 반사이익)"</strong>을 한 치의 왜곡 없이 분리해 내는 고도의 통계 기술입니다.
+                </div>
+              </div>
+              <div className="math-step" style={{borderLeftColor: 'var(--accent-coral)'}}>
+                <span className="step-num" style={{background: 'rgba(244, 63, 94, 0.2)', color: 'var(--accent-coral)'}}>통계적 노이즈(결측치) 방어막</span>
+                <div style={{color: 'var(--text-main)', fontSize: '13px', lineHeight: '1.6'}}>
+                  특정 부대업장(예: 식음 매장)이 데이터를 누락(결측)하여 시스템에 0원으로 기록된 경우, 이를 단순 평균값에 포함하면 통계가 심각하게 찌그러집니다(맑은 날은 대량 누락되어 매출이 적고, 비 오는 날은 데이터가 있어 매출이 높게 집계되는 등의 착시 현상). 시너지 보드는 <strong>중앙값(Median) 보정 로직</strong>과 <strong>최소 분석 표본 수(5일 이상) 제한</strong>을 통해 이러한 데이터 수집 편향(노이즈)을 지능적으로 감지해 내고 차단합니다.
+                </div>
+              </div>
+            </div>
+            
+            <div className="alert-box info" style={{marginTop: '16px'}}>
+              <Info size={16} />
+              <span>
+                <strong>💡 요약하자면:</strong> 날씨/성수기 핑계를 발라내 주는 것이 <strong>MRA 엔진</strong>이며, 드문드문 빠진 엑셀 데이터 때문에 발생하는 숫자 왜곡을 걸러내 주는 안전장치가 <strong>중앙값(Median) 노이즈 필터</strong>입니다.
+              </span>
             </div>
           </div>
         </div>
