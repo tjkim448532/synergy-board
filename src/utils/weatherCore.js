@@ -354,18 +354,18 @@ export const buildWeatherCoreStats = (processedData, settings, RAIN_THRESHOLD = 
     const tag = settings?.weatherTags?.[fac] || getDefaultWeatherTag(fac, vals.group);
     
     if (overallClearAvg > 0) {
-      const impact = (avgRatio - 1) * 100;
-      const isOutdoorTag = ['야외 어트랙션', '야외 트랙', '공중/동력', '골프장'].includes(tag);
+      const wdPen = (wdClearAvg > 0 && wdRainyAvg !== null ? (wdRainyAvg - wdClearAvg) / wdClearAvg * 100 : 0);
+      const wePen = (weClearAvg > 0 && weRainyAvg !== null ? (weRainyAvg - weClearAvg) / weClearAvg * 100 : 0);
       
-      // 진짜 풍선효과: 1% 이상 오르고 야외 관련 태그가 아닐 때만 (통계적 노이즈/생존자 편향 차단)
-      if (impact > 1 && !isOutdoorTag && vals.group !== 'exclude') { 
+      // 사용자 요청: 실내외 임의 태그 분류로 블락하지 않고, 오직 "주중/주말 매출액 수치 비교"만으로 판별
+      if ((wdPen > 1 || wePen > 1) && vals.group !== 'exclude') { 
         subStats.push({ 
           loc: fac, 
           clearAvg: overallClearAvg, 
           rainyAvg: overallRainyAvg, 
-          impact,
-          wdClearAvg, wdRainyAvg, wdPenalty: (wdClearAvg > 0 && wdRainyAvg !== null ? (wdRainyAvg - wdClearAvg) / wdClearAvg * 100 : 0),
-          weClearAvg, weRainyAvg, wePenalty: (weClearAvg > 0 && weRainyAvg !== null ? (weRainyAvg - weClearAvg) / weClearAvg * 100 : 0)
+          impact: (avgRatio - 1) * 100, // 전체 임팩트 표시
+          wdClearAvg, wdRainyAvg, wdPenalty: wdPen,
+          weClearAvg, weRainyAvg, wePenalty: wePen
         });
       }
     }
@@ -472,8 +472,8 @@ export const predictWeatherImpact = (facilityName, isWeekend, forecastWeather, c
       applyPenalty(baseRainPenalty, isPositive ? '풍선효과 통계반영' : '우천 통계반영');
     }
 
-    // 장마 피로도 추가 페널티 적용 (야외 한정, 전역 통계 기반)
-    if (consRainDays >= 2 && expectedRevenue < clearBaseline && ['야외 어트랙션', '야외 트랙', '공중/동력', '골프장'].includes(tag)) {
+    // 장마 피로도 추가 페널티 적용 (분류 없이 오직 매출액이 평소보다 하락한 곳에 한해 전역 통계 기반으로 일괄 적용)
+    if (consRainDays >= 2 && expectedRevenue < clearBaseline) {
       const gStats = isWeekend ? coreStats.global.consecutiveRain.we : coreStats.global.consecutiveRain.wd;
       const globalClear = gStats.clearAvg;
       const gDay1 = gStats.day1Avg;
