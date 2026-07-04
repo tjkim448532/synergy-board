@@ -20,6 +20,7 @@ import { collection, onSnapshot, doc } from 'firebase/firestore';
 import { db } from './firebase';
 import useProcessedData from './hooks/useProcessedData';
 import useBackendData from './hooks/useBackendData';
+import useAutoScale from './hooks/useAutoScale';
 import './App.css'
 
 // 백엔드 연동 스위치 (백엔드 API 개발이 완료되면 true로 변경하세요)
@@ -38,6 +39,8 @@ const pageTransition = {
 };
 
 function App() {
+  useAutoScale(); // 전체 모니터 해상도 자동 스케일링 훅
+  
   const [activeTab, setActiveTab] = useState('analytics')
   const [settings, setSettings] = useState({});
   const [allData, setAllData] = useState([]);
