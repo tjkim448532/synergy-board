@@ -19,7 +19,11 @@ import WeatherAnalytics from './components/WeatherAnalytics'
 import { collection, onSnapshot, doc } from 'firebase/firestore';
 import { db } from './firebase';
 import useProcessedData from './hooks/useProcessedData';
+import useBackendData from './hooks/useBackendData';
 import './App.css'
+
+// 백엔드 연동 스위치 (백엔드 API 개발이 완료되면 true로 변경하세요)
+const USE_BACKEND_API = true;
 
 const pageVariants = {
   initial: { opacity: 0, y: 10 },
@@ -38,22 +42,37 @@ function App() {
   const [settings, setSettings] = useState({});
   const [allData, setAllData] = useState([]);
 
-  const { processedData, globalStats } = useProcessedData(allData, settings);
+  // 백엔드 API 연동을 위한 날짜 구간 (필요 시 UI에서 동적 변경 가능)
+  const [apiStartDate] = useState('2026-01-01');
+  const [apiEndDate] = useState('2026-12-31');
+  const { data: backendData, loading: apiLoading, error: apiError } = useBackendData(
+    USE_BACKEND_API ? apiStartDate : null, 
+    USE_BACKEND_API ? apiEndDate : null
+  );
+
+  const { processedData, globalStats } = useProcessedData(
+    USE_BACKEND_API ? backendData : allData, 
+    settings
+  );
 
   useEffect(() => {
     const unsubSettings = onSnapshot(doc(db, 'config', 'mainSettings'), (docSnap) => {
       if (docSnap.exists()) setSettings(docSnap.data());
     });
 
-    const unsubData = onSnapshot(collection(db, 'monthly_records'), (snapshot) => {
-      const data = [];
-      snapshot.forEach(doc => {
-        if (doc.id && String(doc.id).match(/^\d{4}-\d{2}$/)) {
-          data.push({ id: doc.id, yearMonth: doc.id, ...doc.data() });
-        }
+    let unsubData = () => {};
+
+    if (!USE_BACKEND_API) {
+      unsubData = onSnapshot(collection(db, 'monthly_records'), (snapshot) => {
+        const data = [];
+        snapshot.forEach(doc => {
+          if (doc.id && String(doc.id).match(/^\d{4}-\d{2}$/)) {
+            data.push({ id: doc.id, yearMonth: doc.id, ...doc.data() });
+          }
+        });
+        setAllData(data);
       });
-      setAllData(data);
-    });
+    }
 
     return () => {
       unsubSettings();
