@@ -24,7 +24,7 @@ import useAutoScale from './hooks/useAutoScale';
 import './App.css'
 
 // 백엔드 연동 스위치 (백엔드 API 개발이 완료되면 true로 변경하세요)
-const USE_BACKEND_API = false;
+const USE_BACKEND_API = true;
 
 const pageVariants = {
   initial: { opacity: 0, y: 10 },
@@ -59,12 +59,25 @@ function App() {
   );
 
   useEffect(() => {
-    // SSO 자동 로그인용 URL 토큰 파싱
+    // SSO 자동 로그인용 URL 토큰 및 날짜 파싱
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
+    const targetDate = urlParams.get('date');
+    
+    let shouldCleanUrl = false;
+    
     if (token) {
       sessionStorage.setItem('sso_token', token);
-      // 토큰 캡처 후 URL에서 제거 (보안 및 깔끔한 주소창 유지)
+      shouldCleanUrl = true;
+    }
+    
+    if (targetDate) {
+      sessionStorage.setItem('sso_date', targetDate);
+      shouldCleanUrl = true;
+    }
+
+    if (shouldCleanUrl) {
+      // 토큰 및 날짜 캡처 후 URL에서 제거 (보안 및 깔끔한 주소창 유지)
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, []);
