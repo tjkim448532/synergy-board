@@ -158,6 +158,11 @@ function transformTimeseriesToMonthly(jsonArray) {
         if (!venue) return;
         const existing = monthObj.leisureVisitorBreakdown.find(v => (v.venue || v.facility_name) === venue);
         const visitorsCount = Number(item.visitors || item.qty || 0);
+        
+        if (venue === '객실') {
+          monthObj.guests = (monthObj.guests || 0) + visitorsCount;
+        }
+
         if (existing) {
           existing.visitors = (Number(existing.visitors) || 0) + visitorsCount;
         } else {
@@ -204,7 +209,7 @@ function transformTimeseriesToMonthly(jsonArray) {
     if (dayData.revenues) {
       const breakdown = {};
       
-      if (dayData.revenues.venueBreakdown) {
+      if (dayData.revenues.venueBreakdown && Object.keys(dayData.revenues.venueBreakdown).length > 0) {
         Object.entries(dayData.revenues.venueBreakdown).forEach(([venueName, rev]) => {
           monthObj.salesByLocation[venueName] = (monthObj.salesByLocation[venueName] || 0) + Number(rev || 0);
           if (!monthObj.venues[venueName]) {
