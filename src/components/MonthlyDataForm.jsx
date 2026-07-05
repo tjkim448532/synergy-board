@@ -1538,6 +1538,18 @@ export default function MonthlyDataForm({ settings }) {
               const s16 = r.sold16 || r.standardSold || 0;
               const s35 = r.sold35 || 0;
               const s51 = r.sold51 || r.connectingSold || 0;
+              return (
+                <div key={r.id} className="glass-panel" style={{padding: '16px', position: 'relative', borderLeft: '4px solid var(--accent-emerald)'}}>
+                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '12px', marginBottom: '12px'}}>
+                    <div>
+                      <div style={{fontSize: '16px', fontWeight: 'bold'}}>{r.yearMonth}</div>
+                      <div style={{fontSize: '12px', color: 'var(--text-muted)'}}>총 {r.daysCount || 0}일 (주중 {r.daysCountWeekday || 0}일 / 주말 {r.daysCountWeekend || 0}일)</div>
+                    </div>
+                    <button className="btn-delete" onClick={() => handleDelete(r.id)} style={{padding: '8px', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--accent-red)'}}>
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                  <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
                     <div style={{display: 'flex', justifyContent: 'space-between'}}>
                       <span style={{color: 'var(--text-muted)'}}>판매 객실 (16/35/51)</span>
                       <span>{formatCurrency(s16)} / {formatCurrency(s35)} / {formatCurrency(s51)}실</span>
