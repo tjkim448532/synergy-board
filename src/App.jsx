@@ -24,7 +24,7 @@ import useAutoScale from './hooks/useAutoScale';
 import './App.css'
 
 // 백엔드 연동 스위치 (백엔드 API 개발이 완료되면 true로 변경하세요)
-const USE_BACKEND_API = true;
+const USE_BACKEND_API = false;
 
 const pageVariants = {
   initial: { opacity: 0, y: 10 },
