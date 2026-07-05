@@ -1,21 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Users, Car, UserMinus, UserCheck, Save, Calendar, FileText } from 'lucide-react';
-import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '../firebase';
-import toast from 'react-hot-toast';
+import { Users, Car, UserMinus, UserCheck, Calendar, FileText } from 'lucide-react';
 import { parseSafeNumber } from '../utils/statUtils';
 
 export default function VisitorCalculation({ processedData, globalStats, settings }) {
   const [selectedMonth, setSelectedMonth] = useState('');
   
-  // States for inputs
-  const [totalVehicles, setTotalVehicles] = useState('');
-  const [employeeVehicles, setEmployeeVehicles] = useState('');
-  const [golfGuests, setGolfGuests] = useState('');
-
-  const [isSaving, setIsSaving] = useState(false);
-
   // Set default month
   useEffect(() => {
     if (processedData && processedData.length > 0 && !selectedMonth) {
@@ -25,87 +15,53 @@ export default function VisitorCalculation({ processedData, globalStats, setting
     }
   }, [processedData, selectedMonth]);
 
-  // Load saved data when month changes
-  useEffect(() => {
-    if (selectedMonth && processedData) {
-      const targetData = processedData.find(d => d.yearMonth === selectedMonth);
-      if (targetData && targetData.visitorCalcData) {
-        setTotalVehicles(targetData.visitorCalcData.totalVehicles || '');
-        setEmployeeVehicles(targetData.visitorCalcData.employeeVehicles || '');
-        setGolfGuests(targetData.visitorCalcData.golfGuests || '');
-      } else {
-        setTotalVehicles('');
-        setEmployeeVehicles('');
-        setGolfGuests('');
-      }
-    }
-  }, [selectedMonth, processedData]);
-
   const targetDoc = useMemo(() => {
     if (!selectedMonth || !processedData) return null;
     return processedData.find(d => d.yearMonth === selectedMonth);
   }, [selectedMonth, processedData]);
 
-  // Calculate Staying Guests directly from the processedData (just like AdvancedAnalytics)
+  // Calculate Staying Guests directly from the processedData (set by backend)
   const stayingGuests = useMemo(() => {
     if (!targetDoc) return 0;
-    if (targetDoc.guests !== undefined) return targetDoc.guests;
-    
-    const weight16 = settings?.guestWeight16 !== undefined ? parseSafeNumber(settings.guestWeight16) : 2.5;
-    const weight35 = settings?.guestWeight35 !== undefined ? parseSafeNumber(settings.guestWeight35) : 3.5;
-    const weight51 = settings?.guestWeight51 !== undefined ? parseSafeNumber(settings.guestWeight51) : 6.0;
-    
-    const sold16 = parseSafeNumber(targetDoc.sold16 || targetDoc.standardSold);
-    const sold35 = parseSafeNumber(targetDoc.sold35);
-    const sold51 = parseSafeNumber(targetDoc.sold51 || targetDoc.connectingSold);
-    const sold51Acc = parseSafeNumber(targetDoc.sold51Acc);
-    
-    return Math.round((sold16 * weight16) + (sold35 * weight35) + ((sold51 + sold51Acc) * weight51));
-  }, [targetDoc, settings]);
+    return targetDoc.guests || 0;
+  }, [targetDoc]);
 
-  const carPeopleWeight = settings?.carPeopleWeight !== undefined ? parseSafeNumber(settings.carPeopleWeight) : 3.0;
-
-  // Derived calculations
-  const numTotalVehicles = parseSafeNumber(totalVehicles);
-  const numEmployeeVehicles = parseSafeNumber(employeeVehicles);
-  const numGolfGuests = parseSafeNumber(golfGuests);
-
+  // Backend now provides accurate data. No more carPeopleWeight math.
+  const numTotalVehicles = parseSafeNumber(targetDoc?.visitorData?.totalVehicles);
+  const numEmployeeVehicles = parseSafeNumber(targetDoc?.visitorData?.employeeVehicles);
+  const numGolfGuests = parseSafeNumber(targetDoc?.visitorData?.golfGuests);
   const netVehicles = Math.max(0, numTotalVehicles - numEmployeeVehicles);
-  const estimatedPeople = netVehicles * carPeopleWeight;
-  const totalVisitors = estimatedPeople - numGolfGuests;
-  const walkInGuests = totalVisitors - stayingGuests;
 
-  const getStayingGuestsForDoc = (docData) => {
-    if (docData.guests !== undefined) return docData.guests;
-    
-    const weight16 = settings?.guestWeight16 !== undefined ? parseSafeNumber(settings.guestWeight16) : 2.5;
-    const weight35 = settings?.guestWeight35 !== undefined ? parseSafeNumber(settings.guestWeight35) : 3.5;
-    const weight51 = settings?.guestWeight51 !== undefined ? parseSafeNumber(settings.guestWeight51) : 6.0;
-    
-    const sold16 = parseSafeNumber(docData.sold16 || docData.standardSold);
-    const sold35 = parseSafeNumber(docData.sold35);
-    const sold51Combined = parseSafeNumber(docData.sold51 || docData.connectingSold);
-    const sold51Acc = parseSafeNumber(docData.sold51Acc);
-    
-    return Math.round((sold16 * weight16) + (sold35 * weight35) + ((sold51Combined + sold51Acc) * weight51));
-  };
+  // Use leisureVisitorBreakdown to calculate actual visitors (backend provided)
+  const totalVisitors = useMemo(() => {
+    if (!targetDoc?.leisureVisitorBreakdown) return 0;
+    return targetDoc.leisureVisitorBreakdown.reduce((sum, item) => sum + (Number(item.visitors) || 0), 0);
+  }, [targetDoc]);
+
+  const estimatedPeople = totalVisitors; // Display actual visitors instead of estimated
+  const walkInGuests = Math.max(0, totalVisitors - stayingGuests - numGolfGuests);
 
   const getVisitorStatsForDoc = (docData) => {
-    const sGuests = getStayingGuestsForDoc(docData);
+    const sGuests = docData.guests || 0;
     let nTotalVehicles = 0;
     let nEmployeeVehicles = 0;
     let nGolfGuests = 0;
     
-    if (docData.visitorCalcData) {
-      nTotalVehicles = parseSafeNumber(docData.visitorCalcData.totalVehicles);
-      nEmployeeVehicles = parseSafeNumber(docData.visitorCalcData.employeeVehicles);
-      nGolfGuests = parseSafeNumber(docData.visitorCalcData.golfGuests);
+    if (docData.visitorData) {
+      nTotalVehicles = parseSafeNumber(docData.visitorData.totalVehicles);
+      nEmployeeVehicles = parseSafeNumber(docData.visitorData.employeeVehicles);
+      nGolfGuests = parseSafeNumber(docData.visitorData.golfGuests);
     }
 
     const nVehicles = Math.max(0, nTotalVehicles - nEmployeeVehicles);
-    const estPeople = nVehicles * carPeopleWeight;
-    const tVisitors = estPeople - nGolfGuests;
-    const wInGuests = tVisitors - sGuests;
+    
+    let tVisitors = 0;
+    if (docData.leisureVisitorBreakdown) {
+      tVisitors = docData.leisureVisitorBreakdown.reduce((sum, item) => sum + (Number(item.visitors) || 0), 0);
+    }
+    
+    const estPeople = tVisitors;
+    const wInGuests = Math.max(0, tVisitors - sGuests - nGolfGuests);
 
     return {
       numTotalVehicles: nTotalVehicles,
@@ -150,31 +106,6 @@ export default function VisitorCalculation({ processedData, globalStats, setting
     });
   }, [monthlyStats]);
 
-  const handleSave = async () => {
-    if (!targetDoc || !targetDoc.id) {
-      toast.error('저장할 월별 데이터를 찾을 수 없습니다.');
-      return;
-    }
-
-    setIsSaving(true);
-    try {
-      const docRef = doc(db, 'monthly_records', targetDoc.id);
-      await updateDoc(docRef, {
-        visitorCalcData: {
-          totalVehicles: numTotalVehicles,
-          employeeVehicles: numEmployeeVehicles,
-          golfGuests: numGolfGuests
-        }
-      });
-      toast.success(`${selectedMonth} 방문객 기록이 저장되었습니다!`);
-    } catch (err) {
-      console.error("Save error:", err);
-      toast.error('저장 중 오류가 발생했습니다.');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
   const formatNumber = (num) => new Intl.NumberFormat('ko-KR').format(num);
 
   return (
@@ -182,10 +113,10 @@ export default function VisitorCalculation({ processedData, globalStats, setting
       <div className="section-header" style={{ marginBottom: '32px' }}>
         <h2 style={{ fontSize: '28px', color: 'var(--text-light)', display: 'flex', alignItems: 'center', gap: '12px', margin: 0 }}>
           <Users size={32} color="var(--accent-blue)" />
-          추정 방문객 분석
+          실측 방문객 분석
         </h2>
         <p style={{ color: 'var(--text-muted)', marginTop: '8px' }}>
-          차량 입차 기록과 기숙사/직원 차량, 그리고 골프/숙박 고객 데이터를 가중치 연산하여 리조트를 방문한 순수 워크인(Walk-in) 고객 및 추정 인원을 도출합니다.
+          차량 관제 시스템 및 부대시설 포스기, 예약 시스템의 실측 데이터를 기반으로 전체 방문객 및 순수 워크인(Walk-in) 인원을 분석합니다.
         </p>
       </div>
 
@@ -203,7 +134,7 @@ export default function VisitorCalculation({ processedData, globalStats, setting
         alignItems: 'center',
         gap: '10px'
       }}>
-        <span>⚠️ 추정치 주의: 본 화면의 인원 지표는 입차량 및 객실 가중치를 활용하여 수식으로 추산한 추정치(Heuristic Estimation)이며, 실제 실측된 순수 방문자 수와 오차가 발생할 수 있습니다. 경영 판단 시 참고용 변수로만 활용해 주십시오.</span>
+        <span>⚠️ 자동 연동 안내: 본 화면의 지표는 프론트엔드의 가중치 연산 없이 100% 백엔드의 데이터 원시값을 그대로 연동하여 정확한 지표를 제공합니다.</span>
       </div>
 
       {/* Month Selection */}
@@ -222,75 +153,32 @@ export default function VisitorCalculation({ processedData, globalStats, setting
             <option key={d.yearMonth} value={d.yearMonth}>{d.yearMonth}</option>
           ))}
         </select>
-        <button 
-          className="btn btn-primary" 
-          onClick={handleSave} 
-          disabled={isSaving || !selectedMonth}
-          style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}
-        >
-          <Save size={18} />
-          {isSaving ? '저장 중...' : '계산 결과 저장'}
-        </button>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
-        {/* Input Section */}
+        {/* Read-only Data Section */}
         <div className="glass-panel" style={{ padding: '32px' }}>
           <h3 style={{ fontSize: '20px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--accent-blue)' }}>
             <FileText size={20} />
-            기초 데이터 입력
+            기초 실측 데이터 (자동 연동)
           </h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div>
-              <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)' }}>전체 입차 차량 수 (대)</label>
-              <input 
-                type="number" 
-                className="input-field" 
-                value={totalVehicles} 
-                onChange={e => setTotalVehicles(e.target.value)} 
-                placeholder="예: 5000"
-                style={{ width: '100%', fontSize: '18px', padding: '12px' }}
-              />
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '12px' }}>
+              <span style={{ color: 'var(--text-muted)', fontSize: '16px' }}>전체 입차 차량 수 (대)</span>
+              <strong style={{ fontSize: '18px', color: 'var(--text-light)' }}>{formatNumber(numTotalVehicles)} 대</strong>
             </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)' }}>직원 및 업무 차량 수 (대)</label>
-              <input 
-                type="number" 
-                className="input-field" 
-                value={employeeVehicles} 
-                onChange={e => setEmployeeVehicles(e.target.value)} 
-                placeholder="예: 800"
-                style={{ width: '100%', fontSize: '18px', padding: '12px' }}
-              />
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '12px' }}>
+              <span style={{ color: 'var(--text-muted)', fontSize: '16px' }}>직원 및 업무 차량 수 (대)</span>
+              <strong style={{ fontSize: '18px', color: 'var(--text-light)' }}>{formatNumber(numEmployeeVehicles)} 대</strong>
             </div>
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)' }}>골프 고객 수 (명)</label>
-              <input 
-                type="number" 
-                className="input-field" 
-                value={golfGuests} 
-                onChange={e => setGolfGuests(e.target.value)} 
-                placeholder="예: 1500"
-                style={{ width: '100%', fontSize: '18px', padding: '12px' }}
-              />
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '12px' }}>
+              <span style={{ color: 'var(--text-muted)', fontSize: '16px' }}>골프 고객 수 (명)</span>
+              <strong style={{ fontSize: '18px', color: 'var(--text-light)' }}>{formatNumber(numGolfGuests)} 명</strong>
             </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-muted)' }}>숙박객 수 (명) <span style={{fontSize: '12px', color: 'var(--accent-emerald)'}}>(*자동 연동됨)</span></label>
-              <div style={{ 
-                background: 'rgba(0,0,0,0.3)', 
-                border: '1px dashed rgba(255,255,255,0.2)', 
-                padding: '12px', 
-                borderRadius: '8px',
-                fontSize: '18px',
-                color: 'var(--text-light)',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}>
-                <span>{selectedMonth || '월 미선택'} 숙박객:</span>
-                <strong style={{color: 'var(--accent-emerald)'}}>{formatNumber(stayingGuests)} 명</strong>
-              </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '8px' }}>
+              <span style={{ color: 'var(--text-muted)', fontSize: '16px' }}>숙박객 수 (명)</span>
+              <strong style={{ fontSize: '18px', color: 'var(--accent-emerald)' }}>{formatNumber(stayingGuests)} 명</strong>
             </div>
           </div>
         </div>
@@ -305,7 +193,7 @@ export default function VisitorCalculation({ processedData, globalStats, setting
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <div style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '8px' }}>1단계: 순수 입차 차량 및 방문 인원 추산</div>
+            <div style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '8px' }}>1단계: 총 방문객 확인 (백엔드 실측치)</div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
               <div>
                 <div style={{ fontSize: '16px', color: 'var(--text-light)', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -319,9 +207,9 @@ export default function VisitorCalculation({ processedData, globalStats, setting
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
               <div>
                 <div style={{ fontSize: '16px', color: 'var(--accent-purple)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Users size={16} /> 차량 탑승 인원 추산
+                  <Users size={16} /> 실측 기반 총 유입 인원
                 </div>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>(순수 입차 차량 × 3명)</div>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>(백엔드 제공 총 방문객 실측치)</div>
               </div>
               <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-purple)' }}>{formatNumber(estimatedPeople)} 명</div>
             </div>
@@ -334,13 +222,13 @@ export default function VisitorCalculation({ processedData, globalStats, setting
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <div style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '8px' }}>2단계: 복합 리조트 총 방문객 계산</div>
+            <div style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '8px' }}>2단계: 부대시설/객실 방문객 통합 산출</div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
               <div>
                 <div style={{ fontSize: '16px', color: 'var(--text-light)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <UserMinus size={16} /> 총 방문객
                 </div>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>(차량 탑승 인원 - 골프 고객)</div>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>(백엔드 연동 실측 총 인원)</div>
               </div>
               <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--text-light)' }}>{formatNumber(totalVisitors)} 명</div>
             </div>
@@ -357,9 +245,9 @@ export default function VisitorCalculation({ processedData, globalStats, setting
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <div style={{ fontSize: '20px', color: 'var(--text-light)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <UserCheck size={24} color="var(--accent-emerald)" /> 순수 워크인(Walk-in) 고객
+                  <UserCheck size={24} color="var(--accent-emerald)" /> 외부 유입 순수 고객
                 </div>
-                <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px' }}>총 방문객에서 숙박객({formatNumber(stayingGuests)}명)을 제외한 외부 유입 순수 고객입니다.</div>
+                <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px' }}>총 방문객에서 숙박객과 골프 고객을 제외한 순수 워크인(Walk-in) 고객입니다.</div>
               </div>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: '40px', fontWeight: 'bold', color: walkInGuests < 0 ? 'var(--accent-coral)' : 'var(--accent-emerald)', textShadow: `0 0 20px ${walkInGuests < 0 ? 'rgba(244, 63, 94, 0.4)' : 'rgba(16, 185, 129, 0.4)'}` }}>
@@ -367,7 +255,7 @@ export default function VisitorCalculation({ processedData, globalStats, setting
                 </div>
                 {walkInGuests < 0 && (
                   <div style={{ fontSize: '12px', color: 'var(--accent-coral)', marginTop: '4px' }}>
-                    ⚠️ [경고] 워크인이 음수입니다. [설정] 탭의 객실당 투숙 인원 가중치가 너무 높게 잡혀있을 수 있습니다.
+                     [안내] 데이터가 누락되었거나 연산 오차가 있을 수 있습니다.
                   </div>
                 )}
               </div>
@@ -391,7 +279,7 @@ export default function VisitorCalculation({ processedData, globalStats, setting
                 <th style={{ padding: '12px', color: 'var(--text-muted)' }}>전체 차량</th>
                 <th style={{ padding: '12px', color: 'var(--text-muted)' }}>직원 차량</th>
                 <th style={{ padding: '12px', color: 'var(--text-muted)' }}>순수 차량</th>
-                <th style={{ padding: '12px', color: 'var(--accent-purple)' }}>추산 인원</th>
+                <th style={{ padding: '12px', color: 'var(--accent-purple)' }}>실측 인원</th>
                 <th style={{ padding: '12px', color: 'var(--text-muted)' }}>골프 고객</th>
                 <th style={{ padding: '12px', color: 'var(--text-light)', fontWeight: 'bold' }}>총 방문객</th>
                 <th style={{ padding: '12px', color: 'var(--text-muted)' }}>숙박객</th>

@@ -28,8 +28,6 @@ export default function useProcessedData(monthlyData, settings) {
     let total51AccVirtualAll = 0;
 
     const data = [...monthlyData].sort((a, b) => (a.id || a.yearMonth || '').localeCompare(b.id || b.yearMonth || '')).map(d => {
-      const count51AsTwoRooms = settings?.count51AsTwoRooms !== false;
-
       let days = d.daysCount || 30;
       let daysWd = d.daysCountWeekday || 22;
       let daysWe = d.daysCountWeekend || 8;
@@ -106,16 +104,11 @@ export default function useProcessedData(monthlyData, settings) {
             }
           }
           
-          let virtualCount = count;
-          if (roomType.includes('51평') && !(roomType.includes('장애') || roomType.includes('휠체어'))) {
-            virtualCount = count51AsTwoRooms ? count * 2 : count;
-          }
-          
           if (isWeekend) {
-            calculatedSoldWe += virtualCount;
+            calculatedSoldWe += count;
             calculatedRevWe += revenue;
           } else {
-            calculatedSoldWd += virtualCount;
+            calculatedSoldWd += count;
             calculatedRevWd += revenue;
           }
         });
@@ -136,7 +129,7 @@ export default function useProcessedData(monthlyData, settings) {
         revWd = calculatedRevWd;
         revWe = calculatedRevWe;
       } else {
-        const totalSoldFallback = sold16 + sold35 + (count51AsTwoRooms ? sold51 * 2 : sold51) + sold51Acc;
+        const totalSoldFallback = sold16 + sold35 + sold51 + sold51Acc;
         const rawSoldWd = Number(d.soldWeekday || 0);
         const rawSoldWe = Number(d.soldWeekend || 0);
         const totalRawSold = rawSoldWd + rawSoldWe;
@@ -151,21 +144,21 @@ export default function useProcessedData(monthlyData, settings) {
         }
       }
 
-      const totalSold = sold16 + sold35 + (count51AsTwoRooms ? sold51 * 2 : sold51) + sold51Acc;
+      const totalSold = sold16 + sold35 + sold51 + sold51Acc;
       
       const physicalRooms = Number(settings?.totalRooms) || 175;
-      const rooms51Sets = Number(settings?.connectingRooms51) || 85;
-      const dailyInventory = count51AsTwoRooms ? physicalRooms : (physicalRooms - rooms51Sets);
+      const dailyInventory = physicalRooms; // 백엔드 분할 정책에 따라 175 고정 분모 사용
       
       const totalInventory = dailyInventory * days;
       const invWd = dailyInventory * daysWd;
       const invWe = dailyInventory * daysWe;
       
-      const weight16 = settings?.guestWeight16 !== undefined ? Number(settings.guestWeight16) : 2.5;
-      const weight35 = settings?.guestWeight35 !== undefined ? Number(settings.guestWeight35) : 3.5;
-      const weight51 = settings?.guestWeight51 !== undefined ? Number(settings.guestWeight51) : 6.0;
-      
-      const guests = (sold16 * weight16) + (sold35 * weight35) + ((sold51 + sold51Acc) * weight51);
+      // 백엔드 제공 실측 투숙객 활용 (fallback: 0)
+      let guests = 0;
+      if (d.leisureVisitorBreakdown && Array.isArray(d.leisureVisitorBreakdown)) {
+        const roomStat = d.leisureVisitorBreakdown.find(v => v.venue === '객실');
+        if (roomStat) guests = Number(roomStat.visitors || 0);
+      }
       
       const locationGroups = settings?.locationGroups || {};
       let leisureSales = 0;
@@ -187,18 +180,6 @@ export default function useProcessedData(monthlyData, settings) {
         // 기존 버그 수정: 부대업장 엑셀을 올리면 기존에 올려둔 모토아레나 매출이 0으로 무시되던 현상 해결
         if (d.motoTotalRev && !salesObj['모토아레나']) {
           salesObj['모토아레나(티켓)'] = Number(d.motoTotalRev);
-        }
-
-        // 새로 추가된 동적 영업장 티켓 매출 합산
-        // 단, 부대업장(Leisure) 데이터에 이미 '모토아레나'가 있다면 통합 엑셀을 올린 것이므로
-        // MotoArena 슬롯에서 추출된 d.venues 병합은 이름 불일치로 인한 중복(예: 목장 vs 벨포레 목장)을 방지하기 위해 생략합니다.
-        if (d.venues && !salesObj['모토아레나']) {
-          Object.entries(d.venues).forEach(([vName, vData]) => {
-            const ignoreList = ['모토아레나', 'ROOM', 'ROOM OTHER', '합계'];
-            if (!ignoreList.includes(vName) && !salesObj[vName]) { 
-              salesObj[`${vName}(티켓)`] = Number(vData.totalRev || 0);
-            }
-          });
         }
 
         const calculated = calculateGroupedSales(salesObj, locationGroups);
@@ -258,7 +239,7 @@ export default function useProcessedData(monthlyData, settings) {
       
       total16All += sold16;
       total35All += sold35;
-      total51ConnVirtualAll += (count51AsTwoRooms ? sold51 * 2 : sold51);
+      total51ConnVirtualAll += sold51;
       total51AccVirtualAll += sold51Acc;
 
       let calcMotoGuest = 0;
@@ -296,21 +277,8 @@ export default function useProcessedData(monthlyData, settings) {
       }
 
       let calcLeisureTicketUsage = {};
-      if (d.venues) {
-        Object.entries(d.venues).forEach(([venue, data]) => {
-          if (data.tickets && venue !== '모토아레나' && venue !== 'ROOM' && venue !== 'ROOM OTHER' && venue !== '합계') {
-            Object.entries(data.tickets).forEach(([ticket, qty]) => {
-              const compositeKey = `${venue}___${ticket}`;
-              // 변경: 수동으로 클릭(선택)한 것만 포함되도록 기본값을 exclude: true 로 변경합니다.
-              const rule = settings?.leisureTicketRules?.[compositeKey] || { count: 1, exclude: true, customVenue: '' };
-              if (!rule.exclude) {
-                const finalVenue = (rule.customVenue && rule.customVenue.trim() !== '') ? rule.customVenue.trim() : venue;
-                calcLeisureTicketUsage[finalVenue] = (calcLeisureTicketUsage[finalVenue] || 0) + (Number(qty) || 0) * (Number(rule.count) || 1);
-              }
-            });
-          }
-        });
-      } else if (d.leisureTicketUsage) {
+      if (d.leisureTicketUsage) {
+        // 백엔드에서 제공된 방문객 데이터를 그대로 사용합니다.
         calcLeisureTicketUsage = d.leisureTicketUsage;
       }
 
@@ -357,9 +325,7 @@ export default function useProcessedData(monthlyData, settings) {
     const avgGuestsPerSoldRoom = totalSoldAll > 0 ? totalGuestsAll / totalSoldAll : 0;
     
     const physicalRooms = Number(settings?.totalRooms) || 175;
-    const rooms51Sets = Number(settings?.connectingRooms51) || 85;
-    const count51AsTwoRooms = settings?.count51AsTwoRooms !== false;
-    const dailyInventory = count51AsTwoRooms ? physicalRooms : (physicalRooms - rooms51Sets);
+    const dailyInventory = physicalRooms;
     
     const avgWdDays = 22;
     const avgWeDays = 8;

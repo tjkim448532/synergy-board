@@ -17,7 +17,6 @@ function transformDailyToMonthly(dailyRecords) {
         leisureSalesByLocation: {},
         salesByLocation: {},
         venues: {}
-        // 기타 필요한 합산 필드들 초기화
       });
     }
 
@@ -32,7 +31,6 @@ function transformDailyToMonthly(dailyRecords) {
           marketType: room.marketType,
           count: room.roomsSold,
           revenue: room.revenue,
-          // 기상 데이터 복사 (MRA 분석용)
           weatherTempMax: dayData.weather?.tempMax || 0,
           weatherTempMin: dayData.weather?.tempMin || 0,
           weatherPrecipitation: dayData.weather?.precipitation || 0,
@@ -70,7 +68,6 @@ function transformDailyToMonthly(dailyRecords) {
       if (!monthObj.venues['모토아레나'].breakdown) {
         monthObj.venues['모토아레나'].breakdown = {};
       }
-      // 백엔드에서 받은 7가지 카테고리를 프론트에 맞게 매핑
       monthObj.venues['모토아레나'].breakdown = {
         guest: (monthObj.venues['모토아레나'].breakdown.guest || 0) + (dayData.motoArenaDetails.guestRevenue || 0),
         internal: (monthObj.venues['모토아레나'].breakdown.internal || 0) + (dayData.motoArenaDetails.internalRevenue || 0),
@@ -81,13 +78,265 @@ function transformDailyToMonthly(dailyRecords) {
         general: (monthObj.venues['모토아레나'].breakdown.general || 0) + (dayData.motoArenaDetails.generalRevenue || 0)
       };
     }
-
   });
 
   return Array.from(monthlyMap.values());
 }
 
-export default function useBackendData(startDate, endDate) {
+// 새로 추가된 Vercel 시계열 API 응답을 시너지 배열 포맷으로 매핑
+function transformTimeseriesToMonthly(jsonArray) {
+  const monthlyMap = new Map();
+
+  jsonArray.forEach(dayData => {
+    const yearMonth = dayData.date.substring(0, 7);
+    if (!monthlyMap.has(yearMonth)) {
+      monthlyMap.set(yearMonth, {
+        id: yearMonth,
+        yearMonth: yearMonth,
+        rawRoomRecords: [],
+        rawLeisureRecords: [],
+        leisureSalesByLocation: {},
+        salesByLocation: {},
+        venues: {},
+        visitorData: {
+          ...(dayData.visitorData || {})
+        },
+        leisureVisitorBreakdown: dayData.leisureVisitorBreakdown || []
+      });
+    }
+
+    const monthObj = monthlyMap.get(yearMonth);
+    const w = dayData.weather || {};
+
+    const roomsSold = Number(dayData.visitorData?.roomsSold || dayData.roomsSold || 0);
+    const roomRev = Number(dayData.revenues?.room || dayData.roomRevenue || 0);
+    
+    // [V3 API] Use real roomTypeBreakdown instead of faking ratios
+    if (dayData.roomTypeBreakdown && Array.isArray(dayData.roomTypeBreakdown)) {
+      dayData.roomTypeBreakdown.forEach(room => {
+        monthObj.rawRoomRecords.push({
+          date: dayData.date,
+          roomType: room.room_type || room.roomType,
+          marketType: 'TOTAL', // Handled by rawMarketRecords now
+          count: Number(room.rooms_sold || room.roomsSold || 0),
+          revenue: Number(room.room_revenue || room.roomRevenue || 0),
+          weatherTempMax: Number(w.tempMax || 0),
+          weatherTempMin: Number(w.tempMin || 0),
+          weatherPrecipitation: Number(w.precipitation || 0),
+          weatherDaytimePrecip: 0, 
+          weatherNighttimePrecip: 0
+        });
+      });
+    } else {
+      // Fallback
+      if (roomsSold > 0 || roomRev > 0) {
+        monthObj.rawRoomRecords.push({
+          date: dayData.date, roomType: '합계', marketType: 'TOTAL', count: roomsSold, revenue: roomRev,
+          weatherTempMax: Number(w.tempMax || 0), weatherTempMin: Number(w.tempMin || 0), weatherPrecipitation: Number(w.precipitation || 0),
+          weatherDaytimePrecip: 0, weatherNighttimePrecip: 0
+        });
+      }
+    }
+    if (dayData.visitorData) {
+      Object.keys(dayData.visitorData).forEach(key => {
+        const val = Number(dayData.visitorData[key]);
+        if (!isNaN(val)) {
+          monthObj.visitorData[key] = (monthObj.visitorData[key] || 0) + val;
+        }
+      });
+    }
+
+    // [V3 API] Extract marketTypeBreakdown
+    if (!monthObj.rawMarketRecords) monthObj.rawMarketRecords = [];
+    if (dayData.marketTypeBreakdown && Array.isArray(dayData.marketTypeBreakdown)) {
+      dayData.marketTypeBreakdown.forEach(m => {
+        monthObj.rawMarketRecords.push({
+          date: dayData.date,
+          marketType: m.market_type || m.marketType,
+          count: Number(m.rooms_sold || m.roomsSold || 0),
+          revenue: Number(m.room_revenue || m.roomRevenue || 0),
+          visitors: Number(m.visitors || m.guests || 0)
+        });
+      });
+    }
+
+    // [V3 API] Extract motoArenaDetails
+    if (dayData.motoArenaDetails) {
+      if (!monthObj.venues['모토아레나']) {
+        monthObj.venues['모토아레나'] = { totalRev: 0, tickets: {}, breakdown: {} };
+      }
+      if (!monthObj.venues['모토아레나'].breakdown) {
+         monthObj.venues['모토아레나'].breakdown = { guest: 0, internal: 0, member: 0, partnership: 0, local: 0, online: 0, general: 0 };
+      }
+      monthObj.venues['모토아레나'].breakdown = {
+        guest: (monthObj.venues['모토아레나'].breakdown.guest || 0) + Number(dayData.motoArenaDetails.guestRevenue || 0),
+        internal: (monthObj.venues['모토아레나'].breakdown.internal || 0) + Number(dayData.motoArenaDetails.internalRevenue || 0),
+        member: (monthObj.venues['모토아레나'].breakdown.member || 0) + Number(dayData.motoArenaDetails.memberRevenue || 0),
+        partnership: (monthObj.venues['모토아레나'].breakdown.partnership || 0) + Number(dayData.motoArenaDetails.partnershipRevenue || 0),
+        local: (monthObj.venues['모토아레나'].breakdown.local || 0) + Number(dayData.motoArenaDetails.localRevenue || 0),
+        online: (monthObj.venues['모토아레나'].breakdown.online || 0) + Number(dayData.motoArenaDetails.onlineRevenue || 0),
+        general: (monthObj.venues['모토아레나'].breakdown.general || 0) + Number(dayData.motoArenaDetails.generalRevenue || 0)
+      };
+    }
+
+    if (dayData.revenues) {
+      Object.entries(dayData.revenues).forEach(([key, rev]) => {
+        if (key === 'room') return;
+        const categoryMap = { fnb: 'FNB', ticket: 'TICKET', golf: 'GOLF' };
+        const venueName = categoryMap[key] || key;
+        
+        monthObj.salesByLocation[venueName] = (monthObj.salesByLocation[venueName] || 0) + Number(rev || 0);
+        
+        if (!monthObj.venues[venueName]) {
+          monthObj.venues[venueName] = { totalRev: 0, tickets: {} };
+        }
+        monthObj.venues[venueName].totalRev += Number(rev || 0);
+      });
+    }
+  });
+
+  return Array.from(monthlyMap.values());
+}
+
+// Vercel API의 대시보드 단일 객체 응답을 시너지 배열 포맷으로 매핑
+function transformPolymorphicData(json) {
+  const targetDate = json.date || json.startDate || new Date().toISOString().split('T')[0];
+  const yearMonth = targetDate.substring(0, 7);
+
+  const monthObj = {
+    id: yearMonth,
+    yearMonth: yearMonth,
+    rawRoomRecords: [],
+    rawLeisureRecords: [],
+    leisureSalesByLocation: {},
+    salesByLocation: {},
+    venues: {},
+    visitorData: {
+      totalVehicles: json.visitorData?.totalVehicles || null,
+      employeeVehicles: json.visitorData?.employeeVehicles || null,
+      golfGuests: json.visitorData?.golfGuests || null
+    },
+    leisureVisitorBreakdown: json.leisureVisitorBreakdown || []
+  };
+
+  const w = json.weather || {};
+
+  // 1. 객실 데이터 매핑
+  if (json.roomTypeBreakdown && Array.isArray(json.roomTypeBreakdown) && json.roomTypeBreakdown.length > 0) {
+    json.roomTypeBreakdown.forEach(room => {
+      monthObj.rawRoomRecords.push({
+        date: targetDate,
+        roomType: room.room_type,
+        marketType: 'TOTAL', 
+        count: Number(room.rooms_sold || 0),
+        revenue: Number(room.room_revenue || room.today_actual || 0),
+        weatherTempMax: Number(w.tempMax || 0),
+        weatherTempMin: Number(w.tempMin || 0),
+        weatherPrecipitation: Number(w.precipitation || 0),
+        weatherDaytimePrecip: 0, 
+        weatherNighttimePrecip: 0
+      });
+    });
+  } else if (json.dailyReportBreakdown) {
+    // fallback
+    const kpiRoom = json.dailyReportBreakdown.find(d => d.category === 'KPI' && d.name === 'Occupied Rooms');
+    const roomRev = json.dailyReportBreakdown.find(d => d.category === 'ROOM' && d.name === 'ROOM');
+    
+    const totalSold = kpiRoom ? Number(kpiRoom.today_actual || 0) : 0;
+    const totalRev = roomRev ? Number(roomRev.today_actual || 0) : 0;
+    
+    if (totalSold > 0 || totalRev > 0) {
+      monthObj.rawRoomRecords.push({
+        date: targetDate, roomType: '합계', marketType: 'TOTAL', count: totalSold, revenue: totalRev,
+        weatherTempMax: Number(w.tempMax || 0), weatherTempMin: Number(w.tempMin || 0), weatherPrecipitation: Number(w.precipitation || 0),
+        weatherDaytimePrecip: 0, weatherNighttimePrecip: 0
+      });
+    }
+  }
+
+  // 1.5 Extract marketTypeBreakdown
+  monthObj.rawMarketRecords = [];
+  if (json.marketTypeBreakdown && Array.isArray(json.marketTypeBreakdown)) {
+    json.marketTypeBreakdown.forEach(m => {
+      monthObj.rawMarketRecords.push({
+        date: targetDate,
+        marketType: m.market_type || m.marketType,
+        count: Number(m.rooms_sold || m.roomsSold || 0),
+        revenue: Number(m.room_revenue || m.roomRevenue || 0),
+        visitors: Number(m.visitors || m.guests || 0)
+      });
+    });
+  }
+
+  // 2. 부대 매출 데이터 매핑
+  if (json.dailyReportBreakdown && Array.isArray(json.dailyReportBreakdown)) {
+    json.dailyReportBreakdown.forEach(item => {
+      if (item.category === 'KPI' || item.category === 'TOTAL' || item.category === 'ROOM') return;
+      
+      const venueName = item.facility_name || item.name;
+      if (!venueName) return;
+
+      const revenue = Number(item.today_actual || 0);
+      monthObj.salesByLocation[venueName] = (monthObj.salesByLocation[venueName] || 0) + revenue;
+      
+      if (!monthObj.venues[venueName]) {
+        monthObj.venues[venueName] = { totalRev: 0, tickets: {} };
+      }
+      monthObj.venues[venueName].totalRev += revenue;
+    });
+  }
+
+  // 3. 부대 티켓 매핑 (매출 상세)
+  if (json.leisureProductBreakdown && Array.isArray(json.leisureProductBreakdown)) {
+    json.leisureProductBreakdown.forEach(ticket => {
+      const venueName = ticket.facility_name || '기타';
+      const ticketName = ticket.product_name;
+      const qty = Number(ticket.qty || 0);
+      
+      if (!monthObj.venues[venueName]) {
+        monthObj.venues[venueName] = { totalRev: 0, tickets: {} };
+      }
+      monthObj.venues[venueName].tickets[ticketName] = (monthObj.venues[venueName].tickets[ticketName] || 0) + qty;
+    });
+  }
+
+  // 3.5 방문객 전용 매핑 (백엔드 필터 & 배수 처리 완료본)
+  if (json.leisureVisitorBreakdown && Array.isArray(json.leisureVisitorBreakdown)) {
+    if (!monthObj.leisureTicketUsage) {
+      monthObj.leisureTicketUsage = {};
+    }
+    json.leisureVisitorBreakdown.forEach(v => {
+      const venueName = v.facility_name || '기타';
+      const qty = Number(v.qty || v.visitor_count || 0); // 혹시 필드명이 qty가 아니라 visitor_count일 수 있으므로 fallback
+      monthObj.leisureTicketUsage[venueName] = (monthObj.leisureTicketUsage[venueName] || 0) + qty;
+    });
+  }
+
+  // 4. 모토아레나 breakdown 연동
+  if (!monthObj.venues['모토아레나']) {
+    monthObj.venues['모토아레나'] = { totalRev: 0, tickets: {} };
+  }
+  
+  if (json.motoArenaBreakdown) {
+    monthObj.venues['모토아레나'].breakdown = {
+        guest: Number(json.motoArenaBreakdown.guestRevenue || 0),
+        internal: Number(json.motoArenaBreakdown.internalRevenue || 0),
+        member: Number(json.motoArenaBreakdown.memberRevenue || 0),
+        partnership: Number(json.motoArenaBreakdown.partnershipRevenue || 0),
+        local: Number(json.motoArenaBreakdown.localRevenue || 0),
+        online: Number(json.motoArenaBreakdown.onlineRevenue || 0),
+        general: Number(json.motoArenaBreakdown.generalRevenue || 0)
+    };
+  } else {
+    monthObj.venues['모토아레나'].breakdown = {
+        guest: 0, internal: 0, member: 0, partnership: 0, local: 0, online: 0, general: 0
+    };
+  }
+
+  return [monthObj];
+}
+
+export default function useBackendData(startDate, endDate, targetDate) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -96,28 +345,41 @@ export default function useBackendData(startDate, endDate) {
     async function fetchData() {
       try {
         setLoading(true);
-        // sessionStorage에 부모 창에서 넘어온 date가 있으면 우선 적용
-        const targetDate = sessionStorage.getItem('sso_date');
-        const queryDate = targetDate ? `?date=${targetDate}` : '';
-
-        // 실제 배포된 백엔드 API 주소 (벨포레 대시보드 백엔드)
-        const API_URL = `https://belleforet-data.vercel.app/api/v3/dashboard/revenue-summary${queryDate}`;
         
-        const response = await fetch(API_URL);
+        // 1. 항상 시계열 데이터 호출 (12개월 꺾은선 차트용 전체 흐름)
+        const tsUrl = `https://belleforet-data.vercel.app/api/v3/synergy/timeseries?startDate=${startDate}&endDate=${endDate}`;
+        const tsRes = await fetch(tsUrl);
+        if (!tsRes.ok) throw new Error('Timeseries API failed: ' + tsRes.statusText);
+        const tsJson = await tsRes.json();
         
-        if (!response.ok) {
-          throw new Error('API fetching failed: ' + response.statusText);
+        if (tsJson.status !== 'success' || !Array.isArray(tsJson.data)) {
+          throw new Error('Invalid Timeseries Data Structure');
+        }
+        
+        let formattedData = transformTimeseriesToMonthly(tsJson.data);
+        
+        // 2. targetDate가 있을 경우, 대시보드(Iframe)에서 전달한 상세 요약본을 호출하여 병합
+        // (파이 차트 등 상세 분석용 데이터를 선택된 월에 덮어씀)
+        if (targetDate) {
+          const detailUrl = `https://belleforet-data.vercel.app/api/v3/dashboard/revenue-summary?date=${targetDate}`;
+          const detailRes = await fetch(detailUrl);
+          if (detailRes.ok) {
+            const detailJson = await detailRes.json();
+            const detailArray = transformPolymorphicData(detailJson);
+            if (detailArray && detailArray.length > 0) {
+               const detailMonthObj = detailArray[0];
+               const existingIndex = formattedData.findIndex(d => d.yearMonth === detailMonthObj.yearMonth);
+               if (existingIndex !== -1) {
+                  // 상세 요약본 데이터가 훨씬 상세하므로 해당 월은 덮어쓰기 처리
+                  formattedData[existingIndex] = detailMonthObj;
+               } else {
+                  formattedData.push(detailMonthObj);
+               }
+            }
+          }
         }
 
-        const json = await response.json();
-        
-        if (json.status === 'success') {
-          // 일일 데이터를 월별 포맷으로 묶어서 리턴 (기존 시너지 로직 호환성 유지)
-          const monthlyFormatData = transformDailyToMonthly(json.data);
-          setData(monthlyFormatData);
-        } else {
-          throw new Error(json.message || 'Unknown API Error');
-        }
+        setData(formattedData);
       } catch (err) {
         console.error("Backend API Error:", err);
         setError(err.message);
@@ -129,7 +391,7 @@ export default function useBackendData(startDate, endDate) {
     if (startDate && endDate) {
       fetchData();
     }
-  }, [startDate, endDate]);
+  }, [startDate, endDate, targetDate]);
 
   return { data, loading, error };
 }

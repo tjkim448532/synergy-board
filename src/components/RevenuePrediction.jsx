@@ -70,10 +70,9 @@ export default function RevenuePrediction({ processedData, globalStats, settings
   const vExpected51Conn = totalExpectedSoldRooms * globalStats.mix51ConnVirtual;
   const vExpected51Acc = totalExpectedSoldRooms * globalStats.mix51AccVirtual;
 
-  const count51AsTwoRooms = settings.count51AsTwoRooms !== false;
   const physicalExpected16 = vExpected16;
   const physicalExpected35 = vExpected35;
-  const physicalExpected51 = (count51AsTwoRooms ? vExpected51Conn / 2 : vExpected51Conn) + vExpected51Acc;
+  const physicalExpected51 = vExpected51Conn + vExpected51Acc;
 
   const targetAdr16 = Number(settings.targetAdr16) || 0;
   const targetAdr35 = Number(settings.targetAdr35) || 0;

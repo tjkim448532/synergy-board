@@ -1,0 +1,2270 @@
+﻿{
+    "startDate":  "2026-08-31",
+    "endDate":  "2026-08-31",
+    "date":  "2026-08-31",
+    "today":  {
+                  "actual":  0,
+                  "ly_actual":  15471706
+              },
+    "mtd":  {
+                "actual":  0,
+                "ly_actual":  15471706
+            },
+    "ytd":  {
+                "actual":  12090906346,
+                "ly_actual":  15974549604
+            },
+    "qa_metrics":  {
+                       "daol_raw_total":  0,
+                       "true_net_total":  0,
+                       "daol_error_gap":  0
+                   },
+    "dailyReportBreakdown":  [
+                                 {
+                                     "category":  "KPI",
+                                     "name":  "Occupied Rooms",
+                                     "today_actual":  0,
+                                     "today_ly":  51,
+                                     "mtd_actual":  0,
+                                     "mtd_ly":  51,
+                                     "ytd_actual":  18332,
+                                     "ytd_ly":  25845
+                                 },
+                                 {
+                                     "category":  "ROOM",
+                                     "name":  "ROOM",
+                                     "facility_name":  "ROOM",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "0.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "0.00",
+                                     "ytd_ly":  "408770358.70"
+                                 },
+                                 {
+                                     "category":  "ROOM",
+                                     "name":  "ROOM OTHER",
+                                     "facility_name":  "ROOM_OTHER",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "0.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "0.00",
+                                     "ytd_ly":  "5024999.10"
+                                 },
+                                 {
+                                     "category":  "ROOM",
+                                     "name":  "ê°ì¤ Total",
+                                     "today_actual":  0,
+                                     "today_ly":  0,
+                                     "mtd_actual":  0,
+                                     "mtd_ly":  0,
+                                     "ytd_actual":  0,
+                                     "ytd_ly":  413795357.8
+                                 },
+                                 {
+                                     "category":  "GOLF",
+                                     "name":  "ê·¸ë¦°í¼",
+                                     "facility_name":  "ê·¸ë¦°í¼",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "0.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "0.00",
+                                     "ytd_ly":  "101842326.30"
+                                 },
+                                 {
+                                     "category":  "GOLF",
+                                     "name":  "ê¸°íë§¤ì¶",
+                                     "facility_name":  "ê¸°íë§¤ì¶",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "0.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "0.00",
+                                     "ytd_ly":  "309999.80"
+                                 },
+                                 {
+                                     "category":  "GOLF",
+                                     "name":  "ì¹´í¸ëì¬",
+                                     "facility_name":  "ì¹´í¸ëì¬",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "0.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "0.00",
+                                     "ytd_ly":  "67634909.10"
+                                 },
+                                 {
+                                     "category":  "GOLF",
+                                     "name":  "ê³¨í Total",
+                                     "today_actual":  0,
+                                     "today_ly":  0,
+                                     "mtd_actual":  0,
+                                     "mtd_ly":  0,
+                                     "ytd_actual":  0,
+                                     "ytd_ly":  169787235.2
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "",
+                                     "facility_name":  "",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "0",
+                                     "ytd_ly":  "4496366"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "BHC(ë©ìì¹´ë)",
+                                     "facility_name":  "BHC(ë©ìì¹´ë)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "129091",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "129091",
+                                     "ytd_actual":  "84520125",
+                                     "ytd_ly":  "134050016"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "CUí¸ìì ",
+                                     "facility_name":  "CUí¸ìì ",
+                                     "today_actual":  "0",
+                                     "today_ly":  "519855",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "519855",
+                                     "ytd_actual":  "256825330",
+                                     "ytd_ly":  "365024851"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ê¸°íì ",
+                                     "facility_name":  "ê¸°íì ",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "5106000",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ë¨ëìë´",
+                                     "facility_name":  "ë¨ëìë´",
+                                     "today_actual":  "0",
+                                     "today_ly":  "2162725",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "2162725",
+                                     "ytd_actual":  "879428647",
+                                     "ytd_ly":  "1092158752"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ëì´ëì°(2025)",
+                                     "facility_name":  "ëì´ëì°(2025)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "217309000",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ëë¼ì´í¸",
+                                     "facility_name":  "ëë¼ì´í¸",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "80191016",
+                                     "ytd_ly":  "100592594"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ë ì¤í ë",
+                                     "facility_name":  "ë ì¤í ë",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "186974375",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ë§ë¦¬ë í´ë½",
+                                     "facility_name":  "ë§ë¦¬ë í´ë½",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "18321050",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ëª¨í ìë ë ë íìµ",
+                                     "facility_name":  "ëª¨í ìë ë ë íìµ",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "270221302",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ë¯¸ëì´-ê¸°íí¸ìµ",
+                                     "facility_name":  "ë¯¸ëì´-ê¸°íí¸ìµ",
+                                     "today_actual":  "0",
+                                     "today_ly":  "21819",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "21819",
+                                     "ytd_actual":  "10572500",
+                                     "ytd_ly":  "13540171"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ë¯¸ëì´-ë®¤ì§ìì¹´í",
+                                     "facility_name":  "ë¯¸ëì´-ë®¤ì§ìì¹´í",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "8281700",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ë°¤ë°¤í\u0085ì´ë¸",
+                                     "facility_name":  "ë°¤ë°¤í\u0085ì´ë¸",
+                                     "today_actual":  "0",
+                                     "today_ly":  "889346",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "889346",
+                                     "ytd_actual":  "404627425",
+                                     "ytd_ly":  "423686384"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ë°¤ë°¤í¸ë­",
+                                     "facility_name":  "ë°¤ë°¤í¸ë­",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "20341963",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ë²¨í¬ë  ëª©ì¥(ì²´í)",
+                                     "facility_name":  "ë²¨í¬ë  ëª©ì¥(ì²´í)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "38720000",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ë²¨í¬ë í(í°ì¼)",
+                                     "facility_name":  "ë²¨í¬ë í(í°ì¼)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "0",
+                                     "ytd_ly":  "4253821"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ë²¼ë£¨ì¬ì´",
+                                     "facility_name":  "ë²¼ë£¨ì¬ì´",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "531364",
+                                     "ytd_ly":  "48455680"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ë¸ë¦¬ì¤í·346",
+                                     "facility_name":  "ë¸ë¦¬ì¤í·346",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "504992533",
+                                     "ytd_ly":  "561246529"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ì¬ê³ì ì°ë§¤ì¥",
+                                     "facility_name":  "ì¬ê³ì ì°ë§¤ì¥",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "73652400",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ì¤íí¸íì°ì¤",
+                                     "facility_name":  "ì¤íí¸íì°ì¤",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "252831118",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ì¸ë¨¸ëë(ëì¬)",
+                                     "facility_name":  "ì¸ë¨¸ëë(ëì¬)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "556000",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ì¸ë¨¸ëë(ì\u0085ì¥)",
+                                     "facility_name":  "ì¸ë¨¸ëë(ì\u0085ì¥)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "1148600",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ì¸ë¨¸í¸ë­(íì¥)",
+                                     "facility_name":  "ì¸ë¨¸í¸ë­(íì¥)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "173182",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ì¼ë£©ë§ì¹´í",
+                                     "facility_name":  "ì¼ë£©ë§ì¹´í",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "77764534",
+                                     "ytd_ly":  "77929012"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ì°íì¥",
+                                     "facility_name":  "ì°íì¥",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "28362598",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ìëí(ëì¬)",
+                                     "facility_name":  "ìëí(ëì¬)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "3226000",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ìëí(ì\u0085ì¥)",
+                                     "facility_name":  "ìëí(ì\u0085ì¥)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "1295000",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ì£¼ì°¨ê´ì ",
+                                     "facility_name":  "ì£¼ì°¨ê´ì ",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "22734003",
+                                     "ytd_ly":  "11048185"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ì¿ ì¹ë",
+                                     "facility_name":  "ì¿ ì¹ë",
+                                     "today_actual":  "0",
+                                     "today_ly":  "925456",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "925456",
+                                     "ytd_actual":  "394586545",
+                                     "ytd_ly":  "444397526"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "í´ë½íì°ì¤-ë ì¤í ë",
+                                     "facility_name":  "í´ë½íì°ì¤-ë ì¤í ë",
+                                     "today_actual":  "0",
+                                     "today_ly":  "308182",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "308182",
+                                     "ytd_actual":  "138453632",
+                                     "ytd_ly":  "229237939"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "í´ë½íì°ì¤-ì¤íí¸íì°ì¤",
+                                     "facility_name":  "í´ë½íì°ì¤-ì¤íí¸íì°ì¤",
+                                     "today_actual":  "0",
+                                     "today_ly":  "192727",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "192727",
+                                     "ytd_actual":  "191270034",
+                                     "ytd_ly":  "360104737"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "í¬ì¸íë ì´ì¤",
+                                     "facility_name":  "í¬ì¸íë ì´ì¤",
+                                     "today_actual":  "0",
+                                     "today_ly":  "535255",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "535255",
+                                     "ytd_actual":  "237063724",
+                                     "ytd_ly":  "302079152"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "íë¡ìµ",
+                                     "facility_name":  "íë¡ìµ",
+                                     "today_actual":  "0",
+                                     "today_ly":  "560909",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "560909",
+                                     "ytd_actual":  "46303283",
+                                     "ytd_ly":  "137571574"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "íì¤í",
+                                     "facility_name":  "íì¤í",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "59248080",
+                                     "ytd_ly":  "45970534"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ììì\u0085ì¥ Total",
+                                     "today_actual":  0,
+                                     "today_ly":  6245365,
+                                     "mtd_actual":  0,
+                                     "mtd_ly":  6245365,
+                                     "ytd_actual":  4515633063,
+                                     "ytd_ly":  4355843823
+                                 },
+                                 {
+                                     "category":  "BANQUET",
+                                     "name":  "ì°íì¥",
+                                     "facility_name":  "ì°íì¥",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "0.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "20284180.00",
+                                     "ytd_ly":  "0.00"
+                                 },
+                                 {
+                                     "category":  "BANQUET",
+                                     "name":  "ì°í Total",
+                                     "today_actual":  0,
+                                     "today_ly":  0,
+                                     "mtd_actual":  0,
+                                     "mtd_ly":  0,
+                                     "ytd_actual":  20284180,
+                                     "ytd_ly":  0
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ê¸°íí°ì¼",
+                                     "facility_name":  "ê¸°íí°ì¼",
+                                     "today_actual":  "0",
+                                     "today_ly":  "150218",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "150218",
+                                     "ytd_actual":  "129322501",
+                                     "ytd_ly":  "84562754"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ê¸°íí°ì¼(í¨í¤ì§)",
+                                     "facility_name":  "ê¸°íí°ì¼(í¨í¤ì§)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "7649080",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ëì´ëì°(2025)",
+                                     "facility_name":  "ëì´ëì°(2025)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "384323287",
+                                     "ytd_ly":  "400229267"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ë§ë¦¬ë í´ë½",
+                                     "facility_name":  "ë§ë¦¬ë í´ë½",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "20512880",
+                                     "ytd_ly":  "13078180"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ë§ë¦¬ëí´ë½",
+                                     "facility_name":  "ë§ë¦¬ëí´ë½",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "8406082",
+                                     "ytd_ly":  "3336097"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ë§ì´í´ì¹´í¸",
+                                     "facility_name":  "ë§ì´í´ì¹´í¸",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "187381598",
+                                     "ytd_ly":  "172111938"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ëª¨í ìë ë",
+                                     "facility_name":  "ëª¨í ìë ë",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "810877950",
+                                     "ytd_ly":  "621121185"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ëª¨í ìë ë ë íìµ",
+                                     "facility_name":  "ëª¨í ìë ë ë íìµ",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "515128405",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ë¯¸ëì´-ë®¤ì§ìì¹´í",
+                                     "facility_name":  "ë¯¸ëì´-ë®¤ì§ìì¹´í",
+                                     "today_actual":  "0",
+                                     "today_ly":  "58635",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "58635",
+                                     "ytd_actual":  "17020656",
+                                     "ytd_ly":  "18295134"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ë¯¸ëì´ìí¸ì¼í°",
+                                     "facility_name":  "ë¯¸ëì´ìí¸ì¼í°",
+                                     "today_actual":  "0",
+                                     "today_ly":  "356180",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "356180",
+                                     "ytd_actual":  "209234145",
+                                     "ytd_ly":  "262475982"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ë²¨í¬ë  ë¦¬ì¡°í¸",
+                                     "facility_name":  "ë²¨í¬ë  ë¦¬ì¡°í¸",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "2964215",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ë²¨í¬ë  ëª©ì¥",
+                                     "facility_name":  "ë²¨í¬ë  ëª©ì¥",
+                                     "today_actual":  "0",
+                                     "today_ly":  "208541",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "208541",
+                                     "ytd_actual":  "321742094",
+                                     "ytd_ly":  "295433293"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ë²¨í¬ë  ëª©ì¥(ì²´í)",
+                                     "facility_name":  "ë²¨í¬ë  ëª©ì¥(ì²´í)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "76662808",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ë²¨í¬ë ëª©ì¥",
+                                     "facility_name":  "ë²¨í¬ë ëª©ì¥",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "22065609",
+                                     "ytd_ly":  "28926720"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ì¬ê³ì  ì°ë§¤ì¥",
+                                     "facility_name":  "ì¬ê³ì  ì°ë§¤ì¥",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "4951540",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ì¬ê³ì ì°ë§¤ì¥",
+                                     "facility_name":  "ì¬ê³ì ì°ë§¤ì¥",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "171478575",
+                                     "ytd_ly":  "155402609"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ì¸ë¨¸ëë",
+                                     "facility_name":  "ì¸ë¨¸ëë",
+                                     "today_actual":  "0",
+                                     "today_ly":  "-76617",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "-76617",
+                                     "ytd_actual":  "2528044",
+                                     "ytd_ly":  "289891752"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ì¨ë¼ì¸í°ì¼",
+                                     "facility_name":  "ì¨ë¼ì¸í°ì¼",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "407176549",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ì¨ë¼ì¸í°ì¼-ê¸°í",
+                                     "facility_name":  "ì¨ë¼ì¸í°ì¼-ê¸°í",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "1964505",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ìëí",
+                                     "facility_name":  "ìëí",
+                                     "today_actual":  "0",
+                                     "today_ly":  "54545",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "54545",
+                                     "ytd_actual":  "13044552",
+                                     "ytd_ly":  "63973868"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ìëí(ëì¬)",
+                                     "facility_name":  "ìëí(ëì¬)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "2889089",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ìëí(ì\u0085ì¥)",
+                                     "facility_name":  "ìëí(ì\u0085ì¥)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "968186",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ìµì¤í¸ë¦¼ë£¨ì§",
+                                     "facility_name":  "ìµì¤í¸ë¦¼ë£¨ì§",
+                                     "today_actual":  "0",
+                                     "today_ly":  "64891",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "64891",
+                                     "ytd_actual":  "185570668",
+                                     "ytd_ly":  "173184658"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "í°ì¼ì\u0085ì¥ Total",
+                                     "today_actual":  0,
+                                     "today_ly":  816393,
+                                     "mtd_actual":  0,
+                                     "mtd_ly":  816393,
+                                     "ytd_actual":  3503863018,
+                                     "ytd_ly":  2582023437
+                                 },
+                                 {
+                                     "category":  "OTHER",
+                                     "name":  "BHC(ë©ìì¹´ë)",
+                                     "facility_name":  "BHC(ë©ìì¹´ë)",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "0.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "12274981.00",
+                                     "ytd_ly":  "0.00"
+                                 },
+                                 {
+                                     "category":  "OTHER",
+                                     "name":  "CUí¸ìì ",
+                                     "facility_name":  "CUí¸ìì ",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "0.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "51098292.00",
+                                     "ytd_ly":  "0.00"
+                                 },
+                                 {
+                                     "category":  "OTHER",
+                                     "name":  "ROOM OTHER",
+                                     "facility_name":  "ROOM OTHER",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "0.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "4315441.00",
+                                     "ytd_ly":  "0.00"
+                                 },
+                                 {
+                                     "category":  "OTHER",
+                                     "name":  "ê¸°íì ",
+                                     "facility_name":  "ê¸°íì ",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "0.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "4623541.00",
+                                     "ytd_ly":  "0.00"
+                                 },
+                                 {
+                                     "category":  "OTHER",
+                                     "name":  "ë¯¸ëì´-ê¸°íí¸ìµ",
+                                     "facility_name":  "ë¯¸ëì´-ê¸°íí¸ìµ",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "0.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "1351720.00",
+                                     "ytd_ly":  "0.00"
+                                 },
+                                 {
+                                     "category":  "OTHER",
+                                     "name":  "ë²¨í¬ë  êµ¿ì¦",
+                                     "facility_name":  "ë²¨í¬ë  êµ¿ì¦",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "0.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "560004.00",
+                                     "ytd_ly":  "0.00"
+                                 },
+                                 {
+                                     "category":  "OTHER",
+                                     "name":  "ì£¼ì°¨ê´ì ",
+                                     "facility_name":  "ì£¼ì°¨ê´ì ",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "0.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "3842727.00",
+                                     "ytd_ly":  "0.00"
+                                 },
+                                 {
+                                     "category":  "OTHER",
+                                     "name":  "í¬ì¸íë ì´ì¤",
+                                     "facility_name":  "í¬ì¸íë ì´ì¤",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "0.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "43974509.00",
+                                     "ytd_ly":  "0.00"
+                                 },
+                                 {
+                                     "category":  "OTHER",
+                                     "name":  "íë¡ìµ",
+                                     "facility_name":  "íë¡ìµ",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "0.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "13709070.00",
+                                     "ytd_ly":  "0.00"
+                                 },
+                                 {
+                                     "category":  "OTHER",
+                                     "name":  "ê¸°íì\u0085ì¥ Total",
+                                     "today_actual":  0,
+                                     "today_ly":  0,
+                                     "mtd_actual":  0,
+                                     "mtd_ly":  0,
+                                     "ytd_actual":  135750285,
+                                     "ytd_ly":  0
+                                 },
+                                 {
+                                     "category":  "TOTAL",
+                                     "name":  "Grand Total (Gross)",
+                                     "today_actual":  0,
+                                     "today_ly":  0,
+                                     "mtd_actual":  0,
+                                     "mtd_ly":  0,
+                                     "ytd_actual":  0,
+                                     "ytd_ly":  0
+                                 },
+                                 {
+                                     "category":  "TOTAL",
+                                     "name":  "Grand Total (Net)",
+                                     "today_actual":  0,
+                                     "today_ly":  15471706,
+                                     "mtd_actual":  0,
+                                     "mtd_ly":  15471706,
+                                     "ytd_actual":  12090906346,
+                                     "ytd_ly":  15974549604
+                                 }
+                             ],
+    "gridData":  [
+                     {
+                         "depth1":  "ìë°",
+                         "depth2":  "ê°ì¤",
+                         "depth3":  "ì ì²´",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "ê³¨íì¥",
+                         "depth3":  "ì ì²´",
+                         "salesAmount":  0,
+                         "quantity":  4
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ê¸°íí°ì¼",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ê¸°íí°ì¼(í¨í¤ì§)",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ëì´ëì°(2025)",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ë§ë¦¬ë í´ë½",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ë§ë¦¬ëí´ë½",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ë§ì´í´ì¹´í¸",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ëª¨í ìë ë",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ëª¨í ìë ë ë íìµ",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ë¯¸ëì´-ë®¤ì§ìì¹´í",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ë¯¸ëì´ìí¸ì¼í°",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ë²¨í¬ë  ë¦¬ì¡°í¸",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ë²¨í¬ë  ëª©ì¥",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ë²¨í¬ë  ëª©ì¥(ì²´í)",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ë²¨í¬ë ëª©ì¥",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ì¬ê³ì  ì°ë§¤ì¥",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ì¬ê³ì ì°ë§¤ì¥",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ì¸ë¨¸ëë",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ì¨ë¼ì¸í°ì¼",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ì¨ë¼ì¸í°ì¼-ê¸°í",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ìëí",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ìëí(ëì¬)",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ìëí(ì\u0085ì¥)",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ìµì¤í¸ë¦¼ë£¨ì§",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ê¸°í",
+                         "depth2":  "ê¸°íì\u0085ì¥",
+                         "depth3":  "ì ì²´",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "BHC(ë©ìì¹´ë)",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "CUí¸ìì ",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ê¸°íì ",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ë¨ëìë´",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ëì´ëì°(2025)",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ëë¼ì´í¸",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ë ì¤í ë",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ë§ë¦¬ë í´ë½",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ëª¨í ìë ë ë íìµ",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ë¯¸ëì´-ê¸°íí¸ìµ",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ë¯¸ëì´-ë®¤ì§ìì¹´í",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ë°¤ë°¤í\u0085ì´ë¸",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ë°¤ë°¤í¸ë­",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ë²¨í¬ë  ëª©ì¥(ì²´í)",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ë²¨í¬ë í(í°ì¼)",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ë²¼ë£¨ì¬ì´",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ë¸ë¦¬ì¤í·346",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ì¬ê³ì ì°ë§¤ì¥",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ì¤íí¸íì°ì¤",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ì¸ë¨¸ëë(ëì¬)",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ì¸ë¨¸ëë(ì\u0085ì¥)",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ì¸ë¨¸í¸ë­(íì¥)",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ì¼ë£©ë§ì¹´í",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ì°íì¥",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ìëí(ëì¬)",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ìëí(ì\u0085ì¥)",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ì£¼ì°¨ê´ì ",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ì¿ ì¹ë",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "í´ë½íì°ì¤-ë ì¤í ë",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "í´ë½íì°ì¤-ì¤íí¸íì°ì¤",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "í¬ì¸íë ì´ì¤",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "íë¡ìµ",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "íì¤í",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     }
+                 ],
+    "chartData":  [
+                      {
+                          "name":  "ê°ì¤",
+                          "value":  0
+                      },
+                      {
+                          "name":  "ê³¨íì¥",
+                          "value":  0
+                      },
+                      {
+                          "name":  "í°ì¼ì\u0085ì¥",
+                          "value":  0
+                      },
+                      {
+                          "name":  "ê¸°íì\u0085ì¥",
+                          "value":  0
+                      },
+                      {
+                          "name":  "ììì\u0085ì¥",
+                          "value":  0
+                      }
+                  ],
+    "adrTable":  [
+                     {
+                         "roomSize":  "ì ì²´",
+                         "marketType":  "ê¸°ì\u0085ìì\u0085(í´ìì)",
+                         "channel":  "ê¸°ì\u0085ìì\u0085(í´ìì)",
+                         "roomsSold":  0,
+                         "totalRevenue":  0,
+                         "adr":  0
+                     },
+                     {
+                         "roomSize":  "ì ì²´",
+                         "marketType":  "ë¨ì²´ìì\u0085(ì¸ë¯¸ë)",
+                         "channel":  "ë¨ì²´ìì\u0085(ì¸ë¯¸ë)",
+                         "roomsSold":  0,
+                         "totalRevenue":  0,
+                         "adr":  0
+                     },
+                     {
+                         "roomSize":  "ì ì²´",
+                         "marketType":  "ì¨ë¼ì¸ ì¬íì¬(ìë)",
+                         "channel":  "ì¨ë¼ì¸ ì¬íì¬(ìë)",
+                         "roomsSold":  0,
+                         "totalRevenue":  0,
+                         "adr":  0
+                     },
+                     {
+                         "roomSize":  "ì ì²´",
+                         "marketType":  "ì¨ë¼ì¸ ì¬íì¬(ìë)",
+                         "channel":  "ì¨ë¼ì¸ ì¬íì¬(ìë)",
+                         "roomsSold":  0,
+                         "totalRevenue":  0,
+                         "adr":  0
+                     },
+                     {
+                         "roomSize":  "ì ì²´",
+                         "marketType":  "ì í/ë©ì ì (ìì½ì¤)",
+                         "channel":  "ì í/ë©ì ì (ìì½ì¤)",
+                         "roomsSold":  0,
+                         "totalRevenue":  0,
+                         "adr":  0
+                     },
+                     {
+                         "roomSize":  "ì ì²´",
+                         "marketType":  "ííì´ì§/APP(ìë)",
+                         "channel":  "ííì´ì§/APP(ìë)",
+                         "roomsSold":  0,
+                         "totalRevenue":  0,
+                         "adr":  0
+                     }
+                 ],
+    "golfSummary":  {
+                        "golfRevenue":  0,
+                        "visitedTeams":  4,
+                        "visitedPlayers":  0
+                    },
+    "resortSummary":  {
+                          "lodging_revenue":  0,
+                          "rooms_sold":  0,
+                          "total_capacity":  175,
+                          "leisure_revenue":  0
+                      },
+    "role":  "ADMIN",
+    "roomTypeBreakdown":  [
+                              {
+                                  "room_type":  "16í",
+                                  "rooms_sold":  0,
+                                  "room_revenue":  0,
+                                  "today_actual":  0,
+                                  "today_ly":  624705,
+                                  "mtd_actual":  0,
+                                  "mtd_ly":  624705,
+                                  "ytd_actual":  539568150,
+                                  "ytd_ly":  601267241,
+                                  "total_capacity":  85
+                              },
+                              {
+                                  "room_type":  "35í",
+                                  "rooms_sold":  0,
+                                  "room_revenue":  0,
+                                  "today_actual":  0,
+                                  "today_ly":  3473813,
+                                  "mtd_actual":  0,
+                                  "mtd_ly":  3473813,
+                                  "ytd_actual":  611487261,
+                                  "ytd_ly":  906648341,
+                                  "total_capacity":  85
+                              },
+                              {
+                                  "room_type":  "51í",
+                                  "rooms_sold":  0,
+                                  "room_revenue":  0,
+                                  "today_actual":  0,
+                                  "today_ly":  1080348,
+                                  "mtd_actual":  0,
+                                  "mtd_ly":  1080348,
+                                  "ytd_actual":  794873337,
+                                  "ytd_ly":  1228223510,
+                                  "total_capacity":  175
+                              },
+                              {
+                                  "room_type":  "R51í",
+                                  "rooms_sold":  0,
+                                  "room_revenue":  0,
+                                  "today_actual":  0,
+                                  "today_ly":  226364,
+                                  "mtd_actual":  0,
+                                  "mtd_ly":  226364,
+                                  "ytd_actual":  118806184,
+                                  "ytd_ly":  122026953,
+                                  "total_capacity":  0
+                              },
+                              {
+                                  "room_type":  "ë¯¸ì§ì ",
+                                  "rooms_sold":  0,
+                                  "room_revenue":  0,
+                                  "today_actual":  0,
+                                  "today_ly":  0,
+                                  "mtd_actual":  0,
+                                  "mtd_ly":  0,
+                                  "ytd_actual":  -336363,
+                                  "ytd_ly":  0,
+                                  "total_capacity":  0
+                              },
+                              {
+                                  "room_type":  "í«ë£¸ 16í",
+                                  "rooms_sold":  0,
+                                  "room_revenue":  0,
+                                  "today_actual":  0,
+                                  "today_ly":  0,
+                                  "mtd_actual":  0,
+                                  "mtd_ly":  0,
+                                  "ytd_actual":  18840095,
+                                  "ytd_ly":  25539110,
+                                  "total_capacity":  0
+                              },
+                              {
+                                  "room_type":  "í«ë£¸ 35í",
+                                  "rooms_sold":  0,
+                                  "room_revenue":  0,
+                                  "today_actual":  0,
+                                  "today_ly":  239091,
+                                  "mtd_actual":  0,
+                                  "mtd_ly":  239091,
+                                  "ytd_actual":  32323068,
+                                  "ytd_ly":  69098767,
+                                  "total_capacity":  0
+                              },
+                              {
+                                  "room_type":  "í«ë£¸ 51í",
+                                  "rooms_sold":  0,
+                                  "room_revenue":  0,
+                                  "today_actual":  0,
+                                  "today_ly":  0,
+                                  "mtd_actual":  0,
+                                  "mtd_ly":  0,
+                                  "ytd_actual":  62284702,
+                                  "ytd_ly":  82792695,
+                                  "total_capacity":  0
+                              }
+                          ],
+    "channelBreakdown":  [
+                             {
+                                 "channel_name":  "ê¸°ì\u0085ìì\u0085(í´ìì)",
+                                 "rooms_sold":  0,
+                                 "room_revenue":  0,
+                                 "today_actual":  0,
+                                 "today_ly":  1179093,
+                                 "mtd_actual":  0,
+                                 "mtd_ly":  1179093,
+                                 "ytd_actual":  217192790,
+                                 "ytd_ly":  289586555
+                             },
+                             {
+                                 "channel_name":  "ë¨ì²´ìì\u0085(ì¸ë¯¸ë)",
+                                 "rooms_sold":  0,
+                                 "room_revenue":  0,
+                                 "today_actual":  0,
+                                 "today_ly":  349092,
+                                 "mtd_actual":  0,
+                                 "mtd_ly":  349092,
+                                 "ytd_actual":  529764590,
+                                 "ytd_ly":  731612229
+                             },
+                             {
+                                 "channel_name":  "ì¨ë¼ì¸ ì¬íì¬(ìë)",
+                                 "rooms_sold":  0,
+                                 "room_revenue":  0,
+                                 "today_actual":  0,
+                                 "today_ly":  0,
+                                 "mtd_actual":  0,
+                                 "mtd_ly":  0,
+                                 "ytd_actual":  3157342,
+                                 "ytd_ly":  28034587
+                             },
+                             {
+                                 "channel_name":  "ì¨ë¼ì¸ ì¬íì¬(ìë)",
+                                 "rooms_sold":  0,
+                                 "room_revenue":  0,
+                                 "today_actual":  0,
+                                 "today_ly":  719592,
+                                 "mtd_actual":  0,
+                                 "mtd_ly":  719592,
+                                 "ytd_actual":  454637205,
+                                 "ytd_ly":  605933693
+                             },
+                             {
+                                 "channel_name":  "ì í/ë©ì ì (ìì½ì¤)",
+                                 "rooms_sold":  0,
+                                 "room_revenue":  0,
+                                 "today_actual":  0,
+                                 "today_ly":  2680908,
+                                 "mtd_actual":  0,
+                                 "mtd_ly":  2680908,
+                                 "ytd_actual":  394371358,
+                                 "ytd_ly":  579449094
+                             },
+                             {
+                                 "channel_name":  "ííì´ì§/APP(ìë)",
+                                 "rooms_sold":  0,
+                                 "room_revenue":  0,
+                                 "today_actual":  0,
+                                 "today_ly":  715636,
+                                 "mtd_actual":  0,
+                                 "mtd_ly":  715636,
+                                 "ytd_actual":  578723149,
+                                 "ytd_ly":  800980459
+                             }
+                         ],
+    "segmentBreakdown":  [
+
+                         ],
+    "rateCodeBreakdown":  [
+
+                          ],
+    "golfFacilityBreakdown":  [
+                                  {
+                                      "facility_name":  "ROOM - Posting",
+                                      "revenue":  0,
+                                      "qty":  0
+                                  },
+                                  {
+                                      "facility_name":  "ê·¸ë¦°í¼",
+                                      "revenue":  0,
+                                      "qty":  0
+                                  },
+                                  {
+                                      "facility_name":  "ê·¸ë¦°í¼ - Posting",
+                                      "revenue":  0,
+                                      "qty":  0
+                                  },
+                                  {
+                                      "facility_name":  "ê¸°íë§¤ì¶",
+                                      "revenue":  0,
+                                      "qty":  0
+                                  },
+                                  {
+                                      "facility_name":  "ê¸°íë§¤ì¶ - Posting",
+                                      "revenue":  0,
+                                      "qty":  0
+                                  },
+                                  {
+                                      "facility_name":  "ë¨ëìë´ - Posting",
+                                      "revenue":  0,
+                                      "qty":  0
+                                  },
+                                  {
+                                      "facility_name":  "ëì¬í - Posting",
+                                      "revenue":  0,
+                                      "qty":  0
+                                  },
+                                  {
+                                      "facility_name":  "ë¸ë¦¬ì¤í·346 - Posting",
+                                      "revenue":  0,
+                                      "qty":  0
+                                  },
+                                  {
+                                      "facility_name":  "ì¹´í¸ëì¬",
+                                      "revenue":  0,
+                                      "qty":  4
+                                  },
+                                  {
+                                      "facility_name":  "ì¹´í¸ëì¬ - Posting",
+                                      "revenue":  0,
+                                      "qty":  4
+                                  },
+                                  {
+                                      "facility_name":  "ì¿ ì¹ë - Posting",
+                                      "revenue":  0,
+                                      "qty":  0
+                                  },
+                                  {
+                                      "facility_name":  "í´ë½íì°ì¤-ë ì¤í ë - Posting",
+                                      "revenue":  0,
+                                      "qty":  0
+                                  },
+                                  {
+                                      "facility_name":  "í´ë½íì°ì¤-ì¤íí¸íì°ì¤ - Posting",
+                                      "revenue":  0,
+                                      "qty":  0
+                                  },
+                                  {
+                                      "facility_name":  "íë¡ìµ - Posting",
+                                      "revenue":  0,
+                                      "qty":  0
+                                  }
+                              ],
+    "leisureProductBreakdown":  [
+
+                                ],
+    "ticketFacilityBreakdown":  [
+                                    {
+                                        "facility_name":  "ê¸°íí°ì¼",
+                                        "today_actual":  "0",
+                                        "today_ly":  "150218",
+                                        "mtd_actual":  "0",
+                                        "mtd_ly":  "150218",
+                                        "ytd_actual":  "129322501",
+                                        "ytd_ly":  "84562754"
+                                    },
+                                    {
+                                        "facility_name":  "ê¸°íí°ì¼(í¨í¤ì§)",
+                                        "today_actual":  "0",
+                                        "today_ly":  "0",
+                                        "mtd_actual":  "0",
+                                        "mtd_ly":  "0",
+                                        "ytd_actual":  "7649080",
+                                        "ytd_ly":  "0"
+                                    },
+                                    {
+                                        "facility_name":  "ëì´ëì°(2025)",
+                                        "today_actual":  "0",
+                                        "today_ly":  "0",
+                                        "mtd_actual":  "0",
+                                        "mtd_ly":  "0",
+                                        "ytd_actual":  "384323287",
+                                        "ytd_ly":  "400229267"
+                                    },
+                                    {
+                                        "facility_name":  "ë§ë¦¬ë í´ë½",
+                                        "today_actual":  "0",
+                                        "today_ly":  "0",
+                                        "mtd_actual":  "0",
+                                        "mtd_ly":  "0",
+                                        "ytd_actual":  "20512880",
+                                        "ytd_ly":  "13078180"
+                                    },
+                                    {
+                                        "facility_name":  "ë§ë¦¬ëí´ë½",
+                                        "today_actual":  "0",
+                                        "today_ly":  "0",
+                                        "mtd_actual":  "0",
+                                        "mtd_ly":  "0",
+                                        "ytd_actual":  "8406082",
+                                        "ytd_ly":  "3336097"
+                                    },
+                                    {
+                                        "facility_name":  "ë§ì´í´ì¹´í¸",
+                                        "today_actual":  "0",
+                                        "today_ly":  "0",
+                                        "mtd_actual":  "0",
+                                        "mtd_ly":  "0",
+                                        "ytd_actual":  "187381598",
+                                        "ytd_ly":  "172111938"
+                                    },
+                                    {
+                                        "facility_name":  "ëª¨í ìë ë",
+                                        "today_actual":  "0",
+                                        "today_ly":  "0",
+                                        "mtd_actual":  "0",
+                                        "mtd_ly":  "0",
+                                        "ytd_actual":  "810877950",
+                                        "ytd_ly":  "621121185"
+                                    },
+                                    {
+                                        "facility_name":  "ëª¨í ìë ë ë íìµ",
+                                        "today_actual":  "0",
+                                        "today_ly":  "0",
+                                        "mtd_actual":  "0",
+                                        "mtd_ly":  "0",
+                                        "ytd_actual":  "515128405",
+                                        "ytd_ly":  "0"
+                                    },
+                                    {
+                                        "facility_name":  "ë¯¸ëì´-ë®¤ì§ìì¹´í",
+                                        "today_actual":  "0",
+                                        "today_ly":  "58635",
+                                        "mtd_actual":  "0",
+                                        "mtd_ly":  "58635",
+                                        "ytd_actual":  "17020656",
+                                        "ytd_ly":  "18295134"
+                                    },
+                                    {
+                                        "facility_name":  "ë¯¸ëì´ìí¸ì¼í°",
+                                        "today_actual":  "0",
+                                        "today_ly":  "356180",
+                                        "mtd_actual":  "0",
+                                        "mtd_ly":  "356180",
+                                        "ytd_actual":  "209234145",
+                                        "ytd_ly":  "262475982"
+                                    },
+                                    {
+                                        "facility_name":  "ë²¨í¬ë  ë¦¬ì¡°í¸",
+                                        "today_actual":  "0",
+                                        "today_ly":  "0",
+                                        "mtd_actual":  "0",
+                                        "mtd_ly":  "0",
+                                        "ytd_actual":  "2964215",
+                                        "ytd_ly":  "0"
+                                    },
+                                    {
+                                        "facility_name":  "ë²¨í¬ë  ëª©ì¥",
+                                        "today_actual":  "0",
+                                        "today_ly":  "208541",
+                                        "mtd_actual":  "0",
+                                        "mtd_ly":  "208541",
+                                        "ytd_actual":  "321742094",
+                                        "ytd_ly":  "295433293"
+                                    },
+                                    {
+                                        "facility_name":  "ë²¨í¬ë  ëª©ì¥(ì²´í)",
+                                        "today_actual":  "0",
+                                        "today_ly":  "0",
+                                        "mtd_actual":  "0",
+                                        "mtd_ly":  "0",
+                                        "ytd_actual":  "76662808",
+                                        "ytd_ly":  "0"
+                                    },
+                                    {
+                                        "facility_name":  "ë²¨í¬ë ëª©ì¥",
+                                        "today_actual":  "0",
+                                        "today_ly":  "0",
+                                        "mtd_actual":  "0",
+                                        "mtd_ly":  "0",
+                                        "ytd_actual":  "22065609",
+                                        "ytd_ly":  "28926720"
+                                    },
+                                    {
+                                        "facility_name":  "ì¬ê³ì  ì°ë§¤ì¥",
+                                        "today_actual":  "0",
+                                        "today_ly":  "0",
+                                        "mtd_actual":  "0",
+                                        "mtd_ly":  "0",
+                                        "ytd_actual":  "4951540",
+                                        "ytd_ly":  "0"
+                                    },
+                                    {
+                                        "facility_name":  "ì¬ê³ì ì°ë§¤ì¥",
+                                        "today_actual":  "0",
+                                        "today_ly":  "0",
+                                        "mtd_actual":  "0",
+                                        "mtd_ly":  "0",
+                                        "ytd_actual":  "171478575",
+                                        "ytd_ly":  "155402609"
+                                    },
+                                    {
+                                        "facility_name":  "ì¸ë¨¸ëë",
+                                        "today_actual":  "0",
+                                        "today_ly":  "-76617",
+                                        "mtd_actual":  "0",
+                                        "mtd_ly":  "-76617",
+                                        "ytd_actual":  "2528044",
+                                        "ytd_ly":  "289891752"
+                                    },
+                                    {
+                                        "facility_name":  "ì¨ë¼ì¸í°ì¼",
+                                        "today_actual":  "0",
+                                        "today_ly":  "0",
+                                        "mtd_actual":  "0",
+                                        "mtd_ly":  "0",
+                                        "ytd_actual":  "407176549",
+                                        "ytd_ly":  "0"
+                                    },
+                                    {
+                                        "facility_name":  "ì¨ë¼ì¸í°ì¼-ê¸°í",
+                                        "today_actual":  "0",
+                                        "today_ly":  "0",
+                                        "mtd_actual":  "0",
+                                        "mtd_ly":  "0",
+                                        "ytd_actual":  "1964505",
+                                        "ytd_ly":  "0"
+                                    },
+                                    {
+                                        "facility_name":  "ìëí",
+                                        "today_actual":  "0",
+                                        "today_ly":  "54545",
+                                        "mtd_actual":  "0",
+                                        "mtd_ly":  "54545",
+                                        "ytd_actual":  "13044552",
+                                        "ytd_ly":  "63973868"
+                                    },
+                                    {
+                                        "facility_name":  "ìëí(ëì¬)",
+                                        "today_actual":  "0",
+                                        "today_ly":  "0",
+                                        "mtd_actual":  "0",
+                                        "mtd_ly":  "0",
+                                        "ytd_actual":  "2889089",
+                                        "ytd_ly":  "0"
+                                    },
+                                    {
+                                        "facility_name":  "ìëí(ì\u0085ì¥)",
+                                        "today_actual":  "0",
+                                        "today_ly":  "0",
+                                        "mtd_actual":  "0",
+                                        "mtd_ly":  "0",
+                                        "ytd_actual":  "968186",
+                                        "ytd_ly":  "0"
+                                    },
+                                    {
+                                        "facility_name":  "ìµì¤í¸ë¦¼ë£¨ì§",
+                                        "today_actual":  "0",
+                                        "today_ly":  "64891",
+                                        "mtd_actual":  "0",
+                                        "mtd_ly":  "64891",
+                                        "ytd_actual":  "185570668",
+                                        "ytd_ly":  "173184658"
+                                    }
+                                ],
+    "fnbFacilityBreakdown":  [
+                                 {
+                                     "facility_name":  "",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "0",
+                                     "ytd_ly":  "4496366"
+                                 },
+                                 {
+                                     "facility_name":  "BHC(ë©ìì¹´ë)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "129091",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "129091",
+                                     "ytd_actual":  "84520125",
+                                     "ytd_ly":  "134050016"
+                                 },
+                                 {
+                                     "facility_name":  "CUí¸ìì ",
+                                     "today_actual":  "0",
+                                     "today_ly":  "519855",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "519855",
+                                     "ytd_actual":  "256825330",
+                                     "ytd_ly":  "365024851"
+                                 },
+                                 {
+                                     "facility_name":  "ê¸°íì ",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "5106000",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ë¨ëìë´",
+                                     "today_actual":  "0",
+                                     "today_ly":  "2162725",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "2162725",
+                                     "ytd_actual":  "879428647",
+                                     "ytd_ly":  "1092158752"
+                                 },
+                                 {
+                                     "facility_name":  "ëì´ëì°(2025)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "217309000",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ëë¼ì´í¸",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "80191016",
+                                     "ytd_ly":  "100592594"
+                                 },
+                                 {
+                                     "facility_name":  "ë ì¤í ë",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "186974375",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ë§ë¦¬ë í´ë½",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "18321050",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ëª¨í ìë ë ë íìµ",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "270221302",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ë¯¸ëì´-ê¸°íí¸ìµ",
+                                     "today_actual":  "0",
+                                     "today_ly":  "21819",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "21819",
+                                     "ytd_actual":  "10572500",
+                                     "ytd_ly":  "13540171"
+                                 },
+                                 {
+                                     "facility_name":  "ë¯¸ëì´-ë®¤ì§ìì¹´í",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "8281700",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ë°¤ë°¤í\u0085ì´ë¸",
+                                     "today_actual":  "0",
+                                     "today_ly":  "889346",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "889346",
+                                     "ytd_actual":  "404627425",
+                                     "ytd_ly":  "423686384"
+                                 },
+                                 {
+                                     "facility_name":  "ë°¤ë°¤í¸ë­",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "20341963",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ë²¨í¬ë  ëª©ì¥(ì²´í)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "38720000",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ë²¨í¬ë í(í°ì¼)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "0",
+                                     "ytd_ly":  "4253821"
+                                 },
+                                 {
+                                     "facility_name":  "ë²¼ë£¨ì¬ì´",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "531364",
+                                     "ytd_ly":  "48455680"
+                                 },
+                                 {
+                                     "facility_name":  "ë¸ë¦¬ì¤í·346",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "504992533",
+                                     "ytd_ly":  "561246529"
+                                 },
+                                 {
+                                     "facility_name":  "ì¬ê³ì ì°ë§¤ì¥",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "73652400",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ì¤íí¸íì°ì¤",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "252831118",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ì¸ë¨¸ëë(ëì¬)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "556000",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ì¸ë¨¸ëë(ì\u0085ì¥)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "1148600",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ì¸ë¨¸í¸ë­(íì¥)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "173182",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ì¼ë£©ë§ì¹´í",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "77764534",
+                                     "ytd_ly":  "77929012"
+                                 },
+                                 {
+                                     "facility_name":  "ì°íì¥",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "28362598",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ìëí(ëì¬)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "3226000",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ìëí(ì\u0085ì¥)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "1295000",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ì£¼ì°¨ê´ì ",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "22734003",
+                                     "ytd_ly":  "11048185"
+                                 },
+                                 {
+                                     "facility_name":  "ì¿ ì¹ë",
+                                     "today_actual":  "0",
+                                     "today_ly":  "925456",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "925456",
+                                     "ytd_actual":  "394586545",
+                                     "ytd_ly":  "444397526"
+                                 },
+                                 {
+                                     "facility_name":  "í´ë½íì°ì¤-ë ì¤í ë",
+                                     "today_actual":  "0",
+                                     "today_ly":  "308182",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "308182",
+                                     "ytd_actual":  "138453632",
+                                     "ytd_ly":  "229237939"
+                                 },
+                                 {
+                                     "facility_name":  "í´ë½íì°ì¤-ì¤íí¸íì°ì¤",
+                                     "today_actual":  "0",
+                                     "today_ly":  "192727",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "192727",
+                                     "ytd_actual":  "191270034",
+                                     "ytd_ly":  "360104737"
+                                 },
+                                 {
+                                     "facility_name":  "í¬ì¸íë ì´ì¤",
+                                     "today_actual":  "0",
+                                     "today_ly":  "535255",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "535255",
+                                     "ytd_actual":  "237063724",
+                                     "ytd_ly":  "302079152"
+                                 },
+                                 {
+                                     "facility_name":  "íë¡ìµ",
+                                     "today_actual":  "0",
+                                     "today_ly":  "560909",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "560909",
+                                     "ytd_actual":  "46303283",
+                                     "ytd_ly":  "137571574"
+                                 },
+                                 {
+                                     "facility_name":  "íì¤í",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "59248080",
+                                     "ytd_ly":  "45970534"
+                                 }
+                             ],
+    "otherFacilityBreakdown":  [
+                                   {
+                                       "facility_name":  "BHC(ë©ìì¹´ë)",
+                                       "today_actual":  "0.00",
+                                       "today_ly":  "0.00",
+                                       "mtd_actual":  "0.00",
+                                       "mtd_ly":  "0.00",
+                                       "ytd_actual":  "12274981.00",
+                                       "ytd_ly":  "0.00"
+                                   },
+                                   {
+                                       "facility_name":  "CUí¸ìì ",
+                                       "today_actual":  "0.00",
+                                       "today_ly":  "0.00",
+                                       "mtd_actual":  "0.00",
+                                       "mtd_ly":  "0.00",
+                                       "ytd_actual":  "51098292.00",
+                                       "ytd_ly":  "0.00"
+                                   },
+                                   {
+                                       "facility_name":  "ROOM OTHER",
+                                       "today_actual":  "0.00",
+                                       "today_ly":  "0.00",
+                                       "mtd_actual":  "0.00",
+                                       "mtd_ly":  "0.00",
+                                       "ytd_actual":  "4315441.00",
+                                       "ytd_ly":  "0.00"
+                                   },
+                                   {
+                                       "facility_name":  "ê¸°íì ",
+                                       "today_actual":  "0.00",
+                                       "today_ly":  "0.00",
+                                       "mtd_actual":  "0.00",
+                                       "mtd_ly":  "0.00",
+                                       "ytd_actual":  "4623541.00",
+                                       "ytd_ly":  "0.00"
+                                   },
+                                   {
+                                       "facility_name":  "ë¯¸ëì´-ê¸°íí¸ìµ",
+                                       "today_actual":  "0.00",
+                                       "today_ly":  "0.00",
+                                       "mtd_actual":  "0.00",
+                                       "mtd_ly":  "0.00",
+                                       "ytd_actual":  "1351720.00",
+                                       "ytd_ly":  "0.00"
+                                   },
+                                   {
+                                       "facility_name":  "ë²¨í¬ë  êµ¿ì¦",
+                                       "today_actual":  "0.00",
+                                       "today_ly":  "0.00",
+                                       "mtd_actual":  "0.00",
+                                       "mtd_ly":  "0.00",
+                                       "ytd_actual":  "560004.00",
+                                       "ytd_ly":  "0.00"
+                                   },
+                                   {
+                                       "facility_name":  "ì£¼ì°¨ê´ì ",
+                                       "today_actual":  "0.00",
+                                       "today_ly":  "0.00",
+                                       "mtd_actual":  "0.00",
+                                       "mtd_ly":  "0.00",
+                                       "ytd_actual":  "3842727.00",
+                                       "ytd_ly":  "0.00"
+                                   },
+                                   {
+                                       "facility_name":  "í¬ì¸íë ì´ì¤",
+                                       "today_actual":  "0.00",
+                                       "today_ly":  "0.00",
+                                       "mtd_actual":  "0.00",
+                                       "mtd_ly":  "0.00",
+                                       "ytd_actual":  "43974509.00",
+                                       "ytd_ly":  "0.00"
+                                   },
+                                   {
+                                       "facility_name":  "íë¡ìµ",
+                                       "today_actual":  "0.00",
+                                       "today_ly":  "0.00",
+                                       "mtd_actual":  "0.00",
+                                       "mtd_ly":  "0.00",
+                                       "ytd_actual":  "13709070.00",
+                                       "ytd_ly":  "0.00"
+                                   }
+                               ],
+    "banquetFacilityBreakdown":  [
+                                     {
+                                         "facility_name":  "ì°íì¥",
+                                         "today_actual":  "0.00",
+                                         "today_ly":  "0.00",
+                                         "mtd_actual":  "0.00",
+                                         "mtd_ly":  "0.00",
+                                         "ytd_actual":  "20284180.00",
+                                         "ytd_ly":  "0.00"
+                                     }
+                                 ]
+}

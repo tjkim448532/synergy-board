@@ -5,7 +5,6 @@ import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import Papa from 'papaparse';
 import toast from 'react-hot-toast';
-import LeisureTicketManager from './LeisureTicketManager';
 import './Settings.css';
 import { getDefaultGroup, calculateGroupedSales, getDefaultWeatherTag } from '../utils/revenueUtils';
 import { fetchWeatherForRange } from '../utils/weatherUtils';
@@ -44,10 +43,8 @@ export default function Settings({ monthlyData }) {
     targetAdr51: 0,
     locationGroups: {},
     weatherTags: {},
-    guestWeight16: 2.5,
-    guestWeight35: 3.5,
-    guestWeight51: 6.0,
-    carPeopleWeight: 3.0
+    salesDaysWd: 22,
+    salesDaysWe: 8
   });
 
   const [uniqueLocations, setUniqueLocations] = useState([]);
@@ -72,8 +69,8 @@ export default function Settings({ monthlyData }) {
     moto: false,
     capa: false,
     report: true,
-    leisureTicket: false,
     weights: false,
+    cost: false,
     weatherMigration: false
   });
 
@@ -188,10 +185,8 @@ export default function Settings({ monthlyData }) {
           if (Array.isArray(loadedData.customWeekends)) {
             loadedData.customWeekends = loadedData.customWeekends.join(', ');
           }
-          if (loadedData.guestWeight16 === undefined) loadedData.guestWeight16 = 2.5;
-          if (loadedData.guestWeight35 === undefined) loadedData.guestWeight35 = 3.5;
-          if (loadedData.guestWeight51 === undefined) loadedData.guestWeight51 = 6.0;
-          if (loadedData.carPeopleWeight === undefined) loadedData.carPeopleWeight = 3.0;
+          if (loadedData.salesDaysWd === undefined) loadedData.salesDaysWd = 22;
+          if (loadedData.salesDaysWe === undefined) loadedData.salesDaysWe = 8;
           setSettings(loadedData);
         }
       } catch (error) {
@@ -294,9 +289,8 @@ export default function Settings({ monthlyData }) {
       }
       
       const numFields = [
-        'totalRooms', 'connectingRooms51', 'targetAdr16', 'targetAdr35', 'targetAdr51',
-        'guestWeight16', 'guestWeight35', 'guestWeight51', 'carPeopleWeight',
-        'capaLeisure', 'capaMoto', 'capaFnb'
+        'baseLabor', 'laborVarRate', 'baseMaint', 'maintVarRate', 'otherVarRate',
+        'salesDaysWd', 'salesDaysWe', 'capaFnb'
       ];
       numFields.forEach(field => {
         if (payload[field] !== undefined) {
@@ -464,96 +458,13 @@ export default function Settings({ monthlyData }) {
           </div>
         </div>
         <div className="form-group">
-          <label>51평형(커넥팅 룸) 점유율 산정 방식</label>
-          <div style={{display: 'flex', gap: '20px', marginTop: '8px'}}>
-            <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'normal'}}>
-              <input 
-                type="radio" 
-                name="count51AsTwoRooms" 
-                checked={settings.count51AsTwoRooms !== false} 
-                onChange={() => setSettings(p => ({...p, count51AsTwoRooms: true}))}
-                style={{width: '18px', height: '18px', accentColor: 'var(--accent-emerald)'}}
-              />
-              방 2개로 산정 (물리적 객실 기준)
-            </label>
-            <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'normal'}}>
-              <input 
-                type="radio" 
-                name="count51AsTwoRooms" 
-                checked={settings.count51AsTwoRooms === false} 
-                onChange={() => setSettings(p => ({...p, count51AsTwoRooms: false}))}
-                style={{width: '18px', height: '18px', accentColor: 'var(--accent-emerald)'}}
-              />
-              방 1개로 산정 (단일 판매 단위 기준)
-            </label>
+          <label>객실 판매 방식 (안내)</label>
+          <div style={{color: 'var(--text-muted)', fontSize: '14px', marginTop: '4px'}}>
+            현재 백엔드 연동에 따라, 51평형(커넥팅)은 단일 판매 단위로 합산되어 전송됩니다. 점유율 분모는 고정 총 객실 수를 사용합니다.
           </div>
-          <small style={{color: 'var(--text-muted)', fontSize: '12px', marginTop: '8px', display: 'block'}}>
-            * 방 2개로 산정 시: 점유율 분모(총 객실)는 설정된 '고정 총 객실 수'를 그대로 사용하며, 판매 객실 수는 51평 판매량 × 2로 계산합니다.<br/>
-            * 방 1개로 산정 시: 점유율 분모는 '고정 총 객실 수 - 51평 세트 수'로 줄어들며, 판매 객실 수는 51평 판매량 × 1로 계산합니다.
-          </small>
         </div>
       </SectionCard>
 
-      <SectionCard
-        title="투숙객 및 차량 가중치 설정"
-        description="평형별 예상 투숙객 및 차량당 탑승 인원 가중치를 설정합니다."
-        isExpanded={expandedSections.weights}
-        onToggle={() => toggleSection('weights')}
-      >
-        <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
-          <div className="form-group" style={{flex: 1, minWidth: '150px'}}>
-            <label htmlFor="guestWeight16">16평형 투숙객 가중치 (명/실)</label>
-            <input 
-              type="number" 
-              step="0.1"
-              id="guestWeight16" 
-              name="guestWeight16" 
-              value={settings.guestWeight16 ?? 2.5} 
-              onChange={handleChange} 
-              placeholder="기본값: 2.5"
-            />
-          </div>
-          <div className="form-group" style={{flex: 1, minWidth: '150px'}}>
-            <label htmlFor="guestWeight35">35평형 투숙객 가중치 (명/실)</label>
-            <input 
-              type="number" 
-              step="0.1"
-              id="guestWeight35" 
-              name="guestWeight35" 
-              value={settings.guestWeight35 ?? 3.5} 
-              onChange={handleChange} 
-              placeholder="기본값: 3.5"
-            />
-          </div>
-          <div className="form-group" style={{flex: 1, minWidth: '150px'}}>
-            <label htmlFor="guestWeight51">51평형 투숙객 가중치 (명/실)</label>
-            <input 
-              type="number" 
-              step="0.1"
-              id="guestWeight51" 
-              name="guestWeight51" 
-              value={settings.guestWeight51 ?? 6.0} 
-              onChange={handleChange} 
-              placeholder="기본값: 6.0"
-            />
-          </div>
-          <div className="form-group" style={{flex: 1, minWidth: '150px'}}>
-            <label htmlFor="carPeopleWeight">차량당 탑승 인원 가중치 (명/대)</label>
-            <input 
-              type="number" 
-              step="0.1"
-              id="carPeopleWeight" 
-              name="carPeopleWeight" 
-              value={settings.carPeopleWeight ?? 3.0} 
-              onChange={handleChange} 
-              placeholder="기본값: 3.0"
-            />
-          </div>
-        </div>
-        <div style={{color: 'var(--accent-gold)', fontSize: '13px', marginTop: '16px', fontWeight: 'bold', lineHeight: '1.4'}}>
-          ※ 위 가중치는 '추정 방문객 분석' 메뉴에서만 작동하며, 메인 대시보드(상관관계분석, 부대시설 이용분석 등)의 실제 데이터에는 영향을 주지 않습니다.
-        </div>
-      </SectionCard>
 
       <SectionCard
         title="휴일 및 특수 주말 설정"
@@ -898,19 +809,7 @@ export default function Settings({ monthlyData }) {
         </div>
       </SectionCard>
 
-      <SectionCard
-        title="영업장별 사용인원 축출 설정"
-        description="영업장별로 판매된 트랜잭션 중, 실제 이용객 수를 산출할 기준 트랜잭션을 선택합니다."
-        isExpanded={expandedSections.leisureTicket}
-        onToggle={() => toggleSection('leisureTicket')}
-      >
-        <LeisureTicketManager 
-          settings={settings} 
-          setSettings={setSettings} 
-          uniqueLocations={uniqueLocations} 
-          uniqueLeisureTickets={uniqueLeisureTickets}
-        />
-      </SectionCard>
+
 
       <SectionCard
         title="AI 경영 보고서 프롬프트 추출 (PPT 생성용)"

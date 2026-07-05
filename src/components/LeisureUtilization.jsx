@@ -13,12 +13,12 @@ export default function LeisureUtilization({ processedData, globalStats, setting
     const targetData = selectedPeriod === 'all' ? processedData : processedData.filter(d => d.id === selectedPeriod);
     
     targetData.forEach(d => {
-      const usage = d.leisureTicketUsage || {};
-      Object.entries(venue => {
-        // Wait, typo here: d.leisureTicketUsage is object, let's loop Object.entries(usage)
-      });
-      Object.entries(usage).forEach(([venue, count]) => {
-        aggregatedUsage[venue] = (aggregatedUsage[venue] || 0) + count;
+      const visitors = d.leisureVisitorBreakdown || [];
+      visitors.forEach(item => {
+        // 객실 투숙객은 레저 영업장 통계에서 제외합니다.
+        if (item.venue && item.venue !== '객실') {
+          aggregatedUsage[item.venue] = (aggregatedUsage[item.venue] || 0) + (Number(item.visitors) || 0);
+        }
       });
     });
 

@@ -1,0 +1,3508 @@
+﻿{
+    "startDate":  "2026-01-01",
+    "endDate":  "2026-07-03",
+    "date":  "2026-07-03",
+    "today":  {
+                  "actual":  11962154030,
+                  "ly_actual":  11192649476
+              },
+    "mtd":  {
+                "actual":  225532540,
+                "ly_actual":  308555454
+            },
+    "ytd":  {
+                "actual":  11962154030,
+                "ly_actual":  11233644826
+            },
+    "qa_metrics":  {
+                       "daol_raw_total":  12289153674,
+                       "true_net_total":  11962154030,
+                       "daol_error_gap":  -869200819
+                   },
+    "dailyReportBreakdown":  [
+                                 {
+                                     "category":  "KPI",
+                                     "name":  "Occupied Rooms",
+                                     "today_actual":  18164,
+                                     "today_ly":  18169,
+                                     "mtd_actual":  365,
+                                     "mtd_ly":  578,
+                                     "ytd_actual":  18164,
+                                     "ytd_ly":  18211
+                                 },
+                                 {
+                                     "category":  "ROOM",
+                                     "name":  "ROOM",
+                                     "facility_name":  "ROOM",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "0.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "0.00",
+                                     "ytd_ly":  "408770358.70"
+                                 },
+                                 {
+                                     "category":  "ROOM",
+                                     "name":  "ROOM OTHER",
+                                     "facility_name":  "ROOM_OTHER",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "0.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "0.00",
+                                     "ytd_ly":  "5024999.10"
+                                 },
+                                 {
+                                     "category":  "ROOM",
+                                     "name":  "ê°ì¤ Total",
+                                     "today_actual":  0,
+                                     "today_ly":  0,
+                                     "mtd_actual":  0,
+                                     "mtd_ly":  0,
+                                     "ytd_actual":  0,
+                                     "ytd_ly":  413795357.8
+                                 },
+                                 {
+                                     "category":  "GOLF",
+                                     "name":  "ê·¸ë¦°í¼",
+                                     "facility_name":  "ê·¸ë¦°í¼",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "0.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "0.00",
+                                     "ytd_ly":  "101842326.30"
+                                 },
+                                 {
+                                     "category":  "GOLF",
+                                     "name":  "ê¸°íë§¤ì¶",
+                                     "facility_name":  "ê¸°íë§¤ì¶",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "0.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "0.00",
+                                     "ytd_ly":  "309999.80"
+                                 },
+                                 {
+                                     "category":  "GOLF",
+                                     "name":  "ì¹´í¸ëì¬",
+                                     "facility_name":  "ì¹´í¸ëì¬",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "0.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "0.00",
+                                     "ytd_ly":  "67634909.10"
+                                 },
+                                 {
+                                     "category":  "GOLF",
+                                     "name":  "ê³¨í Total",
+                                     "today_actual":  0,
+                                     "today_ly":  0,
+                                     "mtd_actual":  0,
+                                     "mtd_ly":  0,
+                                     "ytd_actual":  0,
+                                     "ytd_ly":  169787235.2
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "",
+                                     "facility_name":  "",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "245455",
+                                     "ytd_actual":  "0",
+                                     "ytd_ly":  "1431818"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "BHC(ë©ìì¹´ë)",
+                                     "facility_name":  "BHC(ë©ìì¹´ë)",
+                                     "today_actual":  "587727",
+                                     "today_ly":  "619091",
+                                     "mtd_actual":  "1721363",
+                                     "mtd_ly":  "2190910",
+                                     "ytd_actual":  "84520125",
+                                     "ytd_ly":  "96599104"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "CUí¸ìì ",
+                                     "facility_name":  "CUí¸ìì ",
+                                     "today_actual":  "2180691",
+                                     "today_ly":  "2539636",
+                                     "mtd_actual":  "7367345",
+                                     "mtd_ly":  "8181400",
+                                     "ytd_actual":  "256825330",
+                                     "ytd_ly":  "256025696"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ê¸°íì ",
+                                     "facility_name":  "ê¸°íì ",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "5106000",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ë¨ëìë´",
+                                     "facility_name":  "ë¨ëìë´",
+                                     "today_actual":  "6437272",
+                                     "today_ly":  "4497275",
+                                     "mtd_actual":  "17959728",
+                                     "mtd_ly":  "16024731",
+                                     "ytd_actual":  "879428647",
+                                     "ytd_ly":  "828058775"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ëì´ëì°(2025)",
+                                     "facility_name":  "ëì´ëì°(2025)",
+                                     "today_actual":  "801500",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "1523000",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "217309000",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ëë¼ì´í¸",
+                                     "facility_name":  "ëë¼ì´í¸",
+                                     "today_actual":  "122273",
+                                     "today_ly":  "74545",
+                                     "mtd_actual":  "284819",
+                                     "mtd_ly":  "136363",
+                                     "ytd_actual":  "80191016",
+                                     "ytd_ly":  "87864866"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ë ì¤í ë",
+                                     "facility_name":  "ë ì¤í ë",
+                                     "today_actual":  "957000",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "1844000",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "186974375",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ë§ë¦¬ë í´ë½",
+                                     "facility_name":  "ë§ë¦¬ë í´ë½",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "90000",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "18321050",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ëª¨í ìë ë ë íìµ",
+                                     "facility_name":  "ëª¨í ìë ë ë íìµ",
+                                     "today_actual":  "727000",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "827000",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "270221302",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ë¯¸ëì´-ê¸°íí¸ìµ",
+                                     "facility_name":  "ë¯¸ëì´-ê¸°íí¸ìµ",
+                                     "today_actual":  "0",
+                                     "today_ly":  "2727",
+                                     "mtd_actual":  "11819",
+                                     "mtd_ly":  "35453",
+                                     "ytd_actual":  "10572500",
+                                     "ytd_ly":  "9650547"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ë¯¸ëì´-ë®¤ì§ìì¹´í",
+                                     "facility_name":  "ë¯¸ëì´-ë®¤ì§ìì¹´í",
+                                     "today_actual":  "42500",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "102500",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "8281700",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ë°¤ë°¤í\u0085ì´ë¸",
+                                     "facility_name":  "ë°¤ë°¤í\u0085ì´ë¸",
+                                     "today_actual":  "6051431",
+                                     "today_ly":  "4852973",
+                                     "mtd_actual":  "11558633",
+                                     "mtd_ly":  "8989175",
+                                     "ytd_actual":  "404627425",
+                                     "ytd_ly":  "283381515"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ë°¤ë°¤í¸ë­",
+                                     "facility_name":  "ë°¤ë°¤í¸ë­",
+                                     "today_actual":  "170909",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "328274",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "20341963",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ë²¨í¬ë  ëª©ì¥(ì²´í)",
+                                     "facility_name":  "ë²¨í¬ë  ëª©ì¥(ì²´í)",
+                                     "today_actual":  "42000",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "136000",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "38720000",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ë²¨í¬ë í(í°ì¼)",
+                                     "facility_name":  "ë²¨í¬ë í(í°ì¼)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "0",
+                                     "ytd_ly":  "4253821"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ë²¼ë£¨ì¬ì´",
+                                     "facility_name":  "ë²¼ë£¨ì¬ì´",
+                                     "today_actual":  "0",
+                                     "today_ly":  "683637",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "683637",
+                                     "ytd_actual":  "531364",
+                                     "ytd_ly":  "41854496"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ë¸ë¦¬ì¤í·346",
+                                     "facility_name":  "ë¸ë¦¬ì¤í·346",
+                                     "today_actual":  "951045",
+                                     "today_ly":  "3451891",
+                                     "mtd_actual":  "5029045",
+                                     "mtd_ly":  "15763274",
+                                     "ytd_actual":  "504992533",
+                                     "ytd_ly":  "381064763"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ì¬ê³ì ì°ë§¤ì¥",
+                                     "facility_name":  "ì¬ê³ì ì°ë§¤ì¥",
+                                     "today_actual":  "407000",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "520000",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "73652400",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ì¤íí¸íì°ì¤",
+                                     "facility_name":  "ì¤íí¸íì°ì¤",
+                                     "today_actual":  "2522000",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "5232000",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "252831118",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ì¸ë¨¸ëë(ëì¬)",
+                                     "facility_name":  "ì¸ë¨¸ëë(ëì¬)",
+                                     "today_actual":  "332000",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "532000",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "556000",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ì¸ë¨¸ëë(ì\u0085ì¥)",
+                                     "facility_name":  "ì¸ë¨¸ëë(ì\u0085ì¥)",
+                                     "today_actual":  "730800",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "1148600",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "1148600",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ì¸ë¨¸í¸ë­(íì¥)",
+                                     "facility_name":  "ì¸ë¨¸í¸ë­(íì¥)",
+                                     "today_actual":  "162273",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "173182",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "173182",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ì¼ë£©ë§ì¹´í",
+                                     "facility_name":  "ì¼ë£©ë§ì¹´í",
+                                     "today_actual":  "220087",
+                                     "today_ly":  "235907",
+                                     "mtd_actual":  "610400",
+                                     "mtd_ly":  "981265",
+                                     "ytd_actual":  "77764534",
+                                     "ytd_ly":  "58318436"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ì°íì¥",
+                                     "facility_name":  "ì°íì¥",
+                                     "today_actual":  "6050000",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "11617600",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "28362598",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ìëí(ëì¬)",
+                                     "facility_name":  "ìëí(ëì¬)",
+                                     "today_actual":  "42000",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "48000",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "3226000",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ìëí(ì\u0085ì¥)",
+                                     "facility_name":  "ìëí(ì\u0085ì¥)",
+                                     "today_actual":  "230000",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "230000",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "1295000",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ì£¼ì°¨ê´ì ",
+                                     "facility_name":  "ì£¼ì°¨ê´ì ",
+                                     "today_actual":  "1000909",
+                                     "today_ly":  "171818",
+                                     "mtd_actual":  "1000909",
+                                     "mtd_ly":  "267273",
+                                     "ytd_actual":  "22734003",
+                                     "ytd_ly":  "1581818"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ì¿ ì¹ë",
+                                     "facility_name":  "ì¿ ì¹ë",
+                                     "today_actual":  "9715456",
+                                     "today_ly":  "2768180",
+                                     "mtd_actual":  "14765457",
+                                     "mtd_ly":  "15581818",
+                                     "ytd_actual":  "394586545",
+                                     "ytd_ly":  "305390153"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "í´ë½íì°ì¤-ë ì¤í ë",
+                                     "facility_name":  "í´ë½íì°ì¤-ë ì¤í ë",
+                                     "today_actual":  "870000",
+                                     "today_ly":  "947274",
+                                     "mtd_actual":  "1676365",
+                                     "mtd_ly":  "3141821",
+                                     "ytd_actual":  "138453632",
+                                     "ytd_ly":  "179762432"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "í´ë½íì°ì¤-ì¤íí¸íì°ì¤",
+                                     "facility_name":  "í´ë½íì°ì¤-ì¤íí¸íì°ì¤",
+                                     "today_actual":  "2292728",
+                                     "today_ly":  "2172730",
+                                     "mtd_actual":  "4756369",
+                                     "mtd_ly":  "6550919",
+                                     "ytd_actual":  "191270034",
+                                     "ytd_ly":  "251916472"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "í¬ì¸íë ì´ì¤",
+                                     "facility_name":  "í¬ì¸íë ì´ì¤",
+                                     "today_actual":  "1512700",
+                                     "today_ly":  "2077297",
+                                     "mtd_actual":  "3421036",
+                                     "mtd_ly":  "6003106",
+                                     "ytd_actual":  "237063724",
+                                     "ytd_ly":  "221659346"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "íë¡ìµ",
+                                     "facility_name":  "íë¡ìµ",
+                                     "today_actual":  "339090",
+                                     "today_ly":  "489089",
+                                     "mtd_actual":  "1021816",
+                                     "mtd_ly":  "2822729",
+                                     "ytd_actual":  "46303283",
+                                     "ytd_ly":  "98726082"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "íì¤í",
+                                     "facility_name":  "íì¤í",
+                                     "today_actual":  "371804",
+                                     "today_ly":  "117271",
+                                     "mtd_actual":  "502710",
+                                     "mtd_ly":  "361811",
+                                     "ytd_actual":  "59248080",
+                                     "ytd_ly":  "27562915"
+                                 },
+                                 {
+                                     "category":  "FNB",
+                                     "name":  "ììì\u0085ì¥ Total",
+                                     "today_actual":  45870195,
+                                     "today_ly":  25701341,
+                                     "mtd_actual":  96039970,
+                                     "mtd_ly":  87961140,
+                                     "ytd_actual":  4515633063,
+                                     "ytd_ly":  3135103055
+                                 },
+                                 {
+                                     "category":  "BANQUET",
+                                     "name":  "ì°íì¥",
+                                     "facility_name":  "ì°íì¥",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "5061455.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "20284180.00",
+                                     "ytd_ly":  "0.00"
+                                 },
+                                 {
+                                     "category":  "BANQUET",
+                                     "name":  "ì°í Total",
+                                     "today_actual":  0,
+                                     "today_ly":  0,
+                                     "mtd_actual":  5061455,
+                                     "mtd_ly":  0,
+                                     "ytd_actual":  20284180,
+                                     "ytd_ly":  0
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ê¸°íí°ì¼",
+                                     "facility_name":  "ê¸°íí°ì¼",
+                                     "today_actual":  "341690",
+                                     "today_ly":  "20909",
+                                     "mtd_actual":  "468963",
+                                     "mtd_ly":  "94036",
+                                     "ytd_actual":  "129322501",
+                                     "ytd_ly":  "75863247"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ê¸°íí°ì¼(í¨í¤ì§)",
+                                     "facility_name":  "ê¸°íí°ì¼(í¨í¤ì§)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "7649080",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ëì´ëì°(2025)",
+                                     "facility_name":  "ëì´ëì°(2025)",
+                                     "today_actual":  "740441",
+                                     "today_ly":  "507720",
+                                     "mtd_actual":  "1419981",
+                                     "mtd_ly":  "973164",
+                                     "ytd_actual":  "384323287",
+                                     "ytd_ly":  "347095569"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ë§ë¦¬ë í´ë½",
+                                     "facility_name":  "ë§ë¦¬ë í´ë½",
+                                     "today_actual":  "0",
+                                     "today_ly":  "154546",
+                                     "mtd_actual":  "81818",
+                                     "mtd_ly":  "696365",
+                                     "ytd_actual":  "20512880",
+                                     "ytd_ly":  "760001"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ë§ë¦¬ëí´ë½",
+                                     "facility_name":  "ë§ë¦¬ëí´ë½",
+                                     "today_actual":  "163363",
+                                     "today_ly":  "163636",
+                                     "mtd_actual":  "346954",
+                                     "mtd_ly":  "163636",
+                                     "ytd_actual":  "8406082",
+                                     "ytd_ly":  "163636"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ë§ì´í´ì¹´í¸",
+                                     "facility_name":  "ë§ì´í´ì¹´í¸",
+                                     "today_actual":  "1828238",
+                                     "today_ly":  "793636",
+                                     "mtd_actual":  "3073521",
+                                     "mtd_ly":  "2107271",
+                                     "ytd_actual":  "187381598",
+                                     "ytd_ly":  "129793656"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ëª¨í ìë ë",
+                                     "facility_name":  "ëª¨í ìë ë",
+                                     "today_actual":  "2695448",
+                                     "today_ly":  "2109995",
+                                     "mtd_actual":  "6882714",
+                                     "mtd_ly":  "6613620",
+                                     "ytd_actual":  "810877950",
+                                     "ytd_ly":  "405247514"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ëª¨í ìë ë ë íìµ",
+                                     "facility_name":  "ëª¨í ìë ë ë íìµ",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "90909",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "515128405",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ë¯¸ëì´-ë®¤ì§ìì¹´í",
+                                     "facility_name":  "ë¯¸ëì´-ë®¤ì§ìì¹´í",
+                                     "today_actual":  "38637",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "93179",
+                                     "mtd_ly":  "42271",
+                                     "ytd_actual":  "17020656",
+                                     "ytd_ly":  "13005502"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ë¯¸ëì´ìí¸ì¼í°",
+                                     "facility_name":  "ë¯¸ëì´ìí¸ì¼í°",
+                                     "today_actual":  "965501",
+                                     "today_ly":  "504909",
+                                     "mtd_actual":  "1485569",
+                                     "mtd_ly":  "10036999",
+                                     "ytd_actual":  "209234145",
+                                     "ytd_ly":  "203029130"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ë²¨í¬ë  ë¦¬ì¡°í¸",
+                                     "facility_name":  "ë²¨í¬ë  ë¦¬ì¡°í¸",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "2964215",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ë²¨í¬ë  ëª©ì¥",
+                                     "facility_name":  "ë²¨í¬ë  ëª©ì¥",
+                                     "today_actual":  "476157",
+                                     "today_ly":  "444177",
+                                     "mtd_actual":  "1001811",
+                                     "mtd_ly":  "4648810",
+                                     "ytd_actual":  "321742094",
+                                     "ytd_ly":  "252381005"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ë²¨í¬ë  ëª©ì¥(ì²´í)",
+                                     "facility_name":  "ë²¨í¬ë  ëª©ì¥(ì²´í)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "85451",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "76662808",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ë²¨í¬ë ëª©ì¥",
+                                     "facility_name":  "ë²¨í¬ë ëª©ì¥",
+                                     "today_actual":  "31275",
+                                     "today_ly":  "28928",
+                                     "mtd_actual":  "75060",
+                                     "mtd_ly":  "27924",
+                                     "ytd_actual":  "22065609",
+                                     "ytd_ly":  "26640654"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ì¬ê³ì  ì°ë§¤ì¥",
+                                     "facility_name":  "ì¬ê³ì  ì°ë§¤ì¥",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "4951540",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ì¬ê³ì ì°ë§¤ì¥",
+                                     "facility_name":  "ì¬ê³ì ì°ë§¤ì¥",
+                                     "today_actual":  "842263",
+                                     "today_ly":  "169999",
+                                     "mtd_actual":  "1321200",
+                                     "mtd_ly":  "5416362",
+                                     "ytd_actual":  "171478575",
+                                     "ytd_ly":  "137769958"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ì¸ë¨¸ëë",
+                                     "facility_name":  "ì¸ë¨¸ëë",
+                                     "today_actual":  "1742695",
+                                     "today_ly":  "3538821",
+                                     "mtd_actual":  "2582376",
+                                     "mtd_ly":  "6962174",
+                                     "ytd_actual":  "2528044",
+                                     "ytd_ly":  "30998874"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ì¨ë¼ì¸í°ì¼",
+                                     "facility_name":  "ì¨ë¼ì¸í°ì¼",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "2231864",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "407176549",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ì¨ë¼ì¸í°ì¼-ê¸°í",
+                                     "facility_name":  "ì¨ë¼ì¸í°ì¼-ê¸°í",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "1964505",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ìëí",
+                                     "facility_name":  "ìëí",
+                                     "today_actual":  "492728",
+                                     "today_ly":  "616362",
+                                     "mtd_actual":  "634548",
+                                     "mtd_ly":  "1239089",
+                                     "ytd_actual":  "13044552",
+                                     "ytd_ly":  "4092725"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ìëí(ëì¬)",
+                                     "facility_name":  "ìëí(ëì¬)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "5455",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "2889089",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ìëí(ì\u0085ì¥)",
+                                     "facility_name":  "ìëí(ì\u0085ì¥)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "968186",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "ìµì¤í¸ë¦¼ë£¨ì§",
+                                     "facility_name":  "ìµì¤í¸ë¦¼ë£¨ì§",
+                                     "today_actual":  "3229689",
+                                     "today_ly":  "2334855",
+                                     "mtd_actual":  "3743360",
+                                     "mtd_ly":  "3869568",
+                                     "ytd_actual":  "185570668",
+                                     "ytd_ly":  "96912956"
+                                 },
+                                 {
+                                     "category":  "TICKET",
+                                     "name":  "í°ì¼ì\u0085ì¥ Total",
+                                     "today_actual":  13588125,
+                                     "today_ly":  11388493,
+                                     "mtd_actual":  25624733,
+                                     "mtd_ly":  42891289,
+                                     "ytd_actual":  3503863018,
+                                     "ytd_ly":  1723754427
+                                 },
+                                 {
+                                     "category":  "OTHER",
+                                     "name":  "BHC(ë©ìì¹´ë)",
+                                     "facility_name":  "BHC(ë©ìì¹´ë)",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "1133636.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "12274981.00",
+                                     "ytd_ly":  "0.00"
+                                 },
+                                 {
+                                     "category":  "OTHER",
+                                     "name":  "CUí¸ìì ",
+                                     "facility_name":  "CUí¸ìì ",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "5186654.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "51098292.00",
+                                     "ytd_ly":  "0.00"
+                                 },
+                                 {
+                                     "category":  "OTHER",
+                                     "name":  "ROOM OTHER",
+                                     "facility_name":  "ROOM OTHER",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "81819.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "4315441.00",
+                                     "ytd_ly":  "0.00"
+                                 },
+                                 {
+                                     "category":  "OTHER",
+                                     "name":  "ê¸°íì ",
+                                     "facility_name":  "ê¸°íì ",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "0.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "4623541.00",
+                                     "ytd_ly":  "0.00"
+                                 },
+                                 {
+                                     "category":  "OTHER",
+                                     "name":  "ë¯¸ëì´-ê¸°íí¸ìµ",
+                                     "facility_name":  "ë¯¸ëì´-ê¸°íí¸ìµ",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "11819.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "1351720.00",
+                                     "ytd_ly":  "0.00"
+                                 },
+                                 {
+                                     "category":  "OTHER",
+                                     "name":  "ë²¨í¬ë  êµ¿ì¦",
+                                     "facility_name":  "ë²¨í¬ë  êµ¿ì¦",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "0.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "560004.00",
+                                     "ytd_ly":  "0.00"
+                                 },
+                                 {
+                                     "category":  "OTHER",
+                                     "name":  "ì£¼ì°¨ê´ì ",
+                                     "facility_name":  "ì£¼ì°¨ê´ì ",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "0.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "3842727.00",
+                                     "ytd_ly":  "0.00"
+                                 },
+                                 {
+                                     "category":  "OTHER",
+                                     "name":  "í¬ì¸íë ì´ì¤",
+                                     "facility_name":  "í¬ì¸íë ì´ì¤",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "1908336.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "43974509.00",
+                                     "ytd_ly":  "0.00"
+                                 },
+                                 {
+                                     "category":  "OTHER",
+                                     "name":  "íë¡ìµ",
+                                     "facility_name":  "íë¡ìµ",
+                                     "today_actual":  "0.00",
+                                     "today_ly":  "0.00",
+                                     "mtd_actual":  "682726.00",
+                                     "mtd_ly":  "0.00",
+                                     "ytd_actual":  "13709070.00",
+                                     "ytd_ly":  "0.00"
+                                 },
+                                 {
+                                     "category":  "OTHER",
+                                     "name":  "ê¸°íì\u0085ì¥ Total",
+                                     "today_actual":  0,
+                                     "today_ly":  0,
+                                     "mtd_actual":  9004990,
+                                     "mtd_ly":  0,
+                                     "ytd_actual":  135750285,
+                                     "ytd_ly":  0
+                                 },
+                                 {
+                                     "category":  "TOTAL",
+                                     "name":  "Grand Total (Gross)",
+                                     "today_actual":  0,
+                                     "today_ly":  0,
+                                     "mtd_actual":  0,
+                                     "mtd_ly":  0,
+                                     "ytd_actual":  0,
+                                     "ytd_ly":  0
+                                 },
+                                 {
+                                     "category":  "TOTAL",
+                                     "name":  "Grand Total (Net)",
+                                     "today_actual":  11962154030,
+                                     "today_ly":  11192649476,
+                                     "mtd_actual":  225532540,
+                                     "mtd_ly":  308555454,
+                                     "ytd_actual":  11962154030,
+                                     "ytd_ly":  11233644826
+                                 }
+                             ],
+    "gridData":  [
+                     {
+                         "depth1":  "ìë°",
+                         "depth2":  "ê°ì¤",
+                         "depth3":  "ì ì²´",
+                         "salesAmount":  2171748941,
+                         "quantity":  18164
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "ê³¨íì¥",
+                         "depth3":  "ì ì²´",
+                         "salesAmount":  3597113559,
+                         "quantity":  12118
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ê¸°íí°ì¼",
+                         "salesAmount":  341690,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ê¸°íí°ì¼(í¨í¤ì§)",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ëì´ëì°(2025)",
+                         "salesAmount":  740441,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ë§ë¦¬ë í´ë½",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ë§ë¦¬ëí´ë½",
+                         "salesAmount":  163363,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ë§ì´í´ì¹´í¸",
+                         "salesAmount":  1828238,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ëª¨í ìë ë",
+                         "salesAmount":  2695448,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ëª¨í ìë ë ë íìµ",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ë¯¸ëì´-ë®¤ì§ìì¹´í",
+                         "salesAmount":  38637,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ë¯¸ëì´ìí¸ì¼í°",
+                         "salesAmount":  965501,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ë²¨í¬ë  ë¦¬ì¡°í¸",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ë²¨í¬ë  ëª©ì¥",
+                         "salesAmount":  476157,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ë²¨í¬ë  ëª©ì¥(ì²´í)",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ë²¨í¬ë ëª©ì¥",
+                         "salesAmount":  31275,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ì¬ê³ì  ì°ë§¤ì¥",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ì¬ê³ì ì°ë§¤ì¥",
+                         "salesAmount":  842263,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ì¸ë¨¸ëë",
+                         "salesAmount":  1742695,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ì¨ë¼ì¸í°ì¼",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ì¨ë¼ì¸í°ì¼-ê¸°í",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ìëí",
+                         "salesAmount":  492728,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ìëí(ëì¬)",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ìëí(ì\u0085ì¥)",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ë ì ",
+                         "depth2":  "í°ì¼ì\u0085ì¥",
+                         "depth3":  "ìµì¤í¸ë¦¼ë£¨ì§",
+                         "salesAmount":  3229689,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ê¸°í",
+                         "depth2":  "ê¸°íì\u0085ì¥",
+                         "depth3":  "ì ì²´",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "BHC(ë©ìì¹´ë)",
+                         "salesAmount":  587727,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "CUí¸ìì ",
+                         "salesAmount":  2180691,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ê¸°íì ",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ë¨ëìë´",
+                         "salesAmount":  6437272,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ëì´ëì°(2025)",
+                         "salesAmount":  801500,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ëë¼ì´í¸",
+                         "salesAmount":  122273,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ë ì¤í ë",
+                         "salesAmount":  957000,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ë§ë¦¬ë í´ë½",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ëª¨í ìë ë ë íìµ",
+                         "salesAmount":  727000,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ë¯¸ëì´-ê¸°íí¸ìµ",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ë¯¸ëì´-ë®¤ì§ìì¹´í",
+                         "salesAmount":  42500,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ë°¤ë°¤í\u0085ì´ë¸",
+                         "salesAmount":  6051431,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ë°¤ë°¤í¸ë­",
+                         "salesAmount":  170909,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ë²¨í¬ë  ëª©ì¥(ì²´í)",
+                         "salesAmount":  42000,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ë²¨í¬ë í(í°ì¼)",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ë²¼ë£¨ì¬ì´",
+                         "salesAmount":  0,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ë¸ë¦¬ì¤í·346",
+                         "salesAmount":  951045,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ì¬ê³ì ì°ë§¤ì¥",
+                         "salesAmount":  407000,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ì¤íí¸íì°ì¤",
+                         "salesAmount":  2522000,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ì¸ë¨¸ëë(ëì¬)",
+                         "salesAmount":  332000,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ì¸ë¨¸ëë(ì\u0085ì¥)",
+                         "salesAmount":  730800,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ì¸ë¨¸í¸ë­(íì¥)",
+                         "salesAmount":  162273,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ì¼ë£©ë§ì¹´í",
+                         "salesAmount":  220087,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ì°íì¥",
+                         "salesAmount":  6050000,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ìëí(ëì¬)",
+                         "salesAmount":  42000,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ìëí(ì\u0085ì¥)",
+                         "salesAmount":  230000,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ì£¼ì°¨ê´ì ",
+                         "salesAmount":  1000909,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "ì¿ ì¹ë",
+                         "salesAmount":  9715456,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "í´ë½íì°ì¤-ë ì¤í ë",
+                         "salesAmount":  870000,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "í´ë½íì°ì¤-ì¤íí¸íì°ì¤",
+                         "salesAmount":  2292728,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "í¬ì¸íë ì´ì¤",
+                         "salesAmount":  1512700,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "íë¡ìµ",
+                         "salesAmount":  339090,
+                         "quantity":  0
+                     },
+                     {
+                         "depth1":  "ìì",
+                         "depth2":  "ììì\u0085ì¥",
+                         "depth3":  "íì¤í",
+                         "salesAmount":  371804,
+                         "quantity":  0
+                     }
+                 ],
+    "chartData":  [
+                      {
+                          "name":  "ê°ì¤",
+                          "value":  2171748941
+                      },
+                      {
+                          "name":  "ê³¨íì¥",
+                          "value":  3597113559
+                      },
+                      {
+                          "name":  "í°ì¼ì\u0085ì¥",
+                          "value":  13588125
+                      },
+                      {
+                          "name":  "ê¸°íì\u0085ì¥",
+                          "value":  0
+                      },
+                      {
+                          "name":  "ììì\u0085ì¥",
+                          "value":  45870195
+                      }
+                  ],
+    "adrTable":  [
+                     {
+                         "roomSize":  "ì ì²´",
+                         "marketType":  "ê¸°ì\u0085ìì\u0085(í´ìì)",
+                         "channel":  "ê¸°ì\u0085ìì\u0085(í´ìì)",
+                         "roomsSold":  16,
+                         "totalRevenue":  3712728,
+                         "adr":  232046
+                     },
+                     {
+                         "roomSize":  "ì ì²´",
+                         "marketType":  "ë¨ì²´ìì\u0085(ì¸ë¯¸ë)",
+                         "channel":  "ë¨ì²´ìì\u0085(ì¸ë¯¸ë)",
+                         "roomsSold":  25,
+                         "totalRevenue":  3261995,
+                         "adr":  130480
+                     },
+                     {
+                         "roomSize":  "ì ì²´",
+                         "marketType":  "ì¨ë¼ì¸ ì¬íì¬(ìë)",
+                         "channel":  "ì¨ë¼ì¸ ì¬íì¬(ìë)",
+                         "roomsSold":  1,
+                         "totalRevenue":  104000,
+                         "adr":  104000
+                     },
+                     {
+                         "roomSize":  "ì ì²´",
+                         "marketType":  "ì¨ë¼ì¸ ì¬íì¬(ìë)",
+                         "channel":  "ì¨ë¼ì¸ ì¬íì¬(ìë)",
+                         "roomsSold":  33,
+                         "totalRevenue":  4345700,
+                         "adr":  131688
+                     },
+                     {
+                         "roomSize":  "ì ì²´",
+                         "marketType":  "ì í/ë©ì ì (ìì½ì¤)",
+                         "channel":  "ì í/ë©ì ì (ìì½ì¤)",
+                         "roomsSold":  22,
+                         "totalRevenue":  2777271,
+                         "adr":  126240
+                     },
+                     {
+                         "roomSize":  "ì ì²´",
+                         "marketType":  "ííì´ì§/APP(ìë)",
+                         "channel":  "ííì´ì§/APP(ìë)",
+                         "roomsSold":  51,
+                         "totalRevenue":  6137269,
+                         "adr":  120339
+                     }
+                 ],
+    "golfSummary":  {
+                        "golfRevenue":  3597113559,
+                        "visitedTeams":  12118,
+                        "visitedPlayers":  48008
+                    },
+    "resortSummary":  {
+                          "lodging_revenue":  2171748941,
+                          "rooms_sold":  18164,
+                          "total_capacity":  175,
+                          "leisure_revenue":  2489823462
+                      },
+    "role":  "ADMIN",
+    "roomTypeBreakdown":  [
+                              {
+                                  "room_type":  "16í",
+                                  "rooms_sold":  33,
+                                  "room_revenue":  3466278,
+                                  "today_actual":  3466278,
+                                  "today_ly":  3321276,
+                                  "mtd_actual":  9288728,
+                                  "mtd_ly":  9094479,
+                                  "ytd_actual":  536629002,
+                                  "ytd_ly":  409406657,
+                                  "total_capacity":  85
+                              },
+                              {
+                                  "room_type":  "35í",
+                                  "rooms_sold":  27,
+                                  "room_revenue":  5673018,
+                                  "today_actual":  5673018,
+                                  "today_ly":  6539848,
+                                  "mtd_actual":  15045191,
+                                  "mtd_ly":  15938174,
+                                  "ytd_actual":  606662577,
+                                  "ytd_ly":  523912104,
+                                  "total_capacity":  85
+                              },
+                              {
+                                  "room_type":  "51í",
+                                  "rooms_sold":  78,
+                                  "room_revenue":  9684052,
+                                  "today_actual":  9684052,
+                                  "today_ly":  8350303,
+                                  "mtd_actual":  16584963,
+                                  "mtd_ly":  30997805,
+                                  "ytd_actual":  785282789,
+                                  "ytd_ly":  852736668,
+                                  "total_capacity":  175
+                              },
+                              {
+                                  "room_type":  "R51í",
+                                  "rooms_sold":  10,
+                                  "room_revenue":  1515615,
+                                  "today_actual":  1515615,
+                                  "today_ly":  678888,
+                                  "mtd_actual":  2649988,
+                                  "mtd_ly":  1981978,
+                                  "ytd_actual":  116305276,
+                                  "ytd_ly":  83545083,
+                                  "total_capacity":  0
+                              },
+                              {
+                                  "room_type":  "ë¯¸ì§ì ",
+                                  "rooms_sold":  0,
+                                  "room_revenue":  0,
+                                  "today_actual":  0,
+                                  "today_ly":  0,
+                                  "mtd_actual":  0,
+                                  "mtd_ly":  0,
+                                  "ytd_actual":  -336363,
+                                  "ytd_ly":  0,
+                                  "total_capacity":  0
+                              },
+                              {
+                                  "room_type":  "í«ë£¸ 16í",
+                                  "rooms_sold":  0,
+                                  "room_revenue":  0,
+                                  "today_actual":  0,
+                                  "today_ly":  0,
+                                  "mtd_actual":  285454,
+                                  "mtd_ly":  0,
+                                  "ytd_actual":  18227658,
+                                  "ytd_ly":  15707650,
+                                  "total_capacity":  0
+                              },
+                              {
+                                  "room_type":  "í«ë£¸ 35í",
+                                  "rooms_sold":  0,
+                                  "room_revenue":  0,
+                                  "today_actual":  0,
+                                  "today_ly":  600000,
+                                  "mtd_actual":  193091,
+                                  "mtd_ly":  1054546,
+                                  "ytd_actual":  31333068,
+                                  "ytd_ly":  37089039,
+                                  "total_capacity":  0
+                              },
+                              {
+                                  "room_type":  "í«ë£¸ 51í",
+                                  "rooms_sold":  0,
+                                  "room_revenue":  0,
+                                  "today_actual":  0,
+                                  "today_ly":  1002727,
+                                  "mtd_actual":  0,
+                                  "mtd_ly":  1002727,
+                                  "ytd_actual":  61463084,
+                                  "ytd_ly":  51285432,
+                                  "total_capacity":  0
+                              }
+                          ],
+    "channelBreakdown":  [
+                             {
+                                 "channel_name":  "ê¸°ì\u0085ìì\u0085(í´ìì)",
+                                 "rooms_sold":  16,
+                                 "room_revenue":  3712728,
+                                 "today_actual":  3712728,
+                                 "today_ly":  2709091,
+                                 "mtd_actual":  4080000,
+                                 "mtd_ly":  4651822,
+                                 "ytd_actual":  213682792,
+                                 "ytd_ly":  84332752
+                             },
+                             {
+                                 "channel_name":  "ë¨ì²´ìì\u0085(ì¸ë¯¸ë)",
+                                 "rooms_sold":  25,
+                                 "room_revenue":  3261995,
+                                 "today_actual":  3261995,
+                                 "today_ly":  967636,
+                                 "mtd_actual":  20443828,
+                                 "mtd_ly":  30355806,
+                                 "ytd_actual":  529149136,
+                                 "ytd_ly":  554501577
+                             },
+                             {
+                                 "channel_name":  "ì¨ë¼ì¸ ì¬íì¬(ìë)",
+                                 "rooms_sold":  1,
+                                 "room_revenue":  104000,
+                                 "today_actual":  104000,
+                                 "today_ly":  0,
+                                 "mtd_actual":  245273,
+                                 "mtd_ly":  0,
+                                 "ytd_actual":  3157342,
+                                 "ytd_ly":  25852771
+                             },
+                             {
+                                 "channel_name":  "ì¨ë¼ì¸ ì¬íì¬(ìë)",
+                                 "rooms_sold":  33,
+                                 "room_revenue":  4345700,
+                                 "today_actual":  4345700,
+                                 "today_ly":  3859404,
+                                 "mtd_actual":  6389774,
+                                 "mtd_ly":  6765898,
+                                 "ytd_actual":  452680477,
+                                 "ytd_ly":  422545002
+                             },
+                             {
+                                 "channel_name":  "ì í/ë©ì ì (ìì½ì¤)",
+                                 "rooms_sold":  22,
+                                 "room_revenue":  2777271,
+                                 "today_actual":  2777271,
+                                 "today_ly":  4689821,
+                                 "mtd_actual":  5815454,
+                                 "mtd_ly":  7231454,
+                                 "ytd_actual":  387812378,
+                                 "ytd_ly":  359180199
+                             },
+                             {
+                                 "channel_name":  "ííì´ì§/APP(ìë)",
+                                 "rooms_sold":  51,
+                                 "room_revenue":  6137269,
+                                 "today_actual":  6137269,
+                                 "today_ly":  8267090,
+                                 "mtd_actual":  7073086,
+                                 "mtd_ly":  11064729,
+                                 "ytd_actual":  569084966,
+                                 "ytd_ly":  527270332
+                             }
+                         ],
+    "segmentBreakdown":  [
+                             {
+                                 "segment":  "MICE",
+                                 "pyType":  "16PY",
+                                 "roomsSold":  3024,
+                                 "revenue":  263309916,
+                                 "occ":  35.5765,
+                                 "adr":  87073
+                             },
+                             {
+                                 "segment":  "MICE",
+                                 "pyType":  "35PY",
+                                 "roomsSold":  942,
+                                 "revenue":  150224333,
+                                 "occ":  11.0824,
+                                 "adr":  159474
+                             },
+                             {
+                                 "segment":  "MICE",
+                                 "pyType":  "51PY",
+                                 "roomsSold":  1194,
+                                 "revenue":  147267600,
+                                 "occ":  6.8229,
+                                 "adr":  123340
+                             },
+                             {
+                                 "segment":  "MICE",
+                                 "pyType":  "16PY(Pet)",
+                                 "roomsSold":  7,
+                                 "revenue":  789092,
+                                 "occ":  0,
+                                 "adr":  112727
+                             },
+                             {
+                                 "segment":  "MICE",
+                                 "pyType":  "35PY(Pet)",
+                                 "roomsSold":  1,
+                                 "revenue":  152727,
+                                 "occ":  0,
+                                 "adr":  152727
+                             },
+                             {
+                                 "segment":  "OTA",
+                                 "pyType":  "16PY",
+                                 "roomsSold":  1113,
+                                 "revenue":  99275739,
+                                 "occ":  13.0941,
+                                 "adr":  89197
+                             },
+                             {
+                                 "segment":  "OTA",
+                                 "pyType":  "35PY",
+                                 "roomsSold":  990,
+                                 "revenue":  151563196,
+                                 "occ":  11.6471,
+                                 "adr":  153094
+                             },
+                             {
+                                 "segment":  "OTA",
+                                 "pyType":  "51PY",
+                                 "roomsSold":  1484,
+                                 "revenue":  179485312,
+                                 "occ":  8.48,
+                                 "adr":  120947
+                             },
+                             {
+                                 "segment":  "OTA",
+                                 "pyType":  "16PY(Pet)",
+                                 "roomsSold":  32,
+                                 "revenue":  4510837,
+                                 "occ":  0,
+                                 "adr":  140964
+                             },
+                             {
+                                 "segment":  "OTA",
+                                 "pyType":  "35PY(Pet)",
+                                 "roomsSold":  20,
+                                 "revenue":  4677292,
+                                 "occ":  0,
+                                 "adr":  233865
+                             },
+                             {
+                                 "segment":  "ê¸°í",
+                                 "pyType":  "16PY",
+                                 "roomsSold":  267,
+                                 "revenue":  19211888,
+                                 "occ":  3.1412,
+                                 "adr":  71955
+                             },
+                             {
+                                 "segment":  "ê¸°í",
+                                 "pyType":  "35PY",
+                                 "roomsSold":  502,
+                                 "revenue":  84885648,
+                                 "occ":  5.9059,
+                                 "adr":  169095
+                             },
+                             {
+                                 "segment":  "ê¸°í",
+                                 "pyType":  "51PY",
+                                 "roomsSold":  624,
+                                 "revenue":  62321567,
+                                 "occ":  3.5657,
+                                 "adr":  99874
+                             },
+                             {
+                                 "segment":  "ê¸°í",
+                                 "pyType":  "ETC",
+                                 "roomsSold":  -2,
+                                 "revenue":  -336363,
+                                 "occ":  0,
+                                 "adr":  0
+                             },
+                             {
+                                 "segment":  "ê¸°í",
+                                 "pyType":  "16PY(Pet)",
+                                 "roomsSold":  22,
+                                 "revenue":  212910,
+                                 "occ":  0,
+                                 "adr":  9678
+                             },
+                             {
+                                 "segment":  "ê¸°í",
+                                 "pyType":  "35PY(Pet)",
+                                 "roomsSold":  5,
+                                 "revenue":  165818,
+                                 "occ":  0,
+                                 "adr":  33164
+                             },
+                             {
+                                 "segment":  "ë²ì¸",
+                                 "pyType":  "16PY",
+                                 "roomsSold":  39,
+                                 "revenue":  4019987,
+                                 "occ":  0.4588,
+                                 "adr":  103077
+                             },
+                             {
+                                 "segment":  "ë²ì¸",
+                                 "pyType":  "35PY",
+                                 "roomsSold":  126,
+                                 "revenue":  24188351,
+                                 "occ":  1.4824,
+                                 "adr":  191971
+                             },
+                             {
+                                 "segment":  "ë²ì¸",
+                                 "pyType":  "51PY",
+                                 "roomsSold":  850,
+                                 "revenue":  121350099,
+                                 "occ":  4.8571,
+                                 "adr":  142765
+                             },
+                             {
+                                 "segment":  "ë²ì¸",
+                                 "pyType":  "35PY(Pet)",
+                                 "roomsSold":  2,
+                                 "revenue":  650182,
+                                 "occ":  0,
+                                 "adr":  325091
+                             },
+                             {
+                                 "segment":  "ë¶ìíì",
+                                 "pyType":  "16PY",
+                                 "roomsSold":  356,
+                                 "revenue":  25504135,
+                                 "occ":  4.1882,
+                                 "adr":  71641
+                             },
+                             {
+                                 "segment":  "ë¶ìíì",
+                                 "pyType":  "35PY",
+                                 "roomsSold":  478,
+                                 "revenue":  55762181,
+                                 "occ":  5.6235,
+                                 "adr":  116657
+                             },
+                             {
+                                 "segment":  "ë¶ìíì",
+                                 "pyType":  "51PY",
+                                 "roomsSold":  2484,
+                                 "revenue":  212027332,
+                                 "occ":  14.1943,
+                                 "adr":  85357
+                             },
+                             {
+                                 "segment":  "ë¶ìíì",
+                                 "pyType":  "16PY(Pet)",
+                                 "roomsSold":  21,
+                                 "revenue":  2702183,
+                                 "occ":  0,
+                                 "adr":  128675
+                             },
+                             {
+                                 "segment":  "ë¶ìíì",
+                                 "pyType":  "35PY(Pet)",
+                                 "roomsSold":  26,
+                                 "revenue":  5006728,
+                                 "occ":  0,
+                                 "adr":  192566
+                             },
+                             {
+                                 "segment":  "ìì¬ì±ë",
+                                 "pyType":  "16PY",
+                                 "roomsSold":  970,
+                                 "revenue":  109264433,
+                                 "occ":  11.4118,
+                                 "adr":  112644
+                             },
+                             {
+                                 "segment":  "ìì¬ì±ë",
+                                 "pyType":  "35PY",
+                                 "roomsSold":  604,
+                                 "revenue":  125429414,
+                                 "occ":  7.1059,
+                                 "adr":  207665
+                             },
+                             {
+                                 "segment":  "ìì¬ì±ë",
+                                 "pyType":  "51PY",
+                                 "roomsSold":  1178,
+                                 "revenue":  199975988,
+                                 "occ":  6.7314,
+                                 "adr":  169759
+                             },
+                             {
+                                 "segment":  "ìì¬ì±ë",
+                                 "pyType":  "16PY(Pet)",
+                                 "roomsSold":  59,
+                                 "revenue":  9770455,
+                                 "occ":  0,
+                                 "adr":  165601
+                             },
+                             {
+                                 "segment":  "ìì¬ì±ë",
+                                 "pyType":  "35PY(Pet)",
+                                 "roomsSold":  64,
+                                 "revenue":  18930503,
+                                 "occ":  0,
+                                 "adr":  295789
+                             },
+                             {
+                                 "segment":  "ì í´\u0026ê¸°í",
+                                 "pyType":  "16PY",
+                                 "roomsSold":  194,
+                                 "revenue":  16042904,
+                                 "occ":  2.2824,
+                                 "adr":  82695
+                             },
+                             {
+                                 "segment":  "ì í´\u0026ê¸°í",
+                                 "pyType":  "35PY",
+                                 "roomsSold":  102,
+                                 "revenue":  14609454,
+                                 "occ":  1.2,
+                                 "adr":  143230
+                             },
+                             {
+                                 "segment":  "ì í´\u0026ê¸°í",
+                                 "pyType":  "51PY",
+                                 "roomsSold":  374,
+                                 "revenue":  40623251,
+                                 "occ":  2.1371,
+                                 "adr":  108618
+                             },
+                             {
+                                 "segment":  "ì í´\u0026ê¸°í",
+                                 "pyType":  "16PY(Pet)",
+                                 "roomsSold":  3,
+                                 "revenue":  242181,
+                                 "occ":  0,
+                                 "adr":  80727
+                             },
+                             {
+                                 "segment":  "ì í´\u0026ê¸°í",
+                                 "pyType":  "35PY(Pet)",
+                                 "roomsSold":  9,
+                                 "revenue":  1749818,
+                                 "occ":  0,
+                                 "adr":  194424
+                             }
+                         ],
+    "rateCodeBreakdown":  [
+                              {
+                                  "rateCode":  "1/12êµ¬ì¢ 16íí_1",
+                                  "segment":  "ë¶ìíì",
+                                  "roomsSold":  204,
+                                  "revenue":  23041063
+                              },
+                              {
+                                  "rateCode":  "1/12êµ¬ì¢ 16íí_2",
+                                  "segment":  "ë¶ìíì",
+                                  "roomsSold":  22,
+                                  "revenue":  3041823
+                              },
+                              {
+                                  "rateCode":  "1/12êµ¬ì¢ 35íí 20%_1",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  2,
+                                  "revenue":  226909
+                              },
+                              {
+                                  "rateCode":  "1/12êµ¬ì¢ 35íí 20%_2",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  1,
+                                  "revenue":  81091
+                              },
+                              {
+                                  "rateCode":  "1/12êµ¬ì¢ 35íí_1",
+                                  "segment":  "ë¶ìíì",
+                                  "roomsSold":  186,
+                                  "revenue":  22670808
+                              },
+                              {
+                                  "rateCode":  "1/12êµ¬ì¢ 35íí_2",
+                                  "segment":  "ë¶ìíì",
+                                  "roomsSold":  13,
+                                  "revenue":  1326546
+                              },
+                              {
+                                  "rateCode":  "1/12êµ¬ì¢ëë­ì¤íì_30%",
+                                  "segment":  "ë¶ìíì",
+                                  "roomsSold":  11,
+                                  "revenue":  1020765
+                              },
+                              {
+                                  "rateCode":  "1/12êµ¬ì¢ì¤í ë¤ëì¤í_50%",
+                                  "segment":  "ë¶ìíì",
+                                  "roomsSold":  1,
+                                  "revenue":  50727
+                              },
+                              {
+                                  "rateCode":  "1/12êµ¬ì¢ì¤í ë¤ëíì_50%",
+                                  "segment":  "ë¶ìíì",
+                                  "roomsSold":  6,
+                                  "revenue":  345818
+                              },
+                              {
+                                  "rateCode":  "1/6êµ¬ì¢ 35íí 20%_3",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  41,
+                                  "revenue":  3370268
+                              },
+                              {
+                                  "rateCode":  "1/6êµ¬ì¢(F) 35íí_3",
+                                  "segment":  "ë¶ìíì",
+                                  "roomsSold":  372,
+                                  "revenue":  39150511
+                              },
+                              {
+                                  "rateCode":  "1/6êµ¬ì¢(F) 51íí_1",
+                                  "segment":  "ë¶ìíì",
+                                  "roomsSold":  2235,
+                                  "revenue":  184057778
+                              },
+                              {
+                                  "rateCode":  "1/6êµ¬ì¢(F) 51íí_2",
+                                  "segment":  "ë¶ìíì",
+                                  "roomsSold":  37,
+                                  "revenue":  3749274
+                              },
+                              {
+                                  "rateCode":  "1/6êµ¬ì¢(F)ë¡ìì¤íì_30%",
+                                  "segment":  "ë¶ìíì",
+                                  "roomsSold":  2,
+                                  "revenue":  0
+                              },
+                              {
+                                  "rateCode":  "1/6êµ¬ì¢(F)ë¡ìíì_30%",
+                                  "segment":  "ë¶ìíì",
+                                  "roomsSold":  172,
+                                  "revenue":  11568714
+                              },
+                              {
+                                  "rateCode":  "1/6êµ¬ì¢(F)ë¡ìíì_50%",
+                                  "segment":  "ë¶ìíì",
+                                  "roomsSold":  32,
+                                  "revenue":  1645093
+                              },
+                              {
+                                  "rateCode":  "3ì°¨ë¶ì_íì50%(ì ì )",
+                                  "segment":  "ë¶ìíì",
+                                  "roomsSold":  2,
+                                  "revenue":  109091
+                              },
+                              {
+                                  "rateCode":  "Complimentary",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  107,
+                                  "revenue":  0
+                              },
+                              {
+                                  "rateCode":  "House Use",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  92,
+                                  "revenue":  0
+                              },
+                              {
+                                  "rateCode":  "KGCì¸ì¼ê³µì¬í´ìì_26",
+                                  "segment":  "ë²ì¸",
+                                  "roomsSold":  71,
+                                  "revenue":  13503627
+                              },
+                              {
+                                  "rateCode":  "MOUíì½ê°",
+                                  "segment":  "MICE",
+                                  "roomsSold":  52,
+                                  "revenue":  7569993
+                              },
+                              {
+                                  "rateCode":  "the Nthusiast ë©¤ë²ì­",
+                                  "segment":  "OTA",
+                                  "roomsSold":  12,
+                                  "revenue":  0
+                              },
+                              {
+                                  "rateCode":  "Walk-In",
+                                  "segment":  "ìì¬ì±ë",
+                                  "roomsSold":  1,
+                                  "revenue":  70909
+                              },
+                              {
+                                  "rateCode":  "ëì´ì´ê³µì¬",
+                                  "segment":  "MICE",
+                                  "roomsSold":  30,
+                                  "revenue":  3100906
+                              },
+                              {
+                                  "rateCode":  "ë¬´ë£ìë°ê¶",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  144,
+                                  "revenue":  5246364
+                              },
+                              {
+                                  "rateCode":  "ë¬¸íì²´ì¡ê´ê´ë¶",
+                                  "segment":  "MICE",
+                                  "roomsSold":  68,
+                                  "revenue":  6527268
+                              },
+                              {
+                                  "rateCode":  "ë¯¸ì§ì ",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  -2,
+                                  "revenue":  -336363
+                              },
+                              {
+                                  "rateCode":  "ë³µì§ëª°(ë£¸ì¨ë¦¬)",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  66,
+                                  "revenue":  17556348
+                              },
+                              {
+                                  "rateCode":  "ë³µì§ëª°(ë¸ë£¨ë² ë¦¬ëª°/ì¼ì±ì¹´ë)",
+                                  "segment":  "ë²ì¸",
+                                  "roomsSold":  44,
+                                  "revenue":  5823080
+                              },
+                              {
+                                  "rateCode":  "ë³µì§ëª°(ì¼ì±ì°ì¤í ë¦¬ìì§ìPKG)",
+                                  "segment":  "ë²ì¸",
+                                  "roomsSold":  19,
+                                  "revenue":  2587087
+                              },
+                              {
+                                  "rateCode":  "ë³µì§ëª°(ìì´ìì´ì¹ì´ë\u0085¸)",
+                                  "segment":  "ë²ì¸",
+                                  "roomsSold":  2,
+                                  "revenue":  401818
+                              },
+                              {
+                                  "rateCode":  "ë³µì§ëª°(ì¹´ì¹´ì¤ê·¸ë£¹ì¬ìì§ìPKG)",
+                                  "segment":  "ë²ì¸",
+                                  "roomsSold":  10,
+                                  "revenue":  1475452
+                              },
+                              {
+                                  "rateCode":  "ë³µì§ëª°(í´ììì¤ì í´)",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  114,
+                                  "revenue":  18019452
+                              },
+                              {
+                                  "rateCode":  "ë¶ì_ë£¸ì¨ë¦¬(ì ì )",
+                                  "segment":  "ë¶ìíì",
+                                  "roomsSold":  21,
+                                  "revenue":  3322730
+                              },
+                              {
+                                  "rateCode":  "ë¶ì_ì¤ì¤íì(ì ì )",
+                                  "segment":  "ë¶ìíì",
+                                  "roomsSold":  2,
+                                  "revenue":  305455
+                              },
+                              {
+                                  "rateCode":  "ë¶ì_ì¤íì(ì ì )",
+                                  "segment":  "ë¶ìíì",
+                                  "roomsSold":  30,
+                                  "revenue":  3894547
+                              },
+                              {
+                                  "rateCode":  "ë¶ì_íì(ì ì )",
+                                  "segment":  "ë¶ìíì",
+                                  "roomsSold":  17,
+                                  "revenue":  1701816
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(18H GOLF PKG)",
+                                  "segment":  "ìì¬ì±ë",
+                                  "roomsSold":  40,
+                                  "revenue":  5290911
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(36H GOLF PKG)",
+                                  "segment":  "ìì¬ì±ë",
+                                  "roomsSold":  625,
+                                  "revenue":  65874973
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(CAMP NIGHT PKG)",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  84,
+                                  "revenue":  12020919
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(DAYUSE)",
+                                  "segment":  "ìì¬ì±ë",
+                                  "roomsSold":  97,
+                                  "revenue":  10489650
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(RONY)",
+                                  "segment":  "ìì¬ì±ë",
+                                  "roomsSold":  405,
+                                  "revenue":  77848603
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(ê°ì¤+ìë°ê¶)",
+                                  "segment":  "ìì¬ì±ë",
+                                  "roomsSold":  7,
+                                  "revenue":  2038181
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(ê²¨ì¸ì¬íPKG)",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  2,
+                                  "revenue":  273454
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(ê½ê¸¸ë§ê±¸ì¼ì¸í¨PKG)",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  1,
+                                  "revenue":  220000
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(ë´ì¹êµ¬ë½ê¸ìPKG)",
+                                  "segment":  "ìì¬ì±ë",
+                                  "roomsSold":  168,
+                                  "revenue":  28239326
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(ë\u0085¼ì¤íí´PKG)",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  89,
+                                  "revenue":  12814533
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(ë¨ì²´ê°)",
+                                  "segment":  "ìì¬ì±ë",
+                                  "roomsSold":  11,
+                                  "revenue":  1384545
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(ëëì´ëBBQ/ë°¤ë°¤)",
+                                  "segment":  "ìì¬ì±ë",
+                                  "roomsSold":  12,
+                                  "revenue":  1615864
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(ë²¨í¬ë ë¹ê³ ê²ìPKG)",
+                                  "segment":  "ìì¬ì±ë",
+                                  "roomsSold":  152,
+                                  "revenue":  30698174
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(ë²¨í¬ë ìí¬_Yes24)",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  14,
+                                  "revenue":  2192728
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(ë³µë§ì´PKG)",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  37,
+                                  "revenue":  5897450
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(ë¹¨ê°ëª¨ìì²ìì¬íPKG)",
+                                  "segment":  "ìì¬ì±ë",
+                                  "roomsSold":  21,
+                                  "revenue":  3384816
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(ìíê¸°ë¶ì¤í\u0085PKG)",
+                                  "segment":  "ìì¬ì±ë",
+                                  "roomsSold":  27,
+                                  "revenue":  4006908
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(ìí´ë§ì´ì²«í¹ê°)",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  124,
+                                  "revenue":  13489562
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(ì¼ë¦¬ì¤íë§PKG)_2ì",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  48,
+                                  "revenue":  7677897
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(ì¼ë¦¬ì¤íë§PKG)_3.4ì",
+                                  "segment":  "ìì¬ì±ë",
+                                  "roomsSold":  169,
+                                  "revenue":  25937450
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(ìí°ì¬ë°ì´PKG)",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  62,
+                                  "revenue":  7586363
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(ì¸ì¬ì´ëíë§PKG)",
+                                  "segment":  "ìì¬ì±ë",
+                                  "roomsSold":  26,
+                                  "revenue":  3556774
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(ì¡°ì2+1PKG)",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  6,
+                                  "revenue":  804545
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(ì¡°ì2ì¸)",
+                                  "segment":  "ìì¬ì±ë",
+                                  "roomsSold":  943,
+                                  "revenue":  175459625
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(ì¡°ì´íí¨ë°ë¦¬PKG)",
+                                  "segment":  "ìì¬ì±ë",
+                                  "roomsSold":  157,
+                                  "revenue":  24841992
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(ì£¼ë£©ì£¼ë£©PKG)",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  24,
+                                  "revenue":  4024457
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(ì²¨ë²ì²¨ë²í¤ì¦PKG)",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  4,
+                                  "revenue":  736363
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(ì¹ ë§PKG)",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  42,
+                                  "revenue":  8536412
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(í¤ì¦ê³µì°PKG)",
+                                  "segment":  "ìì¬ì±ë",
+                                  "roomsSold":  13,
+                                  "revenue":  2484819
+                              },
+                              {
+                                  "rateCode":  "ë¹íì(í¤ì¦ê³µì°PKG)4ì",
+                                  "segment":  "ìì¬ì±ë",
+                                  "roomsSold":  1,
+                                  "revenue":  147273
+                              },
+                              {
+                                  "rateCode":  "ì¼ì±ì ìDSí´ìì_25",
+                                  "segment":  "ë²ì¸",
+                                  "roomsSold":  548,
+                                  "revenue":  77239183
+                              },
+                              {
+                                  "rateCode":  "ì¼ì±ì ìDSí´ìì_26",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  94,
+                                  "revenue":  13730002
+                              },
+                              {
+                                  "rateCode":  "ì¸ë¯¸ë_ë£¸ì¨ë¦¬",
+                                  "segment":  "MICE",
+                                  "roomsSold":  126,
+                                  "revenue":  19499992
+                              },
+                              {
+                                  "rateCode":  "ì¸ë¯¸ë_ì¼ë°",
+                                  "segment":  "MICE",
+                                  "roomsSold":  4818,
+                                  "revenue":  515234802
+                              },
+                              {
+                                  "rateCode":  "ì¸ë¯¸ë_ì§ìì¶ì²",
+                                  "segment":  "MICE",
+                                  "roomsSold":  18,
+                                  "revenue":  3075454
+                              },
+                              {
+                                  "rateCode":  "ì¸ë¯¸ë_í¹ë³(ì¤í)",
+                                  "segment":  "MICE",
+                                  "roomsSold":  13,
+                                  "revenue":  1809818
+                              },
+                              {
+                                  "rateCode":  "ì°ë¦¬ìíí´ìì_26",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  63,
+                                  "revenue":  15278181
+                              },
+                              {
+                                  "rateCode":  "ì ¯ì\u0085í°(ë¯¸ìëì´ëì°ëª©ì¥PKG)_260608",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  5,
+                                  "revenue":  503927
+                              },
+                              {
+                                  "rateCode":  "ì ¯ì\u0085í°(ì¿ ì¹ëì¡°ìPKG)_260511",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  2,
+                                  "revenue":  277964
+                              },
+                              {
+                                  "rateCode":  "ì ¯ì\u0085í°(í¨ë°ë¦¬ì¡í°ë¹í°PKG)",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  20,
+                                  "revenue":  1964178
+                              },
+                              {
+                                  "rateCode":  "ì ¯ì\u0085í°(í¨ë°ë¦¬ì¡í°ë¹í°PKG)_260511",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  2,
+                                  "revenue":  247637
+                              },
+                              {
+                                  "rateCode":  "ì¢\u0085ë¡êµ¬ì²­í´ìì_26",
+                                  "segment":  "ë²ì¸",
+                                  "roomsSold":  17,
+                                  "revenue":  3890182
+                              },
+                              {
+                                  "rateCode":  "ì§ìì´ì©ê°(í)",
+                                  "segment":  "ì í´\u0026ê¸°í",
+                                  "roomsSold":  377,
+                                  "revenue":  36100326
+                              },
+                              {
+                                  "rateCode":  "ì§ìì¶ì²ê°(ëª¨í ìë ë)",
+                                  "segment":  "ì í´\u0026ê¸°í",
+                                  "roomsSold":  21,
+                                  "revenue":  2261456
+                              },
+                              {
+                                  "rateCode":  "ì§ìì¶ì²ê°(ì¤í)",
+                                  "segment":  "ì í´\u0026ê¸°í",
+                                  "roomsSold":  284,
+                                  "revenue":  34905826
+                              },
+                              {
+                                  "rateCode":  "ì¶©ì²­ë¶ëë§í¸íPKG_25,26",
+                                  "segment":  "MICE",
+                                  "roomsSold":  43,
+                                  "revenue":  4925435
+                              },
+                              {
+                                  "rateCode":  "ì¼ì´í°ìì§(KT\u0026G)í´ìì_26",
+                                  "segment":  "ë²ì¸",
+                                  "roomsSold":  293,
+                                  "revenue":  42689097
+                              },
+                              {
+                                  "rateCode":  "íêµ­í ì§ì£¼íê³µì¬í´ìì_25",
+                                  "segment":  "ë²ì¸",
+                                  "roomsSold":  13,
+                                  "revenue":  2599093
+                              },
+                              {
+                                  "rateCode":  "íìëíêµí´ìì_26",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  4,
+                                  "revenue":  852726
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬_RONY",
+                                  "segment":  "OTA",
+                                  "roomsSold":  125,
+                                  "revenue":  19520983
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬_ëª©ì¥",
+                                  "segment":  "OTA",
+                                  "roomsSold":  48,
+                                  "revenue":  6198791
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬_ë¯¸ëì´",
+                                  "segment":  "OTA",
+                                  "roomsSold":  11,
+                                  "revenue":  1290994
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬_ì¡°ì",
+                                  "segment":  "OTA",
+                                  "roomsSold":  2156,
+                                  "revenue":  268092655
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ê³µì°\u0026ë®¤ì§ì»¬PKG)_260129",
+                                  "segment":  "OTA",
+                                  "roomsSold":  16,
+                                  "revenue":  2128543
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(êµ­ë´ì±ë/ê³µì°\u0026ë®¤ì§ì»¬PKG)_260302",
+                                  "segment":  "OTA",
+                                  "roomsSold":  2,
+                                  "revenue":  223727
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(êµ­ë´ì±ë/ê³µì°\u0026ë®¤ì§ì»¬PKG)_260320",
+                                  "segment":  "OTA",
+                                  "roomsSold":  3,
+                                  "revenue":  404563
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ëëë¤,ê°ì¡±ëì´PKG)",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  9,
+                                  "revenue":  1279384
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ëëë¤,ê°ì¡±ëì´PKG)_260408",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  1,
+                                  "revenue":  310133
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ëëë¤,ì¸ë¨¸íë§PKG)",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  5,
+                                  "revenue":  643216
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ëëë¤,ì¡°ìPKG)",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  3,
+                                  "revenue":  385557
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ë§ì´ë¦¬ì¼í¸ë¦½,ëª©ì¥PKG)_260629",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  2,
+                                  "revenue":  202910
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ë§ì´ë¦¬ì¼í¸ë¦½,ì¸ë¨¸ì¡í°ë¹í°PKG)_260629",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  1,
+                                  "revenue":  127636
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ë§ë§,ë ì¼ë¡ëë² ë¥¼ë¦°PKG)_260325",
+                                  "segment":  "OTA",
+                                  "roomsSold":  23,
+                                  "revenue":  3216362
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ë§ë§,ëª©ì¥PKG)_260325",
+                                  "segment":  "OTA",
+                                  "roomsSold":  85,
+                                  "revenue":  9495455
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ë§ë§,ì¡°ìPKG)_260325",
+                                  "segment":  "OTA",
+                                  "roomsSold":  47,
+                                  "revenue":  5271368
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ë§ë§,ì¢êµ¬ì°PKG)_260325",
+                                  "segment":  "OTA",
+                                  "roomsSold":  137,
+                                  "revenue":  15304196
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ë°ë íì¸ë°ì´PKG)_260129",
+                                  "segment":  "OTA",
+                                  "roomsSold":  21,
+                                  "revenue":  2909909
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ì¼ëì_ë´ë°ëíë§PKG)_260228",
+                                  "segment":  "OTA",
+                                  "roomsSold":  13,
+                                  "revenue":  1358092
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ì¼ëì_ì¡°ì2ì¸PKG)_260209",
+                                  "segment":  "OTA",
+                                  "roomsSold":  29,
+                                  "revenue":  3260840
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ì§ë§ì¼ RONY)_251201",
+                                  "segment":  "OTA",
+                                  "roomsSold":  157,
+                                  "revenue":  16775513
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ì§ë§ì¼ ëª©ì¥ì¸í´ë£¨ìë¸PKG)_260301",
+                                  "segment":  "OTA",
+                                  "roomsSold":  107,
+                                  "revenue":  13955369
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ì§ë§ì¼ ìëì§ ë°©ì PKG)_260301",
+                                  "segment":  "OTA",
+                                  "roomsSold":  209,
+                                  "revenue":  26066380
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ì§ë§ì¼ ì¡°ì 2ì¸PKG)_251201",
+                                  "segment":  "OTA",
+                                  "roomsSold":  91,
+                                  "revenue":  9717442
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ì§ë§ì¼ ì¡°ì 2ì¸PKG)_260301",
+                                  "segment":  "OTA",
+                                  "roomsSold":  42,
+                                  "revenue":  3931638
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ì§ë§ì¼ í¨ë°ë¦¬ ì¡í°ë¹í°PKG)_251201",
+                                  "segment":  "OTA",
+                                  "roomsSold":  271,
+                                  "revenue":  26451553
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ì¹´ì¹´ì¤ìì½íê¸°,ë°ì´ëª©ì¥PKG)",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  47,
+                                  "revenue":  4476906
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ì¹´ì¹´ì¤ìì½íê¸°,ë°ì´ëª©ì¥PKG)_260413",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  2,
+                                  "revenue":  236364
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ì¹´ì¹´ì¤ìì½íê¸°,ë°ì´ì¡°ìPKG)",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  14,
+                                  "revenue":  1613637
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ì¹´ì¹´ì¤í¡ë ëª©ì¥ PKG)1.2ì_260114",
+                                  "segment":  "OTA",
+                                  "roomsSold":  20,
+                                  "revenue":  2089639
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ì¹´ì¹´ì¤í¡ë ëª©ì¥ PKG)3ì_260114",
+                                  "segment":  "OTA",
+                                  "roomsSold":  2,
+                                  "revenue":  273636
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ì¹´ì¹´ì¤í¡ë ëª©ì¥ ì¬ì¸í´ë£¨ìë¸ PKG)_251114",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  7,
+                                  "revenue":  656726
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ì¹´ì¹´ì¤í¡ë ì¡°ì 2ì¸ PKG)_251021",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  5,
+                                  "revenue":  490908
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ì¹´ì¹´ì¤í¡ë ì¡°ì 2ì¸ PKG)_260114",
+                                  "segment":  "OTA",
+                                  "roomsSold":  12,
+                                  "revenue":  1574728
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ì¹´ì¹´ì¤í¡ë ì¡°ì 2ì¸PKG)_251114",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  3,
+                                  "revenue":  292909
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ì¹´ì¹´ì¤í¡ë í¨ë°ë¦¬ PKG)_251021",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  8,
+                                  "revenue":  809454
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ì¹´ì¹´ì¤í¡ìì½íê¸°_ë²¨í¬ë ë°ì´ëª©ì¥PKG)",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  7,
+                                  "revenue":  474545
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ì¹´ì¹´ì¤í¡ìì½íê¸°_ë²¨í¬ë ë°ì´ëª©ì¥PKG)_260604",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  5,
+                                  "revenue":  501272
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ì¹´ì¹´ì¤í¡ìì½íê¸°_ë²¨í¬ë ë°ì´ì¡°ìPKG)",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  3,
+                                  "revenue":  269454
+                              },
+                              {
+                                  "rateCode":  "í¸í\u0085ì¤í ë¦¬(ì¹´ì¹´ì¤í¡ìì½íê¸°_ë²¨í¬ë ë°ì´ì¡°ìPKG)_260604",
+                                  "segment":  "ê¸°í",
+                                  "roomsSold":  4,
+                                  "revenue":  397090
+                              }
+                          ],
+    "golfFacilityBreakdown":  [
+                                  {
+                                      "facility_name":  "ROOM - Posting",
+                                      "revenue":  0,
+                                      "qty":  0
+                                  },
+                                  {
+                                      "facility_name":  "ê·¸ë¦°í¼",
+                                      "revenue":  19691854,
+                                      "qty":  48008
+                                  },
+                                  {
+                                      "facility_name":  "ê·¸ë¦°í¼ - Posting",
+                                      "revenue":  21661000,
+                                      "qty":  48008
+                                  },
+                                  {
+                                      "facility_name":  "ê¸°íë§¤ì¶",
+                                      "revenue":  0,
+                                      "qty":  0
+                                  },
+                                  {
+                                      "facility_name":  "ê¸°íë§¤ì¶ - Posting",
+                                      "revenue":  0,
+                                      "qty":  0
+                                  },
+                                  {
+                                      "facility_name":  "ëì¬í - Posting",
+                                      "revenue":  0,
+                                      "qty":  0
+                                  },
+                                  {
+                                      "facility_name":  "ë¸ë¦¬ì¤í·346 - Posting",
+                                      "revenue":  0,
+                                      "qty":  0
+                                  },
+                                  {
+                                      "facility_name":  "ì¹´í¸ëì¬",
+                                      "revenue":  9681809,
+                                      "qty":  12118
+                                  },
+                                  {
+                                      "facility_name":  "ì¹´í¸ëì¬ - Posting",
+                                      "revenue":  10650000,
+                                      "qty":  12118
+                                  },
+                                  {
+                                      "facility_name":  "ì¿ ì¹ë - Posting",
+                                      "revenue":  0,
+                                      "qty":  0
+                                  },
+                                  {
+                                      "facility_name":  "í´ë½íì°ì¤-ë ì¤í ë - Posting",
+                                      "revenue":  468000,
+                                      "qty":  0
+                                  },
+                                  {
+                                      "facility_name":  "í´ë½íì°ì¤-ì¤íí¸íì°ì¤ - Posting",
+                                      "revenue":  1965000,
+                                      "qty":  0
+                                  },
+                                  {
+                                      "facility_name":  "íë¡ìµ - Posting",
+                                      "revenue":  0,
+                                      "qty":  0
+                                  }
+                              ],
+    "leisureProductBreakdown":  [
+                                    {
+                                        "facility_name":  "ëì´ëì°(2025)",
+                                        "product_name":  "ëì´ëì°(2025)",
+                                        "revenue":  728623,
+                                        "qty":  0
+                                    },
+                                    {
+                                        "facility_name":  "ë§ì´í´ì¹´í¸",
+                                        "product_name":  "ë§ì´í´ì¹´í¸",
+                                        "revenue":  1370895,
+                                        "qty":  0
+                                    },
+                                    {
+                                        "facility_name":  "ëª¨í ìë ë",
+                                        "product_name":  "ëª¨í ìë ë",
+                                        "revenue":  2034542,
+                                        "qty":  0
+                                    },
+                                    {
+                                        "facility_name":  "ëª¨í ìë ë ë íìµ",
+                                        "product_name":  "ëª¨í ìë ë ë íìµ",
+                                        "revenue":  660906,
+                                        "qty":  0
+                                    },
+                                    {
+                                        "facility_name":  "ë¯¸ëì´-ë®¤ì§ìì¹´í",
+                                        "product_name":  "ë¯¸ëì´-ë®¤ì§ìì¹´í",
+                                        "revenue":  38637,
+                                        "qty":  0
+                                    },
+                                    {
+                                        "facility_name":  "ë¯¸ëì´ìí¸ì¼í°",
+                                        "product_name":  "ë¯¸ëì´ìí¸ì¼í°",
+                                        "revenue":  633545,
+                                        "qty":  0
+                                    },
+                                    {
+                                        "facility_name":  "ë²¨í¬ë  ëª©ì¥",
+                                        "product_name":  "ë²¨í¬ë  ëª©ì¥",
+                                        "revenue":  218364,
+                                        "qty":  0
+                                    },
+                                    {
+                                        "facility_name":  "ë²¨í¬ë  ëª©ì¥(ì²´í)",
+                                        "product_name":  "ë²¨í¬ë  ëª©ì¥(ì²´í)",
+                                        "revenue":  38180,
+                                        "qty":  0
+                                    },
+                                    {
+                                        "facility_name":  "ì¬ê³ì ì°ë§¤ì¥",
+                                        "product_name":  "ì¬ê³ì ì°ë§¤ì¥",
+                                        "revenue":  369994,
+                                        "qty":  0
+                                    },
+                                    {
+                                        "facility_name":  "ì¨ë¼ì¸í°ì¼",
+                                        "product_name":  "OTA_ììíë§¤_ì¸ë¨¸ëë_ëì¸(ì£¼ë§), [[ì£¼ë§] ëì¸]",
+                                        "revenue":  117275,
+                                        "qty":  15
+                                    },
+                                    {
+                                        "facility_name":  "ì¨ë¼ì¸í°ì¼",
+                                        "product_name":  "OTA_ììíë§¤_ì¸ë¨¸ëë_ìì¸(ì£¼ë§), [[ì£¼ë§] ìì¸]",
+                                        "revenue":  51600,
+                                        "qty":  7
+                                    },
+                                    {
+                                        "facility_name":  "ì¨ë¼ì¸í°ì¼",
+                                        "product_name":  "ëª©ì¥_ëì¸_ì£¼ì¤, [ì£¼ì¤ ëì¸]",
+                                        "revenue":  25020,
+                                        "qty":  4
+                                    },
+                                    {
+                                        "facility_name":  "ì¨ë¼ì¸í°ì¼",
+                                        "product_name":  "ëª©ì¥_ìì¸_ì£¼ì¤, [ì£¼ì¤ ìì¸]",
+                                        "revenue":  6255,
+                                        "qty":  1
+                                    },
+                                    {
+                                        "facility_name":  "ì¨ë¼ì¸í°ì¼",
+                                        "product_name":  "ì±ì¸(20ì¸ ì´ì), [ì±ì¸(20ì¸ ì´ì)]",
+                                        "revenue":  39873,
+                                        "qty":  3
+                                    },
+                                    {
+                                        "facility_name":  "ì¨ë¼ì¸í°ì¼",
+                                        "product_name":  "ì¸ë¨¸ëë ë¨ì²´(ëì¸/ìì¸ ê³µíµ, 15ì¸ ì´ì)",
+                                        "revenue":  180000,
+                                        "qty":  22
+                                    },
+                                    {
+                                        "facility_name":  "ì¨ë¼ì¸í°ì¼",
+                                        "product_name":  "ì¸ë¨¸ëë_ì½ëìë°ê³ ê°(ëì¸)",
+                                        "revenue":  213819,
+                                        "qty":  12
+                                    },
+                                    {
+                                        "facility_name":  "ì¨ë¼ì¸í°ì¼",
+                                        "product_name":  "ì¸ë¨¸ëë_ì½ëìë°ê³ ê°(ìì¸)",
+                                        "revenue":  213819,
+                                        "qty":  12
+                                    },
+                                    {
+                                        "facility_name":  "ì¨ë¼ì¸í°ì¼",
+                                        "product_name":  "ìëí_1ì¸ ì¬ë°°ë(ì¼ë°)",
+                                        "revenue":  45454,
+                                        "qty":  3
+                                    },
+                                    {
+                                        "facility_name":  "ì¨ë¼ì¸í°ì¼",
+                                        "product_name":  "ìëí_1ì¸ ì¬ë°°ë(íì ë¬´ë£ ë°ì°ì² ì¿ í°)",
+                                        "revenue":  0,
+                                        "qty":  13
+                                    },
+                                    {
+                                        "facility_name":  "ì¨ë¼ì¸í°ì¼",
+                                        "product_name":  "ìëí_íê³ ë¼(4ì¸)",
+                                        "revenue":  200000,
+                                        "qty":  1
+                                    },
+                                    {
+                                        "facility_name":  "ì¨ë¼ì¸í°ì¼",
+                                        "product_name":  "ì¼ë°_1ì¸ì¹ 1íê¶",
+                                        "revenue":  508182,
+                                        "qty":  17
+                                    },
+                                    {
+                                        "facility_name":  "ì¨ë¼ì¸í°ì¼",
+                                        "product_name":  "ì¼ë°_1ì¸ì¹ 1íê¶, [[3ì~] 1ì¸ì¹ 1íê¶]",
+                                        "revenue":  33618,
+                                        "qty":  7
+                                    },
+                                    {
+                                        "facility_name":  "ì¨ë¼ì¸í°ì¼",
+                                        "product_name":  "ì¼ë°_1ì¸ì¹ 2íê¶",
+                                        "revenue":  1298180,
+                                        "qty":  21
+                                    },
+                                    {
+                                        "facility_name":  "ì¨ë¼ì¸í°ì¼",
+                                        "product_name":  "ì¼ë°_1ì¸ì¹ 2íê¶, [[3ì~] 1ì¸ì¹ 2íê¶]",
+                                        "revenue":  159492,
+                                        "qty":  7
+                                    },
+                                    {
+                                        "facility_name":  "ì¨ë¼ì¸í°ì¼",
+                                        "product_name":  "ì¼ë°_1ì¸ì¹ 3íê¶",
+                                        "revenue":  909090,
+                                        "qty":  12
+                                    },
+                                    {
+                                        "facility_name":  "ì¨ë¼ì¸í°ì¼",
+                                        "product_name":  "ì¼ë°_2ì¸ì¹ 1íê¶",
+                                        "revenue":  141818,
+                                        "qty":  7
+                                    },
+                                    {
+                                        "facility_name":  "ì¨ë¼ì¸í°ì¼",
+                                        "product_name":  "ì¼ë°_2ì¸ì¹ 1íê¶, [[3ì~] 2ì¸ì¹ 1íê¶]",
+                                        "revenue":  40655,
+                                        "qty":  5
+                                    },
+                                    {
+                                        "facility_name":  "ì¨ë¼ì¸í°ì¼",
+                                        "product_name":  "ì¼ë°_2ì¸ì¹ 2íê¶",
+                                        "revenue":  74545,
+                                        "qty":  1
+                                    },
+                                    {
+                                        "facility_name":  "ì¨ë¼ì¸í°ì¼",
+                                        "product_name":  "ì¼ë°_2ì¸ì¹ 2íê¶, [[3ì~] 2ì¸ì¹ 2íê¶]",
+                                        "revenue":  64109,
+                                        "qty":  1
+                                    },
+                                    {
+                                        "facility_name":  "ì¨ë¼ì¸í°ì¼",
+                                        "product_name":  "í¨ë°ë¦¬ 4ì¢\u0085 í¨ì¤_ëì¸(14ì¸ì´ì)",
+                                        "revenue":  712727,
+                                        "qty":  20
+                                    },
+                                    {
+                                        "facility_name":  "ì¨ë¼ì¸í°ì¼",
+                                        "product_name":  "í¨ë°ë¦¬ 4ì¢\u0085 í¨ì¤_ìì¸(36ê°ì~ì´ë±íêµ 6íë\u0085)",
+                                        "revenue":  250908,
+                                        "qty":  12
+                                    },
+                                    {
+                                        "facility_name":  "ì¨ë¼ì¸í°ì¼",
+                                        "product_name":  "í¨ë°ë¦¬ ì¬ë°ì´ 5ì¢\u0085_ëì¸",
+                                        "revenue":  482727,
+                                        "qty":  9
+                                    },
+                                    {
+                                        "facility_name":  "ì¨ë¼ì¸í°ì¼",
+                                        "product_name":  "í¨ë°ë¦¬ ì¬ë°ì´ 5ì¢\u0085_ìì¸",
+                                        "revenue":  190908,
+                                        "qty":  8
+                                    },
+                                    {
+                                        "facility_name":  "ìëí(ëì¬)",
+                                        "product_name":  "ìëí(ëì¬)",
+                                        "revenue":  38183,
+                                        "qty":  0
+                                    },
+                                    {
+                                        "facility_name":  "ìëí(ì\u0085ì¥)",
+                                        "product_name":  "ìëí(ì\u0085ì¥)",
+                                        "revenue":  209091,
+                                        "qty":  0
+                                    }
+                                ],
+    "ticketFacilityBreakdown":  [
+                                    {
+                                        "facility_name":  "ê¸°íí°ì¼",
+                                        "today_actual":  "341690",
+                                        "today_ly":  "20909",
+                                        "mtd_actual":  "468963",
+                                        "mtd_ly":  "94036",
+                                        "ytd_actual":  "129322501",
+                                        "ytd_ly":  "75863247"
+                                    },
+                                    {
+                                        "facility_name":  "ê¸°íí°ì¼(í¨í¤ì§)",
+                                        "today_actual":  "0",
+                                        "today_ly":  "0",
+                                        "mtd_actual":  "0",
+                                        "mtd_ly":  "0",
+                                        "ytd_actual":  "7649080",
+                                        "ytd_ly":  "0"
+                                    },
+                                    {
+                                        "facility_name":  "ëì´ëì°(2025)",
+                                        "today_actual":  "740441",
+                                        "today_ly":  "507720",
+                                        "mtd_actual":  "1419981",
+                                        "mtd_ly":  "973164",
+                                        "ytd_actual":  "384323287",
+                                        "ytd_ly":  "347095569"
+                                    },
+                                    {
+                                        "facility_name":  "ë§ë¦¬ë í´ë½",
+                                        "today_actual":  "0",
+                                        "today_ly":  "154546",
+                                        "mtd_actual":  "81818",
+                                        "mtd_ly":  "696365",
+                                        "ytd_actual":  "20512880",
+                                        "ytd_ly":  "760001"
+                                    },
+                                    {
+                                        "facility_name":  "ë§ë¦¬ëí´ë½",
+                                        "today_actual":  "163363",
+                                        "today_ly":  "163636",
+                                        "mtd_actual":  "346954",
+                                        "mtd_ly":  "163636",
+                                        "ytd_actual":  "8406082",
+                                        "ytd_ly":  "163636"
+                                    },
+                                    {
+                                        "facility_name":  "ë§ì´í´ì¹´í¸",
+                                        "today_actual":  "1828238",
+                                        "today_ly":  "793636",
+                                        "mtd_actual":  "3073521",
+                                        "mtd_ly":  "2107271",
+                                        "ytd_actual":  "187381598",
+                                        "ytd_ly":  "129793656"
+                                    },
+                                    {
+                                        "facility_name":  "ëª¨í ìë ë",
+                                        "today_actual":  "2695448",
+                                        "today_ly":  "2109995",
+                                        "mtd_actual":  "6882714",
+                                        "mtd_ly":  "6613620",
+                                        "ytd_actual":  "810877950",
+                                        "ytd_ly":  "405247514"
+                                    },
+                                    {
+                                        "facility_name":  "ëª¨í ìë ë ë íìµ",
+                                        "today_actual":  "0",
+                                        "today_ly":  "0",
+                                        "mtd_actual":  "90909",
+                                        "mtd_ly":  "0",
+                                        "ytd_actual":  "515128405",
+                                        "ytd_ly":  "0"
+                                    },
+                                    {
+                                        "facility_name":  "ë¯¸ëì´-ë®¤ì§ìì¹´í",
+                                        "today_actual":  "38637",
+                                        "today_ly":  "0",
+                                        "mtd_actual":  "93179",
+                                        "mtd_ly":  "42271",
+                                        "ytd_actual":  "17020656",
+                                        "ytd_ly":  "13005502"
+                                    },
+                                    {
+                                        "facility_name":  "ë¯¸ëì´ìí¸ì¼í°",
+                                        "today_actual":  "965501",
+                                        "today_ly":  "504909",
+                                        "mtd_actual":  "1485569",
+                                        "mtd_ly":  "10036999",
+                                        "ytd_actual":  "209234145",
+                                        "ytd_ly":  "203029130"
+                                    },
+                                    {
+                                        "facility_name":  "ë²¨í¬ë  ë¦¬ì¡°í¸",
+                                        "today_actual":  "0",
+                                        "today_ly":  "0",
+                                        "mtd_actual":  "0",
+                                        "mtd_ly":  "0",
+                                        "ytd_actual":  "2964215",
+                                        "ytd_ly":  "0"
+                                    },
+                                    {
+                                        "facility_name":  "ë²¨í¬ë  ëª©ì¥",
+                                        "today_actual":  "476157",
+                                        "today_ly":  "444177",
+                                        "mtd_actual":  "1001811",
+                                        "mtd_ly":  "4648810",
+                                        "ytd_actual":  "321742094",
+                                        "ytd_ly":  "252381005"
+                                    },
+                                    {
+                                        "facility_name":  "ë²¨í¬ë  ëª©ì¥(ì²´í)",
+                                        "today_actual":  "0",
+                                        "today_ly":  "0",
+                                        "mtd_actual":  "85451",
+                                        "mtd_ly":  "0",
+                                        "ytd_actual":  "76662808",
+                                        "ytd_ly":  "0"
+                                    },
+                                    {
+                                        "facility_name":  "ë²¨í¬ë ëª©ì¥",
+                                        "today_actual":  "31275",
+                                        "today_ly":  "28928",
+                                        "mtd_actual":  "75060",
+                                        "mtd_ly":  "27924",
+                                        "ytd_actual":  "22065609",
+                                        "ytd_ly":  "26640654"
+                                    },
+                                    {
+                                        "facility_name":  "ì¬ê³ì  ì°ë§¤ì¥",
+                                        "today_actual":  "0",
+                                        "today_ly":  "0",
+                                        "mtd_actual":  "0",
+                                        "mtd_ly":  "0",
+                                        "ytd_actual":  "4951540",
+                                        "ytd_ly":  "0"
+                                    },
+                                    {
+                                        "facility_name":  "ì¬ê³ì ì°ë§¤ì¥",
+                                        "today_actual":  "842263",
+                                        "today_ly":  "169999",
+                                        "mtd_actual":  "1321200",
+                                        "mtd_ly":  "5416362",
+                                        "ytd_actual":  "171478575",
+                                        "ytd_ly":  "137769958"
+                                    },
+                                    {
+                                        "facility_name":  "ì¸ë¨¸ëë",
+                                        "today_actual":  "1742695",
+                                        "today_ly":  "3538821",
+                                        "mtd_actual":  "2582376",
+                                        "mtd_ly":  "6962174",
+                                        "ytd_actual":  "2528044",
+                                        "ytd_ly":  "30998874"
+                                    },
+                                    {
+                                        "facility_name":  "ì¨ë¼ì¸í°ì¼",
+                                        "today_actual":  "0",
+                                        "today_ly":  "0",
+                                        "mtd_actual":  "2231864",
+                                        "mtd_ly":  "0",
+                                        "ytd_actual":  "407176549",
+                                        "ytd_ly":  "0"
+                                    },
+                                    {
+                                        "facility_name":  "ì¨ë¼ì¸í°ì¼-ê¸°í",
+                                        "today_actual":  "0",
+                                        "today_ly":  "0",
+                                        "mtd_actual":  "0",
+                                        "mtd_ly":  "0",
+                                        "ytd_actual":  "1964505",
+                                        "ytd_ly":  "0"
+                                    },
+                                    {
+                                        "facility_name":  "ìëí",
+                                        "today_actual":  "492728",
+                                        "today_ly":  "616362",
+                                        "mtd_actual":  "634548",
+                                        "mtd_ly":  "1239089",
+                                        "ytd_actual":  "13044552",
+                                        "ytd_ly":  "4092725"
+                                    },
+                                    {
+                                        "facility_name":  "ìëí(ëì¬)",
+                                        "today_actual":  "0",
+                                        "today_ly":  "0",
+                                        "mtd_actual":  "5455",
+                                        "mtd_ly":  "0",
+                                        "ytd_actual":  "2889089",
+                                        "ytd_ly":  "0"
+                                    },
+                                    {
+                                        "facility_name":  "ìëí(ì\u0085ì¥)",
+                                        "today_actual":  "0",
+                                        "today_ly":  "0",
+                                        "mtd_actual":  "0",
+                                        "mtd_ly":  "0",
+                                        "ytd_actual":  "968186",
+                                        "ytd_ly":  "0"
+                                    },
+                                    {
+                                        "facility_name":  "ìµì¤í¸ë¦¼ë£¨ì§",
+                                        "today_actual":  "3229689",
+                                        "today_ly":  "2334855",
+                                        "mtd_actual":  "3743360",
+                                        "mtd_ly":  "3869568",
+                                        "ytd_actual":  "185570668",
+                                        "ytd_ly":  "96912956"
+                                    }
+                                ],
+    "fnbFacilityBreakdown":  [
+                                 {
+                                     "facility_name":  "",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "245455",
+                                     "ytd_actual":  "0",
+                                     "ytd_ly":  "1431818"
+                                 },
+                                 {
+                                     "facility_name":  "BHC(ë©ìì¹´ë)",
+                                     "today_actual":  "587727",
+                                     "today_ly":  "619091",
+                                     "mtd_actual":  "1721363",
+                                     "mtd_ly":  "2190910",
+                                     "ytd_actual":  "84520125",
+                                     "ytd_ly":  "96599104"
+                                 },
+                                 {
+                                     "facility_name":  "CUí¸ìì ",
+                                     "today_actual":  "2180691",
+                                     "today_ly":  "2539636",
+                                     "mtd_actual":  "7367345",
+                                     "mtd_ly":  "8181400",
+                                     "ytd_actual":  "256825330",
+                                     "ytd_ly":  "256025696"
+                                 },
+                                 {
+                                     "facility_name":  "ê¸°íì ",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "5106000",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ë¨ëìë´",
+                                     "today_actual":  "6437272",
+                                     "today_ly":  "4497275",
+                                     "mtd_actual":  "17959728",
+                                     "mtd_ly":  "16024731",
+                                     "ytd_actual":  "879428647",
+                                     "ytd_ly":  "828058775"
+                                 },
+                                 {
+                                     "facility_name":  "ëì´ëì°(2025)",
+                                     "today_actual":  "801500",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "1523000",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "217309000",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ëë¼ì´í¸",
+                                     "today_actual":  "122273",
+                                     "today_ly":  "74545",
+                                     "mtd_actual":  "284819",
+                                     "mtd_ly":  "136363",
+                                     "ytd_actual":  "80191016",
+                                     "ytd_ly":  "87864866"
+                                 },
+                                 {
+                                     "facility_name":  "ë ì¤í ë",
+                                     "today_actual":  "957000",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "1844000",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "186974375",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ë§ë¦¬ë í´ë½",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "90000",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "18321050",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ëª¨í ìë ë ë íìµ",
+                                     "today_actual":  "727000",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "827000",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "270221302",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ë¯¸ëì´-ê¸°íí¸ìµ",
+                                     "today_actual":  "0",
+                                     "today_ly":  "2727",
+                                     "mtd_actual":  "11819",
+                                     "mtd_ly":  "35453",
+                                     "ytd_actual":  "10572500",
+                                     "ytd_ly":  "9650547"
+                                 },
+                                 {
+                                     "facility_name":  "ë¯¸ëì´-ë®¤ì§ìì¹´í",
+                                     "today_actual":  "42500",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "102500",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "8281700",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ë°¤ë°¤í\u0085ì´ë¸",
+                                     "today_actual":  "6051431",
+                                     "today_ly":  "4852973",
+                                     "mtd_actual":  "11558633",
+                                     "mtd_ly":  "8989175",
+                                     "ytd_actual":  "404627425",
+                                     "ytd_ly":  "283381515"
+                                 },
+                                 {
+                                     "facility_name":  "ë°¤ë°¤í¸ë­",
+                                     "today_actual":  "170909",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "328274",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "20341963",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ë²¨í¬ë  ëª©ì¥(ì²´í)",
+                                     "today_actual":  "42000",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "136000",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "38720000",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ë²¨í¬ë í(í°ì¼)",
+                                     "today_actual":  "0",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "0",
+                                     "ytd_ly":  "4253821"
+                                 },
+                                 {
+                                     "facility_name":  "ë²¼ë£¨ì¬ì´",
+                                     "today_actual":  "0",
+                                     "today_ly":  "683637",
+                                     "mtd_actual":  "0",
+                                     "mtd_ly":  "683637",
+                                     "ytd_actual":  "531364",
+                                     "ytd_ly":  "41854496"
+                                 },
+                                 {
+                                     "facility_name":  "ë¸ë¦¬ì¤í·346",
+                                     "today_actual":  "951045",
+                                     "today_ly":  "3451891",
+                                     "mtd_actual":  "5029045",
+                                     "mtd_ly":  "15763274",
+                                     "ytd_actual":  "504992533",
+                                     "ytd_ly":  "381064763"
+                                 },
+                                 {
+                                     "facility_name":  "ì¬ê³ì ì°ë§¤ì¥",
+                                     "today_actual":  "407000",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "520000",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "73652400",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ì¤íí¸íì°ì¤",
+                                     "today_actual":  "2522000",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "5232000",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "252831118",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ì¸ë¨¸ëë(ëì¬)",
+                                     "today_actual":  "332000",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "532000",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "556000",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ì¸ë¨¸ëë(ì\u0085ì¥)",
+                                     "today_actual":  "730800",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "1148600",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "1148600",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ì¸ë¨¸í¸ë­(íì¥)",
+                                     "today_actual":  "162273",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "173182",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "173182",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ì¼ë£©ë§ì¹´í",
+                                     "today_actual":  "220087",
+                                     "today_ly":  "235907",
+                                     "mtd_actual":  "610400",
+                                     "mtd_ly":  "981265",
+                                     "ytd_actual":  "77764534",
+                                     "ytd_ly":  "58318436"
+                                 },
+                                 {
+                                     "facility_name":  "ì°íì¥",
+                                     "today_actual":  "6050000",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "11617600",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "28362598",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ìëí(ëì¬)",
+                                     "today_actual":  "42000",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "48000",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "3226000",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ìëí(ì\u0085ì¥)",
+                                     "today_actual":  "230000",
+                                     "today_ly":  "0",
+                                     "mtd_actual":  "230000",
+                                     "mtd_ly":  "0",
+                                     "ytd_actual":  "1295000",
+                                     "ytd_ly":  "0"
+                                 },
+                                 {
+                                     "facility_name":  "ì£¼ì°¨ê´ì ",
+                                     "today_actual":  "1000909",
+                                     "today_ly":  "171818",
+                                     "mtd_actual":  "1000909",
+                                     "mtd_ly":  "267273",
+                                     "ytd_actual":  "22734003",
+                                     "ytd_ly":  "1581818"
+                                 },
+                                 {
+                                     "facility_name":  "ì¿ ì¹ë",
+                                     "today_actual":  "9715456",
+                                     "today_ly":  "2768180",
+                                     "mtd_actual":  "14765457",
+                                     "mtd_ly":  "15581818",
+                                     "ytd_actual":  "394586545",
+                                     "ytd_ly":  "305390153"
+                                 },
+                                 {
+                                     "facility_name":  "í´ë½íì°ì¤-ë ì¤í ë",
+                                     "today_actual":  "870000",
+                                     "today_ly":  "947274",
+                                     "mtd_actual":  "1676365",
+                                     "mtd_ly":  "3141821",
+                                     "ytd_actual":  "138453632",
+                                     "ytd_ly":  "179762432"
+                                 },
+                                 {
+                                     "facility_name":  "í´ë½íì°ì¤-ì¤íí¸íì°ì¤",
+                                     "today_actual":  "2292728",
+                                     "today_ly":  "2172730",
+                                     "mtd_actual":  "4756369",
+                                     "mtd_ly":  "6550919",
+                                     "ytd_actual":  "191270034",
+                                     "ytd_ly":  "251916472"
+                                 },
+                                 {
+                                     "facility_name":  "í¬ì¸íë ì´ì¤",
+                                     "today_actual":  "1512700",
+                                     "today_ly":  "2077297",
+                                     "mtd_actual":  "3421036",
+                                     "mtd_ly":  "6003106",
+                                     "ytd_actual":  "237063724",
+                                     "ytd_ly":  "221659346"
+                                 },
+                                 {
+                                     "facility_name":  "íë¡ìµ",
+                                     "today_actual":  "339090",
+                                     "today_ly":  "489089",
+                                     "mtd_actual":  "1021816",
+                                     "mtd_ly":  "2822729",
+                                     "ytd_actual":  "46303283",
+                                     "ytd_ly":  "98726082"
+                                 },
+                                 {
+                                     "facility_name":  "íì¤í",
+                                     "today_actual":  "371804",
+                                     "today_ly":  "117271",
+                                     "mtd_actual":  "502710",
+                                     "mtd_ly":  "361811",
+                                     "ytd_actual":  "59248080",
+                                     "ytd_ly":  "27562915"
+                                 }
+                             ],
+    "otherFacilityBreakdown":  [
+                                   {
+                                       "facility_name":  "BHC(ë©ìì¹´ë)",
+                                       "today_actual":  "0.00",
+                                       "today_ly":  "0.00",
+                                       "mtd_actual":  "1133636.00",
+                                       "mtd_ly":  "0.00",
+                                       "ytd_actual":  "12274981.00",
+                                       "ytd_ly":  "0.00"
+                                   },
+                                   {
+                                       "facility_name":  "CUí¸ìì ",
+                                       "today_actual":  "0.00",
+                                       "today_ly":  "0.00",
+                                       "mtd_actual":  "5186654.00",
+                                       "mtd_ly":  "0.00",
+                                       "ytd_actual":  "51098292.00",
+                                       "ytd_ly":  "0.00"
+                                   },
+                                   {
+                                       "facility_name":  "ROOM OTHER",
+                                       "today_actual":  "0.00",
+                                       "today_ly":  "0.00",
+                                       "mtd_actual":  "81819.00",
+                                       "mtd_ly":  "0.00",
+                                       "ytd_actual":  "4315441.00",
+                                       "ytd_ly":  "0.00"
+                                   },
+                                   {
+                                       "facility_name":  "ê¸°íì ",
+                                       "today_actual":  "0.00",
+                                       "today_ly":  "0.00",
+                                       "mtd_actual":  "0.00",
+                                       "mtd_ly":  "0.00",
+                                       "ytd_actual":  "4623541.00",
+                                       "ytd_ly":  "0.00"
+                                   },
+                                   {
+                                       "facility_name":  "ë¯¸ëì´-ê¸°íí¸ìµ",
+                                       "today_actual":  "0.00",
+                                       "today_ly":  "0.00",
+                                       "mtd_actual":  "11819.00",
+                                       "mtd_ly":  "0.00",
+                                       "ytd_actual":  "1351720.00",
+                                       "ytd_ly":  "0.00"
+                                   },
+                                   {
+                                       "facility_name":  "ë²¨í¬ë  êµ¿ì¦",
+                                       "today_actual":  "0.00",
+                                       "today_ly":  "0.00",
+                                       "mtd_actual":  "0.00",
+                                       "mtd_ly":  "0.00",
+                                       "ytd_actual":  "560004.00",
+                                       "ytd_ly":  "0.00"
+                                   },
+                                   {
+                                       "facility_name":  "ì£¼ì°¨ê´ì ",
+                                       "today_actual":  "0.00",
+                                       "today_ly":  "0.00",
+                                       "mtd_actual":  "0.00",
+                                       "mtd_ly":  "0.00",
+                                       "ytd_actual":  "3842727.00",
+                                       "ytd_ly":  "0.00"
+                                   },
+                                   {
+                                       "facility_name":  "í¬ì¸íë ì´ì¤",
+                                       "today_actual":  "0.00",
+                                       "today_ly":  "0.00",
+                                       "mtd_actual":  "1908336.00",
+                                       "mtd_ly":  "0.00",
+                                       "ytd_actual":  "43974509.00",
+                                       "ytd_ly":  "0.00"
+                                   },
+                                   {
+                                       "facility_name":  "íë¡ìµ",
+                                       "today_actual":  "0.00",
+                                       "today_ly":  "0.00",
+                                       "mtd_actual":  "682726.00",
+                                       "mtd_ly":  "0.00",
+                                       "ytd_actual":  "13709070.00",
+                                       "ytd_ly":  "0.00"
+                                   }
+                               ],
+    "banquetFacilityBreakdown":  [
+                                     {
+                                         "facility_name":  "ì°íì¥",
+                                         "today_actual":  "0.00",
+                                         "today_ly":  "0.00",
+                                         "mtd_actual":  "5061455.00",
+                                         "mtd_ly":  "0.00",
+                                         "ytd_actual":  "20284180.00",
+                                         "ytd_ly":  "0.00"
+                                     }
+                                 ]
+}

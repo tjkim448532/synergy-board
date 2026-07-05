@@ -48,9 +48,17 @@ function App() {
   // 백엔드 API 연동을 위한 날짜 구간 (필요 시 UI에서 동적 변경 가능)
   const [apiStartDate] = useState('2026-01-01');
   const [apiEndDate] = useState('2026-12-31');
+  const [ssoDate, setSsoDate] = useState(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const date = urlParams.get('date');
+    if (date) return date;
+    return sessionStorage.getItem('sso_date') || null;
+  });
+
   const { data: backendData, loading: apiLoading, error: apiError } = useBackendData(
     USE_BACKEND_API ? apiStartDate : null, 
-    USE_BACKEND_API ? apiEndDate : null
+    USE_BACKEND_API ? apiEndDate : null,
+    ssoDate
   );
 
   const { processedData, globalStats } = useProcessedData(
@@ -87,23 +95,8 @@ function App() {
       if (docSnap.exists()) setSettings(docSnap.data());
     });
 
-    let unsubData = () => {};
-
-    if (!USE_BACKEND_API) {
-      unsubData = onSnapshot(collection(db, 'monthly_records'), (snapshot) => {
-        const data = [];
-        snapshot.forEach(doc => {
-          if (doc.id && String(doc.id).match(/^\d{4}-\d{2}$/)) {
-            data.push({ id: doc.id, yearMonth: doc.id, ...doc.data() });
-          }
-        });
-        setAllData(data);
-      });
-    }
-
     return () => {
       unsubSettings();
-      unsubData();
     };
   }, []);
 
@@ -188,12 +181,7 @@ function App() {
             <DataAccuracyTasks />
           </motion.div>
         )
-      case 'upload':
-        return (
-          <motion.div key="upload" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} style={{padding: '32px'}}>
-            <MonthlyDataForm settings={settings} />
-          </motion.div>
-        )
+
       case 'settings':
         return (
           <motion.div key="settings" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{padding: '32px'}}>

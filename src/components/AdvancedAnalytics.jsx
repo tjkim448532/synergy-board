@@ -174,45 +174,25 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
 
   const totalHotelGuests = useMemo(() => {
     if (!filteredProcessedData || filteredProcessedData.length === 0) return 0;
-    
-    const weight16 = settings?.guestWeight16 !== undefined ? Number(settings.guestWeight16) : 2.5;
-    const weight35 = settings?.guestWeight35 !== undefined ? Number(settings.guestWeight35) : 3.5;
-    const weight51 = settings?.guestWeight51 !== undefined ? Number(settings.guestWeight51) : 6.0;
-    
-    return filteredProcessedData.reduce((sum, d) => {
-      if (d.guests !== undefined) return sum + d.guests;
-      
-      const sold16 = Number(d.sold16 || d.standardSold || 0);
-      const sold35 = Number(d.sold35 || 0);
-      const sold51Combined = Number(d.sold51 || d.connectingSold || 0) + Number(d.sold51Acc || 0);
-      return sum + (sold16 * weight16) + (sold35 * weight35) + (sold51Combined * weight51);
-    }, 0);
-  }, [filteredProcessedData, settings]);
+    return filteredProcessedData.reduce((sum, d) => sum + (d.guests || 0), 0);
+  }, [filteredProcessedData]);
 
   const seminarGuests = useMemo(() => {
     if (!filteredProcessedData || filteredProcessedData.length === 0) return 0;
     
-    const weight16 = settings?.guestWeight16 !== undefined ? Number(settings.guestWeight16) : 2.5;
-    const weight35 = settings?.guestWeight35 !== undefined ? Number(settings.guestWeight35) : 3.5;
-    const weight51 = settings?.guestWeight51 !== undefined ? Number(settings.guestWeight51) : 6.0;
-    
     let seminar = 0;
     filteredProcessedData.forEach(d => {
-      if (d.rawRoomRecords && Array.isArray(d.rawRoomRecords)) {
-        d.rawRoomRecords.forEach(record => {
+      if (d.rawMarketRecords && Array.isArray(d.rawMarketRecords)) {
+        d.rawMarketRecords.forEach(record => {
           const mType = String(record.marketType || '');
-          if (mType.includes('단체영업') || mType.includes('세미나')) {
-            const count = Number(record.count || 0);
-            const rType = String(record.roomType || '');
-            if (rType.includes('16평')) seminar += count * weight16;
-            else if (rType.includes('35평')) seminar += count * weight35;
-            else if (rType.includes('51평')) seminar += count * weight51;
+          if (mType.includes('단체') || mType.includes('세미나')) {
+            seminar += Number(record.visitors || 0);
           }
         });
       }
     });
     return seminar;
-  }, [filteredProcessedData, settings]);
+  }, [filteredProcessedData]);
 
 
   // 선택된 부문의 전체 상관계수 계산
@@ -934,9 +914,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
 
     filteredProcessedData.forEach(d => {
       const physicalRooms = Number(settings.totalRooms) || 175;
-      const rooms51Sets = Number(settings.connectingRooms51) || 85;
-      const count51AsTwo = settings.count51AsTwoRooms !== false;
-      const dailyInv = count51AsTwo ? physicalRooms : (physicalRooms - rooms51Sets);
+      const dailyInv = physicalRooms;
       
       const days = d.daysCount || 30; // fallback
       const monthlyInv = dailyInv * days;
@@ -948,7 +926,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       const sold35 = Number(d.sold35 || 0);
       const sold51 = Number(d.sold51 || d.connectingSold || 0);
       const sold51Acc = Number(d.sold51Acc || 0);
-      totalRoomsSold += sold16 + sold35 + (count51AsTwo ? sold51 * 2 : sold51) + sold51Acc;
+      totalRoomsSold += sold16 + sold35 + sold51 + sold51Acc;
 
       const leisureGross = d.leisureSales || 0;
       const fnbGross = d.fnbSales || 0;

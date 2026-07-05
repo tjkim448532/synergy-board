@@ -16,7 +16,7 @@ const SIDEBAR_MENU = [
   },
   { id: 'division-sales', icon: BarChart2, label: '부문별 매출 분석' },
   { id: 'leisure-utilization', icon: Activity, label: '부대시설 이용 분석' },
-  { id: 'visitor-calc', icon: Users, label: '추정 방문객 분석' },
+  { id: 'visitor-calc', icon: Users, label: '실측 방문객 분석' },
   { id: 'channel-analysis', icon: PieChart, label: '판매채널 분석' },
   { id: 'prediction', icon: TrendingUp, label: '목표 달성률 및 예측' },
   { id: 'strategy', icon: Target, label: '경영전략 도출' },
@@ -36,8 +36,7 @@ const SIDEBAR_MENU = [
     subItems: [
       { id: 'settings', label: '기본 설정' },
       { id: 'logic', label: '분석 로직 및 검증 보고서' },
-      { id: 'accuracy-tasks', label: '데이터 정확도 핵심과제' },
-      { id: 'upload', label: '데이터 업로드' }
+      { id: 'accuracy-tasks', label: '데이터 정확도 핵심과제' }
     ]
   }
 ];
