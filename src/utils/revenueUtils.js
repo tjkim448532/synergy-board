@@ -42,13 +42,13 @@ export const isLeisureWeekend = (dateStr, customWeekendsArray = []) => {
 export const isHospitalityWeekend = isRoomWeekend;
 
 export const getDefaultGroup = (loc) => {
-  if (loc.includes('골프') || loc.includes('클럽하우스') || loc.includes('그늘집') || loc === '골프부대' || loc.includes('그린피') || loc.includes('프로샵')) {
+  if (loc === 'GOLF' || loc.includes('골프') || loc.includes('클럽하우스') || loc.includes('그늘집') || loc === '골프부대' || loc.includes('그린피') || loc.includes('프로샵')) {
     return 'golf';
-  } else if (loc.includes('식당') || loc.includes('BBQ') || loc.includes('조식') || loc.includes('바베큐') || loc.includes('카페') || loc.includes('식음') || loc.includes('BHC') || loc.includes('멕시카나') || loc.includes('편의점') || loc.includes('CU') || loc.includes('쿠치나') || loc.includes('연회장') || loc.includes('벨포레홀') || loc.includes('벼루재촌') || loc.includes('밤밤') || loc.includes('남도예담') || loc.includes('브리스킷') || loc.includes('투썸') || loc.includes('레스토랑') || loc.includes('스타트하우스') || loc.includes('딜라이트')) {
+  } else if (loc === 'FNB' || loc.includes('식당') || loc.includes('BBQ') || loc.includes('조식') || loc.includes('바베큐') || loc.includes('카페') || loc.includes('식음') || loc.includes('BHC') || loc.includes('멕시카나') || loc.includes('편의점') || loc.includes('CU') || loc.includes('쿠치나') || loc.includes('연회장') || loc.includes('벨포레홀') || loc.includes('벼루재촌') || loc.includes('밤밤') || loc.includes('남도예담') || loc.includes('브리스킷') || loc.includes('투썸') || loc.includes('레스토랑') || loc.includes('스타트하우스') || loc.includes('딜라이트')) {
     return 'fnb';
-  } else if (loc.includes('기타') || loc === '임대수익' || loc.includes('주차') || loc.includes('대여품')) {
+  } else if (loc === 'OTHER' || loc.includes('기타') || loc === '임대수익' || loc.includes('주차') || loc.includes('대여품')) {
     return 'other';
-  } else if (loc.includes('모토아레나') || loc.includes('핏스탑')) {
+  } else if (loc === 'MOTO' || loc.includes('모토아레나') || loc.includes('핏스탑')) {
     return 'moto';
   } else {
     return 'leisure';

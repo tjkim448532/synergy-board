@@ -180,6 +180,7 @@ function transformTimeseriesToMonthly(jsonArray) {
     }
 
     if (dayData.revenues) {
+      const breakdown = {};
       Object.entries(dayData.revenues).forEach(([key, rev]) => {
         if (key === 'room') return;
         const categoryMap = { fnb: 'FNB', ticket: 'TICKET', golf: 'GOLF' };
@@ -191,7 +192,17 @@ function transformTimeseriesToMonthly(jsonArray) {
           monthObj.venues[venueName] = { totalRev: 0, tickets: {} };
         }
         monthObj.venues[venueName].totalRev += Number(rev || 0);
+        breakdown[venueName] = Number(rev || 0);
       });
+      
+      const totalRev = Object.values(breakdown).reduce((a, b) => a + b, 0);
+      if (totalRev > 0) {
+        monthObj.rawLeisureRecords.push({
+          date: dayData.date,
+          revenue: totalRev,
+          breakdown: breakdown
+        });
+      }
     }
   });
 

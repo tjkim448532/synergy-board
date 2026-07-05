@@ -253,8 +253,11 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
               sold35: 0,
               sold51: 0,
               locations: {},
-              leisureRevenue: 0,
-              golfRevenue: 0,
+              leisureSales: 0,
+              golfSales: 0,
+              fnbSales: 0,
+              motoSales: 0,
+              otherSales: 0,
               totalRevenue: 0,
               motoGuestRev: 0,
               motoGeneralRev: 0,
@@ -299,8 +302,11 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
               sold35: 0,
               sold51: 0,
               locations: {},
-              leisureRevenue: 0,
-              golfRevenue: 0,
+              leisureSales: 0,
+              golfSales: 0,
+              fnbSales: 0,
+              motoSales: 0,
+              otherSales: 0,
               totalRevenue: 0,
               motoGuestRev: 0,
               motoGeneralRev: 0,
@@ -316,23 +322,21 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
           }
           
           if (rec.breakdown) {
+            const calculated = calculateGroupedSales(rec.breakdown, locationGroups);
+            dateMap[dateStr].leisureSales += calculated.leisure || 0;
+            dateMap[dateStr].golfSales += calculated.golf || 0;
+            dateMap[dateStr].fnbSales += calculated.fnb || 0;
+            dateMap[dateStr].motoSales += calculated.moto || 0;
+            dateMap[dateStr].otherSales += calculated.other || 0;
+            
             Object.entries(rec.breakdown).forEach(([locName, amt]) => {
               const val = parseSafeNumber(amt);
-              const group = locationGroups[locName] || 'leisure';
-              
               dateMap[dateStr].locations[locName] = (dateMap[dateStr].locations[locName] || 0) + val;
-              
-              if (group === 'leisure') {
-                dateMap[dateStr].leisureRevenue += val;
-              } else if (group === 'golf') {
-                dateMap[dateStr].golfRevenue += val;
-              }
-              // 전체 통합 매출에 합산
               dateMap[dateStr].totalRevenue += val;
             });
           } else {
             const val = parseSafeNumber(rec.revenue);
-            dateMap[dateStr].leisureRevenue += val;
+            dateMap[dateStr].leisureSales += val;
             dateMap[dateStr].totalRevenue += val;
           }
         });
@@ -344,8 +348,8 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     return Object.values(dateMap).map(d => {
       let revenue = 0;
       if (weatherDataType === 'room') revenue = d.roomRevenue;
-      else if (weatherDataType === 'golf') revenue = d.golfRevenue;
-      else if (weatherDataType === 'leisure') revenue = d.leisureRevenue;
+      else if (weatherDataType === 'golf') revenue = d.golfSales;
+      else if (weatherDataType === 'leisure') revenue = d.leisureSales;
       else revenue = d.totalRevenue;
       return {
         ...d,
