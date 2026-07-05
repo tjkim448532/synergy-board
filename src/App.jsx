@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Toaster } from 'react-hot-toast'
 import DashboardLayout from './components/DashboardLayout'
 import Settings from './components/Settings'
-import MonthlyDataForm from './components/MonthlyDataForm'
+import ApiDataExplorer from './components/ApiDataExplorer'
 import AdvancedAnalytics from './components/AdvancedAnalytics'
 import DivisionSales from './components/DivisionSales'
 import ChannelAnalysis from './components/ChannelAnalysis'
@@ -186,6 +186,12 @@ function App() {
         return (
           <motion.div key="settings" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{padding: '32px'}}>
             <Settings monthlyData={allData} />
+          </motion.div>
+        )
+      case 'data-explorer':
+        return (
+          <motion.div key="data-explorer" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{padding: '32px'}}>
+            <ApiDataExplorer processedData={processedData} />
           </motion.div>
         )
       default:

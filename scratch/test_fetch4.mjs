@@ -1,0 +1,1 @@
+const API_URL = 'https://belleforet-data.vercel.app/api/v3/dashboard/revenue-summary?date=2026-07-04'; fetch(API_URL).then(r=>r.json()).then(j=>{ console.log('roomTypeBreakdown:', JSON.stringify(j.roomTypeBreakdown, null, 2)); console.log('golfSummary:', JSON.stringify(j.golfSummary, null, 2)); });

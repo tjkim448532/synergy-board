@@ -34,6 +34,7 @@ const SIDEBAR_MENU = [
     icon: Settings, 
     label: '설정 및 기타',
     subItems: [
+      { id: 'data-explorer', label: '데이터 허브 (원시 조회)' },
       { id: 'settings', label: '기본 설정' },
       { id: 'logic', label: '분석 로직 및 검증 보고서' },
       { id: 'accuracy-tasks', label: '데이터 정확도 핵심과제' }

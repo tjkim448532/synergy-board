@@ -1,0 +1,1 @@
+fetch('https://belleforet-data.vercel.app/api/v3/dashboard/revenue-summary?date=2026-07-04').then(r=>r.text()).then(t=>{ try { const j=JSON.parse(t); console.log(JSON.stringify(j.roomTypeBreakdown).slice(0, 500)); console.log(JSON.stringify(j.golfSummary)); } catch(e) { console.log('Not JSON:', t.substring(0, 200)); }});

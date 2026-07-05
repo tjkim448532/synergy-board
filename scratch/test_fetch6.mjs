@@ -1,0 +1,1 @@
+import fs from 'fs'; fetch('https://belleforet-data.vercel.app/api/v3/dashboard/revenue-summary?date=2026-07-04').then(r=>r.json()).then(j=>{ fs.writeFileSync('scratch/api_debug.json', JSON.stringify({ roomTypeBreakdown: j.roomTypeBreakdown, golfSummary: j.golfSummary, golfFacilityBreakdown: j.golfFacilityBreakdown }, null, 2)); });
