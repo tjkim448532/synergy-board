@@ -112,8 +112,9 @@ function transformTimeseriesToMonthly(jsonArray) {
     const roomRev = Number(dayData.revenues?.room || dayData.roomRevenue || 0);
     
     // [V3 API] Use real roomTypeBreakdown instead of faking ratios
-    if (dayData.roomTypeBreakdown && Array.isArray(dayData.roomTypeBreakdown)) {
-      dayData.roomTypeBreakdown.forEach(room => {
+    const roomTypes = dayData.roomTypeBreakdown || dayData.visitorData?.roomTypeBreakdown || [];
+    if (roomTypes && Array.isArray(roomTypes) && roomTypes.length > 0) {
+      roomTypes.forEach(room => {
         monthObj.rawRoomRecords.push({
           date: dayData.date,
           roomType: room.room_type || room.roomType,
@@ -151,27 +152,31 @@ function transformTimeseriesToMonthly(jsonArray) {
     }
 
     if (dayData.leisureVisitorBreakdown && Array.isArray(dayData.leisureVisitorBreakdown)) {
+      if (!monthObj.leisureTicketUsage) monthObj.leisureTicketUsage = {};
       dayData.leisureVisitorBreakdown.forEach(item => {
         const venue = item.venue || item.facility_name;
         if (!venue) return;
         const existing = monthObj.leisureVisitorBreakdown.find(v => (v.venue || v.facility_name) === venue);
+        const visitorsCount = Number(item.visitors || item.qty || 0);
         if (existing) {
-          existing.visitors = (Number(existing.visitors) || 0) + Number(item.visitors || 0);
+          existing.visitors = (Number(existing.visitors) || 0) + visitorsCount;
         } else {
-          monthObj.leisureVisitorBreakdown.push({ venue: venue, facility_name: venue, visitors: Number(item.visitors || 0) });
+          monthObj.leisureVisitorBreakdown.push({ venue: venue, facility_name: venue, visitors: visitorsCount });
         }
+        monthObj.leisureTicketUsage[venue] = (monthObj.leisureTicketUsage[venue] || 0) + visitorsCount;
       });
     }
 
-    // [V3 API] Extract marketTypeBreakdown
+    // [V3 API] Extract marketTypeBreakdown / segmentBreakdown
     if (!monthObj.rawMarketRecords) monthObj.rawMarketRecords = [];
-    if (dayData.marketTypeBreakdown && Array.isArray(dayData.marketTypeBreakdown)) {
-      dayData.marketTypeBreakdown.forEach(m => {
+    const marketBreakdown = dayData.marketTypeBreakdown || dayData.segmentBreakdown || [];
+    if (marketBreakdown && Array.isArray(marketBreakdown)) {
+      marketBreakdown.forEach(m => {
         monthObj.rawMarketRecords.push({
           date: dayData.date,
-          marketType: m.market_type || m.marketType,
-          count: Number(m.rooms_sold || m.roomsSold || 0),
-          revenue: Number(m.room_revenue || m.roomRevenue || 0),
+          marketType: m.market_type || m.marketType || m.segment,
+          count: Number(m.rooms_sold || m.roomsSold || m.roomsSold || 0),
+          revenue: Number(m.room_revenue || m.roomRevenue || m.revenue || 0),
           visitors: Number(m.visitors || m.guests || 0)
         });
       });
@@ -298,15 +303,16 @@ function transformPolymorphicData(json) {
     }
   }
 
-  // 1.5 Extract marketTypeBreakdown
+  // 1.5 Extract marketTypeBreakdown / segmentBreakdown
   monthObj.rawMarketRecords = [];
-  if (json.marketTypeBreakdown && Array.isArray(json.marketTypeBreakdown)) {
-    json.marketTypeBreakdown.forEach(m => {
+  const polymorphicMarketBreakdown = json.marketTypeBreakdown || json.segmentBreakdown || [];
+  if (polymorphicMarketBreakdown && Array.isArray(polymorphicMarketBreakdown)) {
+    polymorphicMarketBreakdown.forEach(m => {
       monthObj.rawMarketRecords.push({
         date: targetDate,
-        marketType: m.market_type || m.marketType,
-        count: Number(m.rooms_sold || m.roomsSold || 0),
-        revenue: Number(m.room_revenue || m.roomRevenue || 0),
+        marketType: m.market_type || m.marketType || m.segment,
+        count: Number(m.rooms_sold || m.roomsSold || m.roomsSold || 0),
+        revenue: Number(m.room_revenue || m.roomRevenue || m.revenue || 0),
         visitors: Number(m.visitors || m.guests || 0)
       });
     });
@@ -351,7 +357,7 @@ function transformPolymorphicData(json) {
     }
     json.leisureVisitorBreakdown.forEach(v => {
       const venueName = v.facility_name || '기타';
-      const qty = Number(v.qty || v.visitor_count || 0); // 혹시 필드명이 qty가 아니라 visitor_count일 수 있으므로 fallback
+      const qty = Number(v.visitors || v.qty || v.visitor_count || 0); // Handle 'visitors' field from V3 API
       monthObj.leisureTicketUsage[venueName] = (monthObj.leisureTicketUsage[venueName] || 0) + qty;
     });
   }

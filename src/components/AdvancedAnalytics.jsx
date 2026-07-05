@@ -800,12 +800,11 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     else if (activeConf.dataKey === 'totalSales') targetArr = dailyWeatherSalesData.map(d => d.totalRevenue);
     else targetArr = dailyWeatherSalesData.map(d => d[activeConf.dataKey] || 0);
     
-    // MRA Matrix: [Intercept, 16평, 35평, 51평, 주말, 비, 눈, 바람, 성수기]
+    // MRA Matrix: [Intercept, 16평, 35평, 주말, 비, 눈, 바람, 성수기]
     const xMatrix = dailyWeatherSalesData.map((d, i) => [
       1,
       d.sold16 || 0,
       d.sold35 || 0,
-      d.sold51 || 0,
       isWkndArr[i] ? 1 : 0,
       d.precipitation || 0,
       d.code && [71,73,75,77,85,86].includes(d.code) ? 1 : 0,
@@ -819,12 +818,11 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       return {
         '16평': { coef: mra.coefficients[1], p: mra.pValues[1] },
         '35평': { coef: mra.coefficients[2], p: mra.pValues[2] },
-        '51평': { coef: mra.coefficients[3], p: mra.pValues[3] },
         R2: mra.R2
       };
     }
     
-    return { '16평': null, '35평': null, '51평': null };
+    return { '16평': null, '35평': null };
   }, [dailyWeatherSalesData, activeConf.dataKey, activeDivision, settings]);
 
   // 영업장별 상관계수 계산 (객실 점유율 기준)
@@ -1148,7 +1146,6 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
             <div style={{fontSize: '13px', color: 'var(--text-main)', display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'flex-end'}}>
               <div>16평형: <strong>{filteredProcessedData.reduce((sum, d) => sum + Number(d.sold16 || d.standardSold || 0), 0).toLocaleString()}</strong>실</div>
               <div>35평형: <strong>{filteredProcessedData.reduce((sum, d) => sum + Number(d.sold35 || 0), 0).toLocaleString()}</strong>실</div>
-              <div>51평형: <strong>{filteredProcessedData.reduce((sum, d) => sum + (Number(d.sold51 || d.connectingSold || 0) + Number(d.sold51Acc || 0)), 0).toLocaleString()}</strong>실</div>
             </div>
           </div>
         </div>
@@ -1467,7 +1464,6 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
               <option value="all" style={{color: 'black'}}>전체 객실</option>
               <option value="sold16" style={{color: 'black'}}>16평</option>
               <option value="sold35" style={{color: 'black'}}>35평</option>
-              <option value="sold51" style={{color: 'black'}}>51평</option>
             </select>
           </div>
           

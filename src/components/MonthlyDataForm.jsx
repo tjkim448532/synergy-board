@@ -1215,10 +1215,10 @@ export default function MonthlyDataForm({ settings }) {
                       <span>객실 총 매출</span> <strong style={{color: 'var(--accent-blue)'}}>₩ {formatCurrency(data.totalRoomRevenue)}</strong>
                     </div>
                     <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
-                      <span>16/35/51평 판매량</span> <strong>{data.sold16} / {data.sold35} / {data.sold51} 실</strong>
+                      <span>16/35평 판매량</span> <strong>{data.sold16} / {data.sold35} 실</strong>
                     </div>
                     <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
-                      <span>예상 투숙객</span> <strong style={{color: 'var(--accent-emerald)'}}>{formatCurrency((data.sold16 * (settings?.guestWeight16 ?? 2.5)) + (data.sold35 * (settings?.guestWeight35 ?? 3.5)) + (((data.sold51 || 0) + (data.sold51Acc || 0)) * (settings?.guestWeight51 ?? 6.0)))} 명</strong>
+                      <span>예상 투숙객</span> <strong style={{color: 'var(--accent-emerald)'}}>{formatCurrency((data.sold16 * (settings?.guestWeight16 ?? 2.5)) + (data.sold35 * (settings?.guestWeight35 ?? 3.5)))} 명</strong>
                     </div>
                   </div>
                 ))}
@@ -1453,7 +1453,7 @@ export default function MonthlyDataForm({ settings }) {
               <thead>
                 <tr>
                   <th>연/월 (영업일)</th>
-                  <th>16평 / 35평 / 51평</th>
+                  <th>16평 / 35평</th>
                   <th>주중(객실/레저) 실적</th>
                   <th>주말(객실/레저) 실적</th>
                   <th>객실 총매출</th>
@@ -1476,7 +1476,7 @@ export default function MonthlyDataForm({ settings }) {
                       </div>
                     </td>
                     <td>
-                      <div style={{fontSize: '12px'}}>{formatCurrency(s16)} / {formatCurrency(s35)} / {formatCurrency(s51)} 실</div>
+                      <div style={{fontSize: '12px'}}>{formatCurrency(s16)} / {formatCurrency(s35)} 실</div>
                     </td>
                     <td>
                       <div style={{fontWeight: 'bold', color: 'var(--text-main)'}}>객: {formatCurrency(r.soldWeekday || 0)}실</div>

@@ -523,21 +523,6 @@ export default function Settings({ monthlyData }) {
               <span>원</span>
             </div>
           </div>
-          <div className="form-group" style={{flex: 1, minWidth: '150px'}}>
-            <label htmlFor="targetAdr51">51평형 목표 객단가</label>
-            <div style={{color: 'var(--text-muted)', fontSize: '12px', marginBottom: '8px'}}>과거 평균: {avgAdr51.toLocaleString()}원</div>
-            <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-              <input 
-                type="number" 
-                id="targetAdr51" 
-                name="targetAdr51" 
-                value={settings.targetAdr51 || ''} 
-                onChange={handleChange} 
-                placeholder="예: 250000"
-              />
-              <span>원</span>
-            </div>
-          </div>
         </div>
       </SectionCard>
 

@@ -182,7 +182,7 @@ export const calculateLinearRegression = (points, xKey, yKey) => {
   const intercept = meanY - slope * meanX;
   
   const r = (varX > 1e-12 && varY > 1e-12) ? covXY / Math.sqrt(varX * varY) : 0;
-  const avgYPerX = sumX > 0 ? sumY / sumX : 0;
+  const avgYPerX = sumX !== 0 ? sumY / sumX : 0;
 
   return { slope, intercept, r, avgYPerX };
 };

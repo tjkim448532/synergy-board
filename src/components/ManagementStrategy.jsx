@@ -28,6 +28,7 @@ export default function ManagementStrategy({ processedData, globalStats, setting
 
     let tot51 = 0;
     let tot16 = 0;
+    let tot35 = 0;
     
     let peakMonth = null;
     let peakRev = 0;
@@ -38,8 +39,10 @@ export default function ManagementStrategy({ processedData, globalStats, setting
       
       const r51 = d.sold51 || 0;
       const r16 = d.sold16 || 0;
+      const r35 = d.sold35 || 0;
       tot51 += r51;
       tot16 += r16;
+      tot35 += r35;
       
       const tRev = d.totalRoomRevenue + d.leisureSales + d.fnbSales + d.motoSales;
       if (tRev > peakRev) {
@@ -74,7 +77,7 @@ export default function ManagementStrategy({ processedData, globalStats, setting
       motoGuestRev, motoNonGuestRev,
       paretoFacilities,
       peakMonth,
-      tot51, tot16
+      tot51, tot16, tot35
     };
   }, [processedData, globalStats]);
 
@@ -174,16 +177,16 @@ export default function ManagementStrategy({ processedData, globalStats, setting
 
         <div style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>
           <div style={{background: 'linear-gradient(to right, rgba(234, 179, 8, 0.1), transparent)', borderLeft: '3px solid #eab308', padding: '24px', borderRadius: '0 12px 12px 0'}}>
-            <div style={{fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '12px'}}>가설 1. "가족 단위(51평형) 투숙객이 부대매출 확장의 핵심이다."</div>
+            <div style={{fontWeight: 'bold', color: 'var(--text-main)', marginBottom: '12px'}}>가설 1. "가족 단위(35평형) 투숙객이 부대매출 확장의 핵심이다."</div>
             <div style={{display: 'flex', gap: '24px', flexWrap: 'wrap'}}>
               <div style={{flex: 1, minWidth: '250px'}}>
                 <div style={{fontSize: '13px', color: 'var(--text-muted)'}}>검증 데이터 (현재 비중)</div>
-                <div style={{fontSize: '20px', color: '#fff', marginTop: '4px'}}>51평형: {((data.tot51 / ((data.tot51 + data.tot16) || 1)) * 100).toFixed(1)}% vs 16평형: {((data.tot16 / ((data.tot51 + data.tot16) || 1)) * 100).toFixed(1)}%</div>
+                <div style={{fontSize: '20px', color: '#fff', marginTop: '4px'}}>35평형: {((data.tot35 / ((data.tot35 + data.tot16) || 1)) * 100).toFixed(1)}% vs 16평형: {((data.tot16 / ((data.tot35 + data.tot16) || 1)) * 100).toFixed(1)}%</div>
               </div>
               <div style={{flex: 1, minWidth: '250px'}}>
                 <div style={{fontSize: '13px', color: 'var(--text-muted)'}}>전략적 결론 (Why So?)</div>
                 <div style={{fontSize: '14px', color: 'var(--accent-gold)', marginTop: '4px', lineHeight: '1.5'}}>
-                  51평형의 단가가 높을 뿐만 아니라, 다인원 숙박으로 F&B/레저 등의 추가 결제 확률이 압도적입니다. 51평형 프로모션을 F&B 바우처와 묶어(Bundling) 판매하는 것이 객단가 상승의 핵심입니다.
+                  35평형 이상의 다인원 숙박객은 객단가가 높을 뿐만 아니라, 가족 단위 방문으로 F&B/레저 등의 추가 결제 확률이 압도적입니다. 35평형 프로모션을 F&B 바우처와 묶어(Bundling) 판매하는 것이 전체 매출 상승의 핵심입니다.
                 </div>
               </div>
             </div>

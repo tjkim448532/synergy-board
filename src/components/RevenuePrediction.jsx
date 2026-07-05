@@ -152,7 +152,10 @@ export default function RevenuePrediction({ processedData, globalStats, settings
   const expectedTotalRevenue = expectedRoomRevenue + finalLeisureRev + finalMotoRev + finalFnbRev + avgOtherRev + totalDynamicRev;
   const targetAdrTotalRevenue = targetAdrRoomRevenue + finalLeisureRev + finalMotoRev + finalFnbRev + avgOtherRev + totalDynamicRev;
 
-  const expectedGuests = totalExpectedSoldRooms * globalStats.avgGuestsPerSoldRoom;
+  const expectedGuestsFallback = (physicalExpected16 * (settings?.guestWeight16 ?? 2.5)) + (physicalExpected35 * (settings?.guestWeight35 ?? 3.5));
+  const expectedGuests = globalStats.avgGuestsPerSoldRoom > 0 
+    ? totalExpectedSoldRooms * globalStats.avgGuestsPerSoldRoom 
+    : expectedGuestsFallback;
 
   // 차트용 데이터 (전체 점유율 대비 트렌드)
   const chartData = useMemo(() => {

@@ -101,30 +101,16 @@ export default function LogicGuide() {
             <div className="icon-circle">
               <SplitSquareHorizontal size={24} />
             </div>
-            <h3>2. 51평형 쪼개기 마술 (방 1개야? 2개야?)</h3>
+            <h3>2. 51평 객실 자동 보정 (V3 API)</h3>
           </div>
           <div className="card-body">
             <p>
-              51평형은 문을 열면 방이 2개(커넥팅 룸)입니다. 이걸 1개로 칠까요, 2개로 칠까요? 설정에서 마음대로 바꿀 수 있습니다!
+              51평 객실은 물리적으로 16평과 35평이 합쳐진 커넥팅 룸입니다. 예전에는 프론트엔드 화면에서 수동으로 쪼개서 계산했지만, 이제는 <strong>백엔드 서버(V3 API)에서 원천적으로 16평과 35평 판매량으로 1:1 자동 분배</strong>하여 내려줍니다.
             </p>
-            <div className="toggle-explanation">
-              <div className="toggle-state active">
-                <h4>방 2개로 칠게요! (기본)</h4>
-                <ul>
-                  <li><CheckCircle2 size={14} className="text-emerald" /> 175개 중에서 하나 팔리면 "방 2개 나갔어!" 하고 카운트합니다.</li>
-                </ul>
-              </div>
-              <div className="toggle-state">
-                <h4>방 1개로 칠게요!</h4>
-                <ul>
-                  <li><CheckCircle2 size={14} className="text-emerald" /> 총 객실을 아예 90개(175 - 85)로 줄여버리고, 하나 팔리면 "방 1개 나갔네" 합니다.</li>
-                </ul>
-              </div>
-            </div>
             <div className="alert-box success">
-              <Info size={16} />
+              <CheckCircle2 size={16} />
               <span>
-                <strong>💡 휠체어방 예외:</strong> 단, 휠체어 손님이 쓰는 장애인 객실은 무조건 방 1개로만 칩니다. 컴퓨터가 똑똑하게 알아서 예외 처리합니다.
+                <strong>단일 진실 공급원 적용:</strong> 프론트엔드 화면단에서 인위적으로 숫자를 조작하지 않고, 백엔드에서 확정된 정확한 16/35평 숫자를 그대로 보여주기만 하므로 다른 시스템과 데이터가 100% 일치합니다.
               </span>
             </div>
           </div>

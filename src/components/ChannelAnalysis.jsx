@@ -564,7 +564,6 @@ export default function ChannelAnalysis({ processedData, globalStats, settings }
                         <th style={{padding: '12px', textAlign: 'left', borderBottom: '1px solid var(--border-glass)'}}>채널명</th>
                         <th style={{padding: '12px', borderBottom: '1px solid var(--border-glass)'}}>16평</th>
                         <th style={{padding: '12px', borderBottom: '1px solid var(--border-glass)'}}>35평</th>
-                        <th style={{padding: '12px', borderBottom: '1px solid var(--border-glass)'}}>51평</th>
                         <th style={{padding: '12px', color: 'var(--accent-gold)', borderBottom: '1px solid var(--border-glass)'}}>종합(평균)</th>
                       </tr>
                     </thead>
@@ -574,7 +573,6 @@ export default function ChannelAnalysis({ processedData, globalStats, settings }
                           <td style={{padding: '12px', textAlign: 'left', fontWeight: 'bold'}}>{row.channel}</td>
                           <td style={{padding: '12px'}}>{row['16평'] ? `₩${formatCurrency(row['16평'])}` : '-'}</td>
                           <td style={{padding: '12px'}}>{row['35평'] ? `₩${formatCurrency(row['35평'])}` : '-'}</td>
-                          <td style={{padding: '12px'}}>{row['51평'] ? `₩${formatCurrency(row['51평'])}` : '-'}</td>
                           <td style={{padding: '12px', color: 'var(--accent-gold)', fontWeight: 'bold'}}>
                             {row['전체'] ? `₩${formatCurrency(row['전체'])}` : '-'}
                           </td>
