@@ -101,7 +101,7 @@ function transformTimeseriesToMonthly(jsonArray) {
         visitorData: {
           ...(dayData.visitorData || {})
         },
-        leisureVisitorBreakdown: dayData.leisureVisitorBreakdown || []
+        leisureVisitorBreakdown: []
       });
     }
 
@@ -124,7 +124,10 @@ function transformTimeseriesToMonthly(jsonArray) {
           weatherTempMin: Number(w.tempMin || 0),
           weatherPrecipitation: Number(w.precipitation || 0),
           weatherDaytimePrecip: 0, 
-          weatherNighttimePrecip: 0
+          weatherNighttimePrecip: 0,
+          weatherWindSpeed: Number(w.windSpeed || 0),
+          weatherCode: Number(w.code || 0),
+          weatherDesc: w.weatherDesc || '정보없음'
         });
       });
     } else {
@@ -133,7 +136,8 @@ function transformTimeseriesToMonthly(jsonArray) {
         monthObj.rawRoomRecords.push({
           date: dayData.date, roomType: '합계', marketType: 'TOTAL', count: roomsSold, revenue: roomRev,
           weatherTempMax: Number(w.tempMax || 0), weatherTempMin: Number(w.tempMin || 0), weatherPrecipitation: Number(w.precipitation || 0),
-          weatherDaytimePrecip: 0, weatherNighttimePrecip: 0
+          weatherDaytimePrecip: 0, weatherNighttimePrecip: 0,
+          weatherWindSpeed: Number(w.windSpeed || 0), weatherCode: Number(w.code || 0), weatherDesc: w.weatherDesc || '정보없음'
         });
       }
     }
@@ -142,6 +146,19 @@ function transformTimeseriesToMonthly(jsonArray) {
         const val = Number(dayData.visitorData[key]);
         if (!isNaN(val)) {
           monthObj.visitorData[key] = (monthObj.visitorData[key] || 0) + val;
+        }
+      });
+    }
+
+    if (dayData.leisureVisitorBreakdown && Array.isArray(dayData.leisureVisitorBreakdown)) {
+      dayData.leisureVisitorBreakdown.forEach(item => {
+        const venue = item.venue || item.facility_name;
+        if (!venue) return;
+        const existing = monthObj.leisureVisitorBreakdown.find(v => (v.venue || v.facility_name) === venue);
+        if (existing) {
+          existing.visitors = (Number(existing.visitors) || 0) + Number(item.visitors || 0);
+        } else {
+          monthObj.leisureVisitorBreakdown.push({ venue: venue, facility_name: venue, visitors: Number(item.visitors || 0) });
         }
       });
     }
@@ -181,19 +198,31 @@ function transformTimeseriesToMonthly(jsonArray) {
 
     if (dayData.revenues) {
       const breakdown = {};
-      Object.entries(dayData.revenues).forEach(([key, rev]) => {
-        if (key === 'room') return;
-        const categoryMap = { fnb: 'FNB', ticket: 'TICKET', golf: 'GOLF' };
-        const venueName = categoryMap[key] || key;
-        
-        monthObj.salesByLocation[venueName] = (monthObj.salesByLocation[venueName] || 0) + Number(rev || 0);
-        
-        if (!monthObj.venues[venueName]) {
-          monthObj.venues[venueName] = { totalRev: 0, tickets: {} };
-        }
-        monthObj.venues[venueName].totalRev += Number(rev || 0);
-        breakdown[venueName] = Number(rev || 0);
-      });
+      
+      if (dayData.revenues.venueBreakdown) {
+        Object.entries(dayData.revenues.venueBreakdown).forEach(([venueName, rev]) => {
+          monthObj.salesByLocation[venueName] = (monthObj.salesByLocation[venueName] || 0) + Number(rev || 0);
+          if (!monthObj.venues[venueName]) {
+            monthObj.venues[venueName] = { totalRev: 0, tickets: {} };
+          }
+          monthObj.venues[venueName].totalRev += Number(rev || 0);
+          breakdown[venueName] = Number(rev || 0);
+        });
+      } else {
+        Object.entries(dayData.revenues).forEach(([key, rev]) => {
+          if (key === 'room' || key === 'venueBreakdown') return;
+          const categoryMap = { fnb: 'FNB', ticket: 'TICKET', golf: 'GOLF' };
+          const venueName = categoryMap[key] || key;
+          
+          monthObj.salesByLocation[venueName] = (monthObj.salesByLocation[venueName] || 0) + Number(rev || 0);
+          
+          if (!monthObj.venues[venueName]) {
+            monthObj.venues[venueName] = { totalRev: 0, tickets: {} };
+          }
+          monthObj.venues[venueName].totalRev += Number(rev || 0);
+          breakdown[venueName] = Number(rev || 0);
+        });
+      }
       
       const totalRev = Object.values(breakdown).reduce((a, b) => a + b, 0);
       if (totalRev > 0) {
@@ -245,7 +274,10 @@ function transformPolymorphicData(json) {
         weatherTempMin: Number(w.tempMin || 0),
         weatherPrecipitation: Number(w.precipitation || 0),
         weatherDaytimePrecip: 0, 
-        weatherNighttimePrecip: 0
+        weatherNighttimePrecip: 0,
+        weatherWindSpeed: Number(w.windSpeed || 0),
+        weatherCode: Number(w.code || 0),
+        weatherDesc: w.weatherDesc || '정보없음'
       });
     });
   } else if (json.dailyReportBreakdown) {
@@ -260,7 +292,8 @@ function transformPolymorphicData(json) {
       monthObj.rawRoomRecords.push({
         date: targetDate, roomType: '합계', marketType: 'TOTAL', count: totalSold, revenue: totalRev,
         weatherTempMax: Number(w.tempMax || 0), weatherTempMin: Number(w.tempMin || 0), weatherPrecipitation: Number(w.precipitation || 0),
-        weatherDaytimePrecip: 0, weatherNighttimePrecip: 0
+        weatherDaytimePrecip: 0, weatherNighttimePrecip: 0,
+        weatherWindSpeed: Number(w.windSpeed || 0), weatherCode: Number(w.code || 0), weatherDesc: w.weatherDesc || '정보없음'
       });
     }
   }
