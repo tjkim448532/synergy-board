@@ -96,13 +96,12 @@ export default function useBackendData(startDate, endDate) {
     async function fetchData() {
       try {
         setLoading(true);
-        
         // sessionStorage에 부모 창에서 넘어온 date가 있으면 우선 적용
         const targetDate = sessionStorage.getItem('sso_date');
-        const queryDate = targetDate ? `&targetDate=${targetDate}` : '';
+        const queryDate = targetDate ? `?date=${targetDate}` : '';
 
         // 실제 배포된 백엔드 API 주소 (벨포레 대시보드 백엔드)
-        const API_URL = `https://belleforet-data.vercel.app/api/v3/synergy/daily-records?startDate=${startDate}&endDate=${endDate}${queryDate}`;
+        const API_URL = `https://belleforet-data.vercel.app/api/v3/dashboard/revenue-summary${queryDate}`;
         
         const response = await fetch(API_URL);
         
