@@ -153,11 +153,11 @@ export default function useProcessedData(monthlyData, settings) {
       const invWd = dailyInventory * daysWd;
       const invWe = dailyInventory * daysWe;
       
-      // 백엔드 제공 실측 투숙객 활용 (fallback: 0)
-      let guests = 0;
-      if (d.leisureVisitorBreakdown && Array.isArray(d.leisureVisitorBreakdown)) {
-        const roomStat = d.leisureVisitorBreakdown.find(v => v.venue === '객실');
-        if (roomStat) guests = Number(roomStat.visitors || 0);
+      // 구버전 DB(d.guests) 및 V3 신버전(leisureVisitorBreakdown) 모두 호환되도록 투숙객 수 안전 추출
+      let guests = Number(d.guests || d.totalGuests || 0);
+      if (guests === 0 && d.leisureVisitorBreakdown && Array.isArray(d.leisureVisitorBreakdown)) {
+        const roomStat = d.leisureVisitorBreakdown.find(v => (v.venue || v.facility_name) === '객실');
+        if (roomStat) guests = Number(roomStat.visitors || roomStat.qty || 0);
       }
       
       const locationGroups = settings?.locationGroups || {};

@@ -425,8 +425,16 @@ export default function useBackendData(startDate, endDate, targetDate) {
                const detailMonthObj = detailArray[0];
                const existingIndex = formattedData.findIndex(d => d.yearMonth === detailMonthObj.yearMonth);
                if (existingIndex !== -1) {
-                  // 상세 요약본 데이터가 훨씬 상세하므로 해당 월은 덮어쓰기 처리
-                  formattedData[existingIndex] = detailMonthObj;
+                  // 깊은 병합(Deep Merge): 일별 배열 데이터는 유지하고 상세 요약본의 필드만 업데이트
+                  const existingObj = formattedData[existingIndex];
+                  formattedData[existingIndex] = {
+                     ...existingObj,
+                     salesByLocation: { ...existingObj.salesByLocation, ...detailMonthObj.salesByLocation },
+                     venues: { ...existingObj.venues, ...detailMonthObj.venues },
+                     leisureTicketUsage: { ...existingObj.leisureTicketUsage, ...detailMonthObj.leisureTicketUsage },
+                     visitorData: { ...existingObj.visitorData, ...detailMonthObj.visitorData },
+                     leisureVisitorBreakdown: detailMonthObj.leisureVisitorBreakdown?.length > 0 ? detailMonthObj.leisureVisitorBreakdown : existingObj.leisureVisitorBreakdown
+                  };
                } else {
                   formattedData.push(detailMonthObj);
                }
