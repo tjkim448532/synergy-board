@@ -57,7 +57,9 @@ export default function MonthlyDataForm({ settings }) {
   const [isLeisureSaved, setIsLeisureSaved] = useState(false);
   const [isMotoSaved, setIsMotoSaved] = useState(false);
 
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return !!sessionStorage.getItem('sso_token');
+  });
   const [pin, setPin] = useState('');
 
   const handlePinSubmit = (e) => {

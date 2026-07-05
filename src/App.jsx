@@ -59,6 +59,17 @@ function App() {
   );
 
   useEffect(() => {
+    // SSO 자동 로그인용 URL 토큰 파싱
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    if (token) {
+      sessionStorage.setItem('sso_token', token);
+      // 토큰 캡처 후 URL에서 제거 (보안 및 깔끔한 주소창 유지)
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
+  useEffect(() => {
     const unsubSettings = onSnapshot(doc(db, 'config', 'mainSettings'), (docSnap) => {
       if (docSnap.exists()) setSettings(docSnap.data());
     });

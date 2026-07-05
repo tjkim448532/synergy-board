@@ -11,6 +11,17 @@
         "source": "**",
         "destination": "/index.html"
       }
+    ],
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "Content-Security-Policy",
+            "value": "frame-ancestors 'self' https://bell-dashboard.web.app https://*.bell-dashboard.web.app"
+          }
+        ]
+      }
     ]
   }
 }

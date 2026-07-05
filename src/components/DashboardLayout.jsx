@@ -45,6 +45,8 @@ const SIDEBAR_MENU = [
 export default function DashboardLayout({ children, activeTab, setActiveTab }) {
   const [expandedMenus, setExpandedMenus] = useState(['new-business-parent']);
 
+  const isIframe = window.self !== window.top || window.location.search.includes('mode=iframe');
+
   const toggleExpand = (menuId) => {
     setExpandedMenus(prev => 
       prev.includes(menuId) ? prev.filter(id => id !== menuId) : [...prev, menuId]
@@ -52,9 +54,10 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }) {
   };
 
   return (
-    <div className="dashboard-container">
+    <div className="dashboard-container" style={isIframe ? { padding: 0, gap: 0 } : {}}>
       {/* Sidebar */}
-      <aside className="glass-panel sidebar">
+      {!isIframe && (
+      <aside className="sidebar glass-panel">
         <div className="sidebar-header">
           <div className="logo-icon">S</div>
           <h2>시너지</h2>
@@ -111,10 +114,12 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }) {
           })}
         </nav>
       </aside>
+      )}
 
       {/* Main Content Area */}
-      <main className="main-content">
-        <header className="glass-panel topbar">
+      <main className="main-content" style={isIframe ? { gap: 0 } : {}}>
+        {!isIframe && (
+        <header className="topbar glass-panel">
           <h1>{
             SIDEBAR_MENU.find(m => m.id === activeTab)?.label || 
             SIDEBAR_MENU.flatMap(m => m.subItems || []).find(sub => sub.id === activeTab)?.label || 
@@ -125,10 +130,11 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }) {
             <span>관리자</span>
           </div>
         </header>
+        )}
 
-        {(activeTab === 'weather-parent' || activeTab === 'weather-forecast' || activeTab === 'weather-stats') && <WeatherAlertBanner />}
+        {(activeTab === 'weather-parent' || activeTab === 'weather-forecast' || activeTab === 'weather-stats') && !isIframe && <WeatherAlertBanner />}
         
-        <div className="content-area">
+        <div className="content-area" style={isIframe ? { padding: '16px' } : {}}>
           {children}
         </div>
       </main>

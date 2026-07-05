@@ -58,7 +58,9 @@ export default function Settings({ monthlyData }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
 
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return !!sessionStorage.getItem('sso_token');
+  });
   const [pin, setPin] = useState('');
 
   const [expandedSections, setExpandedSections] = useState({
