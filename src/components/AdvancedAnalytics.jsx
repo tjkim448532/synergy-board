@@ -185,8 +185,10 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       if (d.rawMarketRecords && Array.isArray(d.rawMarketRecords)) {
         d.rawMarketRecords.forEach(record => {
           const mType = String(record.marketType || '');
-          if (mType.includes('단체') || mType.includes('세미나')) {
-            seminar += Number(record.visitors || 0);
+          if (mType.includes('단체') || mType.includes('세미나') || mType.includes('행사') || mType.includes('MICE')) {
+            const visitors = Number(record.visitors || 0);
+            const count = Number(record.count || 0);
+            seminar += (visitors > 0) ? visitors : (count * 4); // Fallback: 4명/객실
           }
         });
       }

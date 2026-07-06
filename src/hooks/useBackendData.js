@@ -173,17 +173,28 @@ function transformTimeseriesToMonthly(jsonArray) {
       });
     }
 
-    // [V3 API] Extract marketTypeBreakdown / segmentBreakdown
+    // [V4 API] Rebuild rawMarketRecords by aggregating rooms array
     if (!monthObj.rawMarketRecords) monthObj.rawMarketRecords = [];
-    const marketBreakdown = dayData.marketTypeBreakdown || dayData.segmentBreakdown || [];
-    if (marketBreakdown && Array.isArray(marketBreakdown)) {
-      marketBreakdown.forEach(m => {
+    const roomsForMarket = dayData.rooms || dayData.roomTypeBreakdown || [];
+    if (roomsForMarket && Array.isArray(roomsForMarket) && roomsForMarket.length > 0) {
+      const marketAggMap = {};
+      roomsForMarket.forEach(m => {
+        const mType = m.market_type || m.marketType || 'TOTAL';
+        if (!marketAggMap[mType]) {
+          marketAggMap[mType] = { count: 0, revenue: 0, visitors: 0 };
+        }
+        marketAggMap[mType].count += Number(m.rooms_sold || m.roomsSold || 0);
+        marketAggMap[mType].revenue += Number(m.room_revenue || m.roomRevenue || m.revenue || 0);
+        marketAggMap[mType].visitors += Number(m.visitors || m.guests || 0);
+      });
+      
+      Object.keys(marketAggMap).forEach(mType => {
         monthObj.rawMarketRecords.push({
           date: dayData.date,
-          marketType: m.market_type || m.marketType || m.segment,
-          count: Number(m.rooms_sold || m.roomsSold || m.roomsSold || 0),
-          revenue: Number(m.room_revenue || m.roomRevenue || m.revenue || 0),
-          visitors: Number(m.visitors || m.guests || 0)
+          marketType: mType,
+          count: marketAggMap[mType].count,
+          revenue: marketAggMap[mType].revenue,
+          visitors: marketAggMap[mType].visitors
         });
       });
     }
