@@ -59,6 +59,10 @@ export default function useProcessedData(monthlyData, settings) {
         let calculatedSoldOther = 0;
         let rev16Net = 0;
         let rev35Net = 0;
+        let guests16 = 0;
+        let guests35 = 0;
+        let guests51 = 0;
+        let guestsOther = 0;
         let rev51Net = 0;
         let revOtherNet = 0;
         
@@ -96,15 +100,19 @@ export default function useProcessedData(monthlyData, settings) {
           const roomType = rec.roomType || '';
           const count = Number(rec.count || 0);
           const revenue = Number(rec.revenue || 0);
+          const roomGuests = Number(rec.guests || 0);
           
           if (roomType.includes('16평')) {
             calculatedSold16 += count;
             rev16Net += revenue;
+            guests16 += roomGuests;
           } else if (roomType.includes('35평')) {
             calculatedSold35 += count;
             rev35Net += revenue;
+            guests35 += roomGuests;
           } else if (roomType.includes('51평')) {
             rev51Net += revenue;
+            guests51 += roomGuests;
             if (roomType.includes('장애') || roomType.includes('휠체어')) {
               calculatedSold51Acc += count;
             } else {
@@ -114,6 +122,7 @@ export default function useProcessedData(monthlyData, settings) {
             // 미매핑 신규 평형 흡수
             calculatedSoldOther += count;
             revOtherNet += revenue;
+            guestsOther += roomGuests;
           }
           
           if (isWeekend) {
@@ -143,6 +152,11 @@ export default function useProcessedData(monthlyData, settings) {
         revWe = calculatedRevWe;
       } else {
         const totalSoldFallback = sold16 + sold35 + sold51 + sold51Acc + (typeof soldOther !== 'undefined' ? soldOther : 0);
+        // [장애 방어] rawRoomRecords 배열 누락 시 최상위 값 Fallback
+        if (totalSoldFallback === 0 && d.roomsSold > 0) {
+          soldOther = Number(d.roomsSold || 0);
+          revOtherNet = Number(d.total_net || d.roomRevenue || 0);
+        }
         const rawSoldWd = Number(d.soldWeekday || 0);
         const rawSoldWe = Number(d.soldWeekend || 0);
         const totalRawSold = rawSoldWd + rawSoldWe;
@@ -162,7 +176,12 @@ export default function useProcessedData(monthlyData, settings) {
       const totalSold = totalBookings; // Legacy 호환성
       const totalSoldForOcc = totalPhysicalKeys;
       
-      const globalCapacity = d.capacity?.total || 180;
+      // [사각지대 방어] soldOther가 발생했음에도 기본값 180을 쓰면 가동률이 100%를 초과함
+      // 백엔드가 capacity.total을 명시하지 않은 경우 soldOther 만큼 동적으로 수용량을 늘려줍니다.
+      let globalCapacity = d.capacity?.total || 180;
+      if (!d.capacity?.total && (typeof soldOther !== 'undefined' && soldOther > 0)) {
+        globalCapacity += soldOther;
+      }
       const cap16 = d.capacity?.['16평'] || 90;
       const cap35 = d.capacity?.['35평'] || 90;
       const dailyInventory = globalCapacity;
@@ -222,6 +241,11 @@ export default function useProcessedData(monthlyData, settings) {
       const adr16 = sold16 > 0 ? (rev16Net / sold16) : 0;
       const adr35 = sold35 > 0 ? (rev35Net / sold35) : 0;
       const adr51 = (sold51 + sold51Acc) > 0 ? (rev51Net / (sold51 + sold51Acc)) : 0;
+      
+      // 개별 평형별 직관적 평균 투숙 인원 (가중치 없음)
+      const avgGuests16 = sold16 > 0 ? (guests16 / sold16) : 0;
+      const avgGuests35 = sold35 > 0 ? (guests35 / sold35) : 0;
+      const avgGuests51 = (sold51 + sold51Acc) > 0 ? (guests51 / (sold51 + sold51Acc)) : 0;
 
       const dynamicGroupsSum = Object.values(dynamicGroups).reduce((sum, val) => sum + val, 0);
       const totalSales = leisureSales + motoSales + fnbSales + otherSales + dynamicGroupsSum;
@@ -306,6 +330,13 @@ export default function useProcessedData(monthlyData, settings) {
         adr16,
         adr35,
         adr51,
+        avgGuests16,
+        avgGuests35,
+        avgGuests51,
+        guests16,
+        guests35,
+        guests51,
+        guestsOther,
         soldOther,
         occupancyRate: occRate,
         occWd,

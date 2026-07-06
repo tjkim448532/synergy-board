@@ -78,7 +78,10 @@ export const calculateGroupedSales = (salesObj, locationGroups = {}) => {
       else if (mappedGroup === 'other') other += val;
       else if (mappedGroup === 'moto') moto += val;
       else if (mappedGroup === 'leisure') leisure += val;
-      else if (mappedGroup === 'exclude') { /* Do nothing */ }
+      else if (mappedGroup === 'exclude') {
+        // [사각지대 방어] 표출은 숨기되 총매출 합계에선 누락되지 않도록 은밀히 합산
+        dynamicGroups['hiddenRevenue'] = (dynamicGroups['hiddenRevenue'] || 0) + val;
+      }
       else {
         // Dynamic group
         dynamicGroups[mappedGroup] = (dynamicGroups[mappedGroup] || 0) + val;
