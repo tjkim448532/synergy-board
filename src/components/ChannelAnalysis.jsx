@@ -11,14 +11,15 @@ const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(Math.round
 
 const PIE_COLORS = ['#3b82f6', '#10b981', '#fbbf24', '#a855f7', '#ef4444', '#64748b'];
 
-// 마켓 타입을 5개 주요 채널로 정규화하는 헬퍼 함수
+// 마켓 타입을 주요 채널로 정규화하는 헬퍼 함수 (V4 API 대응)
 const normalizeMarketType = (market) => {
   if (!market) return '기타';
-  if (market.includes('온라인')) return '온라인';
-  if (market.includes('기업') || market.includes('휴양소')) return '휴양소';
-  if (market.includes('세미나') || market.includes('단체')) return '세미나';
-  if (market.includes('예약실') || market.includes('전화') || market.includes('메신저')) return '예약실';
-  if (market.includes('홈페이지') || market.includes('APP')) return '홈페이지';
+  const m = market.toUpperCase();
+  if (m.includes('온라인') || m.includes('OTA') || m.includes('AGODA') || m.includes('야놀자') || m.includes('여기어때')) return '온라인';
+  if (m.includes('기업') || m.includes('휴양소') || m.includes('법인')) return '휴양소';
+  if (m.includes('세미나') || m.includes('단체') || m.includes('MICE') || m.includes('행사')) return '세미나';
+  if (m.includes('예약실') || m.includes('전화') || m.includes('메신저') || m.includes('분양회원') || m.includes('회원')) return '예약실';
+  if (m.includes('홈페이지') || m.includes('APP') || m.includes('자사채널') || m.includes('다이렉트')) return '홈페이지';
   return '기타';
 };
 

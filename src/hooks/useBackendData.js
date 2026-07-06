@@ -111,16 +111,17 @@ function transformTimeseriesToMonthly(jsonArray) {
     const roomsSold = Number(dayData.visitorData?.roomsSold || dayData.roomsSold || 0);
     const roomRev = Number(dayData.revenues?.room || dayData.roomRevenue || 0);
     
-    // [V3 API] Use real roomTypeBreakdown instead of faking ratios
-    const roomTypes = dayData.roomTypeBreakdown || dayData.visitorData?.roomTypeBreakdown || [];
-    if (roomTypes && Array.isArray(roomTypes) && roomTypes.length > 0) {
-      roomTypes.forEach(room => {
+    // [V4 API] Use unified rooms array with marketType and rateType
+    const rooms = dayData.rooms || dayData.roomTypeBreakdown || dayData.visitorData?.roomTypeBreakdown || [];
+    if (rooms && Array.isArray(rooms) && rooms.length > 0) {
+      rooms.forEach(room => {
         monthObj.rawRoomRecords.push({
           date: dayData.date,
           roomType: room.room_type || room.roomType,
-          marketType: 'TOTAL', // Handled by rawMarketRecords now
+          marketType: room.market_type || room.marketType || 'TOTAL',
+          rateType: room.rate_type || room.rateType || '',
           count: Number(room.rooms_sold || room.roomsSold || 0),
-          revenue: Number(room.room_revenue || room.roomRevenue || 0),
+          revenue: Number(room.room_revenue || room.roomRevenue || room.revenue || 0),
           weatherTempMax: Number(w.tempMax || 0),
           weatherTempMin: Number(w.tempMin || 0),
           weatherPrecipitation: Number(w.precipitation || 0),

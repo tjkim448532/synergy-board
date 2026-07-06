@@ -11,10 +11,14 @@ async function testV3Api() {
        if (Array.isArray(json.data) && json.data.length > 0) {
           console.log("First element:", Object.keys(json.data[0] || {}).join(", "));
           
-          const latestMonth = json.data[json.data.length - 1];
-          console.log("revenues:", JSON.stringify(latestMonth.revenues, null, 2));
-          console.log("\nvisitorData:", JSON.stringify(latestMonth.visitorData, null, 2));
-          console.log("\nleisureVisitorBreakdown:", JSON.stringify(latestMonth.leisureVisitorBreakdown, null, 2));
+          const first = json.data[0];
+          console.log("revenues:", JSON.stringify(first.revenues, null, 2));
+          console.log("\nvisitorData:", JSON.stringify(first.visitorData, null, 2));
+          console.log('\nleisureVisitorBreakdown:');
+          console.log(JSON.stringify(first.leisureVisitorBreakdown.slice(0,3), null, 2));
+
+          console.log('\nmarketTypeBreakdown:');
+          console.log(JSON.stringify(first.marketTypeBreakdown, null, 2));
        }
     }
   } catch (e) {
