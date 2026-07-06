@@ -46,8 +46,18 @@ function App() {
   const [allData, setAllData] = useState([]);
 
   // 백엔드 API 연동을 위한 날짜 구간 (필요 시 UI에서 동적 변경 가능)
-  const [apiStartDate] = useState('2026-01-01');
-  const [apiEndDate] = useState('2026-12-31');
+    const [apiStartDate, setApiStartDate] = useState(() => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+    const offset = start.getTimezoneOffset() * 60000;
+    return new Date(start.getTime() - offset).toISOString().split('T')[0];
+  });
+  const [apiEndDate, setApiEndDate] = useState(() => {
+    const now = new Date();
+    const end = new Date(now.getFullYear(), now.getMonth(), 0);
+    const offset = end.getTimezoneOffset() * 60000;
+    return new Date(end.getTime() - offset).toISOString().split('T')[0];
+  });
   const [ssoDate, setSsoDate] = useState(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const date = urlParams.get('date');
@@ -117,7 +127,7 @@ function App() {
       case 'analytics':
         return (
           <motion.div key="analytics" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{padding: '32px'}}>
-            <AdvancedAnalytics processedData={processedData} globalStats={globalStats} settings={settings} />
+            <AdvancedAnalytics processedData={processedData} globalStats={globalStats} settings={settings} startDate={apiStartDate} endDate={apiEndDate} />
           </motion.div>
         )
       case 'weather-stats':
@@ -222,6 +232,10 @@ function App() {
       <DashboardLayout 
         activeTab={activeTab} 
         setActiveTab={setActiveTab}
+        apiStartDate={apiStartDate}
+        setApiStartDate={setApiStartDate}
+        apiEndDate={apiEndDate}
+        setApiEndDate={setApiEndDate}
       >
         <AnimatePresence mode="wait">
           {renderContent()}

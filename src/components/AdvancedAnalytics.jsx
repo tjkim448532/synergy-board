@@ -21,12 +21,11 @@ const getInterpretation = (r) => {
   return '약한 상관관계';
 };
 
-export default function AdvancedAnalytics({ processedData, globalStats, settings }) {
+export default function AdvancedAnalytics({ processedData, globalStats, settings, startDate, endDate }) {
   const [selectedRoomType, setSelectedRoomType] = useState('all');
   const [activeDivision, setActiveDivision] = useState('all');
   const [motoLogic, setMotoLogic] = useState('new');
-  const [selectedMonthFilter, setSelectedMonthFilter] = useState('all');
-  const [isCumulative, setIsCumulative] = useState(false);
+  // Date range filtering is now managed globally in App.jsx
   const [weatherDataType, setWeatherDataType] = useState('room');
   const [currentWeather, setCurrentWeather] = useState(null);
   const [isLoadingWeather, setIsLoadingWeather] = useState(false);
@@ -50,12 +49,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     };
   }, []);
 
-  // fallback for legacy cached state like '05'
-  useEffect(() => {
-    if (selectedMonthFilter !== 'all' && !selectedMonthFilter.includes('-')) {
-      setSelectedMonthFilter('all');
-    }
-  }, [selectedMonthFilter]);
+  // Removed local filter effects
 
   // Google Visitors data replaced by visitorCalcData logic
   const divisionConfig = useMemo(() => {
@@ -118,50 +112,8 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
 
   // 데이터 가공
 
-  // 동적 필터 옵션 생성
-  const monthOptions = useMemo(() => {
-    const options = [];
-    const years = [...new Set(processedData.map(d => (d.yearMonth || '').split('-')[0]))].filter(y => y);
-    years.sort((a,b) => b.localeCompare(a)); // 최신 연도부터
-    
-    years.forEach(year => {
-      const yearMonths = processedData.filter(d => (d.yearMonth || '').startsWith(year));
-      if (yearMonths.length > 0) {
-        options.push({ value: `${year}-all`, label: `${year}년 종합 분석` });
-        options.push({ value: `${year}-summer`, label: `${year}년 여름 성수기 (7~8월)` });
-        options.push({ value: `${year}-winter`, label: `${year}년 겨울 시즌 (12~2월)` });
-        options.push({ value: `${year}-spring`, label: `${year}년 봄 시즌 (3~6월)` });
-        options.push({ value: `${year}-fall`, label: `${year}년 가을 시즌 (9~11월)` });
-        for (let m = 1; m <= 12; m++) {
-          const mm = String(m).padStart(2, '0');
-          if (yearMonths.some(d => (d.yearMonth || '').split('-')[1] === mm)) {
-            options.push({ value: `${year}-${mm}`, label: `${year}년 ${m}월` });
-          }
-        }
-      }
-    });
-    return options;
-  }, [processedData]);
-
-  const filteredProcessedData = useMemo(() => {
-    if (selectedMonthFilter === 'all') return processedData;
-    const [selYear, selMonth] = selectedMonthFilter.split('-');
-    
-    return processedData.filter(d => {
-      const [y, m] = (d.yearMonth || '').split('-');
-      if (y !== selYear) return false;
-      if (selMonth === 'all') return true;
-      if (selMonth === 'summer') return m === '07' || m === '08';
-      if (selMonth === 'winter') return m === '12' || m === '01' || m === '02';
-      if (selMonth === 'spring') return m >= '03' && m <= '06';
-      if (selMonth === 'fall') return m >= '09' && m <= '11';
-      if (isCumulative) {
-        return parseInt(m) <= parseInt(selMonth);
-      } else {
-        return parseInt(m) === parseInt(selMonth);
-      }
-    });
-  }, [processedData, selectedMonthFilter, isCumulative]);
+  // 동적 필터 옵션 생성 삭제
+  const filteredProcessedData = processedData; // Alias to support global DatePicker filtering directly
 
 
 
@@ -204,167 +156,92 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
     return calculateCorrelation(occArr, targetArr);
   }, [filteredProcessedData, activeConf.dataKey]);
 
-  const isWeatherMerged = useMemo(() => {
-    return filteredProcessedData.some(m => 
-      m.rawRoomRecords && 
-      Array.isArray(m.rawRoomRecords) && 
-      m.rawRoomRecords.some(rec => rec.weatherTempMax !== undefined && rec.weatherTempMax !== null)
-    );
-  }, [filteredProcessedData]);
+  const [isWeatherMerged, setIsWeatherMerged] = useState(false);
+  const [rawDailyWeatherSalesData, setRawDailyWeatherSalesData] = useState([]);
+const [dayTypeFilter, setDayTypeFilter] = useState('all');
 
-  // 통합 일별 데이터 (날씨 + 객실 + 레저 + 골프 등)
-  const dailyWeatherSalesData = useMemo(() => {
-    const dateMap = {};
-    const weatherLookup = {};
+const dailyWeatherSalesData = useMemo(() => {
+  if (!rawDailyWeatherSalesData) return [];
+  if (dayTypeFilter === 'all') return rawDailyWeatherSalesData;
+  return rawDailyWeatherSalesData.filter(d => {
+    const isWknd = weatherDataType === 'room'
+      ? isRoomWeekend(d.date, settings?.customWeekends || [])
+      : isLeisureWeekend(d.date, settings?.customWeekends || []);
+    return dayTypeFilter === 'weekend' ? isWknd : !isWknd;
+  });
+}, [rawDailyWeatherSalesData, dayTypeFilter, weatherDataType, settings]);
 
-    filteredProcessedData.forEach(m => {
-      if (m.rawRoomRecords && Array.isArray(m.rawRoomRecords)) {
-        m.rawRoomRecords.forEach(rec => {
-          if (!rec.date) return;
-          if (rec.weatherTempMax !== undefined && rec.weatherTempMax !== null) {
-            weatherLookup[rec.date] = {
-              tempMax: parseSafeNumber(rec.weatherTempMax),
-              tempMin: parseSafeNumber(rec.weatherTempMin),
-              precipitation: parseSafeNumber(rec.weatherPrecipitation),
-              daytimePrecip: rec.weatherDaytimePrecip !== undefined && rec.weatherDaytimePrecip !== null ? parseSafeNumber(rec.weatherDaytimePrecip) : null,
-              nighttimePrecip: rec.weatherNighttimePrecip !== undefined && rec.weatherNighttimePrecip !== null ? parseSafeNumber(rec.weatherNighttimePrecip) : null,
-              windSpeed: rec.weatherWindSpeed !== undefined && rec.weatherWindSpeed !== null ? parseSafeNumber(rec.weatherWindSpeed) : null,
-              code: parseSafeNumber(rec.weatherCode),
-              desc: rec.weatherDesc || '정보없음'
-            };
-          }
-        });
+  useEffect(() => {
+        const fetchCorrelationData = async () => {
+      let sDate = startDate;
+      let eDate = endDate;
+
+      // 만약 글로벌 날짜가 전달되지 않은 경우에만 '지난 2달'로 기본값 세팅
+      if (!sDate || !eDate) {
+        const now = new Date();
+        const start = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+        const end = new Date(now.getFullYear(), now.getMonth(), 0);
+        const offset = start.getTimezoneOffset() * 60000;
+        sDate = new Date(start.getTime() - offset).toISOString().split('T')[0];
+        eDate = new Date(end.getTime() - offset).toISOString().split('T')[0];
       }
-    });
 
-    const locationGroups = settings?.locationGroups || {};
+      try {
+        const res = await fetch(`https://belleforet-data.vercel.app/api/v3/synergy/timeseries?startDate=${sDate}&endDate=${eDate}`);
+        const json = await res.json();
+        
+        if (json.status === 'success' && json.data) {
+          const totalPhysicalRooms = settings?.totalRooms ? Number(settings.totalRooms) : 175;
 
-    // 1. 객실 매출 처리
-    filteredProcessedData.forEach(m => {
-      if (m.rawRoomRecords && Array.isArray(m.rawRoomRecords)) {
-        m.rawRoomRecords.forEach(rec => {
-          if (!rec.date) return;
-          const dateStr = rec.date;
-          if (!dateMap[dateStr]) {
-            const w = weatherLookup[dateStr] || {};
-            dateMap[dateStr] = {
-              date: dateStr,
-              roomRevenue: 0,
-              roomsSold: 0,
-              sold16: 0,
-              sold35: 0,
-              sold51: 0,
-              locations: {},
-              leisureSales: 0,
-              golfSales: 0,
-              fnbSales: 0,
-              motoSales: 0,
-              otherSales: 0,
-              totalRevenue: 0,
+          const mapped = json.data.map(d => {
+            const w = d.weather || {};
+            const roomsSold = d.rooms ? d.rooms.reduce((acc, r) => acc + (r.roomsSold || 0), 0) : 0;
+            const roomRev = d.revenues?.room || 0;
+            const leisureRev = d.revenues?.ticket || 0;
+            const golfRev = d.revenues?.golf || 0;
+            const totalRev = d.totalRevenue || 0;
+
+            let revenue = 0;
+            if (weatherDataType === 'room') revenue = roomRev;
+            else if (weatherDataType === 'golf') revenue = golfRev;
+            else if (weatherDataType === 'leisure') revenue = leisureRev;
+            else revenue = totalRev;
+
+            return {
+              date: d.date,
+              roomRevenue: roomRev,
+              roomsSold: roomsSold,
+              sold16: d.rooms?.filter(r => r.roomType?.includes('16평')).reduce((acc, r) => acc + (r.roomsSold || 0), 0) || 0,
+              sold35: d.rooms?.filter(r => r.roomType?.includes('35평')).reduce((acc, r) => acc + (r.roomsSold || 0), 0) || 0,
+              sold51: d.rooms?.filter(r => r.roomType?.includes('51평')).reduce((acc, r) => acc + (r.roomsSold || 0), 0) || 0,
+              leisureSales: leisureRev,
+              golfSales: golfRev,
+              fnbSales: d.revenues?.fnb || 0,
+              motoSales: d.revenues?.venueBreakdown?.['모토아레나'] || 0,
+              otherSales: d.revenues?.other || 0,
+              totalRevenue: totalRev,
+              locations: d.revenues?.venueBreakdown || {},
               motoGuestRev: 0,
               motoGeneralRev: 0,
-              tempMax: w.tempMax !== undefined && w.tempMax !== null ? parseSafeNumber(w.tempMax) : null,
-              tempMin: w.tempMin !== undefined && w.tempMin !== null ? parseSafeNumber(w.tempMin) : null,
-              precipitation: w.precipitation !== undefined && w.precipitation !== null ? parseSafeNumber(w.precipitation) : null,
-              daytimePrecip: w.daytimePrecip !== undefined && w.daytimePrecip !== null ? parseSafeNumber(w.daytimePrecip) : null,
-              nighttimePrecip: w.nighttimePrecip !== undefined && w.nighttimePrecip !== null ? parseSafeNumber(w.nighttimePrecip) : null,
-              windSpeed: w.windSpeed !== undefined && w.windSpeed !== null ? parseSafeNumber(w.windSpeed) : null,
-              code: w.code !== undefined && w.code !== null ? parseSafeNumber(w.code) : null,
-              desc: w.desc || '정보없음'
+              tempMax: w.tempMax !== undefined && w.tempMax !== null ? Number(w.tempMax) : null,
+              tempMin: w.tempMin !== undefined && w.tempMin !== null ? Number(w.tempMin) : null,
+              precipitation: w.precipitation !== undefined && w.precipitation !== null ? Number(w.precipitation) : null,
+              windSpeed: w.windSpeed !== undefined && w.windSpeed !== null ? Number(w.windSpeed) : null,
+              code: w.code !== undefined && w.code !== null ? Number(w.code) : null,
+              desc: w.desc || '정보없음',
+              revenue,
+              occupancyRate: Math.min(100, Math.max(0, (roomsSold / totalPhysicalRooms) * 100))
             };
-          }
-          const revenue = parseSafeNumber(rec.revenue);
-          const count = parseSafeNumber(rec.count);
-          dateMap[dateStr].roomRevenue += revenue;
-          dateMap[dateStr].roomsSold += count;
-          dateMap[dateStr].totalRevenue += revenue;
-          
-          const rt = rec.roomType || '';
-          if (rt.includes('16평')) dateMap[dateStr].sold16 += count;
-          else if (rt.includes('35평')) dateMap[dateStr].sold35 += count;
-          else if (rt.includes('51평')) dateMap[dateStr].sold51 += count;
-        });
+          });
+          setRawDailyWeatherSalesData(mapped.sort((a, b) => a.date.localeCompare(b.date)));
+          setIsWeatherMerged(true);
+        }
+      } catch (e) {
+        console.error('Failed to fetch correlation data:', e);
       }
-    });
-
-    // 2. 부대업장(레저/골프/식음 등) 매출 처리
-    filteredProcessedData.forEach(m => {
-      if (m.rawLeisureRecords && Array.isArray(m.rawLeisureRecords)) {
-        m.rawLeisureRecords.forEach(rec => {
-          if (!rec.date) return;
-          const dateStr = rec.date;
-          
-          if (!dateMap[dateStr]) {
-            const w = weatherLookup[dateStr] || {};
-            dateMap[dateStr] = {
-              date: dateStr,
-              roomRevenue: 0,
-              roomsSold: 0,
-              sold16: 0,
-              sold35: 0,
-              sold51: 0,
-              locations: {},
-              leisureSales: 0,
-              golfSales: 0,
-              fnbSales: 0,
-              motoSales: 0,
-              otherSales: 0,
-              totalRevenue: 0,
-              motoGuestRev: 0,
-              motoGeneralRev: 0,
-              tempMax: w.tempMax !== undefined && w.tempMax !== null ? parseSafeNumber(w.tempMax) : null,
-              tempMin: w.tempMin !== undefined && w.tempMin !== null ? parseSafeNumber(w.tempMin) : null,
-              precipitation: w.precipitation !== undefined && w.precipitation !== null ? parseSafeNumber(w.precipitation) : null,
-              daytimePrecip: w.daytimePrecip !== undefined && w.daytimePrecip !== null ? parseSafeNumber(w.daytimePrecip) : null,
-              nighttimePrecip: w.nighttimePrecip !== undefined && w.nighttimePrecip !== null ? parseSafeNumber(w.nighttimePrecip) : null,
-              windSpeed: w.windSpeed !== undefined && w.windSpeed !== null ? parseSafeNumber(w.windSpeed) : null,
-              code: w.code !== undefined && w.code !== null ? parseSafeNumber(w.code) : null,
-              desc: w.desc || '정보없음'
-            };
-          }
-          
-          if (rec.breakdown) {
-            const calculated = calculateGroupedSales(rec.breakdown, locationGroups);
-            dateMap[dateStr].leisureSales += calculated.leisure || 0;
-            dateMap[dateStr].golfSales += calculated.golf || 0;
-            dateMap[dateStr].fnbSales += calculated.fnb || 0;
-            dateMap[dateStr].motoSales += calculated.moto || 0;
-            dateMap[dateStr].otherSales += calculated.other || 0;
-            
-            Object.entries(rec.breakdown).forEach(([locName, amt]) => {
-              const val = parseSafeNumber(amt);
-              dateMap[dateStr].locations[locName] = (dateMap[dateStr].locations[locName] || 0) + val;
-              dateMap[dateStr].totalRevenue += val;
-            });
-          } else {
-            const val = parseSafeNumber(rec.revenue);
-            dateMap[dateStr].leisureSales += val;
-            dateMap[dateStr].totalRevenue += val;
-          }
-          
-          if (rec.motoDetails) {
-            dateMap[dateStr].motoGuestRev += parseSafeNumber(rec.motoDetails.guestRevenue || 0);
-            dateMap[dateStr].motoGeneralRev += parseSafeNumber(rec.motoDetails.generalRevenue || 0);
-          }
-        });
-      }
-    });
-
-    // 기존 차트/카드 호환성용 revenue 바인딩
-    const totalPhysicalRooms = settings?.totalRooms ? Number(settings.totalRooms) : 175;
-    return Object.values(dateMap).map(d => {
-      let revenue = 0;
-      if (weatherDataType === 'room') revenue = d.roomRevenue;
-      else if (weatherDataType === 'golf') revenue = d.golfSales;
-      else if (weatherDataType === 'leisure') revenue = d.leisureSales;
-      else revenue = d.totalRevenue;
-      return {
-        ...d,
-        revenue,
-        occupancyRate: Math.min(100, Math.max(0, (d.roomsSold / totalPhysicalRooms) * 100))
-      };
-    }).sort((a, b) => a.date.localeCompare(b.date));
-  }, [filteredProcessedData, weatherDataType, settings]);
+    };
+    fetchCorrelationData();
+  }, [weatherDataType, settings, startDate, endDate]);
 
   const weatherStats = useMemo(() => {
     const rawValidData = dailyWeatherSalesData.filter(d => d.tempMax !== null && d.desc !== '정보없음').map(d => {
@@ -976,7 +853,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
   if (processedData.length < 2) {
     return (
       <div style={{height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)'}}>
-        상관관계를 분석하려면 최소 2개월 이상의 데이터가 필요합니다. 엑셀을 더 업로드해 주세요.
+        상관관계를 분석하려면 최소 2일 이상의 데이터가 필요합니다. 상단의 조회 기간을 2일 이상으로 설정해주세요.
       </div>
     );
   }
@@ -1076,31 +953,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
           </div>
         </div>
 
-        <div style={{display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(0,0,0,0.2)', padding: '6px 12px', borderRadius: '8px', flexWrap: 'wrap'}}>
-          <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
-            <span style={{fontSize: '14px', color: 'var(--text-muted)'}}>월별 필터:</span>
-            <select 
-              value={selectedMonthFilter}
-              onChange={(e) => setSelectedMonthFilter(e.target.value)}
-              style={{background: 'rgba(255,255,255,0.1)', color: 'var(--text-main)', border: 'none', padding: '6px 12px', borderRadius: '4px', outline: 'none', fontWeight: 'bold'}}
-            >
-              <option value="all" style={{color: 'black'}}>전체 연도 종합 분석</option>
-              {monthOptions.map(opt => (
-                <option key={opt.value} value={opt.value} style={{color: 'black'}}>{opt.label}</option>
-              ))}
-            </select>
-          </div>
-
-          {selectedMonthFilter !== 'all' && !selectedMonthFilter.endsWith('-all') && !['summer','winter','spring','fall'].includes(selectedMonthFilter.split('-')[1]) && (
-            <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginLeft: '8px'}}>
-              <input type="checkbox" checked={isCumulative} onChange={(e) => setIsCumulative(e.target.checked)} style={{display: 'none'}} />
-              <div style={{position: 'relative', width: '40px', height: '20px', background: isCumulative ? 'var(--accent-emerald)' : 'rgba(255,255,255,0.2)', borderRadius: '10px', transition: '0.3s'}}>
-                <div style={{position: 'absolute', top: '2px', left: isCumulative ? '22px' : '2px', width: '16px', height: '16px', background: 'white', borderRadius: '50%', transition: '0.3s'}} />
-              </div>
-              <span style={{fontSize: '13px', color: isCumulative ? 'var(--accent-emerald)' : 'var(--text-muted)'}}>누적 데이터 보기 (1월부터 합산)</span>
-            </label>
-          )}
-        </div>
+        {/* Global filter replaces local filters */}
       </div>
 
       {/* 🚀 최상단 핵심 지표 대형 배너 (100% 실측 팩트) */}
@@ -1185,7 +1038,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                 </div>
               </div>
               <div style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--text-main)', letterSpacing: '-0.5px'}}>
-                ₩<CountUp end={kpiData.revPar} formattingFn={formatCurrency} duration={1} preserveValue />
+                ₩<CountUp end={kpiData?.revPar || 0} formattingFn={formatCurrency} duration={1} preserveValue />
               </div>
             </div>
 
@@ -1200,7 +1053,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                 </div>
               </div>
               <div style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-emerald)', letterSpacing: '-0.5px'}}>
-                ₩<CountUp end={kpiData.grossTrevPar} formattingFn={formatCurrency} duration={1} preserveValue />
+                ₩<CountUp end={kpiData?.grossTrevPar || 0} formattingFn={formatCurrency} duration={1} preserveValue />
               </div>
             </div>
 
@@ -1215,7 +1068,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                 </div>
               </div>
               <div style={{fontSize: '28px', fontWeight: 'bold', color: 'var(--text-main)', letterSpacing: '-0.5px'}}>
-                ₩<CountUp end={kpiData.adr} formattingFn={formatCurrency} duration={1} preserveValue />
+                ₩<CountUp end={kpiData?.adr || 0} formattingFn={formatCurrency} duration={1} preserveValue />
               </div>
             </div>
           </div>
@@ -1632,8 +1485,13 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
           </div>
 
           <div style={{display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap'}}>
-            {/* 분석 대상 전환 토글 단추 */}
-            <div style={{display: 'flex', background: 'rgba(255,255,255,0.05)', padding: '4px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)'}}>
+                    {/* 분석 대상 전환 토글 단추 */}
+        <div style={{display: 'flex', background: 'rgba(255,255,255,0.05)', padding: '4px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)'}}>
+          <button onClick={() => setDayTypeFilter('all')} style={{ background: dayTypeFilter === 'all' ? '#3b82f6' : 'transparent', color: dayTypeFilter === 'all' ? '#fff' : 'var(--text-main)', border: 'none', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px', transition: 'all 0.2s' }}>전체 요일</button>
+          <button onClick={() => setDayTypeFilter('weekday')} style={{ background: dayTypeFilter === 'weekday' ? '#3b82f6' : 'transparent', color: dayTypeFilter === 'weekday' ? '#fff' : 'var(--text-main)', border: 'none', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px', transition: 'all 0.2s' }}>평일만</button>
+          <button onClick={() => setDayTypeFilter('weekend')} style={{ background: dayTypeFilter === 'weekend' ? '#3b82f6' : 'transparent', color: dayTypeFilter === 'weekend' ? '#fff' : 'var(--text-main)', border: 'none', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px', transition: 'all 0.2s' }}>주말/휴일만</button>
+        </div>
+        <div style={{display: 'flex', background: 'rgba(255,255,255,0.05)', padding: '4px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)'}}>
               <button
                 onClick={() => setWeatherDataType('room')}
                 style={{
@@ -1692,35 +1550,9 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
           </div>
         </div>
 
-        {((weatherDataType === 'leisure' || weatherDataType === 'golf') && (!dailyWeatherSalesData || dailyWeatherSalesData.length === 0 || !dailyWeatherSalesData.some(d => d.revenue > 0))) ? (
-          <div style={{
-            background: 'rgba(251, 191, 36, 0.1)', 
-            border: '1px solid var(--accent-gold)', 
-            borderRadius: '12px', 
-            padding: '24px', 
-            textAlign: 'center',
-            color: 'var(--text-main)'
-          }}>
-            <p style={{margin: '0 0 12px 0', fontSize: '15px', fontWeight: 'bold'}}>일별 {weatherDataType === 'golf' ? '골프' : '레저'} 매출 데이터가 없습니다.</p>
-            <p style={{margin: 0, fontSize: '13px', color: 'var(--text-muted)'}}>
-              {weatherDataType === 'golf' ? '골프' : '레저본부'} 날씨 매출 분석을 시작하려면 <strong>[설정] ➡️ [데이터 업로드]</strong> 탭으로 이동하여 <strong>레저 실적 엑셀 파일</strong>을 다시 업로드해 주세요.<br/>
-              재업로드 시 데이터베이스에 일별 상세 실적(분류별 영업장 데이터)이 추가되어 날씨 분석이 실시간으로 제공됩니다.
-            </p>
-          </div>
-        ) : (!isWeatherMerged || !weatherStats) ? (
-          <div style={{
-            background: 'rgba(251, 191, 36, 0.1)', 
-            border: '1px solid var(--accent-gold)', 
-            borderRadius: '12px', 
-            padding: '24px', 
-            textAlign: 'center',
-            color: 'var(--text-main)'
-          }}>
-            <p style={{margin: '0 0 12px 0', fontSize: '15px', fontWeight: 'bold'}}>날씨 데이터가 아직 병합되지 않았습니다.</p>
-            <p style={{margin: 0, fontSize: '13px', color: 'var(--text-muted)'}}>
-              날씨 분석을 시작하려면 <strong>[설정]</strong> 탭으로 이동하여 <strong>과거 날씨 데이터 소급 적용 (과거 데이터 마이그레이션)</strong>을 실행해 주세요.<br/>
-              또는 날씨 정보가 추가된 새 객실 실적 파일을 업로드하시면 자동으로 날씨가 동기화됩니다.
-            </p>
+        {(!dailyWeatherSalesData || dailyWeatherSalesData.length === 0) ? (
+          <div style={{padding: '40px', textAlign: 'center', color: 'var(--text-muted)'}}>
+            과거 2개월치 날씨 및 매출 데이터를 분석 중입니다...
           </div>
         ) : (
           <div style={{display: 'flex', flexDirection: 'column', gap: '24px'}}>

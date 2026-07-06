@@ -42,9 +42,9 @@ function transformDailyToMonthly(dailyRecords) {
 
     // 2. 부대 매출 데이터 누적 (salesByLocation, venues 등)
     Object.entries(dayData.revenues || {}).forEach(([venueName, revenue]) => {
-      // API V4 가이드: 부대 매출도 total_net 우선 추출 (Truthiness 뻥튀기 버그 방어: ?? 연산자 사용)
+      // API 가이드: 부대 매출은 gross 우선 추출 (부가세 포함 통일)
       const netRevenue = typeof revenue === 'object' && revenue !== null 
-        ? Number(revenue.total_net ?? revenue.total_gross ?? revenue.revenue ?? 0) 
+        ? Number(revenue.gross ?? revenue.total_gross ?? revenue.total_net ?? revenue.revenue ?? 0) 
         : Number(revenue ?? 0);
 
       monthObj.salesByLocation[venueName] = (monthObj.salesByLocation[venueName] || 0) + netRevenue;
@@ -125,8 +125,8 @@ function transformTimeseriesToMonthly(jsonArray) {
     }
 
     const roomsSold = Number(dayData.visitorData?.roomsSold || dayData.roomsSold || 0);
-    // 가이드: total_net(순매출) 최우선 사용 (Truthiness 버그 방어: ?? 연산자)
-    const roomRev = Number(dayData.total_net ?? dayData.revenues?.total_net ?? dayData.revenues?.room ?? dayData.roomRevenue ?? 0);
+    // 가이드: gross(부가세 포함) 최우선 사용 (Net 기반 연산들도 모두 Gross 기반으로 상향 통일됨)
+    const roomRev = Number(dayData.gross ?? dayData.total_gross ?? dayData.total_net ?? dayData.revenues?.total_gross ?? dayData.revenues?.total_net ?? dayData.revenues?.room ?? dayData.roomRevenue ?? 0);
     
     // [V4 API] Use unified rooms array with marketType and rateType
     const rooms = dayData.rooms || dayData.roomTypeBreakdown || dayData.visitorData?.roomTypeBreakdown || [];

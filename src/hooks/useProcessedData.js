@@ -44,6 +44,16 @@ export default function useProcessedData(monthlyData, settings) {
 
       let soldWd = 0;
       let soldWe = 0;
+      
+      let soldOther = 0;
+      let rev16Net = 0;
+      let rev35Net = 0;
+      let rev51Net = 0;
+      let revOtherNet = 0;
+      let guests16 = 0;
+      let guests35 = 0;
+      let guests51 = 0;
+      let guestsOther = 0;
 
       if (d.rawRoomRecords && Array.isArray(d.rawRoomRecords)) {
         const customWeekends = settings?.customWeekends || [];
@@ -58,14 +68,6 @@ export default function useProcessedData(monthlyData, settings) {
         let calculatedSold51 = 0;
         let calculatedSold51Acc = 0;
         let calculatedSoldOther = 0;
-        let rev16Net = 0;
-        let rev35Net = 0;
-        let guests16 = 0;
-        let guests35 = 0;
-        let guests51 = 0;
-        let guestsOther = 0;
-        let rev51Net = 0;
-        let revOtherNet = 0;
         
         let calculatedRevWd = 0;
         let calculatedRevWe = 0;
@@ -143,7 +145,7 @@ export default function useProcessedData(monthlyData, settings) {
         sold35 = calculatedSold35;
         sold51 = calculatedSold51;
         sold51Acc = calculatedSold51Acc;
-        let soldOther = calculatedSoldOther;
+        soldOther = calculatedSoldOther;
         
         soldWd = calculatedSoldWd;
         soldWe = calculatedSoldWe;
@@ -272,7 +274,7 @@ export default function useProcessedData(monthlyData, settings) {
       total16All += sold16;
       total35All += sold35;
       total51ConnVirtualAll += (sold51 / 2);
-      total51AccVirtualAll += sold51Acc;
+      total51AccVirtualAll += (sold51Acc / 2);
 
       let calcMotoGuest = 0;
       let calcMotoGeneral = 0;
@@ -343,6 +345,7 @@ export default function useProcessedData(monthlyData, settings) {
         guests51,
         guestsOther,
         soldOther,
+        totalInventory,
         occupancyRate: occRate,
         occWd,
         occWe,

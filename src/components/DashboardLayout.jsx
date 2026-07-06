@@ -42,7 +42,7 @@ const SIDEBAR_MENU = [
   }
 ];
 
-export default function DashboardLayout({ children, activeTab, setActiveTab }) {
+export default function DashboardLayout({ children, activeTab, setActiveTab, apiStartDate, setApiStartDate, apiEndDate, setApiEndDate }) {
   const [expandedMenus, setExpandedMenus] = useState(['new-business-parent']);
 
   const isIframe = window.self !== window.top || window.location.search.includes('mode=iframe');
@@ -125,9 +125,27 @@ export default function DashboardLayout({ children, activeTab, setActiveTab }) {
             SIDEBAR_MENU.flatMap(m => m.subItems || []).find(sub => sub.id === activeTab)?.label || 
             '대시보드'
           }</h1>
-          <div className="user-profile">
-            <div className="avatar">L</div>
-            <span>관리자</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <div className="global-date-picker" style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>조회 기간:</span>
+              <input 
+                type="date" 
+                value={apiStartDate} 
+                onChange={(e) => setApiStartDate(e.target.value)}
+                style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '14px', outline: 'none', colorScheme: 'dark', cursor: 'pointer' }}
+              />
+              <span style={{ color: 'var(--text-muted)' }}>~</span>
+              <input 
+                type="date" 
+                value={apiEndDate} 
+                onChange={(e) => setApiEndDate(e.target.value)}
+                style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '14px', outline: 'none', colorScheme: 'dark', cursor: 'pointer' }}
+              />
+            </div>
+            <div className="user-profile">
+              <div className="avatar">L</div>
+              <span>관리자</span>
+            </div>
           </div>
         </header>
         )}

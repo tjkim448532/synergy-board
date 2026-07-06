@@ -34,49 +34,9 @@ const normalizeRoomType = (type) => {
 
 export default function ChannelAnalysis({ processedData, globalStats, settings }) {
   const [activeTab, setActiveTab] = useState('overview');
-  const [selectedMonthFilter, setSelectedMonthFilter] = useState('all');
+  // Date range filtering is now managed globally in App.jsx
 
-  // fallback for legacy cached state like '05'
-  useEffect(() => {
-    if (selectedMonthFilter !== 'all' && !selectedMonthFilter.includes('-')) {
-      setSelectedMonthFilter('all');
-    }
-  }, [selectedMonthFilter]);
-
-  // 동적 필터 옵션 생성
-  const monthOptions = useMemo(() => {
-    const options = [];
-    const validData = processedData;
-    const years = [...new Set(validData.map(d => (d.yearMonth || '').split('-')[0]))].filter(y => y);
-    years.sort((a,b) => b.localeCompare(a));
-    
-    years.forEach(year => {
-      const yearMonths = validData.filter(d => (d.yearMonth || '').startsWith(year));
-      if (yearMonths.length > 0) {
-        options.push({ value: `${year}-all`, label: `${year}년 종합 분석` });
-        for (let m = 1; m <= 12; m++) {
-          const mm = String(m).padStart(2, '0');
-          if (yearMonths.some(d => (d.yearMonth || '').split('-')[1] === mm)) {
-            options.push({ value: `${year}-${mm}`, label: `${year}년 ${m}월 누적 (1~${m}월)` });
-          }
-        }
-      }
-    });
-    return options;
-  }, [processedData]);
-
-  // Filter out recent months like AdvancedAnalytics does
-  const filteredProcessedData = useMemo(() => {
-    return processedData.filter(d => {
-      if (selectedMonthFilter !== 'all') {
-        const [selYear, selMonth] = selectedMonthFilter.split('-');
-        const [y, m] = (d.yearMonth || '').split('-');
-        if (y !== selYear) return false;
-        if (selMonth !== 'all' && parseInt(m) > parseInt(selMonth)) return false;
-      }
-      return true;
-    }).sort((a, b) => (a.id || a.yearMonth || '').localeCompare(b.id || b.yearMonth || ''));
-  }, [processedData, selectedMonthFilter]);
+  const filteredProcessedData = processedData; // Alias to support global DatePicker filtering directly
 
   const divisionConfig = useMemo(() => {
     const config = {
@@ -797,19 +757,7 @@ export default function ChannelAnalysis({ processedData, globalStats, settings }
           <p style={{fontSize: '14px', color: 'var(--text-muted)', margin: 0}}>
             업로드된 객실 로데이터의 Agency, Rate Type, 예약 일자 등을 활용하여 다각도 채널 분석을 제공합니다.
           </p>
-          <div style={{display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(0,0,0,0.2)', padding: '6px 12px', borderRadius: '8px'}}>
-            <span style={{fontSize: '14px', color: 'var(--text-muted)'}}>월별 필터:</span>
-            <select 
-              value={selectedMonthFilter}
-              onChange={(e) => setSelectedMonthFilter(e.target.value)}
-              style={{background: 'rgba(255,255,255,0.1)', color: 'var(--text-main)', border: 'none', padding: '6px 12px', borderRadius: '4px', outline: 'none', fontWeight: 'bold'}}
-            >
-              <option value="all" style={{color: 'black'}}>전체 연도 종합 분석</option>
-              {monthOptions.map(opt => (
-                <option key={opt.value} value={opt.value} style={{color: 'black'}}>{opt.label}</option>
-              ))}
-            </select>
-          </div>
+          {/* Global filter replaces local filters */}
         </div>
 
         {/* 탭 메뉴 */}
