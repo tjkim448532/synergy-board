@@ -42,12 +42,17 @@ function transformDailyToMonthly(dailyRecords) {
 
     // 2. 부대 매출 데이터 누적 (salesByLocation, venues 등)
     Object.entries(dayData.revenues || {}).forEach(([venueName, revenue]) => {
-      monthObj.salesByLocation[venueName] = (monthObj.salesByLocation[venueName] || 0) + revenue;
+      // API V4 가이드: 부대 매출도 total_net 우선 추출
+      const netRevenue = typeof revenue === 'object' && revenue !== null 
+        ? Number(revenue.total_net || revenue.total_gross || revenue.revenue || 0) 
+        : Number(revenue || 0);
+
+      monthObj.salesByLocation[venueName] = (monthObj.salesByLocation[venueName] || 0) + netRevenue;
       
       if (!monthObj.venues[venueName]) {
         monthObj.venues[venueName] = { totalRev: 0, tickets: {} };
       }
-      monthObj.venues[venueName].totalRev += revenue;
+      monthObj.venues[venueName].totalRev += netRevenue;
     });
 
     // 3. 부대 티켓 데이터 누적

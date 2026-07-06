@@ -548,7 +548,7 @@ export default function ChannelAnalysis({ processedData, globalStats, settings }
                     </Pie>
                     <RechartsTooltip 
                       contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)'}}
-                      formatter={(val) => `₩${formatCurrency(val)}`} 
+                      formatter={(val) => `${formatCurrency(val)}`} 
                     />
                     <Legend />
                   </PieChart>
@@ -572,10 +572,10 @@ export default function ChannelAnalysis({ processedData, globalStats, settings }
                       {channelAdrData.map((row) => (
                         <tr key={row.channel} style={{borderBottom: '1px solid rgba(255,255,255,0.05)'}}>
                           <td style={{padding: '12px', textAlign: 'left', fontWeight: 'bold'}}>{row.channel}</td>
-                          <td style={{padding: '12px'}}>{row['16평'] ? `₩${formatCurrency(row['16평'])}` : '-'}</td>
-                          <td style={{padding: '12px'}}>{row['35평'] ? `₩${formatCurrency(row['35평'])}` : '-'}</td>
+                          <td style={{padding: '12px'}}>{row['16평'] ? `${formatCurrency(row['16평'])}` : '-'}</td>
+                          <td style={{padding: '12px'}}>{row['35평'] ? `${formatCurrency(row['35평'])}` : '-'}</td>
                           <td style={{padding: '12px', color: 'var(--accent-gold)', fontWeight: 'bold'}}>
-                            {row['전체'] ? `₩${formatCurrency(row['전체'])}` : '-'}
+                            {row['전체'] ? `${formatCurrency(row['전체'])}` : '-'}
                           </td>
                         </tr>
                       ))}
@@ -604,7 +604,7 @@ export default function ChannelAnalysis({ processedData, globalStats, settings }
                   <RechartsTooltip 
                     cursor={{fill: 'rgba(255,255,255,0.05)'}}
                     contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)'}}
-                    formatter={(val) => `₩${formatCurrency(val)}`}
+                    formatter={(val) => `${formatCurrency(val)}`}
                   />
                   <Bar dataKey="revenue" fill="var(--accent-blue)" radius={[0, 4, 4, 0]}>
                     {agencyData.map((entry, index) => (
@@ -633,7 +633,7 @@ export default function ChannelAnalysis({ processedData, globalStats, settings }
                   <RechartsTooltip 
                     cursor={{fill: 'rgba(255,255,255,0.05)'}}
                     contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)'}}
-                    formatter={(val) => `₩${formatCurrency(val)}`}
+                    formatter={(val) => `${formatCurrency(val)}`}
                   />
                   <Legend />
                   <Bar dataKey="주중" stackId="a" fill="var(--accent-purple)" name="주중 매출" />
@@ -657,8 +657,8 @@ export default function ChannelAnalysis({ processedData, globalStats, settings }
                   {weekendData.map((row) => (
                     <tr key={row.channel} style={{borderBottom: '1px solid rgba(255,255,255,0.05)'}}>
                       <td style={{padding: '12px', fontWeight: 'bold'}}>{row.channel}</td>
-                      <td style={{padding: '12px'}}>₩{formatCurrency(row.주중)}</td>
-                      <td style={{padding: '12px'}}>₩{formatCurrency(row.주말)}</td>
+                      <td style={{padding: '12px'}}>{formatCurrency(row.주중)}</td>
+                      <td style={{padding: '12px'}}>{formatCurrency(row.주말)}</td>
                       <td style={{padding: '12px', color: 'var(--accent-purple)', fontWeight: 'bold'}}>{row.주중비율}%</td>
                       <td style={{padding: '12px', color: 'var(--accent-gold)', fontWeight: 'bold'}}>{row.주말비율}%</td>
                     </tr>
@@ -685,7 +685,7 @@ export default function ChannelAnalysis({ processedData, globalStats, settings }
                       {rateTypeData[channel].map((rate, i) => (
                         <li key={rate.name} style={{display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: i < 2 ? '1px dashed rgba(255,255,255,0.05)' : 'none'}}>
                           <span style={{color: 'var(--text-main)', fontSize: '13px'}}>{i+1}. {rate.name}</span>
-                          <span style={{fontWeight: 'bold', fontSize: '13px'}}>₩{formatCurrency(rate.rev)}</span>
+                          <span style={{fontWeight: 'bold', fontSize: '13px'}}>{formatCurrency(rate.rev)}</span>
                         </li>
                       ))}
                     </ul>
@@ -714,7 +714,7 @@ export default function ChannelAnalysis({ processedData, globalStats, settings }
                   <RechartsTooltip 
                     cursor={{fill: 'rgba(255,255,255,0.05)'}}
                     contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)'}}
-                    formatter={(val) => `₩${formatCurrency(val)}`}
+                    formatter={(val) => `${formatCurrency(val)}`}
                   />
                   <Legend />
                   <Bar dataKey="온라인" stackId="a" fill={PIE_COLORS[0]} />
@@ -752,7 +752,7 @@ export default function ChannelAnalysis({ processedData, globalStats, settings }
                       <RechartsTooltip 
                         cursor={{fill: 'rgba(255,255,255,0.05)'}}
                         contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--accent-red)'}}
-                        formatter={(val) => `₩${formatCurrency(val)}`}
+                        formatter={(val) => `${formatCurrency(val)}`}
                       />
                       <Bar dataKey="환불액" fill="var(--accent-red)" radius={[4, 4, 0, 0]} name="취소/환불 총액" />
                     </BarChart>
@@ -772,7 +772,7 @@ export default function ChannelAnalysis({ processedData, globalStats, settings }
                       {cancelData.map((row) => (
                         <tr key={row.channel} style={{borderBottom: '1px solid rgba(239,68,68,0.1)'}}>
                           <td style={{padding: '12px', fontWeight: 'bold'}}>{row.channel}</td>
-                          <td style={{padding: '12px'}}>₩{formatCurrency(row.환불액)}</td>
+                          <td style={{padding: '12px'}}>{formatCurrency(row.환불액)}</td>
                           <td style={{padding: '12px', fontWeight: 'bold', color: 'var(--accent-red)'}}>{row.비중}%</td>
                         </tr>
                       ))}

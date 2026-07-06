@@ -351,15 +351,15 @@ export default function WeatherForecastAnalytics({ processedData, settings }) {
                       <span style={{color: fac.isWeekend ? 'var(--accent-gold)' : 'var(--accent-blue)', fontSize: '12px', marginRight: '6px'}}>[{fac.isWeekend ? '주말/휴일' : '평일'}]</span>
                       {fac.name}
                     </td>
-                    <td style={{padding: '12px', color: 'var(--text-muted)'}}>₩{formatCurrency(fac.clearAvg)}</td>
-                    <td style={{padding: '12px', color: 'var(--text-muted)'}}>₩{formatCurrency(fac.rainyAvg)}</td>
+                    <td style={{padding: '12px', color: 'var(--text-muted)'}}>{formatCurrency(fac.clearAvg)}</td>
+                    <td style={{padding: '12px', color: 'var(--text-muted)'}}>{formatCurrency(fac.rainyAvg)}</td>
                     <td style={{padding: '12px', fontWeight: 'bold', color: simulationResults.isForecastRainy && fac.decreaseRate < 0 ? 'var(--accent-coral)' : 'var(--text-main)'}}>
-                      ₩{formatCurrency(fac.expectedRevenue)}
+                      {formatCurrency(fac.expectedRevenue)}
                     </td>
                     <td style={{padding: '12px'}}>
                       {fac.variance < 0 ? (
                         <span style={{color: 'var(--accent-coral)', display: 'flex', alignItems: 'center', gap: '4px'}}>
-                          <TrendingDown size={14} /> ₩{formatCurrency(Math.abs(fac.variance))}
+                          <TrendingDown size={14} /> {formatCurrency(Math.abs(fac.variance))}
                           <span style={{fontSize: '11px'}}>({fac.decreaseRate.toFixed(1)}%)</span>
                         </span>
                       ) : (

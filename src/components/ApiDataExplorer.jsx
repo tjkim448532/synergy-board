@@ -166,10 +166,10 @@ export default function ApiDataExplorer({ processedData }) {
                     <td>{d.totalSold?.toLocaleString()}실</td>
                     <td>{d.guests?.toLocaleString()}명</td>
                     <td>{d.occupancyRate?.toFixed(1)}%</td>
-                    <td>{d.totalRoomRevenue?.toLocaleString()}원</td>
-                    <td>{d.fnbSales?.toLocaleString()}원</td>
-                    <td>{d.leisureSales?.toLocaleString()}원</td>
-                    <td style={{ fontWeight: 'bold' }}>{totalOverall.toLocaleString()}원</td>
+                    <td>{d.totalRoomRevenue?.toLocaleString()}</td>
+                    <td>{d.fnbSales?.toLocaleString()}</td>
+                    <td>{d.leisureSales?.toLocaleString()}</td>
+                    <td style={{ fontWeight: 'bold' }}>{totalOverall.toLocaleString()}</td>
                     <td style={{ textAlign: 'center' }}>
                       {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                     </td>
@@ -208,7 +208,7 @@ export default function ApiDataExplorer({ processedData }) {
                                         <td>{rec.roomType}</td>
                                         <td>{rec.marketType || '-'} / {rec.agency || '-'}</td>
                                         <td>{rec.count}실</td>
-                                        <td>{rec.revenue?.toLocaleString()}원</td>
+                                        <td>{rec.revenue?.toLocaleString()}</td>
                                         <td>{rec.weatherTempMax}°C / {rec.weatherPrecipitation}mm</td>
                                       </tr>
                                     ))}
@@ -243,7 +243,7 @@ export default function ApiDataExplorer({ processedData }) {
                                   return (
                                     <tr key={idx}>
                                       <td>{venue}</td>
-                                      <td>{rev?.toLocaleString()}원</td>
+                                      <td>{rev?.toLocaleString()}</td>
                                       <td>{usage > 0 ? `${usage.toLocaleString()}명/건` : '-'}</td>
                                     </tr>
                                   );

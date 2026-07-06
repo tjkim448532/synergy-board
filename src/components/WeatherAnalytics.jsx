@@ -78,11 +78,11 @@ export default function WeatherAnalytics({ processedData, settings }) {
               <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
                 <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                   <span style={{color: 'var(--text-muted)', fontSize: '13px'}}>평소 매출</span>
-                  <strong style={{fontSize: '15px'}}>₩{formatCurrency(wStat.wd.normalWindAvgRev)}</strong>
+                  <strong style={{fontSize: '15px'}}>{formatCurrency(wStat.wd.normalWindAvgRev)}</strong>
                 </div>
                 <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                   <span style={{color: 'var(--text-muted)', fontSize: '13px'}}>강풍시 매출</span>
-                  <strong style={{fontSize: '15px', color: 'var(--accent-coral)'}}>₩{formatCurrency(wStat.wd.highWindAvgRev)}</strong>
+                  <strong style={{fontSize: '15px', color: 'var(--accent-coral)'}}>{formatCurrency(wStat.wd.highWindAvgRev)}</strong>
                 </div>
                 {wStat.wd.normalWindAvgRev > 0 && wStat.wd.highWindAvgRev < wStat.wd.normalWindAvgRev && (
                   <div style={{marginTop: '4px', padding: '8px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '6px', textAlign: 'center', fontSize: '13px'}}>
@@ -98,11 +98,11 @@ export default function WeatherAnalytics({ processedData, settings }) {
               <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
                 <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                   <span style={{color: 'var(--text-muted)', fontSize: '13px'}}>평소 매출</span>
-                  <strong style={{fontSize: '15px'}}>₩{formatCurrency(wStat.we.normalWindAvgRev)}</strong>
+                  <strong style={{fontSize: '15px'}}>{formatCurrency(wStat.we.normalWindAvgRev)}</strong>
                 </div>
                 <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                   <span style={{color: 'var(--text-muted)', fontSize: '13px'}}>강풍시 매출</span>
-                  <strong style={{fontSize: '15px', color: 'var(--accent-coral)'}}>₩{formatCurrency(wStat.we.highWindAvgRev)}</strong>
+                  <strong style={{fontSize: '15px', color: 'var(--accent-coral)'}}>{formatCurrency(wStat.we.highWindAvgRev)}</strong>
                 </div>
                 {wStat.we.normalWindAvgRev > 0 && wStat.we.highWindAvgRev < wStat.we.normalWindAvgRev && (
                   <div style={{marginTop: '4px', padding: '8px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '6px', textAlign: 'center', fontSize: '13px'}}>
@@ -127,19 +127,19 @@ export default function WeatherAnalytics({ processedData, settings }) {
               <h4 style={{color: 'var(--text-muted)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px', marginBottom: '4px', marginTop: 0}}>주중</h4>
               <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                 <span style={{color: 'var(--text-muted)', fontSize: '13px'}}>맑은 날</span>
-                <strong style={{fontSize: '14px'}}>₩{formatCurrency(fStat.wd.clearAvg)}</strong>
+                <strong style={{fontSize: '14px'}}>{formatCurrency(fStat.wd.clearAvg)}</strong>
               </div>
               <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px', background: 'rgba(255,255,255,0.02)', borderRadius: '4px'}}>
                 <span style={{color: 'var(--text-muted)', fontSize: '13px'}}>우천 1일차</span>
-                <strong style={{color: 'var(--accent-gold)', fontSize: '14px'}}>₩{formatCurrency(fStat.wd.day1Avg)}</strong>
+                <strong style={{color: 'var(--accent-gold)', fontSize: '14px'}}>{formatCurrency(fStat.wd.day1Avg)}</strong>
               </div>
               <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px', background: 'rgba(255,255,255,0.02)', borderRadius: '4px'}}>
                 <span style={{color: 'var(--text-muted)', fontSize: '13px'}}>2일차 연속</span>
-                <strong style={{color: 'var(--accent-gold)', fontSize: '14px'}}>₩{formatCurrency(fStat.wd.day2Avg)}</strong>
+                <strong style={{color: 'var(--accent-gold)', fontSize: '14px'}}>{formatCurrency(fStat.wd.day2Avg)}</strong>
               </div>
               <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px', background: 'rgba(255,255,255,0.02)', borderRadius: '4px'}}>
                 <span style={{color: 'var(--text-muted)', fontSize: '13px'}}>장마(3일↑)</span>
-                <strong style={{color: 'var(--accent-coral)', fontSize: '14px'}}>₩{formatCurrency(fStat.wd.day3plusAvg)}</strong>
+                <strong style={{color: 'var(--accent-coral)', fontSize: '14px'}}>{formatCurrency(fStat.wd.day3plusAvg)}</strong>
               </div>
             </div>
 
@@ -148,19 +148,19 @@ export default function WeatherAnalytics({ processedData, settings }) {
               <h4 style={{color: 'var(--text-muted)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px', marginBottom: '4px', marginTop: 0}}>주말</h4>
               <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                 <span style={{color: 'var(--text-muted)', fontSize: '13px'}}>맑은 날</span>
-                <strong style={{fontSize: '14px'}}>₩{formatCurrency(fStat.we.clearAvg)}</strong>
+                <strong style={{fontSize: '14px'}}>{formatCurrency(fStat.we.clearAvg)}</strong>
               </div>
               <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px', background: 'rgba(255,255,255,0.02)', borderRadius: '4px'}}>
                 <span style={{color: 'var(--text-muted)', fontSize: '13px'}}>우천 1일차</span>
-                <strong style={{color: 'var(--accent-gold)', fontSize: '14px'}}>₩{formatCurrency(fStat.we.day1Avg)}</strong>
+                <strong style={{color: 'var(--accent-gold)', fontSize: '14px'}}>{formatCurrency(fStat.we.day1Avg)}</strong>
               </div>
               <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px', background: 'rgba(255,255,255,0.02)', borderRadius: '4px'}}>
                 <span style={{color: 'var(--text-muted)', fontSize: '13px'}}>2일차 연속</span>
-                <strong style={{color: 'var(--accent-gold)', fontSize: '14px'}}>₩{formatCurrency(fStat.we.day2Avg)}</strong>
+                <strong style={{color: 'var(--accent-gold)', fontSize: '14px'}}>{formatCurrency(fStat.we.day2Avg)}</strong>
               </div>
               <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px', background: 'rgba(255,255,255,0.02)', borderRadius: '4px'}}>
                 <span style={{color: 'var(--text-muted)', fontSize: '13px'}}>장마(3일↑)</span>
-                <strong style={{color: 'var(--accent-coral)', fontSize: '14px'}}>₩{formatCurrency(fStat.we.day3plusAvg)}</strong>
+                <strong style={{color: 'var(--accent-coral)', fontSize: '14px'}}>{formatCurrency(fStat.we.day3plusAvg)}</strong>
               </div>
             </div>
           </div>
@@ -184,7 +184,7 @@ export default function WeatherAnalytics({ processedData, settings }) {
                 {/* 주중 */}
                 {sub.wdClearAvg > 0 && (
                 <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '4px'}}>
-                  <span>[주중] 맑은 날: ₩{formatCurrency(sub.wdClearAvg)} <span style={{opacity: 0.5}}>→</span> 비: ₩{formatCurrency(sub.wdRainyAvg)}</span>
+                  <span>[주중] 맑은 날: {formatCurrency(sub.wdClearAvg)} <span style={{opacity: 0.5}}>→</span> 비: {formatCurrency(sub.wdRainyAvg)}</span>
                   <strong style={{color: sub.wdPenalty > 0 ? 'var(--accent-emerald)' : 'var(--text-muted)'}}>
                     {sub.wdPenalty > 0 ? '+' : ''}{sub.wdPenalty.toFixed(1)}%
                   </strong>
@@ -194,7 +194,7 @@ export default function WeatherAnalytics({ processedData, settings }) {
                 {/* 주말 */}
                 {sub.weClearAvg > 0 && (
                 <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--text-muted)'}}>
-                  <span>[주말] 맑은 날: ₩{formatCurrency(sub.weClearAvg)} <span style={{opacity: 0.5}}>→</span> 비: ₩{formatCurrency(sub.weRainyAvg)}</span>
+                  <span>[주말] 맑은 날: {formatCurrency(sub.weClearAvg)} <span style={{opacity: 0.5}}>→</span> 비: {formatCurrency(sub.weRainyAvg)}</span>
                   <strong style={{color: sub.wePenalty > 0 ? 'var(--accent-emerald)' : 'var(--text-muted)'}}>
                     {sub.wePenalty > 0 ? '+' : ''}{sub.wePenalty.toFixed(1)}%
                   </strong>
@@ -227,7 +227,7 @@ export default function WeatherAnalytics({ processedData, settings }) {
                 {/* 주중 */}
                 {sub.wdClearAvg > 0 && (
                 <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '4px'}}>
-                  <span>[주중] 맑은 날: ₩{formatCurrency(sub.wdClearAvg)} <span style={{opacity: 0.5}}>→</span> 비: ₩{formatCurrency(sub.wdRainyAvg)}</span>
+                  <span>[주중] 맑은 날: {formatCurrency(sub.wdClearAvg)} <span style={{opacity: 0.5}}>→</span> 비: {formatCurrency(sub.wdRainyAvg)}</span>
                   <strong style={{color: sub.wdPenalty < 0 ? 'var(--accent-coral)' : 'var(--text-muted)'}}>
                     {sub.wdPenalty > 0 ? '+' : ''}{sub.wdPenalty.toFixed(1)}%
                   </strong>
@@ -237,7 +237,7 @@ export default function WeatherAnalytics({ processedData, settings }) {
                 {/* 주말 */}
                 {sub.weClearAvg > 0 && (
                 <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--text-muted)'}}>
-                  <span>[주말] 맑은 날: ₩{formatCurrency(sub.weClearAvg)} <span style={{opacity: 0.5}}>→</span> 비: ₩{formatCurrency(sub.weRainyAvg)}</span>
+                  <span>[주말] 맑은 날: {formatCurrency(sub.weClearAvg)} <span style={{opacity: 0.5}}>→</span> 비: {formatCurrency(sub.weRainyAvg)}</span>
                   <strong style={{color: sub.wePenalty < 0 ? 'var(--accent-coral)' : 'var(--text-muted)'}}>
                     {sub.wePenalty > 0 ? '+' : ''}{sub.wePenalty.toFixed(1)}%
                   </strong>

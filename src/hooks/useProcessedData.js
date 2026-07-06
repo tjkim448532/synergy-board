@@ -56,6 +56,11 @@ export default function useProcessedData(monthlyData, settings) {
         let calculatedSold35 = 0;
         let calculatedSold51 = 0;
         let calculatedSold51Acc = 0;
+        let calculatedSoldOther = 0;
+        let rev16Net = 0;
+        let rev35Net = 0;
+        let rev51Net = 0;
+        let revOtherNet = 0;
         
         let calculatedRevWd = 0;
         let calculatedRevWe = 0;
@@ -94,14 +99,21 @@ export default function useProcessedData(monthlyData, settings) {
           
           if (roomType.includes('16평')) {
             calculatedSold16 += count;
+            rev16Net += revenue;
           } else if (roomType.includes('35평')) {
             calculatedSold35 += count;
+            rev35Net += revenue;
           } else if (roomType.includes('51평')) {
+            rev51Net += revenue;
             if (roomType.includes('장애') || roomType.includes('휠체어')) {
               calculatedSold51Acc += count;
             } else {
               calculatedSold51 += count;
             }
+          } else {
+            // 미매핑 신규 평형 흡수
+            calculatedSoldOther += count;
+            revOtherNet += revenue;
           }
           
           if (isWeekend) {
@@ -121,6 +133,7 @@ export default function useProcessedData(monthlyData, settings) {
         sold35 = calculatedSold35;
         sold51 = calculatedSold51;
         sold51Acc = calculatedSold51Acc;
+        let soldOther = calculatedSoldOther;
         
         soldWd = calculatedSoldWd;
         soldWe = calculatedSoldWe;
@@ -129,7 +142,7 @@ export default function useProcessedData(monthlyData, settings) {
         revWd = calculatedRevWd;
         revWe = calculatedRevWe;
       } else {
-        const totalSoldFallback = sold16 + sold35 + sold51 + sold51Acc;
+        const totalSoldFallback = sold16 + sold35 + sold51 + sold51Acc + (typeof soldOther !== 'undefined' ? soldOther : 0);
         const rawSoldWd = Number(d.soldWeekday || 0);
         const rawSoldWe = Number(d.soldWeekend || 0);
         const totalRawSold = rawSoldWd + rawSoldWe;
@@ -144,14 +157,15 @@ export default function useProcessedData(monthlyData, settings) {
         }
       }
 
-      const totalSold = sold16 + sold35 + sold51 + sold51Acc;
+      const totalBookings = sold16 + sold35 + sold51 + sold51Acc + (typeof soldOther !== 'undefined' ? soldOther : 0);
+      const totalPhysicalKeys = sold16 + sold35 + ((sold51 + sold51Acc) * 2) + (typeof soldOther !== 'undefined' ? soldOther : 0);
+      const totalSold = totalBookings; // Legacy 호환성
+      const totalSoldForOcc = totalPhysicalKeys;
       
       const globalCapacity = d.capacity?.total || 180;
       const cap16 = d.capacity?.['16평'] || 90;
       const cap35 = d.capacity?.['35평'] || 90;
       const dailyInventory = globalCapacity;
-      
-      const totalSoldForOcc = sold16 + sold35 + ((sold51 + sold51Acc) * 2);
       
       const totalInventory = dailyInventory * days;
       const invWd = dailyInventory * daysWd;
@@ -203,6 +217,11 @@ export default function useProcessedData(monthlyData, settings) {
       
       const occ16 = cap16 > 0 ? ((sold16 + sold51 + sold51Acc) / cap16) * 100 : 0;
       const occ35 = cap35 > 0 ? ((sold35 + sold51 + sold51Acc) / cap35) * 100 : 0;
+      
+      // 51평 ADR 통짜(1건) 기준 확립
+      const adr16 = sold16 > 0 ? (rev16Net / sold16) : 0;
+      const adr35 = sold35 > 0 ? (rev35Net / sold35) : 0;
+      const adr51 = (sold51 + sold51Acc) > 0 ? (rev51Net / (sold51 + sold51Acc)) : 0;
 
       const dynamicGroupsSum = Object.values(dynamicGroups).reduce((sum, val) => sum + val, 0);
       const totalSales = leisureSales + motoSales + fnbSales + otherSales + dynamicGroupsSum;
@@ -278,6 +297,16 @@ export default function useProcessedData(monthlyData, settings) {
         sold51Acc,
         totalSold,
         guests,
+        revenue16: rev16Net,
+        revenue35: rev35Net,
+        revenue51: rev51Net,
+        revenueOther: revOtherNet,
+        occ16,
+        occ35,
+        adr16,
+        adr35,
+        adr51,
+        soldOther,
         occupancyRate: occRate,
         occWd,
         occWe,
@@ -309,7 +338,7 @@ export default function useProcessedData(monthlyData, settings) {
     const globalOccRate = totalInventoryAll > 0 ? (totalSoldForOccAll / totalInventoryAll) * 100 : 0;
     const globalWdOccRate = totalInvWdAll > 0 ? (totalSoldWdAll / totalInvWdAll) * 100 : 0; // Note: soldWd/We internally uses totalSoldForOcc
     const globalWeOccRate = totalInvWeAll > 0 ? (totalSoldWeAll / totalInvWeAll) * 100 : 0;
-    const avgGuestsPerSoldRoom = totalSoldAll > 0 ? totalGuestsAll / totalSoldAll : 0;
+    const avgGuestsPerSoldRoom = totalSoldForOccAll > 0 ? totalGuestsAll / totalSoldForOccAll : 0;
     
     // Dynamic fallback instead of 175
     const dailyInventory = monthlyData[0]?.capacity?.total || 180;

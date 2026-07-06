@@ -310,7 +310,7 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
                 <div style={{width: '12px', height: '12px', borderRadius: '50%', background: 'var(--accent-blue)'}} />
                 <span>객실 매출</span>
               </div>
-              <strong style={{fontSize: '18px'}}>₩{formatCurrency(expectedRoomRev)}</strong>
+              <strong style={{fontSize: '18px'}}>{formatCurrency(expectedRoomRev)}</strong>
             </div>
 
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '12px', borderBottom: '1px dashed rgba(255,255,255,0.1)'}}>
@@ -319,7 +319,7 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
                 <span>식음(F&B) 매출</span>
               </div>
               <div style={{textAlign: 'right'}}>
-                <strong style={{fontSize: '18px', color: !baseMetrics.validFnb ? 'var(--text-muted)' : fnbSim.isCapped ? '#ef4444' : 'inherit'}}>₩{formatCurrency(expectedFnbRev)}</strong>
+                <strong style={{fontSize: '18px', color: !baseMetrics.validFnb ? 'var(--text-muted)' : fnbSim.isCapped ? '#ef4444' : 'inherit'}}>{formatCurrency(expectedFnbRev)}</strong>
                 {!baseMetrics.validFnb && <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px'}}>*상관관계 지수 미달 (제외됨)</div>}
                 {baseMetrics.validFnb && fnbSim.isCapped && <div style={{fontSize: '12px', color: '#ef4444', marginTop: '4px'}}>*Capa 상한 도달 (초과분 버림)</div>}
               </div>
@@ -331,7 +331,7 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
                 <span>모토아레나 매출</span>
               </div>
               <div style={{textAlign: 'right'}}>
-                <strong style={{fontSize: '18px', color: !baseMetrics.validMoto ? 'var(--text-muted)' : motoSim.isCapped ? 'var(--accent-gold)' : 'inherit'}}>₩{formatCurrency(expectedMotoRev)}</strong>
+                <strong style={{fontSize: '18px', color: !baseMetrics.validMoto ? 'var(--text-muted)' : motoSim.isCapped ? 'var(--accent-gold)' : 'inherit'}}>{formatCurrency(expectedMotoRev)}</strong>
                 {!baseMetrics.validMoto && <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px'}}>*상관관계 지수 미달 (제외됨)</div>}
                 {baseMetrics.validMoto && motoSim.isCapped && <div style={{fontSize: '12px', color: 'var(--accent-gold)', marginTop: '4px'}}>*Capa 상한 도달 (초과분 버림)</div>}
               </div>
@@ -343,7 +343,7 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
                 <span>레저/기타 매출</span>
               </div>
               <div style={{textAlign: 'right'}}>
-                <strong style={{fontSize: '18px', color: !baseMetrics.validLeisure ? 'var(--text-muted)' : leisureSim.isCapped ? 'var(--accent-emerald)' : 'inherit'}}>₩{formatCurrency(expectedLeisureRev)}</strong>
+                <strong style={{fontSize: '18px', color: !baseMetrics.validLeisure ? 'var(--text-muted)' : leisureSim.isCapped ? 'var(--accent-emerald)' : 'inherit'}}>{formatCurrency(expectedLeisureRev)}</strong>
                 {!baseMetrics.validLeisure && <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px'}}>*상관관계 지수 미달 (제외됨)</div>}
                 {baseMetrics.validLeisure && leisureSim.isCapped && <div style={{fontSize: '12px', color: 'var(--accent-emerald)', marginTop: '4px'}}>*Capa 상한 도달 (초과분 버림)</div>}
               </div>
@@ -373,7 +373,7 @@ export default function NewBusinessTraining({ processedData, globalStats, settin
                   ))}
                 </Pie>
                 <RechartsTooltip 
-                  formatter={(value) => `₩${formatCurrency(value)}`}
+                  formatter={(value) => `${formatCurrency(value)}`}
                   contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)', borderRadius: '8px'}}
                 />
                 <Legend verticalAlign="bottom" height={36}/>

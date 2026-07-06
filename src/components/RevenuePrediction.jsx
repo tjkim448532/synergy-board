@@ -264,10 +264,10 @@ export default function RevenuePrediction({ processedData, globalStats, settings
             <div style={{textAlign: 'center', flex: '1', minWidth: '250px', maxWidth: '100%'}}>
               <div style={{color: 'var(--accent-emerald)', fontSize: '16px', marginBottom: '8px', fontWeight: 'bold'}}>📌 {refData.label}</div>
               <div className="responsive-stat-value">
-                총 통합 매출 <span style={{fontSize: '13px', color: 'var(--text-muted)', fontWeight: 'normal', verticalAlign: 'middle'}}>(골프 제외)</span>: <span style={{color: 'var(--accent-gold)'}}>₩ {formatCurrency(refData.totalRev)}</span>
+                총 통합 매출 <span style={{fontSize: '13px', color: 'var(--text-muted)', fontWeight: 'normal', verticalAlign: 'middle'}}>(골프 제외)</span>: <span style={{color: 'var(--accent-gold)'}}>{formatCurrency(refData.totalRev)}</span>
               </div>
               <div style={{marginTop: '8px', fontSize: '14px', color: 'var(--text-muted)'}}>
-                <span style={{color: '#22c55e'}}>⛳ 골프 부문 (제외됨)</span>: ₩ {formatCurrency(refData.golfRev)}
+                <span style={{color: '#22c55e'}}>⛳ 골프 부문 (제외됨)</span>: {formatCurrency(refData.golfRev)}
               </div>
             </div>
             <div className="mobile-no-border" style={{textAlign: 'center', flex: '1', minWidth: '150px', maxWidth: '100%', borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '20px'}}>
@@ -369,7 +369,7 @@ export default function RevenuePrediction({ processedData, globalStats, settings
                       ₩ <CountUp end={targetAdrRoomRevenue} formattingFn={formatCurrency} duration={0.6} preserveValue />
                     </div>
                     <div style={{fontSize: '12px', color: 'var(--accent-emerald)', marginTop: '8px'}}>
-                      추가수익: +₩{formatCurrency(targetAdrRoomRevenue - expectedRoomRevenue)}
+                      추가수익: +{formatCurrency(targetAdrRoomRevenue - expectedRoomRevenue)}
                     </div>
                   </div>
                 </div>
@@ -385,8 +385,8 @@ export default function RevenuePrediction({ processedData, globalStats, settings
             {!hasTargetAdr && (
               <div style={{marginTop: '16px'}}>
                 <div style={{fontSize: '14px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px'}}>
-                  <span>주중 ₩{formatCurrency(expRevWd)}</span>
-                  <span>주말 ₩{formatCurrency(expRevWe)}</span>
+                  <span>주중 {formatCurrency(expRevWd)}</span>
+                  <span>주말 {formatCurrency(expRevWe)}</span>
                 </div>
                 <div style={{fontSize: '12px', color: 'var(--text-muted)', marginTop: '12px', wordBreak: 'keep-all', lineHeight: '1.4'}}>
                   * 설정에서 목표 객단가를 입력하시면 전략적 시뮬레이션이 가능합니다.
@@ -418,7 +418,7 @@ export default function RevenuePrediction({ processedData, globalStats, settings
             {validLeisure ? (
               <div style={{marginTop: '16px', fontSize: '14px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px'}}>
                 {hasSplitLeisure 
-                  ? <><span>주중 ₩{formatCurrency(expLeisureWd)}</span><span>주말 ₩{formatCurrency(expLeisureWe)}</span></>
+                  ? <><span>주중 {formatCurrency(expLeisureWd)}</span><span>주말 {formatCurrency(expLeisureWe)}</span></>
                   : <span>(종합 점유율 {targetTotalOcc.toFixed(1)}% 기준 예측)</span>}
               </div>
             ) : (
@@ -452,7 +452,7 @@ export default function RevenuePrediction({ processedData, globalStats, settings
             {validMoto ? (
               <div style={{marginTop: '16px', fontSize: '14px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px'}}>
                 {hasSplitMoto 
-                  ? <><span>주중 ₩{formatCurrency(expMotoWd)}</span><span>주말 ₩{formatCurrency(expMotoWe)}</span></>
+                  ? <><span>주중 {formatCurrency(expMotoWd)}</span><span>주말 {formatCurrency(expMotoWe)}</span></>
                   : <span>(종합 점유율 {targetTotalOcc.toFixed(1)}% 기준 예측)</span>}
               </div>
             ) : (
@@ -486,7 +486,7 @@ export default function RevenuePrediction({ processedData, globalStats, settings
             {validFnb ? (
               <div style={{marginTop: '16px', fontSize: '14px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px'}}>
                 {hasSplitFnb 
-                  ? <><span>주중 ₩{formatCurrency(expFnbWd)}</span><span>주말 ₩{formatCurrency(expFnbWe)}</span></>
+                  ? <><span>주중 {formatCurrency(expFnbWd)}</span><span>주말 {formatCurrency(expFnbWe)}</span></>
                   : <span>(종합 점유율 {targetTotalOcc.toFixed(1)}% 기준 예측)</span>}
               </div>
             ) : (
@@ -504,14 +504,14 @@ export default function RevenuePrediction({ processedData, globalStats, settings
           </div>
           {hasTargetAdr && (
             <div style={{color: 'var(--text-muted)', fontSize: '16px', marginTop: '12px'}}>
-              (과거 추세선 기준 총매출액: ₩ {formatCurrency(expectedTotalRevenue)})
+              (과거 추세선 기준 총매출액: {formatCurrency(expectedTotalRevenue)})
             </div>
           )}
           <div style={{color: 'var(--text-muted)', fontSize: '14px', marginTop: '16px', opacity: 0.8, display: 'flex', flexDirection: 'column', gap: '4px'}}>
-            <div>(※ 예측 제외: 골프 평균 실적 ₩ {formatCurrency(avgGolfRev)})</div>
-            {!validMoto && <div>(※ 예측불가 보정 반영: 모토아레나 누적 평균 ₩ {formatCurrency(avgMotoRev)})</div>}
-            {!validFnb && <div>(※ 예측불가 보정 반영: 식음업장 누적 평균 ₩ {formatCurrency(avgFnbRev)})</div>}
-            {!validLeisure && <div>(※ 예측불가 보정 반영: 기타레저 누적 평균 ₩ {formatCurrency(avgLeisureRev)})</div>}
+            <div>(※ 예측 제외: 골프 평균 실적 {formatCurrency(avgGolfRev)})</div>
+            {!validMoto && <div>(※ 예측불가 보정 반영: 모토아레나 누적 평균 {formatCurrency(avgMotoRev)})</div>}
+            {!validFnb && <div>(※ 예측불가 보정 반영: 식음업장 누적 평균 {formatCurrency(avgFnbRev)})</div>}
+            {!validLeisure && <div>(※ 예측불가 보정 반영: 기타레저 누적 평균 {formatCurrency(avgLeisureRev)})</div>}
           </div>
         </div>
       </div>
@@ -536,19 +536,19 @@ export default function RevenuePrediction({ processedData, globalStats, settings
           </div>
           <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '12px'}}>
             <span style={{color: 'var(--text-muted)'}}>총 객실 누적 매출</span>
-            <span style={{fontWeight: 'bold', color: 'var(--accent-blue)'}}>₩ {formatCurrency(globalStats.totalRoomRevenue)}</span>
+            <span style={{fontWeight: 'bold', color: 'var(--accent-blue)'}}>{formatCurrency(globalStats.totalRoomRevenue)}</span>
           </div>
           <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '12px'}}>
             <span style={{color: 'var(--text-muted)'}}>총 레저 누적 매출</span>
-            <span style={{fontWeight: 'bold', color: 'var(--accent-purple)'}}>₩ {formatCurrency(globalStats.totalLeisureRevenue)}</span>
+            <span style={{fontWeight: 'bold', color: 'var(--accent-purple)'}}>{formatCurrency(globalStats.totalLeisureRevenue)}</span>
           </div>
           <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '12px'}}>
             <span style={{color: 'var(--text-muted)'}}>총 모토 누적 매출</span>
-            <span style={{fontWeight: 'bold', color: 'var(--accent-gold)'}}>₩ {formatCurrency(globalStats.totalMotoRevenue)}</span>
+            <span style={{fontWeight: 'bold', color: 'var(--accent-gold)'}}>{formatCurrency(globalStats.totalMotoRevenue)}</span>
           </div>
           <div style={{display: 'flex', justifyContent: 'space-between'}}>
             <span style={{color: 'var(--text-muted)'}}>총 식음 누적 매출</span>
-            <span style={{fontWeight: 'bold', color: 'var(--accent-emerald)'}}>₩ {formatCurrency(globalStats.totalFnbRevenue)}</span>
+            <span style={{fontWeight: 'bold', color: 'var(--accent-emerald)'}}>{formatCurrency(globalStats.totalFnbRevenue)}</span>
           </div>
         </div>
 
@@ -575,7 +575,7 @@ export default function RevenuePrediction({ processedData, globalStats, settings
                 <RechartsTooltip 
                   cursor={{ strokeDasharray: '3 3' }}
                   contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)'}}
-                  formatter={(val, name) => [ `₩${formatCurrency(val)}`, name ]}
+                  formatter={(val, name) => [ `${formatCurrency(val)}`, name ]}
                   labelFormatter={(label) => `종합 점유율: ${Number(label).toFixed(1)}%`}
                 />
                 <Legend />

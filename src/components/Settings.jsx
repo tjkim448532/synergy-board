@@ -495,7 +495,7 @@ export default function Settings({ monthlyData }) {
         <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
           <div className="form-group" style={{flex: 1, minWidth: '150px'}}>
             <label htmlFor="targetAdr16">16평형 목표 객단가</label>
-            <div style={{color: 'var(--text-muted)', fontSize: '12px', marginBottom: '8px'}}>과거 평균: {avgAdr16.toLocaleString()}원</div>
+            <div style={{color: 'var(--text-muted)', fontSize: '12px', marginBottom: '8px'}}>과거 평균: {avgAdr16.toLocaleString()}</div>
             <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
               <input 
                 type="number" 
@@ -510,7 +510,7 @@ export default function Settings({ monthlyData }) {
           </div>
           <div className="form-group" style={{flex: 1, minWidth: '150px'}}>
             <label htmlFor="targetAdr35">35평형 목표 객단가</label>
-            <div style={{color: 'var(--text-muted)', fontSize: '12px', marginBottom: '8px'}}>과거 평균: {avgAdr35.toLocaleString()}원</div>
+            <div style={{color: 'var(--text-muted)', fontSize: '12px', marginBottom: '8px'}}>과거 평균: {avgAdr35.toLocaleString()}</div>
             <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
               <input 
                 type="number" 
@@ -819,7 +819,7 @@ export default function Settings({ monthlyData }) {
 
 [1. 핵심 실적 요약 데이터]
 - 최근 누적 평균 객실 가동률: ${avgOcc}%
-- 최근 총 객실 매출액: ${totalRooms.toLocaleString()}원
+- 최근 총 객실 매출액: ${totalRooms.toLocaleString()}
 
 [2. 구글 및 맥킨지 관점의 경영진 제안 및 전략 방향성]
 - 포트폴리오 믹스 최적화 제안: "레저본부의 점유율이 80%를 넘어서는 병목 구간(주말)에서, 식음(F&B) 및 모토아레나로의 전환율 추세를 보았을 때 투숙객의 추가 지출(Share of Wallet)을 유도하기 위한 패키징 전략 재설계가 시급합니다."

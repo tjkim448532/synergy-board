@@ -699,8 +699,8 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
         const tempCompare = tempDiff > 0 ? `평균 기온은 ${tempDiff.toFixed(1)}°C 상승했습니다.` : `평균 기온은 ${Math.abs(tempDiff).toFixed(1)}°C 하락했습니다.`;
 
         const revStatus = revDiff > 0 
-          ? `매출은 ₩${formatCurrency(revDiff)} (${revDiffPct.toFixed(1)}% ▲) 증가했습니다.`
-          : `매출은 ₩${formatCurrency(Math.abs(revDiff))} (${Math.abs(revDiffPct).toFixed(1)}% ▼) 감소했습니다.`;
+          ? `매출은 ${formatCurrency(revDiff)} (${revDiffPct.toFixed(1)}% ▲) 증가했습니다.`
+          : `매출은 ${formatCurrency(Math.abs(revDiff))} (${Math.abs(revDiffPct).toFixed(1)}% ▼) 감소했습니다.`;
 
         let impactInterpretation = '';
         if (rainDiff < 0 && revDiff > 0) {
@@ -1275,7 +1275,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '12px'}}>
                         <span style={{fontSize: '14px', color: 'var(--text-main)'}}>객실 점유율 1% 상승당 순수 파급력</span>
                         <span style={{fontSize: '24px', fontWeight: 'bold', color: (motoCorrelations.guest && motoCorrelations.guest.coef > 0) ? 'var(--accent-emerald)' : 'var(--text-main)'}}>
-                          {motoCorrelations.guest && typeof motoCorrelations.guest.coef === 'number' ? `+₩${formatCurrency(motoCorrelations.guest.coef)}` : 'N/A'}
+                          {motoCorrelations.guest && typeof motoCorrelations.guest.coef === 'number' ? `+${formatCurrency(motoCorrelations.guest.coef)}` : 'N/A'}
                         </span>
                       </div>
                       
@@ -1403,7 +1403,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
               <div key={type} style={{flex: 1, background: 'rgba(255,255,255,0.05)', padding: '16px', borderRadius: '8px', textAlign: 'center'}}>
                 <div style={{fontSize: '18px', fontWeight: 'bold'}}>{type}</div>
                 <div style={{fontSize: '24px', color: (stats && stats.coef > 0) ? activeConf.color : 'var(--text-main)', margin: '8px 0'}}>
-                  {stats && typeof stats.coef === 'number' ? `+₩${formatCurrency(stats.coef)}` : '-'}
+                  {stats && typeof stats.coef === 'number' ? `+${formatCurrency(stats.coef)}` : '-'}
                 </div>
                 <div style={{fontSize: '12px', color: 'var(--text-muted)'}}>1실 추가 판매당 기여액</div>
                 <div style={{marginTop: '8px', fontSize: '11px'}}>
@@ -1437,7 +1437,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
               <YAxis yAxisId="right" orientation="right" stroke={activeConf.color} tickFormatter={(v) => typeof v === 'number' ? `${(v/1000000).toFixed(0)}M` : ''} />
               <RechartsTooltip 
                 contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)'}}
-                formatter={(value, name) => name === '점유율' ? `${typeof value === 'number' ? value.toFixed(1) : value}%` : `₩${formatCurrency(value)}`}
+                formatter={(value, name) => name === '점유율' ? `${typeof value === 'number' ? value.toFixed(1) : value}%` : `${formatCurrency(value)}`}
               />
               <Legend />
               <Line yAxisId="left" type="monotone" dataKey="occupancyRate" name="점유율" stroke="#94a3b8" strokeWidth={3} dot={{r: 4}} activeDot={{r: 8}} />
@@ -1484,7 +1484,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                 <RechartsTooltip 
                   cursor={{ strokeDasharray: '3 3' }}
                   contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)'}}
-                  formatter={(val, name) => name === `${activeConf.title} 매출` ? `₩${formatCurrency(val)}` : `${val}실`}
+                  formatter={(val, name) => name === `${activeConf.title} 매출` ? `${formatCurrency(val)}` : `${val}실`}
                 />
                 <Legend />
                 <Scatter name="월별 현황" data={filteredProcessedData} fill={activeConf.color} shape="circle" />
@@ -1507,7 +1507,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                   {loc.p < 0.05 ? <span style={{fontSize: '11px', color: '#4caf50'}}>✅ 95% 통과</span> : <span style={{fontSize: '11px', color: '#ff9800'}}>⚠️ 노이즈</span>}
                 </div>
                 <div style={{width: '100px', textAlign: 'right', fontWeight: 'bold', color: activeConf.color}}>
-                  {typeof loc.correlation === 'number' ? `+₩${formatCurrency(loc.correlation)}` : 'N/A'}
+                  {typeof loc.correlation === 'number' ? `+${formatCurrency(loc.correlation)}` : 'N/A'}
                 </div>
               </div>
             ))}
@@ -1586,7 +1586,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                     <div style={{fontSize: '13px', color: 'var(--text-muted)'}}>기온 변화 1°C 당 순수 파급력</div>
                     <div style={{display: 'flex', alignItems: 'baseline', gap: '8px', margin: '8px 0'}}>
                       <span style={{fontSize: '24px', fontWeight: 'bold', color: weatherStats.mraStats.coefficients[1] > 0 ? 'var(--accent-gold)' : 'var(--accent-coral)'}}>
-                        {weatherStats.mraStats.coefficients[1] > 0 ? '+' : ''}₩{formatCurrency(weatherStats.mraStats.coefficients[1])}
+                        {weatherStats.mraStats.coefficients[1] > 0 ? '+' : ''}{formatCurrency(weatherStats.mraStats.coefficients[1])}
                       </span>
                     </div>
                     <div style={{display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px'}}>
@@ -1604,7 +1604,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                     <div style={{fontSize: '13px', color: 'var(--text-muted)'}}>강수량 1mm 당 순수 파급력</div>
                     <div style={{display: 'flex', alignItems: 'baseline', gap: '8px', margin: '8px 0'}}>
                       <span style={{fontSize: '24px', fontWeight: 'bold', color: weatherStats.mraStats.coefficients[2] > 0 ? 'var(--accent-blue)' : 'var(--accent-coral)'}}>
-                        {weatherStats.mraStats.coefficients[2] > 0 ? '+' : ''}₩{formatCurrency(weatherStats.mraStats.coefficients[2])}
+                        {weatherStats.mraStats.coefficients[2] > 0 ? '+' : ''}{formatCurrency(weatherStats.mraStats.coefficients[2])}
                       </span>
                     </div>
                     <div style={{display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px'}}>
@@ -1741,12 +1741,12 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                   <div style={{fontSize: '11px', display: 'flex', flexDirection: 'column', gap: '4px', background: 'rgba(0,0,0,0.2)', padding: '8px 12px', borderRadius: '6px', color: 'var(--text-muted)'}}>
                     <div style={{display: 'flex', justifyContent: 'space-between'}}>
                       <span>☀️ 맑은 주말/공휴일 ({weatherStats.weekendRainyStats.clearDaysCount}일) 평균:</span>
-                      <strong style={{color: 'var(--text-main)'}}>₩{formatCurrency(weatherStats.weekendRainyStats.avgClearRevenue)}</strong>
+                      <strong style={{color: 'var(--text-main)'}}>{formatCurrency(weatherStats.weekendRainyStats.avgClearRevenue)}</strong>
                     </div>
                     <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '2px'}}>
                       <span>☔ 비 온 주말/공휴일 ({weatherStats.weekendRainyStats.rainyDaysCount}일) 평균:</span>
                       <strong style={{color: 'var(--accent-coral)'}}>
-                        {weatherStats.weekendRainyStats.rainyDaysCount > 0 ? `₩${formatCurrency(weatherStats.weekendRainyStats.avgRainyRevenue)}` : '비 온 날 없음'}
+                        {weatherStats.weekendRainyStats.rainyDaysCount > 0 ? `${formatCurrency(weatherStats.weekendRainyStats.avgRainyRevenue)}` : '비 온 날 없음'}
                       </strong>
                     </div>
                     {weatherStats.weekendRainyStats.rainyDaysCount > 0 && weatherStats.weekendRainyStats.avgClearRevenue > 0 && (
@@ -1772,7 +1772,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                       </div>
                       <div style={{display: 'flex', gap: '20px', alignItems: 'center'}}>
                         <div style={{textAlign: 'right'}}>
-                          <div style={{fontSize: '13px', fontWeight: 'bold'}}>₩{formatCurrency(g.avgRevenue)}</div>
+                          <div style={{fontSize: '13px', fontWeight: 'bold'}}>{formatCurrency(g.avgRevenue)}</div>
                           <div style={{fontSize: '11px', color: 'var(--text-muted)'}}>일평균 매출</div>
                         </div>
                         {weatherDataType === 'room' && (
@@ -1864,13 +1864,13 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                             )}
                             <td style={{padding: '12px 10px', textAlign: 'left', fontWeight: subIdx === 0 ? 'bold' : 'normal'}}>{sub.label}</td>
                             <td style={{padding: '12px 6px'}}>{s.clearDays}일</td>
-                            <td style={{padding: '12px 6px', fontWeight: 'bold', color: 'var(--text-main)'}}>₩{formatCurrency(s.clearAvgRev)}</td>
+                            <td style={{padding: '12px 6px', fontWeight: 'bold', color: 'var(--text-main)'}}>{formatCurrency(s.clearAvgRev)}</td>
                             <td style={{padding: '12px 6px'}}>{s.rainyDays}일</td>
                             <td style={{padding: '12px 6px', fontWeight: 'bold', color: 'var(--text-main)'}}>
-                              {s.rainyDays >= 5 && s.clearDays >= 5 ? `₩${formatCurrency(s.rainyAvgRev)}` : (s.rainyDays > 0 ? `₩${formatCurrency(s.rainyAvgRev)}` : '-')}
+                              {s.rainyDays >= 5 && s.clearDays >= 5 ? `${formatCurrency(s.rainyAvgRev)}` : (s.rainyDays > 0 ? `${formatCurrency(s.rainyAvgRev)}` : '-')}
                             </td>
                             <td style={{padding: '12px 6px', fontWeight: 'bold', color: s.rainyDays >= 5 && s.clearDays >= 5 ? (diff < 0 ? 'var(--accent-red)' : 'var(--accent-emerald)') : 'var(--text-muted)'}}>
-                              {s.rainyDays >= 5 && s.clearDays >= 5 ? `${diff > 0 ? '+' : ''}₩${formatCurrency(diff)}` : (s.rainyDays > 0 ? '데이터 부족' : '-')}
+                              {s.rainyDays >= 5 && s.clearDays >= 5 ? `${diff > 0 ? '+' : ''}${formatCurrency(diff)}` : (s.rainyDays > 0 ? '데이터 부족' : '-')}
                             </td>
                             <td style={{padding: '12px 6px', fontWeight: 'bold', color: s.rainyDays >= 5 && s.clearDays >= 5 ? (diff < 0 ? 'var(--accent-red)' : 'var(--accent-emerald)') : 'var(--text-muted)'}}>
                               {s.rainyDays >= 5 && s.clearDays >= 5 ? `${pct.toFixed(1)}%` : (s.rainyDays > 0 ? '데이터 부족' : '-')}
@@ -1954,13 +1954,13 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                             )}
                             <td style={{padding: '12px 10px', textAlign: 'left'}}>{seasonItem.label}</td>
                             <td style={{padding: '12px 6px'}}>{s.clearDays}일</td>
-                            <td style={{padding: '12px 6px', fontWeight: 'bold', color: 'var(--text-main)'}}>₩{formatCurrency(s.clearAvgRev)}</td>
+                            <td style={{padding: '12px 6px', fontWeight: 'bold', color: 'var(--text-main)'}}>{formatCurrency(s.clearAvgRev)}</td>
                             <td style={{padding: '12px 6px'}}>{s.rainyDays}일</td>
                             <td style={{padding: '12px 6px', fontWeight: 'bold', color: 'var(--text-main)'}}>
-                              {s.rainyDays >= 5 && s.clearDays >= 5 ? `₩${formatCurrency(s.rainyAvgRev)}` : (s.rainyDays > 0 ? `₩${formatCurrency(s.rainyAvgRev)}` : '-')}
+                              {s.rainyDays >= 5 && s.clearDays >= 5 ? `${formatCurrency(s.rainyAvgRev)}` : (s.rainyDays > 0 ? `${formatCurrency(s.rainyAvgRev)}` : '-')}
                             </td>
                             <td style={{padding: '12px 6px', fontWeight: 'bold', color: s.rainyDays >= 5 && s.clearDays >= 5 ? (diff < 0 ? 'var(--accent-red)' : 'var(--accent-emerald)') : 'var(--text-muted)'}}>
-                              {s.rainyDays >= 5 && s.clearDays >= 5 ? `${diff > 0 ? '+' : ''}₩${formatCurrency(diff)}` : (s.rainyDays > 0 ? '데이터 부족' : '-')}
+                              {s.rainyDays >= 5 && s.clearDays >= 5 ? `${diff > 0 ? '+' : ''}${formatCurrency(diff)}` : (s.rainyDays > 0 ? '데이터 부족' : '-')}
                             </td>
                             <td style={{padding: '12px 6px', fontWeight: 'bold', color: s.rainyDays >= 5 && s.clearDays >= 5 ? (diff < 0 ? 'var(--accent-red)' : 'var(--accent-emerald)') : 'var(--text-muted)'}}>
                               {s.rainyDays >= 5 && s.clearDays >= 5 ? `${pct.toFixed(1)}%` : (s.rainyDays > 0 ? '데이터 부족' : '-')}
@@ -1993,7 +1993,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                     <RechartsTooltip 
                       contentStyle={{background: 'rgba(15, 23, 42, 0.9)', border: '1px solid var(--border-glass)'}}
                       formatter={(value, name) => {
-                        if (name === '매출') return `₩${formatCurrency(value)}`;
+                        if (name === '매출') return `${formatCurrency(value)}`;
                         if (name === '최고기온') return typeof value === 'number' ? `${value.toFixed(1)}°C` : 'N/A';
                         if (name === '강수량') return typeof value === 'number' ? `${value.toFixed(1)}mm` : 'N/A';
                         return value;
@@ -2051,16 +2051,16 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
                           {/* 2025 */}
                           <td style={{padding: '10px 6px'}}>{d25.hasData && d25.avgTemp !== null ? `${d25.avgTemp.toFixed(1)}°C` : '-'}</td>
                           <td style={{padding: '10px 6px'}}>{d25.hasData ? `${d25.rainyDays}일` : '-'}</td>
-                          <td style={{padding: '10px 6px', borderRight: '1px solid rgba(255,255,255,0.15)'}}>{d25.hasData ? `₩${formatCurrency(d25.totalRevenue)}` : '-'}</td>
+                          <td style={{padding: '10px 6px', borderRight: '1px solid rgba(255,255,255,0.15)'}}>{d25.hasData ? `${formatCurrency(d25.totalRevenue)}` : '-'}</td>
                           
                           {/* 2026 */}
                           <td style={{padding: '10px 6px'}}>{d26.hasData && d26.avgTemp !== null ? `${d26.avgTemp.toFixed(1)}°C` : '-'}</td>
                           <td style={{padding: '10px 6px'}}>{d26.hasData ? `${d26.rainyDays}일` : '-'}</td>
-                          <td style={{padding: '10px 6px', borderRight: '1px solid rgba(255,255,255,0.15)'}}>{d26.hasData ? `₩${formatCurrency(d26.totalRevenue)}` : '-'}</td>
+                          <td style={{padding: '10px 6px', borderRight: '1px solid rgba(255,255,255,0.15)'}}>{d26.hasData ? `${formatCurrency(d26.totalRevenue)}` : '-'}</td>
                           
                           {/* 변동 */}
                           <td style={{padding: '10px 6px', fontWeight: 'bold', color: !d25.hasData || !d26.hasData ? 'var(--text-muted)' : (diff > 0 ? 'var(--accent-emerald)' : 'var(--accent-red)')}}>
-                            {!d25.hasData || !d26.hasData ? '-' : `${diff > 0 ? '+' : ''}₩${formatCurrency(diff)}`}
+                            {!d25.hasData || !d26.hasData ? '-' : `${diff > 0 ? '+' : ''}${formatCurrency(diff)}`}
                           </td>
                           <td style={{padding: '10px 6px', fontWeight: 'bold', color: !d25.hasData || !d26.hasData ? 'var(--text-muted)' : (diff > 0 ? 'var(--accent-emerald)' : 'var(--accent-red)')}}>
                             {!d25.hasData || !d26.hasData ? '-' : `${diff > 0 ? '▲' : '▼'} ${Math.abs(diffPct).toFixed(1)}%`}

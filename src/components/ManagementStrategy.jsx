@@ -244,7 +244,7 @@ export default function ManagementStrategy({ processedData, globalStats, setting
                   {idx + 1}. {f.name}
                 </span>
                 <div style={{textAlign: 'right'}}>
-                  <span style={{color: f.cumPct <= 85 ? 'var(--text-main)' : 'var(--text-muted)', fontWeight: 'bold'}}>₩{formatCurrency(f.rev)}</span>
+                  <span style={{color: f.cumPct <= 85 ? 'var(--text-main)' : 'var(--text-muted)', fontWeight: 'bold'}}>{formatCurrency(f.rev)}</span>
                   <span style={{fontSize: '12px', color: 'var(--text-muted)', marginLeft: '8px'}}>({f.pct.toFixed(1)}%)</span>
                 </div>
               </div>
