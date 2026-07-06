@@ -9,6 +9,7 @@ export default function useProcessedData(monthlyData, settings) {
     }
 
     let totalSoldAll = 0;
+    let totalSoldForOccAll = 0;
     let totalInventoryAll = 0;
     let totalSoldWdAll = 0;
     let totalSoldWeAll = 0;
