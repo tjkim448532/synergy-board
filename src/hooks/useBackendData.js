@@ -307,13 +307,16 @@ function transformPolymorphicData(json) {
   const w = json.weather || {};
 
   // 1. 객실 데이터 매핑
+  let totalRoomsSold = 0;
   if (json.roomTypeBreakdown && Array.isArray(json.roomTypeBreakdown) && json.roomTypeBreakdown.length > 0) {
     json.roomTypeBreakdown.forEach(room => {
+      const rSold = Number(room.rooms_sold || 0);
+      totalRoomsSold += rSold;
       monthObj.rawRoomRecords.push({
         date: targetDate,
         roomType: room.room_type,
         marketType: 'TOTAL', 
-        count: Number(room.rooms_sold || 0),
+        count: rSold,
         revenue: Number(room.room_revenue || room.today_actual || 0),
         weatherTempMax: Number(w.tempMax || 0),
         weatherTempMin: Number(w.tempMin || 0),
@@ -332,6 +335,7 @@ function transformPolymorphicData(json) {
     
     const totalSold = kpiRoom ? Number(kpiRoom.today_actual || 0) : 0;
     const totalRev = roomRev ? Number(roomRev.today_actual || 0) : 0;
+    totalRoomsSold = totalSold;
     
     if (totalSold > 0 || totalRev > 0) {
       monthObj.rawRoomRecords.push({
@@ -342,6 +346,7 @@ function transformPolymorphicData(json) {
       });
     }
   }
+  monthObj.roomsSold = totalRoomsSold;
 
   // 1.5 Extract marketTypeBreakdown / segmentBreakdown
   monthObj.rawMarketRecords = [];
@@ -358,23 +363,37 @@ function transformPolymorphicData(json) {
     });
   }
 
-  // 2. 부대 매출 데이터 매핑
-  if (json.dailyReportBreakdown && Array.isArray(json.dailyReportBreakdown)) {
-    json.dailyReportBreakdown.forEach(item => {
-      if (item.category === 'KPI' || item.category === 'TOTAL' || item.category === 'ROOM') return;
-      
-      const venueName = item.facility_name || item.name;
-      if (!venueName) return;
+  // 2. 부대 매출 데이터 매핑 (V3 & V4 통합)
+  const venueSources = [
+    json.dailyReportBreakdown,
+    json.fnbFacilityBreakdown,
+    json.otherFacilityBreakdown,
+    json.golfFacilityBreakdown,
+    json.ticketFacilityBreakdown,
+    json.banquetFacilityBreakdown,
+    json.leisureProductBreakdown
+  ];
 
-      const revenue = Number(item.today_actual || 0);
-      monthObj.salesByLocation[venueName] = (monthObj.salesByLocation[venueName] || 0) + revenue;
-      
-      if (!monthObj.venues[venueName]) {
-        monthObj.venues[venueName] = { totalRev: 0, tickets: {} };
-      }
-      monthObj.venues[venueName].totalRev += revenue;
-    });
-  }
+  venueSources.forEach(arr => {
+    if (arr && Array.isArray(arr)) {
+      arr.forEach(item => {
+        if (item.category === 'KPI' || item.category === 'TOTAL' || item.category === 'ROOM') return;
+        
+        const venueName = item.facility_name || item.name || item.venue;
+        if (!venueName) return;
+
+        const revenue = Number(item.today_actual || item.revenue || 0);
+        if (revenue !== 0) {
+          monthObj.salesByLocation[venueName] = (monthObj.salesByLocation[venueName] || 0) + revenue;
+          
+          if (!monthObj.venues[venueName]) {
+            monthObj.venues[venueName] = { totalRev: 0, tickets: {} };
+          }
+          monthObj.venues[venueName].totalRev += revenue;
+        }
+      });
+    }
+  });
 
   // 3. 부대 티켓 매핑 (매출 상세)
   if (json.leisureProductBreakdown && Array.isArray(json.leisureProductBreakdown)) {
