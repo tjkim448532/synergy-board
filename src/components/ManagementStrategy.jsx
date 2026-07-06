@@ -1,5 +1,8 @@
 import React, { useMemo } from 'react';
 import { Target, PieChart, TrendingUp, AlertCircle, Lightbulb, Zap, Crosshair } from 'lucide-react';
+
+import BookingPaceChart from './analytics/BookingPaceChart';
+import WeatherThresholdWidget from './analytics/WeatherThresholdWidget';
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
 
 const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(Math.round(val || 0));
@@ -306,8 +309,17 @@ export default function ManagementStrategy({ processedData, globalStats, setting
           </div>
 
         </div>
-      </div>
-
     </div>
+
+<div style={{display: 'flex', flexWrap: 'wrap', gap: '24px', marginTop: '32px'}}>
+  <div style={{flex: '1 1 600px'}}>
+    <BookingPaceChart />
+  </div>
+  <div style={{flex: '0 0 380px', display: 'flex', justifyContent: 'center'}}>
+    <WeatherThresholdWidget />
+  </div>
+</div>
+
+  </div>
   );
 }
