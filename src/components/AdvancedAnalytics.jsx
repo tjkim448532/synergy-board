@@ -1551,10 +1551,14 @@ const dailyWeatherSalesData = useMemo(() => {
         </div>
 
         {(!dailyWeatherSalesData || dailyWeatherSalesData.length === 0) ? (
-          <div style={{padding: '40px', textAlign: 'center', color: 'var(--text-muted)'}}>
-            과거 2개월치 날씨 및 매출 데이터를 분석 중입니다...
-          </div>
-        ) : (
+        <div style={{padding: '40px', textAlign: 'center', color: 'var(--text-muted)'}}>
+          과거 2개월치 날씨 및 매출 데이터를 분석 중입니다...
+        </div>
+      ) : !weatherStats ? (
+        <div style={{padding: '40px', textAlign: 'center', color: 'var(--text-muted)'}}>
+          선택된 기간({startDate} ~ {endDate})에 유효한 기상청 날씨 데이터가 수신되지 않아 상관관계를 분석할 수 없습니다.
+        </div>
+      ) : (
           <div style={{display: 'flex', flexDirection: 'column', gap: '24px'}}>
             {/* 상관계수 및 날씨별 비교 카드 그리드 */}
             <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px'}}>
