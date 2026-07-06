@@ -812,7 +812,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       1,
       d.sold16 || 0,
       d.sold35 || 0,
-      (d.sold51 || 0) + (d.sold51Acc || 0),
+      ((d.sold51 || 0) + (d.sold51Acc || 0)) / 2,
       isWkndArr[i] ? 1 : 0,
       d.precipitation || 0,
       d.code && [71,73,75,77,85,86].includes(d.code) ? 1 : 0,
@@ -937,7 +937,7 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
       const sold35 = Number(d.sold35 || 0);
       const sold51 = Number(d.sold51 || d.connectingSold || 0);
       const sold51Acc = Number(d.sold51Acc || 0);
-      totalRoomsSold += sold16 + sold35 + sold51 + sold51Acc;
+      totalRoomsSold += sold16 + sold35 + ((sold51 + sold51Acc) / 2);
 
       const leisureGross = d.leisureSales || 0;
       const fnbGross = d.fnbSales || 0;

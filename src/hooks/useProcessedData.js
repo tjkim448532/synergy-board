@@ -172,7 +172,7 @@ export default function useProcessedData(monthlyData, settings) {
       }
 
       const totalBookings = sold16 + sold35 + sold51 + sold51Acc + (typeof soldOther !== 'undefined' ? soldOther : 0);
-      const totalPhysicalKeys = sold16 + sold35 + ((sold51 + sold51Acc) * 2) + (typeof soldOther !== 'undefined' ? soldOther : 0);
+      const totalPhysicalKeys = sold16 + sold35 + sold51 + sold51Acc + (typeof soldOther !== 'undefined' ? soldOther : 0);
       const totalSold = totalBookings; // Legacy 호환성
       const totalSoldForOcc = totalPhysicalKeys;
       
@@ -234,18 +234,21 @@ export default function useProcessedData(monthlyData, settings) {
       const occWd = invWd > 0 ? (soldWd / invWd) * 100 : 0;
       const occWe = invWe > 0 ? (soldWe / invWe) * 100 : 0;
       
-      const occ16 = cap16 > 0 ? ((sold16 + sold51 + sold51Acc) / cap16) * 100 : 0;
-      const occ35 = cap35 > 0 ? ((sold35 + sold51 + sold51Acc) / cap35) * 100 : 0;
+      const occ16 = cap16 > 0 ? ((sold16 + ((sold51 + sold51Acc) / 2)) / cap16) * 100 : 0;
+      const occ35 = cap35 > 0 ? ((sold35 + ((sold51 + sold51Acc) / 2)) / cap35) * 100 : 0;
       
-      // 51평 ADR 통짜(1건) 기준 확립
+      // 51평 실제 결제 건수 (백엔드에서 방 갯수인 2로 내려오므로 반으로 나눔)
+      const bookings51 = (sold51 + sold51Acc) / 2;
+      
+      // 51평 ADR 및 투숙객 통짜(1건) 기준 확립
       const adr16 = sold16 > 0 ? (rev16Net / sold16) : 0;
       const adr35 = sold35 > 0 ? (rev35Net / sold35) : 0;
-      const adr51 = (sold51 + sold51Acc) > 0 ? (rev51Net / (sold51 + sold51Acc)) : 0;
+      const adr51 = bookings51 > 0 ? (rev51Net / bookings51) : 0;
       
       // 개별 평형별 직관적 평균 투숙 인원 (가중치 없음)
       const avgGuests16 = sold16 > 0 ? (guests16 / sold16) : 0;
       const avgGuests35 = sold35 > 0 ? (guests35 / sold35) : 0;
-      const avgGuests51 = (sold51 + sold51Acc) > 0 ? (guests51 / (sold51 + sold51Acc)) : 0;
+      const avgGuests51 = bookings51 > 0 ? (guests51 / bookings51) : 0;
 
       const dynamicGroupsSum = Object.values(dynamicGroups).reduce((sum, val) => sum + val, 0);
       const totalSales = leisureSales + motoSales + fnbSales + otherSales + dynamicGroupsSum;
@@ -267,7 +270,7 @@ export default function useProcessedData(monthlyData, settings) {
       
       total16All += sold16;
       total35All += sold35;
-      total51ConnVirtualAll += sold51;
+      total51ConnVirtualAll += (sold51 / 2);
       total51AccVirtualAll += sold51Acc;
 
       let calcMotoGuest = 0;
@@ -319,6 +322,7 @@ export default function useProcessedData(monthlyData, settings) {
         sold35,
         sold51,
         sold51Acc,
+        bookings51,
         totalSold,
         guests,
         revenue16: rev16Net,

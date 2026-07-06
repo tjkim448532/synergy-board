@@ -379,7 +379,7 @@ export default function Settings({ monthlyData }) {
       sumRev16 += (d.revenue16 || 0);
       sumSold35 += (d.sold35 || 0);
       sumRev35 += (d.revenue35 || 0);
-      sumSold51 += (d.sold51 || 0) + (d.sold51Acc || 0);
+      sumSold51 += ((d.sold51 || 0) + (d.sold51Acc || 0)) / 2;
       sumRev51 += (d.revenue51 || 0) + (d.revenue51Acc || 0);
     });
   }
