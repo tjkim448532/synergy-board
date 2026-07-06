@@ -4,6 +4,7 @@ import { ThermometerSun, Send, TrendingDown } from 'lucide-react';
 export default function WeatherThresholdWidget() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
     const fetchThreshold = async () => {
@@ -25,8 +26,34 @@ export default function WeatherThresholdWidget() {
     fetchThreshold();
   }, []);
 
-  const handlePromotionTrigger = () => {
-    alert('CRM 시스템과 연동하여 취소 방지 프로모션 알림톡 발송 큐(Queue)에 등록되었습니다.');
+  const handlePromotionTrigger = async () => {
+    setIsSending(true);
+    try {
+      const payload = {
+        targetDate: new Date().toISOString().split('T')[0],
+        predictedTemp: data?.optimalTemperature || 24.5,
+        targetSegments: ['VIP_51평', 'GOLF_예약자']
+      };
+
+      const res = await fetch('https://belleforet-data.vercel.app/api/v3/crm/weather-promotions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await res.json();
+      
+      if (res.ok) {
+        alert(`[발송 성공] 알림톡 큐 등록 완료!\nQueue ID: ${result.queueId || result.id || 'MOCK_ID_8819'}`);
+      } else {
+        alert(`[발송 실패] 서버 오류가 발생했습니다.\n${result.message || ''}`);
+      }
+    } catch (error) {
+      console.error('CRM 연동 에러:', error);
+      alert('CRM 연동 중 네트워크 오류가 발생했습니다.');
+    } finally {
+      setIsSending(false);
+    }
   };
 
   if (loading || !data) {
@@ -92,6 +119,7 @@ export default function WeatherThresholdWidget() {
       {/* Action Button */}
       <button 
         onClick={handlePromotionTrigger}
+        disabled={isSending}
         style={{ 
           position: 'relative', 
           zIndex: 10, 
@@ -100,21 +128,22 @@ export default function WeatherThresholdWidget() {
           alignItems: 'center', 
           justifyContent: 'center', 
           gap: '8px', 
-          background: '#10b981', 
+          background: isSending ? '#059669' : '#10b981', 
           color: '#022c22', 
           fontWeight: 'bold', 
           padding: '12px 16px', 
           borderRadius: '12px', 
           border: 'none',
-          cursor: 'pointer',
+          cursor: isSending ? 'not-allowed' : 'pointer',
           transition: 'all 0.3s',
-          boxShadow: '0 0 15px rgba(16,185,129,0.3)'
+          boxShadow: isSending ? 'none' : '0 0 15px rgba(16,185,129,0.3)',
+          opacity: isSending ? 0.7 : 1
         }}
-        onMouseOver={e => e.currentTarget.style.background = '#34d399'}
-        onMouseOut={e => e.currentTarget.style.background = '#10b981'}
+        onMouseOver={e => { if(!isSending) e.currentTarget.style.background = '#34d399' }}
+        onMouseOut={e => { if(!isSending) e.currentTarget.style.background = '#10b981' }}
       >
-        <Send style={{ width: '16px', height: '16px' }} />
-        취소 방지 알림톡 발송 장전
+        <Send style={{ width: '16px', height: '16px', animation: isSending ? 'pulse 1s infinite' : 'none' }} />
+        {isSending ? '큐 등록 진행 중...' : '취소 방지 알림톡 발송 장전'}
       </button>
     </div>
   );
