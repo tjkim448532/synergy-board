@@ -15,7 +15,10 @@ async function testV3Api() {
           console.log("revenues:", JSON.stringify(first.revenues, null, 2));
           console.log("\nvisitorData:", JSON.stringify(first.visitorData, null, 2));
           console.log('\nleisureVisitorBreakdown:');
-          console.log(JSON.stringify(first.leisureVisitorBreakdown.slice(0,3), null, 2));
+          console.log(JSON.stringify(first.leisureVisitorBreakdown?.slice(0,3), null, 2));
+
+          console.log('\nmotoArenaDetails:');
+          console.log(JSON.stringify(first.motoArenaDetails, null, 2));
 
           console.log('\nmarketTypeBreakdown:');
           console.log(JSON.stringify(first.marketTypeBreakdown, null, 2));

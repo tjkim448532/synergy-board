@@ -223,6 +223,10 @@ function transformTimeseriesToMonthly(jsonArray) {
       
       if (dayData.revenues.venueBreakdown && Object.keys(dayData.revenues.venueBreakdown).length > 0) {
         Object.entries(dayData.revenues.venueBreakdown).forEach(([venueName, rev]) => {
+          // [Double Counting 방지] 객실 매출은 rawRoomRecords에서 이미 처리하므로 부대시설(Leisure)에서는 제외합니다.
+          if (venueName === 'ROOM' || venueName === 'ROOM OTHER' || venueName === '객실' || venueName === '그린피' || venueName === '골프장') {
+             return;
+          }
           monthObj.salesByLocation[venueName] = (monthObj.salesByLocation[venueName] || 0) + Number(rev || 0);
           if (!monthObj.venues[venueName]) {
             monthObj.venues[venueName] = { totalRev: 0, tickets: {} };
@@ -247,11 +251,12 @@ function transformTimeseriesToMonthly(jsonArray) {
       }
       
       const totalRev = Object.values(breakdown).reduce((a, b) => a + b, 0);
-      if (totalRev > 0) {
+      if (totalRev > 0 || dayData.motoArenaDetails) {
         monthObj.rawLeisureRecords.push({
           date: dayData.date,
           revenue: totalRev,
-          breakdown: breakdown
+          breakdown: breakdown,
+          motoDetails: dayData.motoArenaDetails || null // 일별 상관관계 분석을 위해 탑승
         });
       }
     }

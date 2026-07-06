@@ -249,10 +249,12 @@ export default function useProcessedData(monthlyData, settings) {
       
       if (d.venues && d.venues['모토아레나'] && d.venues['모토아레나'].breakdown) {
         const breakdown = d.venues['모토아레나'].breakdown;
-        calcMotoGuest = Object.values(breakdown.guest || {}).reduce((sum, v) => sum + Number(v || 0), 0);
-        calcMotoGeneral = Object.values(breakdown.general || {}).reduce((sum, v) => sum + Number(v || 0), 0);
-        calcMotoInternal = Object.values(breakdown.internal || {}).reduce((sum, v) => sum + Number(v || 0), 0);
-        calcMotoOther = Object.values(breakdown.other || {}).reduce((sum, v) => sum + Number(v || 0), 0);
+        const parseValue = (val) => typeof val === 'number' ? val : Object.values(val || {}).reduce((sum, v) => sum + Number(v || 0), 0);
+        
+        calcMotoGuest = parseValue(breakdown.guest);
+        calcMotoGeneral = parseValue(breakdown.general);
+        calcMotoInternal = parseValue(breakdown.internal);
+        calcMotoOther = parseValue(breakdown.other);
       } else if (d.venues && d.venues['모토아레나'] && d.venues['모토아레나'].tickets) {
         Object.entries(d.venues['모토아레나'].tickets).forEach(([ticket, amt]) => {
           let group = 'other';

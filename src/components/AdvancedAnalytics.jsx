@@ -341,6 +341,11 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
             dateMap[dateStr].leisureSales += val;
             dateMap[dateStr].totalRevenue += val;
           }
+          
+          if (rec.motoDetails) {
+            dateMap[dateStr].motoGuestRev += parseSafeNumber(rec.motoDetails.guestRevenue || 0);
+            dateMap[dateStr].motoGeneralRev += parseSafeNumber(rec.motoDetails.generalRevenue || 0);
+          }
         });
       }
     });
