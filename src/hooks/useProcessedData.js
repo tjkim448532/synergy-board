@@ -146,8 +146,12 @@ export default function useProcessedData(monthlyData, settings) {
 
       const totalSold = sold16 + sold35 + sold51 + sold51Acc;
       
-      const physicalRooms = Number(settings?.totalRooms) || 175;
-      const dailyInventory = physicalRooms; // 백엔드 분할 정책에 따라 175 고정 분모 사용
+      const globalCapacity = d.capacity?.total || 180;
+      const cap16 = d.capacity?.['16평'] || 90;
+      const cap35 = d.capacity?.['35평'] || 90;
+      const dailyInventory = globalCapacity;
+      
+      const totalSoldForOcc = sold16 + sold35 + ((sold51 + sold51Acc) * 2);
       
       const totalInventory = dailyInventory * days;
       const invWd = dailyInventory * daysWd;
@@ -161,49 +165,25 @@ export default function useProcessedData(monthlyData, settings) {
       }
       
       const locationGroups = settings?.locationGroups || {};
-      let leisureSales = 0;
-      let motoSales = 0;
-      let lRevWd = 0;
-      let lRevWe = 0;
-      let mRevWd = 0;
-      let mRevWe = 0;
-      let fnbSales = 0;
-      let otherSales = 0;
-      let golfSales = 0;
-      let dynamicGroups = {};
-      let fRevWd = 0;
-      let fRevWe = 0;
+      let leisureSales = 0, motoSales = 0, fnbSales = 0, otherSales = 0, golfSales = 0, dynamicGroups = {};
+      let lRevWd = null, lRevWe = null, mRevWd = null, mRevWe = null, fRevWd = null, fRevWe = null;
 
-      if (d.salesByLocation || d.leisureSalesByLocation || d.venues) {
-        const salesObj = { ...(d.salesByLocation || d.leisureSalesByLocation || {}) };
-        
-        // 기존 버그 수정: 부대업장 엑셀을 올리면 기존에 올려둔 모토아레나 매출이 0으로 무시되던 현상 해결
-        if (d.motoTotalRev && !salesObj['모토아레나']) {
-          salesObj['모토아레나(티켓)'] = Number(d.motoTotalRev);
-        }
-
+      if (d.salesByLocation) {
+        const salesObj = d.salesByLocation;
         const calculated = calculateGroupedSales(salesObj, locationGroups);
         leisureSales = calculated.leisure;
-        motoSales = calculated.moto || 0;
         fnbSales = calculated.fnb;
-        otherSales = calculated.other || 0;
-        golfSales = calculated.golf || 0;
+        golfSales = calculated.golf;
+        otherSales = calculated.other;
+        motoSales = calculated.moto;
         dynamicGroups = calculated.dynamicGroups || {};
         
-        const wdObj = d.salesWdByLocation || {};
-        const weObj = d.salesWeByLocation || {};
-        const calcWd = calculateGroupedSales(wdObj, locationGroups);
-        const calcWe = calculateGroupedSales(weObj, locationGroups);
-        
-        lRevWd = calcWd.leisure;
-        lRevWe = calcWe.leisure;
-        fRevWd = calcWd.fnb;
-        fRevWe = calcWe.fnb;
-        
-        mRevWd = calcWd.moto || 0;
-        mRevWe = calcWe.moto || 0;
+        const calcWd = calculateGroupedSales(d.salesWdByLocation || {}, locationGroups);
+        const calcWe = calculateGroupedSales(d.salesWeByLocation || {}, locationGroups);
+        lRevWd = calcWd.leisure; lRevWe = calcWe.leisure;
+        fRevWd = calcWd.fnb; fRevWe = calcWe.fnb;
+        mRevWd = calcWd.moto || 0; mRevWe = calcWe.moto || 0;
       } else {
-        // Fallback for legacy DB
         leisureSales = Number(d.leisureSales || d.totalLeisureSales || 0);
         motoSales = Number(d.motoSales || d.motoTotalRev || d.totalMotoSales || 0);
         fnbSales = Number(d.fnbSales || d.totalFnbSales || 0);
@@ -217,14 +197,19 @@ export default function useProcessedData(monthlyData, settings) {
         fRevWe = d.fnbRevWe !== undefined ? Number(d.fnbRevWe) : null;
       }
       
-      const occRate = totalInventory > 0 ? (totalSold / totalInventory) * 100 : 0;
+      const occRate = dailyInventory > 0 ? (totalSoldForOcc / dailyInventory) * 100 : 0;
       const occWd = invWd > 0 ? (soldWd / invWd) * 100 : 0;
       const occWe = invWe > 0 ? (soldWe / invWe) * 100 : 0;
+      
+      const occ16 = cap16 > 0 ? ((sold16 + sold51 + sold51Acc) / cap16) * 100 : 0;
+      const occ35 = cap35 > 0 ? ((sold35 + sold51 + sold51Acc) / cap35) * 100 : 0;
+
       const dynamicGroupsSum = Object.values(dynamicGroups).reduce((sum, val) => sum + val, 0);
-      const totalSales = leisureSales + motoSales + fnbSales + otherSales + dynamicGroupsSum; // Total without Room/Golf
+      const totalSales = leisureSales + motoSales + fnbSales + otherSales + dynamicGroupsSum;
 
       totalSoldAll += totalSold;
-      totalInventoryAll += totalInventory;
+      totalSoldForOccAll += totalSoldForOcc;
+      totalInventoryAll += dailyInventory;
       totalSoldWdAll += soldWd;
       totalInvWdAll += invWd;
       totalSoldWeAll += soldWe;
@@ -321,13 +306,13 @@ export default function useProcessedData(monthlyData, settings) {
       };
     });
 
-    const globalOccRate = totalInventoryAll > 0 ? (totalSoldAll / totalInventoryAll) * 100 : 0;
-    const globalWdOccRate = totalInvWdAll > 0 ? (totalSoldWdAll / totalInvWdAll) * 100 : 0;
+    const globalOccRate = totalInventoryAll > 0 ? (totalSoldForOccAll / totalInventoryAll) * 100 : 0;
+    const globalWdOccRate = totalInvWdAll > 0 ? (totalSoldWdAll / totalInvWdAll) * 100 : 0; // Note: soldWd/We internally uses totalSoldForOcc
     const globalWeOccRate = totalInvWeAll > 0 ? (totalSoldWeAll / totalInvWeAll) * 100 : 0;
     const avgGuestsPerSoldRoom = totalSoldAll > 0 ? totalGuestsAll / totalSoldAll : 0;
     
-    const physicalRooms = Number(settings?.totalRooms) || 175;
-    const dailyInventory = physicalRooms;
+    // Dynamic fallback instead of 175
+    const dailyInventory = monthlyData[0]?.capacity?.total || 180;
     
     const avgWdDays = 22;
     const avgWeDays = 8;

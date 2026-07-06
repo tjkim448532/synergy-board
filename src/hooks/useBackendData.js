@@ -108,8 +108,20 @@ function transformTimeseriesToMonthly(jsonArray) {
     const monthObj = monthlyMap.get(yearMonth);
     const w = dayData.weather || {};
 
+    // [Capacity & Total Net Rule]
+    if (!monthObj.capacity) {
+      // API 응답의 capacity 객체를 최우선, 없으면 metadata.total_capacity 사용, 모두 없으면 가이드에 따라 기본값(16평:90, 35평:90)
+      monthObj.capacity = dayData.capacity || jsonArray[0]?.capacity || {
+        total: jsonArray[0]?.metadata?.total_capacity || 180,
+        '16평': 90,
+        '35평': 90,
+        '51평': 0
+      };
+    }
+
     const roomsSold = Number(dayData.visitorData?.roomsSold || dayData.roomsSold || 0);
-    const roomRev = Number(dayData.revenues?.room || dayData.roomRevenue || 0);
+    // 가이드: total_net(순매출) 최우선 사용
+    const roomRev = Number(dayData.total_net || dayData.revenues?.total_net || dayData.revenues?.room || dayData.roomRevenue || 0);
     
     // [V4 API] Use unified rooms array with marketType and rateType
     const rooms = dayData.rooms || dayData.roomTypeBreakdown || dayData.visitorData?.roomTypeBreakdown || [];
