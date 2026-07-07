@@ -9,15 +9,15 @@ export default function WeatherThresholdWidget() {
   useEffect(() => {
     const fetchThreshold = async () => {
       try {
-        // Mock Data
-        setTimeout(() => {
-          setData({
-            optimalTemperature: 24.5,
-            declineRatePerDegree: 4.2,
-            equation: "y = -1.2x² + 58.8x + 1000"
-          });
-          setLoading(false);
-        }, 800);
+        const res = await fetch('https://belleforet-data.vercel.app/api/v3/synergy/analytics/weather-thresholds');
+        const json = await res.json();
+        
+        setData({
+          optimalTemperature: json.optimalTemperature || 24.5,
+          declineRatePerDegree: json.declineRatePerDegree || 4.2,
+          equation: json.equation || "y = -1.2x² + 58.8x + 1000"
+        });
+        setLoading(false);
       } catch (error) {
         console.error('Failed to fetch thresholds', error);
       }

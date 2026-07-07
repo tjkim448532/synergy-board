@@ -20,23 +20,18 @@ export default function BookingPaceChart() {
     const fetchPaceData = async () => {
       setLoading(true);
       try {
-        // Mock 데이터 (UI 확인용)
-        const mockJson = Array.from({ length: 7 }).map((_, i) => {
-          const d = new Date(startDate); d.setDate(d.getDate() + i);
-          return {
-            date: d.toISOString().split('T')[0],
-            newBookings: { room: Math.floor(Math.random() * 50) + 10, golf: Math.floor(Math.random() * 150) + 50 },
-            canceledBookings: { room: Math.floor(Math.random() * 15) + 1, golf: Math.floor(Math.random() * 40) + 5 }
-          };
-        });
-
+        const res = await fetch(`https://belleforet-data.vercel.app/api/v3/synergy/analytics/booking-pace?startDate=${startDate}&endDate=${endDate}`);
+        const json = await res.json();
+        
+        const dataArray = Array.isArray(json) ? json : json.data || [];
+        
         // 취소 데이터를 음수로 변환하여 양방향 차트용 데이터 생성
-        const mappedData = mockJson.map(d => ({
+        const mappedData = dataArray.map(d => ({
           date: d.date.slice(5), // MM-DD 포맷
-          newRoom: d.newBookings.room,
-          newGolf: d.newBookings.golf,
-          cancelRoom: -d.canceledBookings.room, 
-          cancelGolf: -d.canceledBookings.golf,
+          newRoom: d.newBookings?.room || 0,
+          newGolf: d.newBookings?.golf || 0,
+          cancelRoom: -(d.canceledBookings?.room || 0), 
+          cancelGolf: -(d.canceledBookings?.golf || 0),
         }));
         
         setData(mappedData);
