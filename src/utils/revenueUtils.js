@@ -55,7 +55,7 @@ export const getDefaultGroup = (loc) => {
   }
 };
 
-export const calculateGroupedSales = (salesObj, locationGroups = {}) => {
+export const calculateGroupedSales = (salesObj, locationGroups = {}, venueCategories = {}) => {
   let leisure = 0;
   let fnb = 0;
   let golf = 0;
@@ -89,7 +89,17 @@ export const calculateGroupedSales = (salesObj, locationGroups = {}) => {
       return;
     }
 
-    // 2. Fallback 키워드 매칭
+    // 1.5 백엔드 공식 category_code 최우선 매핑 (V3 규격 반영)
+    const cat = venueCategories[loc];
+    if (cat) {
+      if (cat === 'FNB' || cat === 'BANQUET') { fnb += val; return; }
+      if (cat === 'GOLF') { golf += val; return; }
+      if (cat === 'MOTO') { moto += val; return; }
+      if (cat === 'TICKET') { leisure += val; return; }
+      if (cat === 'OTHER') { other += val; return; }
+    }
+
+    // 2. Fallback 키워드 매칭 (category_code가 없는 구버전 데이터용)
     const fallback = getDefaultGroup(loc);
     if (fallback === 'golf') golf += val;
     else if (fallback === 'fnb') fnb += val;

@@ -295,6 +295,7 @@ function transformPolymorphicData(json) {
     rawLeisureRecords: [],
     leisureSalesByLocation: {},
     salesByLocation: {},
+    venueCategories: {},
     venues: {},
     visitorData: {
       totalVehicles: json.visitorData?.totalVehicles || null,
@@ -335,6 +336,11 @@ function transformPolymorphicData(json) {
       const todayActual = Number(item.today_actual || 0);
       // 수량/방문객 필드 하위 호환성 및 신규 통합 대응
       const qty = Number(item.qty || item.visitors || item.rooms_sold || 0);
+
+      // 백엔드 원본 카테고리 보존 (문자열 매칭 의존성 탈피)
+      if (cat !== 'ROOM' && shopName !== '기타') {
+        monthObj.venueCategories[shopName] = cat;
+      }
 
       if (cat === 'ROOM') {
         // 객실 매출 및 판매량 매핑

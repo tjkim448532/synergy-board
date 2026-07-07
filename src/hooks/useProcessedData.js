@@ -206,7 +206,7 @@ export default function useProcessedData(monthlyData, settings) {
 
       if (d.salesByLocation) {
         const salesObj = d.salesByLocation;
-        const calculated = calculateGroupedSales(salesObj, locationGroups);
+        const calculated = calculateGroupedSales(salesObj, locationGroups, d.venueCategories);
         leisureSales = calculated.leisure;
         fnbSales = calculated.fnb;
         golfSales = calculated.golf;
@@ -214,8 +214,8 @@ export default function useProcessedData(monthlyData, settings) {
         motoSales = calculated.moto;
         dynamicGroups = calculated.dynamicGroups || {};
         
-        const calcWd = calculateGroupedSales(d.salesWdByLocation || {}, locationGroups);
-        const calcWe = calculateGroupedSales(d.salesWeByLocation || {}, locationGroups);
+        const calcWd = calculateGroupedSales(d.salesWdByLocation || {}, locationGroups, d.venueCategories);
+        const calcWe = calculateGroupedSales(d.salesWeByLocation || {}, locationGroups, d.venueCategories);
         lRevWd = calcWd.leisure; lRevWe = calcWe.leisure;
         fRevWd = calcWd.fnb; fRevWe = calcWe.fnb;
         mRevWd = calcWd.moto || 0; mRevWe = calcWe.moto || 0;
