@@ -306,120 +306,77 @@ function transformPolymorphicData(json) {
 
   const w = json.weather || {};
 
-  // 1. 객실 데이터 매핑
+  // 1. V3 정규화 스펙 제네릭 파싱 파이프라인
   let totalRoomsSold = 0;
-  if (json.roomTypeBreakdown && Array.isArray(json.roomTypeBreakdown) && json.roomTypeBreakdown.length > 0) {
-    json.roomTypeBreakdown.forEach(room => {
-      const rSold = Number(room.rooms_sold || 0);
-      totalRoomsSold += rSold;
-      monthObj.rawRoomRecords.push({
-        date: targetDate,
-        roomType: room.room_type,
-        marketType: 'TOTAL', 
-        count: rSold,
-        revenue: Number(room.room_revenue || room.today_actual || 0),
-        weatherTempMax: Number(w.tempMax || 0),
-        weatherTempMin: Number(w.tempMin || 0),
-        weatherPrecipitation: Number(w.precipitation || 0),
-        weatherDaytimePrecip: 0, 
-        weatherNighttimePrecip: 0,
-        weatherWindSpeed: Number(w.windSpeed || 0),
-        weatherCode: Number(w.code || 0),
-        weatherDesc: w.weatherDesc || '정보없음'
-      });
-    });
-  } else if (json.dailyReportBreakdown) {
-    // fallback
-    const kpiRoom = json.dailyReportBreakdown.find(d => d.category === 'KPI' && d.name === 'Occupied Rooms');
-    const roomRev = json.dailyReportBreakdown.find(d => d.category === 'ROOM' && d.name === 'ROOM');
-    
-    const totalSold = kpiRoom ? Number(kpiRoom.today_actual || 0) : 0;
-    const totalRev = roomRev ? Number(roomRev.today_actual || 0) : 0;
-    totalRoomsSold = totalSold;
-    
-    if (totalSold > 0 || totalRev > 0) {
-      monthObj.rawRoomRecords.push({
-        date: targetDate, roomType: '합계', marketType: 'TOTAL', count: totalSold, revenue: totalRev,
-        weatherTempMax: Number(w.tempMax || 0), weatherTempMin: Number(w.tempMin || 0), weatherPrecipitation: Number(w.precipitation || 0),
-        weatherDaytimePrecip: 0, weatherNighttimePrecip: 0,
-        weatherWindSpeed: Number(w.windSpeed || 0), weatherCode: Number(w.code || 0), weatherDesc: w.weatherDesc || '정보없음'
-      });
-    }
-  }
-  monthObj.roomsSold = totalRoomsSold;
-
-  // 1.5 Extract marketTypeBreakdown / segmentBreakdown
   monthObj.rawMarketRecords = [];
-  const polymorphicMarketBreakdown = json.marketTypeBreakdown || json.segmentBreakdown || [];
-  if (polymorphicMarketBreakdown && Array.isArray(polymorphicMarketBreakdown)) {
-    polymorphicMarketBreakdown.forEach(m => {
-      monthObj.rawMarketRecords.push({
-        date: targetDate,
-        marketType: m.market_type || m.marketType || m.segment,
-        count: Number(m.rooms_sold || m.roomsSold || m.roomsSold || 0),
-        revenue: Number(m.room_revenue || m.roomRevenue || m.revenue || 0),
-        visitors: Number(m.visitors || m.guests || 0)
-      });
-    });
-  }
+  if (!monthObj.leisureTicketUsage) monthObj.leisureTicketUsage = {};
 
-  // 2. 부대 매출 데이터 매핑 (V3 & V4 통합)
-  const venueSources = [
-    json.dailyReportBreakdown,
-    json.fnbFacilityBreakdown,
-    json.otherFacilityBreakdown,
-    json.golfFacilityBreakdown,
-    json.ticketFacilityBreakdown,
-    json.banquetFacilityBreakdown,
-    json.leisureProductBreakdown
-  ];
-
-  venueSources.forEach(arr => {
-    if (arr && Array.isArray(arr)) {
-      arr.forEach(item => {
-        if (item.category === 'KPI' || item.category === 'TOTAL' || item.category === 'ROOM') return;
-        
-        const venueName = item.facility_name || item.name || item.venue;
-        if (!venueName) return;
-
-        const revenue = Number(item.today_actual || item.revenue || 0);
-        if (revenue !== 0) {
-          monthObj.salesByLocation[venueName] = (monthObj.salesByLocation[venueName] || 0) + revenue;
-          
-          if (!monthObj.venues[venueName]) {
-            monthObj.venues[venueName] = { totalRev: 0, tickets: {} };
-          }
-          monthObj.venues[venueName].totalRev += revenue;
+  // JSON 내의 모든 배열을 순회하며 category_code 기반으로 자동 라우팅
+  Object.values(json).forEach(arr => {
+    if (!Array.isArray(arr)) return;
+    
+    arr.forEach(item => {
+      const cat = item.category_code;
+      if (!cat) {
+        // V2 Market/Segment Fallback (category_code가 없는 마켓 세그먼트 배열용)
+        if (item.market_type || item.segment) {
+          monthObj.rawMarketRecords.push({
+            date: targetDate,
+            marketType: item.market_type || item.segment || item.shop_name,
+            count: Number(item.rooms_sold || item.qty || 0),
+            revenue: Number(item.today_actual || item.room_revenue || 0),
+            visitors: Number(item.visitors || item.guests || 0)
+          });
         }
-      });
-    }
+        return;
+      }
+
+      const shopName = item.shop_name || '기타';
+      const todayActual = Number(item.today_actual || 0);
+      // 수량/방문객 필드 하위 호환성 및 신규 통합 대응
+      const qty = Number(item.qty || item.visitors || item.rooms_sold || 0);
+
+      if (cat === 'ROOM') {
+        // 객실 매출 및 판매량 매핑
+        if (shopName !== '합계' && shopName !== 'TOTAL' && shopName !== 'KPI') {
+          totalRoomsSold += qty;
+          monthObj.rawRoomRecords.push({
+            date: targetDate,
+            roomType: shopName,
+            marketType: 'TOTAL', 
+            count: qty,
+            revenue: todayActual,
+            weatherTempMax: Number(w.tempMax || 0),
+            weatherTempMin: Number(w.tempMin || 0),
+            weatherPrecipitation: Number(w.precipitation || 0),
+            weatherDaytimePrecip: 0, 
+            weatherNighttimePrecip: 0,
+            weatherWindSpeed: Number(w.windSpeed || 0),
+            weatherCode: Number(w.code || 0),
+            weatherDesc: w.weatherDesc || '정보없음'
+          });
+        }
+      } else if (['FNB', 'TICKET', 'GOLF', 'BANQUET', 'OTHER', 'MOTO'].includes(cat)) {
+        // 부대 매출 누적 (MOTO 독립 카테고리 포함)
+        if (todayActual !== 0) {
+          monthObj.salesByLocation[shopName] = (monthObj.salesByLocation[shopName] || 0) + todayActual;
+          if (!monthObj.venues[shopName]) monthObj.venues[shopName] = { totalRev: 0, tickets: {} };
+          monthObj.venues[shopName].totalRev += todayActual;
+        }
+
+        // 방문객 및 티켓 수량 누적
+        if (qty !== 0) {
+          monthObj.leisureTicketUsage[shopName] = (monthObj.leisureTicketUsage[shopName] || 0) + qty;
+          if (!monthObj.venues[shopName]) monthObj.venues[shopName] = { totalRev: 0, tickets: {} };
+          // 상품명(product_name)이 내려오는 경우 대응, 없으면 업장 이름으로 티켓 누적
+          const ticketName = item.product_name || shopName;
+          monthObj.venues[shopName].tickets[ticketName] = (monthObj.venues[shopName].tickets[ticketName] || 0) + qty;
+        }
+      }
+    });
   });
 
-  // 3. 부대 티켓 매핑 (매출 상세)
-  if (json.leisureProductBreakdown && Array.isArray(json.leisureProductBreakdown)) {
-    json.leisureProductBreakdown.forEach(ticket => {
-      const venueName = ticket.facility_name || '기타';
-      const ticketName = ticket.product_name;
-      const qty = Number(ticket.qty || 0);
-      
-      if (!monthObj.venues[venueName]) {
-        monthObj.venues[venueName] = { totalRev: 0, tickets: {} };
-      }
-      monthObj.venues[venueName].tickets[ticketName] = (monthObj.venues[venueName].tickets[ticketName] || 0) + qty;
-    });
-  }
-
-  // 3.5 방문객 전용 매핑 (백엔드 필터 & 배수 처리 완료본)
-  if (json.leisureVisitorBreakdown && Array.isArray(json.leisureVisitorBreakdown)) {
-    if (!monthObj.leisureTicketUsage) {
-      monthObj.leisureTicketUsage = {};
-    }
-    json.leisureVisitorBreakdown.forEach(v => {
-      const venueName = v.facility_name || '기타';
-      const qty = Number(v.visitors || v.qty || v.visitor_count || 0); // Handle 'visitors' field from V3 API
-      monthObj.leisureTicketUsage[venueName] = (monthObj.leisureTicketUsage[venueName] || 0) + qty;
-    });
-  }
+  monthObj.roomsSold = totalRoomsSold;
 
   // 4. 모토아레나 breakdown 연동
   if (!monthObj.venues['모토아레나']) {
