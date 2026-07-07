@@ -1,5 +1,14 @@
 import { useState, useEffect } from 'react';
 
+// 프론트엔드 영업장 렌더링 정규화 유틸리티 (원천 데이터 훼손 방어 및 UI 정합성 보장)
+function normalizeShopName(rawName) {
+  if (!rawName) return '기타';
+  let name = String(rawName).replace(/- Posting/gi, '').replace(/\s+/g, '').trim();
+  if (name.includes('놀이동산')) return '놀이동산';
+  if (name.includes('사계절썰매장')) return '사계절썰매장';
+  return name;
+}
+
 // 백엔드 API에서 제공하는 Daily 데이터를 기존 시너지의 Monthly 데이터 포맷으로 변환하는 어댑터 함수
 function transformDailyToMonthly(dailyRecords) {
   const monthlyMap = new Map();
@@ -248,7 +257,8 @@ function transformTimeseriesToMonthly(jsonArray) {
       const breakdown = {};
       
       if (dayData.revenues.venueBreakdown && Object.keys(dayData.revenues.venueBreakdown).length > 0) {
-        Object.entries(dayData.revenues.venueBreakdown).forEach(([venueName, rev]) => {
+        Object.entries(dayData.revenues.venueBreakdown).forEach(([rawVenueName, rev]) => {
+          const venueName = normalizeShopName(rawVenueName);
           // [Double Counting 방지] 객실 매출은 rawRoomRecords에서 이미 처리하므로 부대시설(Leisure)에서는 제외합니다.
           if (venueName === 'ROOM' || venueName === 'ROOM OTHER' || venueName === '객실' || venueName === '그린피' || venueName === '골프장') {
              return;
@@ -267,7 +277,7 @@ function transformTimeseriesToMonthly(jsonArray) {
         Object.entries(dayData.revenues).forEach(([key, rev]) => {
           if (key === 'room' || key === 'venueBreakdown') return;
           const categoryMap = { fnb: 'FNB', ticket: 'TICKET', golf: 'GOLF' };
-          const venueName = categoryMap[key] || key;
+          const venueName = normalizeShopName(categoryMap[key] || key);
           const revAmtFallback = Number(rev || 0);
           
           monthObj.salesByLocation[venueName] = (monthObj.salesByLocation[venueName] || 0) + revAmtFallback;
@@ -349,7 +359,7 @@ function transformPolymorphicData(json) {
         return;
       }
 
-      const shopName = item.shop_name || '기타';
+      const shopName = normalizeShopName(item.shop_name);
       const todayActual = Number(item.today_actual || 0);
       // V4 수량(Quantity) 단일화 (레거시 방어 코드 제거)
       const qty = Number(item.sales_qty || 0);
