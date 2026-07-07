@@ -339,6 +339,33 @@ function transformPolymorphicData(json) {
   monthObj.rawMarketRecords = [];
   if (!monthObj.leisureTicketUsage) monthObj.leisureTicketUsage = {};
 
+  // 2. V5 신규 스펙: 객실 마켓(채널) 세부 데이터 및 평수 명시적 파싱
+  if (json.roomMarketBreakdown && Array.isArray(json.roomMarketBreakdown)) {
+    json.roomMarketBreakdown.forEach(item => {
+      monthObj.rawRoomRecords.push({
+        date: targetDate,
+        roomType: normalizeShopName(item.facility_name) || '기타',
+        marketType: item.channel_name || '기타',
+        count: Number(item.rooms_sold || 0),
+        revenue: Number(item.today_actual || 0)
+      });
+    });
+  }
+  
+  if (json.roomTypeBreakdown && Array.isArray(json.roomTypeBreakdown)) {
+    json.roomTypeBreakdown.forEach(item => {
+      const qty = Number(item.rooms_sold || 0);
+      totalRoomsSold += qty;
+      monthObj.rawRoomRecords.push({
+        date: targetDate,
+        roomType: normalizeShopName(item.facility_name) || '기타',
+        marketType: 'TOTAL', // 레거시 호환 및 중복 합산 방지 태그
+        count: qty,
+        revenue: Number(item.today_actual || 0)
+      });
+    });
+  }
+
   // JSON 내의 모든 배열을 순회하며 category_code 기반으로 자동 라우팅
   Object.values(json).forEach(arr => {
     if (!Array.isArray(arr)) return;
@@ -450,7 +477,7 @@ export default function useBackendData(startDate, endDate, targetDate) {
         setLoading(true);
         
         // 1. 항상 시계열 데이터 호출 (12개월 꺾은선 차트용 전체 흐름)
-        const tsUrl = `https://belleforet-data.vercel.app/api/v3/synergy/timeseries?startDate=${startDate}&endDate=${endDate}`;
+        const tsUrl = `https://belleforet-data.vercel.app/api/v5/synergy/timeseries?startDate=${startDate}&endDate=${endDate}`;
         const tsRes = await fetch(tsUrl);
         if (!tsRes.ok) throw new Error('Timeseries API failed: ' + tsRes.statusText);
         const tsJson = await tsRes.json();
@@ -464,11 +491,12 @@ export default function useBackendData(startDate, endDate, targetDate) {
         // 2. targetDate가 있을 경우, 대시보드(Iframe)에서 전달한 상세 요약본을 호출하여 병합
         // (파이 차트 등 상세 분석용 데이터를 선택된 월에 덮어씀)
         if (targetDate) {
-          const detailUrl = `https://belleforet-data.vercel.app/api/v3/dashboard/revenue-summary?date=${targetDate}`;
+          const detailUrl = `https://belleforet-data.vercel.app/api/v5/dashboard/revenue-summary?date=${targetDate}`;
           const detailRes = await fetch(detailUrl);
           if (detailRes.ok) {
             const detailJson = await detailRes.json();
-            const detailArray = transformPolymorphicData(detailJson);
+            const payload = detailJson.data || detailJson;
+            const detailArray = transformPolymorphicData(payload);
             if (detailArray && detailArray.length > 0) {
                const detailMonthObj = detailArray[0];
                const existingIndex = formattedData.findIndex(d => d.yearMonth === detailMonthObj.yearMonth);

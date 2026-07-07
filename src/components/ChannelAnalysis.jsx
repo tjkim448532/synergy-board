@@ -76,6 +76,9 @@ export default function ChannelAnalysis({ processedData, globalStats, settings }
     processedDataWithSales.forEach(month => {
       if (month.rawRoomRecords) {
         month.rawRoomRecords.forEach(record => {
+          // [V5 패치] 평수별 총합(TOTAL) 데이터는 채널 중복 집계를 방지하기 위해 스킵합니다.
+          if (record.marketType === 'TOTAL') return;
+          
           const rev = parseSafeNumber(record.revenue);
           const cnt = parseSafeNumber(record.count);
           const channelName = normalizeMarketType(record.marketType);
