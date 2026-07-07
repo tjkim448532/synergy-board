@@ -16,11 +16,15 @@ function transformDailyToMonthly(dailyRecords) {
         rawLeisureRecords: [],
         leisureSalesByLocation: {},
         salesByLocation: {},
+        salesWdByLocation: {},
+        salesWeByLocation: {},
+        venueCategories: {},
         venues: {}
       });
     }
 
     const monthObj = monthlyMap.get(yearMonth);
+    const isWe = new Date(dayData.date).getDay() === 0 || new Date(dayData.date).getDay() === 6;
 
     // 1. 객실 데이터 누적 (rawRoomRecords)
     if (dayData.rooms && Array.isArray(dayData.rooms)) {
@@ -94,6 +98,7 @@ function transformTimeseriesToMonthly(jsonArray) {
 
   jsonArray.forEach(dayData => {
     const yearMonth = dayData.date.substring(0, 7);
+    const isWe = new Date(dayData.date).getDay() === 0 || new Date(dayData.date).getDay() === 6;
     if (!monthlyMap.has(yearMonth)) {
       monthlyMap.set(yearMonth, {
         id: yearMonth,
@@ -102,6 +107,9 @@ function transformTimeseriesToMonthly(jsonArray) {
         rawLeisureRecords: [],
         leisureSalesByLocation: {},
         salesByLocation: {},
+        salesWdByLocation: {},
+        salesWeByLocation: {},
+        venueCategories: {},
         venues: {},
         visitorData: {
           ...(dayData.visitorData || {})
@@ -245,7 +253,10 @@ function transformTimeseriesToMonthly(jsonArray) {
           if (venueName === 'ROOM' || venueName === 'ROOM OTHER' || venueName === '객실' || venueName === '그린피' || venueName === '골프장') {
              return;
           }
-          monthObj.salesByLocation[venueName] = (monthObj.salesByLocation[venueName] || 0) + Number(rev || 0);
+          const revAmt = Number(rev || 0);
+          monthObj.salesByLocation[venueName] = (monthObj.salesByLocation[venueName] || 0) + revAmt;
+          if (isWe) monthObj.salesWeByLocation[venueName] = (monthObj.salesWeByLocation[venueName] || 0) + revAmt;
+          else monthObj.salesWdByLocation[venueName] = (monthObj.salesWdByLocation[venueName] || 0) + revAmt;
           if (!monthObj.venues[venueName]) {
             monthObj.venues[venueName] = { totalRev: 0, tickets: {} };
           }
@@ -257,8 +268,11 @@ function transformTimeseriesToMonthly(jsonArray) {
           if (key === 'room' || key === 'venueBreakdown') return;
           const categoryMap = { fnb: 'FNB', ticket: 'TICKET', golf: 'GOLF' };
           const venueName = categoryMap[key] || key;
+          const revAmtFallback = Number(rev || 0);
           
-          monthObj.salesByLocation[venueName] = (monthObj.salesByLocation[venueName] || 0) + Number(rev || 0);
+          monthObj.salesByLocation[venueName] = (monthObj.salesByLocation[venueName] || 0) + revAmtFallback;
+          if (isWe) monthObj.salesWeByLocation[venueName] = (monthObj.salesWeByLocation[venueName] || 0) + revAmtFallback;
+          else monthObj.salesWdByLocation[venueName] = (monthObj.salesWdByLocation[venueName] || 0) + revAmtFallback;
           
           if (!monthObj.venues[venueName]) {
             monthObj.venues[venueName] = { totalRev: 0, tickets: {} };
@@ -288,6 +302,7 @@ function transformPolymorphicData(json) {
   const targetDate = json.date || json.startDate || new Date().toISOString().split('T')[0];
   const yearMonth = targetDate.substring(0, 7);
 
+  const isWe = new Date(targetDate).getDay() === 0 || new Date(targetDate).getDay() === 6;
   const monthObj = {
     id: yearMonth,
     yearMonth: yearMonth,
@@ -295,6 +310,8 @@ function transformPolymorphicData(json) {
     rawLeisureRecords: [],
     leisureSalesByLocation: {},
     salesByLocation: {},
+    salesWdByLocation: {},
+    salesWeByLocation: {},
     venueCategories: {},
     venues: {},
     visitorData: {
@@ -366,8 +383,12 @@ function transformPolymorphicData(json) {
         // 부대 매출 누적 (MOTO 독립 카테고리 포함)
         if (todayActual !== 0) {
           monthObj.salesByLocation[shopName] = (monthObj.salesByLocation[shopName] || 0) + todayActual;
+          if (isWe) monthObj.salesWeByLocation[shopName] = (monthObj.salesWeByLocation[shopName] || 0) + todayActual;
+          else monthObj.salesWdByLocation[shopName] = (monthObj.salesWdByLocation[shopName] || 0) + todayActual;
+          
           if (!monthObj.venues[shopName]) monthObj.venues[shopName] = { totalRev: 0, tickets: {} };
           monthObj.venues[shopName].totalRev += todayActual;
+        }
         // 방문객 및 티켓 수량 누적
         if (qty !== 0) {
           monthObj.leisureTicketUsage[shopName] = (monthObj.leisureTicketUsage[shopName] || 0) + qty;
@@ -447,6 +468,9 @@ export default function useBackendData(startDate, endDate, targetDate) {
                   formattedData[existingIndex] = {
                      ...existingObj,
                      salesByLocation: { ...existingObj.salesByLocation, ...detailMonthObj.salesByLocation },
+                     salesWdByLocation: { ...existingObj.salesWdByLocation, ...detailMonthObj.salesWdByLocation },
+                     salesWeByLocation: { ...existingObj.salesWeByLocation, ...detailMonthObj.salesWeByLocation },
+                     venueCategories: { ...existingObj.venueCategories, ...detailMonthObj.venueCategories },
                      venues: { ...existingObj.venues, ...detailMonthObj.venues },
                      leisureTicketUsage: { ...existingObj.leisureTicketUsage, ...detailMonthObj.leisureTicketUsage },
                      visitorData: { ...existingObj.visitorData, ...detailMonthObj.visitorData },
