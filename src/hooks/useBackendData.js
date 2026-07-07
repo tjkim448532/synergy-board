@@ -334,8 +334,8 @@ function transformPolymorphicData(json) {
 
       const shopName = item.shop_name || '기타';
       const todayActual = Number(item.today_actual || 0);
-      // 수량/방문객 필드 하위 호환성 및 신규 통합 대응
-      const qty = Number(item.qty || item.visitors || item.rooms_sold || 0);
+      // V4 수량(Quantity) 단일화 (레거시 방어 코드 제거)
+      const qty = Number(item.sales_qty || 0);
 
       // 백엔드 원본 카테고리 보존 (문자열 매칭 의존성 탈피)
       if (cat !== 'ROOM' && shopName !== '기타') {
@@ -368,15 +368,29 @@ function transformPolymorphicData(json) {
           monthObj.salesByLocation[shopName] = (monthObj.salesByLocation[shopName] || 0) + todayActual;
           if (!monthObj.venues[shopName]) monthObj.venues[shopName] = { totalRev: 0, tickets: {} };
           monthObj.venues[shopName].totalRev += todayActual;
-        }
-
         // 방문객 및 티켓 수량 누적
         if (qty !== 0) {
           monthObj.leisureTicketUsage[shopName] = (monthObj.leisureTicketUsage[shopName] || 0) + qty;
-          if (!monthObj.venues[shopName]) monthObj.venues[shopName] = { totalRev: 0, tickets: {} };
-          // 상품명(product_name)이 내려오는 경우 대응, 없으면 업장 이름으로 티켓 누적
+          if (!monthObj.venues[shopName]) {
+            monthObj.venues[shopName] = { totalRev: 0, tickets: {} };
+          }
+          // V4 상품명(product_name) 필수화 보장 (F&B 등 없는 경우에만 업장명 보존)
           const ticketName = item.product_name || shopName;
           monthObj.venues[shopName].tickets[ticketName] = (monthObj.venues[shopName].tickets[ticketName] || 0) + qty;
+        }
+
+        // V4 모토아레나 세부 고객 유형 세그먼트 매핑
+        if (cat === 'MOTO' && item.segment_type) {
+          if (!monthObj.venues['모토아레나']) {
+            monthObj.venues['모토아레나'] = { totalRev: 0, tickets: {}, breakdown: {
+              guest: 0, internal: 0, member: 0, partnership: 0, local: 0, online: 0, general: 0
+            }};
+          }
+          if (!monthObj.venues['모토아레나'].breakdown) {
+            monthObj.venues['모토아레나'].breakdown = { guest: 0, internal: 0, member: 0, partnership: 0, local: 0, online: 0, general: 0 };
+          }
+          const segKey = item.segment_type.toLowerCase();
+          monthObj.venues['모토아레나'].breakdown[segKey] += todayActual;
         }
       }
     });
@@ -384,25 +398,11 @@ function transformPolymorphicData(json) {
 
   monthObj.roomsSold = totalRoomsSold;
 
-  // 4. 모토아레나 breakdown 연동
+  // 구형 json.motoArenaBreakdown 맵핑 블록 전면 폐기 (V4 배열 스펙으로 대체됨)
   if (!monthObj.venues['모토아레나']) {
-    monthObj.venues['모토아레나'] = { totalRev: 0, tickets: {} };
-  }
-  
-  if (json.motoArenaBreakdown) {
-    monthObj.venues['모토아레나'].breakdown = {
-        guest: Number(json.motoArenaBreakdown.guestRevenue || 0),
-        internal: Number(json.motoArenaBreakdown.internalRevenue || 0),
-        member: Number(json.motoArenaBreakdown.memberRevenue || 0),
-        partnership: Number(json.motoArenaBreakdown.partnershipRevenue || 0),
-        local: Number(json.motoArenaBreakdown.localRevenue || 0),
-        online: Number(json.motoArenaBreakdown.onlineRevenue || 0),
-        general: Number(json.motoArenaBreakdown.generalRevenue || 0)
-    };
-  } else {
-    monthObj.venues['모토아레나'].breakdown = {
-        guest: 0, internal: 0, member: 0, partnership: 0, local: 0, online: 0, general: 0
-    };
+    monthObj.venues['모토아레나'] = { totalRev: 0, tickets: {}, breakdown: { guest: 0, internal: 0, member: 0, partnership: 0, local: 0, online: 0, general: 0 }};
+  } else if (!monthObj.venues['모토아레나'].breakdown) {
+    monthObj.venues['모토아레나'].breakdown = { guest: 0, internal: 0, member: 0, partnership: 0, local: 0, online: 0, general: 0 };
   }
 
   return [monthObj];
