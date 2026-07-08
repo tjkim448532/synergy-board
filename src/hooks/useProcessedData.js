@@ -150,7 +150,8 @@ export default function useProcessedData(monthlyData, settings) {
         soldWd = calculatedSoldWd;
         soldWe = calculatedSoldWe;
         
-        totalRoomRevenue = calculatedRevWd + calculatedRevWe;
+        // [V5 패치] 백엔드 제공 Summary를 단일 진실 공급원(SSOT)으로 최우선 적용
+        totalRoomRevenue = d.v5Summary?.room?.totalRoomRevenue ?? (calculatedRevWd + calculatedRevWe);
         revWd = calculatedRevWd;
         revWe = calculatedRevWe;
       } else {
@@ -207,9 +208,11 @@ export default function useProcessedData(monthlyData, settings) {
       if (d.salesByLocation) {
         const salesObj = d.salesByLocation;
         const calculated = calculateGroupedSales(salesObj, locationGroups, d.venueCategories);
-        leisureSales = calculated.leisure;
-        fnbSales = calculated.fnb;
-        golfSales = calculated.golf;
+        
+        // [V5 패치] 백엔드 제공 Summary를 단일 진실 공급원(SSOT)으로 최우선 적용
+        leisureSales = d.v5Summary?.ticket?.totalTicketRevenue ?? calculated.leisure;
+        fnbSales = d.v5Summary?.fnb?.totalFnbRevenue ?? calculated.fnb;
+        golfSales = d.v5Summary?.golf?.totalGolfRevenue ?? calculated.golf;
         otherSales = calculated.other;
         motoSales = calculated.moto;
         dynamicGroups = calculated.dynamicGroups || {};

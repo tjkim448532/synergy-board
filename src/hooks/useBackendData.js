@@ -316,6 +316,12 @@ function transformPolymorphicData(json) {
   const monthObj = {
     id: yearMonth,
     yearMonth: yearMonth,
+    v5Summary: {
+      room: json.roomSummary || null,
+      golf: json.golfSummary || null,
+      ticket: json.ticketSummary || null,
+      fnb: json.fnbSummary || null
+    },
     rawRoomRecords: [],
     rawLeisureRecords: [],
     leisureSalesByLocation: {},

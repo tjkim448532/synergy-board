@@ -11,15 +11,33 @@ const formatCurrency = (val) => new Intl.NumberFormat('ko-KR').format(Math.round
 
 const PIE_COLORS = ['#3b82f6', '#10b981', '#fbbf24', '#a855f7', '#ef4444', '#64748b'];
 
-// 마켓 타입을 주요 채널로 정규화하는 헬퍼 함수 (V4 API 대응)
+// [V5 패치] 백엔드의 정확한 한글 명칭(channel_name)을 매핑하는 불변 사전(Enum)
+const CHANNEL_ENUM = {
+  '단체영업(세미나)': '세미나',
+  '단체영업(MICE)': '세미나',
+  '온라인 여행사(자동)': '온라인',
+  '기업영업(휴양소)': '휴양소',
+  '예약실(전화)': '예약실',
+  '홈페이지(APP)': '홈페이지',
+  '온라인 여행사(수동)': '온라인',
+  '기타(미분류)': '기타'
+};
+
+// 마켓 타입을 주요 채널로 정규화하는 헬퍼 함수 (V5 API 대응 SSOT)
 const normalizeMarketType = (market) => {
   if (!market) return '기타';
+  
+  // 1. 사전(Enum) 매핑 최우선 시도
+  if (CHANNEL_ENUM[market]) return CHANNEL_ENUM[market];
+  
+  // 2. 사전에 없는 신규 채널 방어용 레거시 폴백
   const m = market.toUpperCase();
   if (m.includes('온라인') || m.includes('OTA') || m.includes('AGODA') || m.includes('야놀자') || m.includes('여기어때')) return '온라인';
   if (m.includes('기업') || m.includes('휴양소') || m.includes('법인')) return '휴양소';
   if (m.includes('세미나') || m.includes('단체') || m.includes('MICE') || m.includes('행사')) return '세미나';
   if (m.includes('예약실') || m.includes('전화') || m.includes('메신저') || m.includes('분양회원') || m.includes('회원')) return '예약실';
   if (m.includes('홈페이지') || m.includes('APP') || m.includes('자사채널') || m.includes('다이렉트')) return '홈페이지';
+  
   return '기타';
 };
 
