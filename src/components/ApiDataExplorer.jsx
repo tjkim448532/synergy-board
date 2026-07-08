@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Database, Download, ChevronDown, ChevronUp } from 'lucide-react';
-import Papa from 'papaparse';
 import toast from 'react-hot-toast';
 import './ApiDataExplorer.css';
 

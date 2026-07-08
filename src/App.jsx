@@ -16,8 +16,6 @@ import LeisureUtilization from './components/LeisureUtilization'
 import ManagementStrategy from './components/ManagementStrategy'
 import WeatherForecastAnalytics from './components/WeatherForecastAnalytics'
 import WeatherAnalytics from './components/WeatherAnalytics'
-import { collection, onSnapshot, doc } from 'firebase/firestore';
-import { db } from './firebase';
 import useProcessedData from './hooks/useProcessedData';
 import useBackendData from './hooks/useBackendData';
 import useAutoScale from './hooks/useAutoScale';
