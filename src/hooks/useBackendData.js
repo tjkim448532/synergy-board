@@ -484,7 +484,7 @@ export default function useBackendData(startDate, endDate, targetDate) {
         
         // 1. 항상 시계열 데이터 호출 (12개월 꺾은선 차트용 전체 흐름)
         const tsUrl = `https://belleforet-data.vercel.app/api/v5/synergy/timeseries?startDate=${startDate}&endDate=${endDate}`;
-        const tsRes = await fetch(tsUrl);
+        const tsRes = await fetch(tsUrl, { headers: { Authorization: 'Bearer belleforet-m2m-secret' } });
         if (!tsRes.ok) throw new Error('Timeseries API failed: ' + tsRes.statusText);
         const tsJson = await tsRes.json();
         
@@ -501,8 +501,8 @@ export default function useBackendData(startDate, endDate, targetDate) {
           const parkingUrl = `https://belleforet-data.vercel.app/api/v5/dashboard/parking-summary?date=${targetDate}`;
           
           const [detailRes, parkingRes] = await Promise.allSettled([
-            fetch(detailUrl),
-            fetch(parkingUrl)
+            fetch(detailUrl, { headers: { Authorization: 'Bearer belleforet-m2m-secret' } }),
+            fetch(parkingUrl, { headers: { Authorization: 'Bearer belleforet-m2m-secret' } })
           ]);
           
           let parsedParkingData = { totalVehicles: null, employeeVehicles: null, golfGuests: null };
