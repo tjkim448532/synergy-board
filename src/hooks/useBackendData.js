@@ -498,9 +498,23 @@ export default function useBackendData(startDate, endDate, targetDate) {
         // (파이 차트 등 상세 분석용 데이터를 선택된 월에 덮어씀)
         if (targetDate) {
           const detailUrl = `https://belleforet-data.vercel.app/api/v5/dashboard/revenue-summary?date=${targetDate}`;
-          const detailRes = await fetch(detailUrl);
-          if (detailRes.ok) {
-            const detailJson = await detailRes.json();
+          const parkingUrl = `https://belleforet-data.vercel.app/api/v5/dashboard/parking-summary?date=${targetDate}`;
+          
+          const [detailRes, parkingRes] = await Promise.allSettled([
+            fetch(detailUrl),
+            fetch(parkingUrl)
+          ]);
+          
+          let parsedParkingData = { totalVehicles: null, employeeVehicles: null, golfGuests: null };
+          if (parkingRes.status === 'fulfilled' && parkingRes.value.ok) {
+            const pJson = await parkingRes.value.json();
+            if (pJson && pJson.data) {
+              parsedParkingData = pJson.data;
+            }
+          }
+
+          if (detailRes.status === 'fulfilled' && detailRes.value.ok) {
+            const detailJson = await detailRes.value.json();
             const payload = detailJson.data || detailJson;
             const detailArray = transformPolymorphicData(payload);
             if (detailArray && detailArray.length > 0) {
