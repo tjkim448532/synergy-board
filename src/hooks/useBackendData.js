@@ -47,8 +47,8 @@ function transformDailyToMonthly(dailyRecords) {
           weatherTempMax: dayData.weather?.tempMax || 0,
           weatherTempMin: dayData.weather?.tempMin || 0,
           weatherPrecipitation: dayData.weather?.precipitation || 0,
-          weatherDaytimePrecip: dayData.weather?.daytimePrecip || 0,
-          weatherNighttimePrecip: dayData.weather?.nighttimePrecip || 0
+          weatherWindSpeed: dayData.weather?.windSpeed || 0,
+          weatherCode: dayData.weather?.code || 0
         });
       });
     }
@@ -57,8 +57,8 @@ function transformDailyToMonthly(dailyRecords) {
     Object.entries(dayData.revenues || {}).forEach(([venueName, revenue]) => {
       // API 가이드: 부대 매출은 gross 우선 추출 (부가세 포함 통일)
       const netRevenue = typeof revenue === 'object' && revenue !== null 
-        ? Number(revenue.gross ?? revenue.total_gross ?? revenue.total_net ?? revenue.revenue ?? 0) 
-        : Number(revenue ?? 0);
+            ? Number(revenue.today_actual || revenue.gross || revenue.revenue || 0)
+            : Number(revenue || 0);
 
       monthObj.salesByLocation[venueName] = (monthObj.salesByLocation[venueName] || 0) + netRevenue;
       
@@ -143,7 +143,7 @@ function transformTimeseriesToMonthly(jsonArray) {
 
     const roomsSold = Number(dayData.visitorData?.roomsSold || dayData.roomsSold || 0);
     // 가이드: gross(부가세 포함) 최우선 사용 (Net 기반 연산들도 모두 Gross 기반으로 상향 통일됨)
-    const roomRev = Number(dayData.gross ?? dayData.total_gross ?? dayData.total_net ?? dayData.revenues?.total_gross ?? dayData.revenues?.total_net ?? dayData.revenues?.room ?? dayData.roomRevenue ?? 0);
+    const roomRev = Number(dayData.revenues?.room || dayData.roomRevenue || 0);
     
     // [V4 API] Use unified rooms array with marketType and rateType
     const rooms = dayData.rooms || dayData.roomTypeBreakdown || dayData.visitorData?.roomTypeBreakdown || [];
@@ -260,7 +260,7 @@ function transformTimeseriesToMonthly(jsonArray) {
         Object.entries(dayData.revenues.venueBreakdown).forEach(([rawVenueName, rev]) => {
           const venueName = normalizeShopName(rawVenueName);
           // [Double Counting 방지] 객실 매출은 rawRoomRecords에서 이미 처리하므로 부대시설(Leisure)에서는 제외합니다.
-          if (venueName === 'ROOM' || venueName === 'ROOM OTHER' || venueName === '객실' || venueName === '그린피' || venueName === '골프장') {
+          if (venueName === 'ROOM' || venueName === 'ROOM OTHER' || venueName === '객실' || venueName === '골프장') {
              return;
           }
           const revAmt = Number(rev || 0);
@@ -338,7 +338,7 @@ function transformPolymorphicData(json) {
     leisureVisitorBreakdown: json.leisureVisitorBreakdown || []
   };
 
-  const w = json.weather || {};
+  const w = json.weather?.current || json.weather || {};
 
   // 1. V3 정규화 스펙 제네릭 파싱 파이프라인
   let totalRoomsSold = 0;

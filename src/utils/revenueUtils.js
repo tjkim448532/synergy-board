@@ -99,11 +99,7 @@ export const calculateGroupedSales = (salesObj, locationGroups = {}, venueCatego
       if (cat === 'OTHER') { other += val; return; }
     }
 
-    // 2. Fallback 키워드 매칭 (category_code가 없는 구버전 데이터용)
-    const fallback = getDefaultGroup(loc);
-    if (fallback === 'golf') golf += val;
-    else if (fallback === 'fnb') fnb += val;
-    else if (fallback === 'other') other += val;
+  // 2. 백엔드 Enum 매핑 우선 적용 완료. (더 이상 텍스트 기반 Fallback 휴리스틱을 사용하지 않음)
     else if (fallback === 'moto') moto += val;
     else leisure += val;
   });
