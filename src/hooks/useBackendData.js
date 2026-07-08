@@ -373,7 +373,7 @@ function transformPolymorphicData(json) {
   }
 
   // JSON 내의 모든 배열을 순회하며 category_code 기반으로 자동 라우팅
-  Object.values(json).forEach(arr => {
+  [json.golfFacilityBreakdown, json.ticketFacilityBreakdown, json.fnbFacilityBreakdown].forEach(arr => {
     if (!Array.isArray(arr)) return;
     
     arr.forEach(item => {
