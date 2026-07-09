@@ -104,6 +104,10 @@ export default function useProcessedData(monthlyData, settings) {
           const count = Number(rec.count || 0);
           const revenue = Number(rec.revenue || 0);
           const roomGuests = Number(rec.guests || 0);
+
+          // [중복 방지] V5 파이프라인에서 marketBreakdown(세부채널)과 typeBreakdown(TOTAL)이 
+          // 동일한 rawRoomRecords에 푸시되므로, 전체 집계 시에는 TOTAL 레코드만 합산합니다.
+          if (rec.marketType !== 'TOTAL') return;
           
           if (roomType.includes('16평')) {
             calculatedSold16 += count;
@@ -151,7 +155,7 @@ export default function useProcessedData(monthlyData, settings) {
         soldWe = calculatedSoldWe;
         
         // [V5 패치] 백엔드 제공 Summary를 단일 진실 공급원(SSOT)으로 최우선 적용
-        totalRoomRevenue = d.v5Summary?.room?.totalRoomRevenue ?? (calculatedRevWd + calculatedRevWe);
+        totalRoomRevenue = d.v5Summary?.room?.mtd_actual ?? (calculatedRevWd + calculatedRevWe);
         revWd = calculatedRevWd;
         revWe = calculatedRevWe;
       } else {
@@ -210,9 +214,9 @@ export default function useProcessedData(monthlyData, settings) {
         const calculated = calculateGroupedSales(salesObj, locationGroups, d.venueCategories);
         
         // [V5 패치] 백엔드 제공 Summary를 단일 진실 공급원(SSOT)으로 최우선 적용
-        leisureSales = d.v5Summary?.ticket?.totalTicketRevenue ?? calculated.leisure;
-        fnbSales = d.v5Summary?.fnb?.totalFnbRevenue ?? calculated.fnb;
-        golfSales = d.v5Summary?.golf?.totalGolfRevenue ?? calculated.golf;
+        leisureSales = d.v5Summary?.ticket?.mtd_actual ?? calculated.leisure;
+        fnbSales = d.v5Summary?.fnb?.mtd_actual ?? calculated.fnb;
+        golfSales = d.v5Summary?.golf?.mtd_actual ?? calculated.golf;
         otherSales = calculated.other;
         motoSales = calculated.moto;
         dynamicGroups = calculated.dynamicGroups || {};
