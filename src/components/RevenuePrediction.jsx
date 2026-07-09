@@ -203,7 +203,7 @@ export default function RevenuePrediction({ processedData, globalStats, settings
     if (selectedRefMonth === 'all') {
       return {
         label: `전체 누적 (${processedData.length}개월)`,
-        totalRev: globalStats.totalRoomRevenue + globalStats.totalLeisureRevenue + globalStats.totalFnbRevenue + globalStats.totalMotoRevenue + globalStats.totalOtherRevenue,
+        totalRev: globalStats.totalRevenue,
         golfRev: globalStats.totalGolfRevenue,
         occRate: globalStats.totalOccupancyRate,
         wdOccRate: globalStats.globalWdOccRate,
@@ -536,7 +536,7 @@ export default function RevenuePrediction({ processedData, globalStats, settings
           </div>
           <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '12px'}}>
             <span style={{color: 'var(--text-muted)'}}>총 객실 누적 매출</span>
-            <span style={{fontWeight: 'bold', color: 'var(--accent-blue)'}}>{formatCurrency(globalStats.totalRoomRevenue)}</span>
+            <span style={{fontWeight: 'bold', color: 'var(--accent-blue)'}}>{formatCurrency(globalStats.totalRevenue)}</span>
           </div>
           <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '12px'}}>
             <span style={{color: 'var(--text-muted)'}}>총 레저 누적 매출</span>
