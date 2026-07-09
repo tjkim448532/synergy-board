@@ -317,6 +317,7 @@ function transformPolymorphicData(json) {
     id: yearMonth,
     yearMonth: yearMonth,
     v5Summary: {
+      ytd: json.ytd || null,
       room: json.roomSummary || null,
       golf: json.golfSummary || null,
       ticket: json.ticketSummary || null,

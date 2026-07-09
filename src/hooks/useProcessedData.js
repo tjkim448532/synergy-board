@@ -270,12 +270,13 @@ export default function useProcessedData(monthlyData, settings) {
       totalInvWdAll += invWd;
       totalSoldWeAll += soldWe;
       totalInvWeAll += invWe;
-      totalRoomRevenueAll += totalRoomRevenue;
-      totalLeisureRevenueAll += leisureSales;
-      totalMotoRevenueAll += motoSales;
-      totalFnbRevenueAll += fnbSales;
-      totalOtherRevenueAll += otherSales + dynamicGroupsSum;
-      totalGolfRevenueAll += golfSales;
+      // [V5 Rule 2] 상태 누적 합산 금지 (단일 진실 공급원 스냅샷 덮어쓰기 적용)
+      totalRoomRevenueAll = d.v5Summary?.room?.ytd_actual ?? (totalRoomRevenueAll + totalRoomRevenue);
+      totalLeisureRevenueAll = d.v5Summary?.ticket?.ytd_actual ?? (totalLeisureRevenueAll + leisureSales);
+      totalMotoRevenueAll += motoSales; // V5 API 스펙 미정의 시 기존 fallback 유지
+      totalFnbRevenueAll = d.v5Summary?.fnb?.ytd_actual ?? (totalFnbRevenueAll + fnbSales);
+      totalOtherRevenueAll += otherSales + dynamicGroupsSum; // V5 API 스펙 미정의 시 기존 fallback 유지
+      totalGolfRevenueAll = d.v5Summary?.golf?.ytd_actual ?? (totalGolfRevenueAll + golfSales);
       totalGuestsAll += guests;
       
       total16All += sold16;
