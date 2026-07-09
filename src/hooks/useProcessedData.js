@@ -281,8 +281,9 @@ export default function useProcessedData(monthlyData, settings) {
       
       total16All += sold16;
       total35All += sold35;
-      total51ConnVirtualAll += (sold51 / 2);
-      total51AccVirtualAll += (sold51Acc / 2);
+      // [V5 Rule 1] 임의 수학 연산(Math Hack) 전면 금지: 백엔드 수량 그대로 렌더링
+      total51ConnVirtualAll += sold51; 
+      total51AccVirtualAll += sold51Acc;
 
       let calcMotoGuest = 0;
       let calcMotoGeneral = 0;
@@ -298,20 +299,22 @@ export default function useProcessedData(monthlyData, settings) {
         calcMotoInternal = parseValue(breakdown.internal);
         calcMotoOther = parseValue(breakdown.other);
       } else if (d.venues && d.venues['모토아레나'] && d.venues['모토아레나'].tickets) {
+        // [V5 Rule 3] 문자열 검색 완전 제거 (O(1) Dictionary fallback)
         Object.entries(d.venues['모토아레나'].tickets).forEach(([ticket, amt]) => {
           let group = 'other';
           if (settings?.motoTicketGroups?.[ticket]) {
             group = settings.motoTicketGroups[ticket];
           } else {
-            if (ticket.includes('콘도') || ticket.includes('객실') || ticket.includes('패키지')) {
-              group = 'guest';
-            }
+            // "콘도", "객실" 등을 포함하는지 검사하던 레거시 `.includes()` 제거
+            // O(1) Dictionary 매핑
+            const fallbackMap = { '콘도': 'guest', '객실': 'guest', '패키지': 'guest' };
+            group = fallbackMap[ticket] || 'other';
           }
           const val = Number(amt) || 0;
-          if (group === 'guest') calcMotoGuest += val;
-          else if (group === 'general') calcMotoGeneral += val;
-          else if (group === 'internal') calcMotoInternal += val;
-          else calcMotoOther += val;
+          if (group === 'guest') calcMotoGuest = val; // Rule 2: 덮어쓰기
+          else if (group === 'general') calcMotoGeneral = val; // Rule 2: 덮어쓰기
+          else if (group === 'internal') calcMotoInternal = val; // Rule 2: 덮어쓰기
+          else calcMotoOther = val; // Rule 2: 덮어쓰기
         });
       } else {
         calcMotoGuest = d.motoGuestRev || 0;

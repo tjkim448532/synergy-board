@@ -41,18 +41,16 @@ export const isLeisureWeekend = (dateStr, customWeekendsArray = []) => {
 
 export const isHospitalityWeekend = isRoomWeekend;
 
+// [V5 Rule 3] O(1) 매핑 딕셔너리 사용 (NO STRING MATCHING)
+const uiGroupDictionary = {
+  'GOLF': 'golf', '골프': 'golf', '클럽하우스': 'golf', '그늘집': 'golf', '골프부대': 'golf', '그린피': 'golf', '프로샵': 'golf',
+  'FNB': 'fnb', '식당': 'fnb', 'BBQ': 'fnb', '조식': 'fnb', '바베큐': 'fnb', '카페': 'fnb', '식음': 'fnb', 'BHC': 'fnb', '멕시카나': 'fnb', '편의점': 'fnb', 'CU': 'fnb', '쿠치나': 'fnb', '연회장': 'fnb', '벨포레홀': 'fnb', '벼루재촌': 'fnb', '밤밤': 'fnb', '남도예담': 'fnb', '브리스킷': 'fnb', '투썸': 'fnb', '레스토랑': 'fnb', '스타트하우스': 'fnb', '딜라이트': 'fnb',
+  'OTHER': 'other', '기타': 'other', '임대수익': 'other', '주차': 'other', '대여품': 'other',
+  'MOTO': 'moto', '모토아레나': 'moto', '핏스탑': 'moto'
+};
+
 export const getDefaultGroup = (loc) => {
-  if (loc === 'GOLF' || loc.includes('골프') || loc.includes('클럽하우스') || loc.includes('그늘집') || loc === '골프부대' || loc.includes('그린피') || loc.includes('프로샵')) {
-    return 'golf';
-  } else if (loc === 'FNB' || loc.includes('식당') || loc.includes('BBQ') || loc.includes('조식') || loc.includes('바베큐') || loc.includes('카페') || loc.includes('식음') || loc.includes('BHC') || loc.includes('멕시카나') || loc.includes('편의점') || loc.includes('CU') || loc.includes('쿠치나') || loc.includes('연회장') || loc.includes('벨포레홀') || loc.includes('벼루재촌') || loc.includes('밤밤') || loc.includes('남도예담') || loc.includes('브리스킷') || loc.includes('투썸') || loc.includes('레스토랑') || loc.includes('스타트하우스') || loc.includes('딜라이트')) {
-    return 'fnb';
-  } else if (loc === 'OTHER' || loc.includes('기타') || loc === '임대수익' || loc.includes('주차') || loc.includes('대여품')) {
-    return 'other';
-  } else if (loc === 'MOTO' || loc.includes('모토아레나') || loc.includes('핏스탑')) {
-    return 'moto';
-  } else {
-    return 'leisure';
-  }
+  return uiGroupDictionary[loc] || 'leisure';
 };
 
 export const calculateGroupedSales = (salesObj, locationGroups = {}, venueCategories = {}) => {
@@ -107,24 +105,16 @@ export const calculateGroupedSales = (salesObj, locationGroups = {}, venueCatego
   return { leisure, fnb, golf, other, moto, dynamicGroups };
 };
 
+// [V5 Rule 3] O(1) 매핑 딕셔너리 사용 (NO STRING MATCHING)
+const uiWeatherDictionary = {
+  '미디어아트': '실내/F&B', 'VR': '실내/F&B', '실내': '실내/F&B', '전시': '실내/F&B',
+  '수영': '물놀이/수영장', '워터': '물놀이/수영장', '스파': '물놀이/수영장',
+  '골프': '골프장',
+  '눈썰매': '겨울 시설', '스노우': '겨울 시설',
+  '루지': '야외 트랙', '카트': '야외 트랙'
+};
+
 export const getDefaultWeatherTag = (loc, group) => {
-  if (loc.includes('미디어아트') || loc.includes('VR') || loc.includes('실내') || loc.includes('전시')) {
-    return '실내/F&B';
-  }
-  if (group === 'fnb') {
-    return '실내/F&B';
-  }
-  if (loc.includes('수영') || loc.includes('워터') || loc.includes('스파')) {
-    return '물놀이/수영장';
-  }
-  if (loc.includes('골프')) {
-    return '골프장';
-  }
-  if (loc.includes('눈썰매') || loc.includes('스노우')) {
-    return '겨울 시설';
-  }
-  if (loc.includes('루지') || loc.includes('카트')) {
-    return '야외 트랙';
-  }
-  return '야외 어트랙션';
+  if (group === 'fnb') return '실내/F&B';
+  return uiWeatherDictionary[loc] || '야외 어트랙션';
 };
