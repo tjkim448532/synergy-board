@@ -335,7 +335,8 @@ function transformPolymorphicData(json) {
       employeeVehicles: json.visitorData?.employeeVehicles || null,
       golfGuests: json.visitorData?.golfGuests || null
     },
-    leisureVisitorBreakdown: json.leisureVisitorBreakdown || []
+    leisureVisitorBreakdown: json.leisureVisitorBreakdown || [],
+          ticketGroups: {}
   };
 
   const w = json.weather?.current || json.weather || {};
@@ -461,6 +462,34 @@ function transformPolymorphicData(json) {
   });
 
   monthObj.roomsSold = totalRoomsSold;
+
+      // [V5 API] 3대 절대 규칙 중 O(1) Dictionary 티켓 그룹 매핑 로직
+      if (json.ticketSummary) {
+        const productMap = {};
+        json.ticketSummary.productLevelMapping?.forEach(item => {
+          productMap[item.ticketName] = item.groupName;
+        });
+
+        const facilityMap = {};
+        json.ticketSummary.facilityLevelMapping?.forEach(item => {
+          facilityMap[item.facilityName] = item.groupName;
+        });
+
+        const groupedResult = {};
+        json.ticketSummary.facilityBreakdown?.forEach(ticket => {
+          let groupName = productMap[ticket.ticketName];
+          if (!groupName) groupName = facilityMap[ticket.facilityName];
+          if (!groupName) groupName = '미분류';
+
+          if (!groupedResult[groupName]) groupedResult[groupName] = [];
+          groupedResult[groupName].push({
+            ticketName: ticket.ticketName,
+            revenue: Number(ticket.today_actual || ticket.revenue || 0),
+            facilityName: ticket.facilityName
+          });
+        });
+        monthObj.ticketGroups = groupedResult;
+      }
 
   // 구형 json.motoArenaBreakdown 맵핑 블록 전면 폐기 (V4 배열 스펙으로 대체됨)
   if (!monthObj.venues['모토아레나']) {
