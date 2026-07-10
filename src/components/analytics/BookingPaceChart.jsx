@@ -20,7 +20,7 @@ export default function BookingPaceChart() {
     const fetchPaceData = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`https://belleforet-data.vercel.app/api/v3/synergy/analytics/booking-pace?startDate=${startDate}&endDate=${endDate}`);
+        const res = await fetch(`https://belleforet-data.vercel.app/api/v5/analytics/booking-pace?startDate=${startDate}&endDate=${endDate}`);
         const json = await res.json();
         
         const dataArray = Array.isArray(json) ? json : json.data || [];

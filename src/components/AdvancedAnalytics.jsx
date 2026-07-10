@@ -689,7 +689,7 @@ const dailyWeatherSalesData = useMemo(() => {
       1,
       d.sold16 || 0,
       d.sold35 || 0,
-      ((d.sold51 || 0) + (d.sold51Acc || 0)) / 2,
+      (d.sold51 || 0) + (d.sold51Acc || 0),
       isWkndArr[i] ? 1 : 0,
       d.precipitation || 0,
       d.code && [71,73,75,77,85,86].includes(d.code) ? 1 : 0,
@@ -814,7 +814,7 @@ const dailyWeatherSalesData = useMemo(() => {
       const sold35 = Number(d.sold35 || 0);
       const sold51 = Number(d.sold51 || d.connectingSold || 0);
       const sold51Acc = Number(d.sold51Acc || 0);
-      const explicitSold = sold16 + sold35 + ((sold51 + sold51Acc) / 2);
+      const explicitSold = sold16 + sold35 + sold51 + sold51Acc;
     totalRoomsSold += explicitSold > 0 ? explicitSold : Number(d.totalSold || d.soldOther || d.roomsSold || 0);
 
       const leisureGross = d.leisureSales || 0;

@@ -9,7 +9,7 @@ export default function WeatherThresholdWidget() {
   useEffect(() => {
     const fetchThreshold = async () => {
       try {
-        const res = await fetch('https://belleforet-data.vercel.app/api/v3/synergy/analytics/weather-thresholds');
+        const res = await fetch('https://belleforet-data.vercel.app/api/v5/analytics/weather-thresholds');
         const json = await res.json();
         
         setData({
@@ -35,7 +35,7 @@ export default function WeatherThresholdWidget() {
         targetSegments: ['VIP_51평', 'GOLF_예약자']
       };
 
-      const res = await fetch('https://belleforet-data.vercel.app/api/v3/crm/weather-promotions', {
+      const res = await fetch('https://belleforet-data.vercel.app/api/v5/crm/weather-promotions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

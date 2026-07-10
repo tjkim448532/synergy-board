@@ -16,6 +16,7 @@ import LeisureUtilization from './components/LeisureUtilization'
 import ManagementStrategy from './components/ManagementStrategy'
 import WeatherForecastAnalytics from './components/WeatherForecastAnalytics'
 import WeatherAnalytics from './components/WeatherAnalytics'
+import TeamMappingKanban from './components/TeamMappingKanban'
 import { collection, onSnapshot, doc } from 'firebase/firestore';
 import { db } from './firebase';
 import useProcessedData from './hooks/useProcessedData';
@@ -111,6 +112,12 @@ function App() {
 
   const renderContent = () => {
     switch(activeTab) {
+      case 'team-mapping':
+        return (
+          <motion.div key="team-mapping" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="glass-panel" style={{padding: '32px', height: '100%'}}>
+            <TeamMappingKanban />
+          </motion.div>
+        )
       case 'strategy':
         return (
           <motion.div key="strategy" initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} style={{padding: '32px'}}>

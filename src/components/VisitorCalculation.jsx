@@ -34,8 +34,7 @@ export default function VisitorCalculation({ processedData, globalStats, setting
 
   // Use leisureVisitorBreakdown to calculate actual visitors (backend provided)
   const totalVisitors = useMemo(() => {
-    if (!targetDoc?.leisureVisitorBreakdown) return 0;
-    return targetDoc.leisureVisitorBreakdown.reduce((sum, item) => sum + (Number(item.visitors) || 0), 0);
+    return targetDoc?.totalVisitors || 0;
   }, [targetDoc]);
 
   const estimatedPeople = totalVisitors; // Display actual visitors instead of estimated
@@ -57,7 +56,7 @@ export default function VisitorCalculation({ processedData, globalStats, setting
     
     let tVisitors = 0;
     if (docData.leisureVisitorBreakdown) {
-      tVisitors = docData.leisureVisitorBreakdown.reduce((sum, item) => sum + (Number(item.visitors) || 0), 0);
+      tVisitors = docData.totalVisitors || 0;
     }
     
     const estPeople = tVisitors;
