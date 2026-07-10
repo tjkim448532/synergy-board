@@ -64,7 +64,7 @@ export default function ManagementStrategy({ processedData, globalStats, setting
       { name: '기타/신규사업', rev: totalOther }
     ].sort((a, b) => b.rev - a.rev);
     
-    const totalAll = facilities.reduce((sum, f) => sum + f.rev, 0);
+    const totalAll = globalStats?.summary?.totalRevenue || 0;
     let cumulative = 0;
     const paretoFacilities = facilities.map(f => {
       cumulative += f.rev;

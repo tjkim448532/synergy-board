@@ -125,9 +125,8 @@ export default function AdvancedAnalytics({ processedData, globalStats, settings
   }, [filteredProcessedData]);
 
   const totalHotelGuests = useMemo(() => {
-    if (!filteredProcessedData || filteredProcessedData.length === 0) return 0;
-    return filteredProcessedData.reduce((sum, d) => sum + (d.guests || 0), 0);
-  }, [filteredProcessedData]);
+    return globalStats?.summary?.totalRoomCap || 0;
+  }, [globalStats]);
 
   const seminarGuests = useMemo(() => {
     if (!filteredProcessedData || filteredProcessedData.length === 0) return 0;
@@ -187,7 +186,7 @@ const dailyWeatherSalesData = useMemo(() => {
       }
 
       try {
-        const res = await fetch(`https://belleforet-data.vercel.app/api/v3/synergy/timeseries?startDate=${sDate}&endDate=${eDate}`);
+        const res = await fetch(`https://belleforet-data.vercel.app/api/v5/dashboard/timeseries?startDate=${sDate}&endDate=${eDate}`);
         const json = await res.json();
         
         if (json.status === 'success' && json.data) {
@@ -195,7 +194,7 @@ const dailyWeatherSalesData = useMemo(() => {
 
           const mapped = json.data.map(d => {
             const w = d.weather || {};
-            const roomsSold = d.rooms ? d.rooms.reduce((acc, r) => acc + (r.roomsSold || 0), 0) : 0;
+            const roomsSold = d.roomsSold || 0;
             const roomRev = d.revenues?.room || 0;
             const leisureRev = d.revenues?.ticket || 0;
             const golfRev = d.revenues?.golf || 0;
@@ -211,9 +210,9 @@ const dailyWeatherSalesData = useMemo(() => {
               date: d.date,
               roomRevenue: roomRev,
               roomsSold: roomsSold,
-              sold16: d.rooms?.filter(r => r.roomType?.includes('16평')).reduce((acc, r) => acc + (r.roomsSold || 0), 0) || 0,
-              sold35: d.rooms?.filter(r => r.roomType?.includes('35평')).reduce((acc, r) => acc + (r.roomsSold || 0), 0) || 0,
-              sold51: d.rooms?.filter(r => r.roomType?.includes('51평')).reduce((acc, r) => acc + (r.roomsSold || 0), 0) || 0,
+              sold16: d.sold16 || 0,
+              sold35: d.sold35 || 0,
+              sold51: d.sold51 || 0,
               leisureSales: leisureRev,
               golfSales: golfRev,
               fnbSales: d.revenues?.fnb || 0,
@@ -1058,8 +1057,8 @@ const dailyWeatherSalesData = useMemo(() => {
           <div style={{position: 'absolute', right: '40px', bottom: '32px', background: 'rgba(0,0,0,0.4)', padding: '12px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end'}}>
             <div style={{fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px'}}>평형별 판매량 누적</div>
             <div style={{fontSize: '13px', color: 'var(--text-main)', display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'flex-end'}}>
-              <div>16평형: <strong>{filteredProcessedData.reduce((sum, d) => sum + Number(d.sold16 || d.standardSold || 0), 0).toLocaleString()}</strong>실</div>
-              <div>35평형: <strong>{filteredProcessedData.reduce((sum, d) => sum + Number(d.sold35 || 0), 0).toLocaleString()}</strong>실</div>
+              <div>16평형: <strong>{(globalStats?.summary?.roomMix?.type16 || 0).toLocaleString()}</strong>실</div>
+              <div>35평형: <strong>{(globalStats?.summary?.roomMix?.type35 || 0).toLocaleString()}</strong>실</div>
             </div>
           </div>
         </div>

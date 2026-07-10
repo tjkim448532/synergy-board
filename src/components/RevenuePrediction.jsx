@@ -149,8 +149,8 @@ export default function RevenuePrediction({ processedData, globalStats, settings
   const finalMotoRev = validMoto ? expectedMotoRevenue : avgMotoRev;
   const finalFnbRev = validFnb ? expectedFnbRevenue : avgFnbRev;
 
-  const expectedTotalRevenue = expectedRoomRevenue + finalLeisureRev + finalMotoRev + finalFnbRev + avgOtherRev + totalDynamicRev;
-  const targetAdrTotalRevenue = targetAdrRoomRevenue + finalLeisureRev + finalMotoRev + finalFnbRev + avgOtherRev + totalDynamicRev;
+  const expectedTotalRevenue = expectedRoomRevenue + finalLeisureRev + finalMotoRev + finalFnbRev + avgOtherRev;
+  const targetAdrTotalRevenue = targetAdrRoomRevenue + finalLeisureRev + finalMotoRev + finalFnbRev + avgOtherRev;
 
   const expectedGuestsFallback = (physicalExpected16 * (settings?.guestWeight16 ?? 2.5)) + (physicalExpected35 * (settings?.guestWeight35 ?? 3.5));
   const expectedGuests = globalStats.avgGuestsPerSoldRoom > 0 
