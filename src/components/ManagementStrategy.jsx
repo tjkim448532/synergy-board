@@ -200,7 +200,7 @@ export default function ManagementStrategy({ processedData, globalStats, setting
             <div style={{display: 'flex', gap: '24px', flexWrap: 'wrap'}}>
               <div style={{flex: 1, minWidth: '250px'}}>
                 <div style={{fontSize: '13px', color: 'var(--text-muted)'}}>검증 데이터 (평일 객실 가동률 여력)</div>
-                <div style={{fontSize: '20px', color: '#fff', marginTop: '4px'}}>평균 평일 점유율: {globalStats.globalWdOccRate.toFixed(1)}%</div>
+                <div style={{fontSize: '20px', color: '#fff', marginTop: '4px'}}>평균 평일 점유율: {(globalStats?.summary?.globalWdOccRate || 0).toFixed(1)}%</div>
               </div>
               <div style={{flex: 1, minWidth: '250px'}}>
                 <div style={{fontSize: '13px', color: 'var(--text-muted)'}}>전략적 결론 (Why So?)</div>

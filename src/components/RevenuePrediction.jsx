@@ -42,8 +42,8 @@ export default function RevenuePrediction({ processedData, globalStats, settings
   // 첫 로드 시 슬라이더 기본값을 실제 누적 평균값으로 세팅
   React.useEffect(() => {
     if (!initialized && processedData.length > 0) {
-      if (globalStats.globalWdOccRate > 0) setTargetWeekdayOcc(Math.round(globalStats.globalWdOccRate));
-      if (globalStats.globalWeOccRate > 0) setTargetWeekendOcc(Math.round(globalStats.globalWeOccRate));
+      if ((globalStats?.summary?.globalWdOccRate || 0) > 0) setTargetWeekdayOcc(Math.round((globalStats?.summary?.globalWdOccRate || 0)));
+      if ((globalStats?.summary?.globalWeOccRate || 0) > 0) setTargetWeekendOcc(Math.round((globalStats?.summary?.globalWeOccRate || 0)));
       setInitialized(true);
     }
   }, [processedData, globalStats, initialized]);
@@ -61,14 +61,14 @@ export default function RevenuePrediction({ processedData, globalStats, settings
   const expectedRoomRevenue = expRevWd + expRevWe;
 
   // 2. 평형별 목표 객단가(Target ADR) 반영 매출
-  const expSoldWd = (targetWeekdayOcc / 100) * (globalStats.dailyInventory * globalStats.avgWdDays);
-  const expSoldWe = (targetWeekendOcc / 100) * (globalStats.dailyInventory * globalStats.avgWeDays);
+  const expSoldWd = (targetWeekdayOcc / 100) * ((globalStats?.summary?.dailyInventory || 180) * (globalStats?.summary?.avgWdDays || 22));
+  const expSoldWe = (targetWeekendOcc / 100) * ((globalStats?.summary?.dailyInventory || 180) * (globalStats?.summary?.avgWeDays || 8));
   const totalExpectedSoldRooms = expSoldWd + expSoldWe;
   
-  const vExpected16 = totalExpectedSoldRooms * globalStats.mix16Virtual;
-  const vExpected35 = totalExpectedSoldRooms * globalStats.mix35Virtual;
-  const vExpected51Conn = totalExpectedSoldRooms * globalStats.mix51ConnVirtual;
-  const vExpected51Acc = totalExpectedSoldRooms * globalStats.mix51AccVirtual;
+  const vExpected16 = totalExpectedSoldRooms * (globalStats?.summary?.mix16Virtual || 0);
+  const vExpected35 = totalExpectedSoldRooms * (globalStats?.summary?.mix35Virtual || 0);
+  const vExpected51Conn = totalExpectedSoldRooms * (globalStats?.summary?.mix51ConnVirtual || 0);
+  const vExpected51Acc = totalExpectedSoldRooms * (globalStats?.summary?.mix51AccVirtual || 0);
 
   const physicalExpected16 = vExpected16;
   const physicalExpected35 = vExpected35;
@@ -85,7 +85,7 @@ export default function RevenuePrediction({ processedData, globalStats, settings
   }
 
   // 레저 목표 계산
-  const targetTotalOcc = ((targetWeekdayOcc * globalStats.avgWdDays) + (targetWeekendOcc * globalStats.avgWeDays)) / (globalStats.avgWdDays + globalStats.avgWeDays);
+  const targetTotalOcc = ((targetWeekdayOcc * (globalStats?.summary?.avgWdDays || 22)) + (targetWeekendOcc * (globalStats?.summary?.avgWeDays || 8))) / ((globalStats?.summary?.avgWdDays || 22) + (globalStats?.summary?.avgWeDays || 8));
   
   let expectedLeisureRevenue = 0;
   let expLeisureWd = 0;
@@ -129,11 +129,12 @@ export default function RevenuePrediction({ processedData, globalStats, settings
   }
   
   const totalMonthsCount = processedData.length || 1;
-  const avgLeisureRev = globalStats.totalLeisureRevenue / totalMonthsCount;
-  const avgMotoRev = globalStats.totalMotoRevenue / totalMonthsCount;
-  const avgFnbRev = globalStats.totalFnbRevenue / totalMonthsCount;
-  const avgOtherRev = globalStats.totalOtherRevenue / totalMonthsCount;
-  const avgGolfRev = globalStats.totalGolfRevenue / totalMonthsCount;
+  const safeDiv = totalMonthsCount > 0 ? totalMonthsCount : 1;
+  const avgLeisureRev = (globalStats.totalLeisureRevenue || 0) / safeDiv;
+  const avgMotoRev = (globalStats.totalMotoRevenue || 0) / safeDiv;
+  const avgFnbRev = (globalStats.totalFnbRevenue || 0) / safeDiv;
+  const avgOtherRev = (globalStats.totalOtherRevenue || 0) / safeDiv;
+  const avgGolfRev = (globalStats.totalGolfRevenue || 0) / safeDiv;
   
   let totalDynamicRev = 0;
   if (globalStats.totalDynamicGroups) {
@@ -153,8 +154,8 @@ export default function RevenuePrediction({ processedData, globalStats, settings
   const targetAdrTotalRevenue = targetAdrRoomRevenue + finalLeisureRev + finalMotoRev + finalFnbRev + avgOtherRev;
 
   const expectedGuestsFallback = (physicalExpected16 * (settings?.guestWeight16 ?? 2.5)) + (physicalExpected35 * (settings?.guestWeight35 ?? 3.5));
-  const expectedGuests = globalStats.avgGuestsPerSoldRoom > 0 
-    ? totalExpectedSoldRooms * globalStats.avgGuestsPerSoldRoom 
+  const expectedGuests = (globalStats?.summary?.avgGuestsPerSoldRoom || 0) > 0 
+    ? totalExpectedSoldRooms * (globalStats?.summary?.avgGuestsPerSoldRoom || 0) 
     : expectedGuestsFallback;
 
   // 차트용 데이터 (전체 점유율 대비 트렌드)
@@ -206,8 +207,8 @@ export default function RevenuePrediction({ processedData, globalStats, settings
         totalRev: globalStats.totalRevenue,
         golfRev: globalStats.totalGolfRevenue,
         occRate: globalStats.totalOccupancyRate,
-        wdOccRate: globalStats.globalWdOccRate,
-        weOccRate: globalStats.globalWeOccRate,
+        wdOccRate: (globalStats?.summary?.globalWdOccRate || 0),
+        weOccRate: (globalStats?.summary?.globalWeOccRate || 0),
         occLabel: '누적 평균 점유율'
       };
     } else {
@@ -311,7 +312,7 @@ export default function RevenuePrediction({ processedData, globalStats, settings
               style={{'--accent-color': 'var(--accent-blue)'}}
             />
             <div style={{fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px', textAlign: 'right'}}>
-              (실제 누적 평균: {globalStats.globalWdOccRate.toFixed(1)}%)
+              (실제 누적 평균: {(globalStats?.summary?.globalWdOccRate || 0).toFixed(1)}%)
             </div>
           </div>
           <div style={{flex: '1', minWidth: '250px', maxWidth: '400px'}}>
@@ -327,7 +328,7 @@ export default function RevenuePrediction({ processedData, globalStats, settings
               style={{'--accent-color': 'var(--accent-purple)'}}
             />
             <div style={{fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px', textAlign: 'right'}}>
-              (실제 누적 평균: {globalStats.globalWeOccRate.toFixed(1)}%)
+              (실제 누적 평균: {(globalStats?.summary?.globalWeOccRate || 0).toFixed(1)}%)
             </div>
           </div>
         </div>
@@ -524,15 +525,15 @@ export default function RevenuePrediction({ processedData, globalStats, settings
           <h3 style={{marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '12px'}}>전체 누적 데이터 현황</h3>
           <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '12px'}}>
             <span style={{color: 'var(--text-muted)'}}>평균 전체 점유율</span>
-            <span style={{fontWeight: 'bold', fontSize: '18px'}}>{globalStats.totalOccupancyRate.toFixed(1)}%</span>
+            <span style={{fontWeight: 'bold', fontSize: '18px'}}>{(globalStats?.totalOccupancyRate || 0).toFixed(1)}%</span>
           </div>
           <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '12px'}}>
             <span style={{color: 'var(--text-muted)'}}>- 평균 주중 점유율</span>
-            <span style={{fontWeight: 'bold', fontSize: '15px', color: 'var(--accent-blue)'}}>{globalStats.globalWdOccRate.toFixed(1)}%</span>
+            <span style={{fontWeight: 'bold', fontSize: '15px', color: 'var(--accent-blue)'}}>{(globalStats?.summary?.globalWdOccRate || 0).toFixed(1)}%</span>
           </div>
           <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '12px'}}>
             <span style={{color: 'var(--text-muted)'}}>- 평균 주말 점유율</span>
-            <span style={{fontWeight: 'bold', fontSize: '15px', color: 'var(--accent-purple)'}}>{globalStats.globalWeOccRate.toFixed(1)}%</span>
+            <span style={{fontWeight: 'bold', fontSize: '15px', color: 'var(--accent-purple)'}}>{(globalStats?.summary?.globalWeOccRate || 0).toFixed(1)}%</span>
           </div>
           <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '12px'}}>
             <span style={{color: 'var(--text-muted)'}}>총 객실 누적 매출</span>

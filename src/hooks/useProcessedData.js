@@ -57,7 +57,8 @@ export default function useProcessedData(v5Data, settings) {
         totalGolfTeams,
         salesByFacility: salesByFacility || [],
         matrixWeekly: matrixWeekly || [],
-        salesByCategory: salesByCategory || []
+        salesByCategory: salesByCategory || [],
+        summary: summary || {}
       }
     };
   }, [v5Data, settings]);
