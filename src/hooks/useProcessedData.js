@@ -9,7 +9,7 @@ export default function useProcessedData(v5Data, settings) {
       return { processedData: [], globalStats: {} };
     }
 
-    const { summary, salesByCategory, salesByFacility, dailyTrends, weather } = v5Data;
+    const { summary, salesByCategory, salesByFacility, dailyTrends, weather, matrixWeekly } = v5Data;
 
     // 카테고리별 매출을 O(1) Dictionary로 빠른 조회를 위해 변환 (순회 합산이 아님, 스냅샷 파싱)
     const categoryMap = {};
@@ -55,7 +55,9 @@ export default function useProcessedData(v5Data, settings) {
         totalRooms,
         totalGuests,
         totalGolfTeams,
-        salesByFacility: salesByFacility || []
+        salesByFacility: salesByFacility || [],
+        matrixWeekly: matrixWeekly || [],
+        salesByCategory: salesByCategory || []
       }
     };
   }, [v5Data, settings]);

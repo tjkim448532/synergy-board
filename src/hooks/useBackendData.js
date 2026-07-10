@@ -14,25 +14,37 @@ export default function useBackendData(startDate, endDate, targetDate) {
       try {
         setLoading(true);
         
-        // [V5 Bible] "여러 개의 API를 부를 필요 없이, 이 API 하나만 호출하면 모든 데이터가 세팅됩니다."
-        const detailUrl = `https://belleforet-data.vercel.app/api/v5/dashboard/revenue-summary?date=${targetDate}`;
+        // [V5 Bible v2.0] "revenue-summary와 matrix-weekly 두 가지 필수 API 병렬 호출"
+        const summaryUrl = `https://belleforet-data.vercel.app/api/v5/dashboard/revenue-summary?date=${targetDate}`;
+        const matrixUrl = `https://belleforet-data.vercel.app/api/v5/dashboard/matrix-weekly?date=${targetDate}`;
         
-        const res = await fetch(detailUrl, { 
-          headers: { Authorization: 'Bearer belleforet-m2m-secret' } 
-        });
+        const [summaryRes, matrixRes] = await Promise.all([
+          fetch(summaryUrl, { headers: { Authorization: 'Bearer belleforet-m2m-secret' } }),
+          fetch(matrixUrl, { headers: { Authorization: 'Bearer belleforet-m2m-secret' } })
+        ]);
         
-        if (!res.ok) {
-          throw new Error('V5 Revenue Summary API failed: ' + res.statusText);
-        }
+        if (!summaryRes.ok) throw new Error('V5 Revenue Summary API failed: ' + summaryRes.statusText);
+        if (!matrixRes.ok) throw new Error('V5 Matrix Weekly API failed: ' + matrixRes.statusText);
         
-        const json = await res.json();
+        const summaryJson = await summaryRes.json();
+        const matrixJson = await matrixRes.json();
         
-        // 프론트엔드 가공 없이 백엔드 JSON(summary, salesByCategory, salesByFacility, dailyTrends, weather)을 그대로 주입
-        if (json.status === 'SUCCESS' && json.data) {
-          setData(json.data);
+        // 프론트엔드 가공 없이 백엔드 JSON 데이터를 그대로 주입 (matrixWeekly 추가)
+        let mergedData = {};
+        if (summaryJson.status === 'SUCCESS' && summaryJson.data) {
+          mergedData = { ...summaryJson.data };
         } else {
-          setData(json); // fallback
+          mergedData = { ...summaryJson };
         }
+        
+        // matrix-weekly 데이터 병합
+        if (matrixJson.status === 'SUCCESS' && matrixJson.data) {
+          mergedData.matrixWeekly = matrixJson.data;
+        } else {
+          mergedData.matrixWeekly = Array.isArray(matrixJson) ? matrixJson : [];
+        }
+
+        setData(mergedData);
       } catch (err) {
         console.error("V5 Backend API Error:", err);
         setError(err.message);

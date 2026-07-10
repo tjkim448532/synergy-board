@@ -493,7 +493,7 @@ const dailyWeatherSalesData = useMemo(() => {
     const dateWeather = {};
     processedData.forEach(m => {
       if (m.rawRoomRecords && Array.isArray(m.rawRoomRecords)) {
-        m.rawRoomRecords.forEach(rec => {
+        (m.rawRoomRecords || []).forEach(rec => {
           if (!rec.date) return;
           if (rec.weatherTempMax !== undefined && rec.weatherTempMax !== null) {
             dateWeather[rec.date] = {
@@ -742,7 +742,7 @@ const dailyWeatherSalesData = useMemo(() => {
 
     dailyWeatherSalesData.forEach((d, i) => {
       const salesObj = d.locations || {};
-      Object.entries(salesObj).forEach(([loc, amt]) => {
+      (globalStats.salesByFacility || []).map(item => [item.sub_group_name || item.category_code, item.total_sales || item.sales]).forEach(([loc, amt]) => {
         const group = locationGroups[loc] || 'leisure';
         if (activeDivision === 'all' || group === activeDivision) {
           const groupedName = mapLocationName(loc);
@@ -823,9 +823,9 @@ const dailyWeatherSalesData = useMemo(() => {
       const otherGross = d.otherSales || 0;
 
       let pitstopRev = 0;
-      if (d.salesByLocation || d.leisureSalesByLocation) {
-        const salesObj = d.salesByLocation || d.leisureSalesByLocation || {};
-        Object.entries(salesObj).forEach(([loc, amt]) => {
+      if (globalStats.salesByFacility) {
+        const salesObj = globalStats.salesByFacility || {};
+        (globalStats.salesByFacility || []).map(item => [item.sub_group_name || item.category_code, item.total_sales || item.sales]).forEach(([loc, amt]) => {
           if (loc.includes('핏스탑')) pitstopRev += (Number(amt) || 0);
         });
       }
@@ -925,6 +925,57 @@ const dailyWeatherSalesData = useMemo(() => {
         <p style={{margin: 0, color: 'var(--text-muted)', fontSize: '15px'}}>숙박객 유입이 부문별 매출에 미치는 영향 분석</p>
       </div>
 
+
+      {/* V5 Bible v2.0 - 요일비교 매트릭스 (SSOT) */}
+      <div style={{ background: 'var(--bg-panel)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', marginBottom: '24px' }}>
+        <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--text-bright)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Activity size={18} color="var(--accent-emerald)" />
+          V5 요일비교 매트릭스 (SSOT Table)
+        </h3>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
+            <thead>
+              <tr style={{ background: 'rgba(255, 255, 255, 0.05)', borderBottom: '2px solid rgba(255,255,255,0.1)' }}>
+                <th style={{ padding: '10px', color: 'var(--text-muted)' }}>카테고리</th>
+                <th style={{ padding: '10px', color: 'var(--text-muted)' }}>팀</th>
+                <th style={{ padding: '10px', color: 'var(--text-muted)' }}>파트</th>
+                <th style={{ padding: '10px', color: 'var(--text-muted)' }}>샵</th>
+                <th style={{ padding: '10px', color: 'var(--text-muted)', textAlign: 'right' }}>주중 매출</th>
+                <th style={{ padding: '10px', color: 'var(--text-muted)', textAlign: 'right' }}>주말 매출</th>
+                <th style={{ padding: '10px', color: 'var(--text-muted)', textAlign: 'right' }}>총 매출</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(globalStats?.matrixWeekly || []).map((row, idx) => {
+                const isSubtotal = row.is_subtotal;
+                return (
+                  <tr key={idx} style={{ 
+                    borderBottom: '1px solid rgba(255,255,255,0.05)',
+                    background: isSubtotal ? 'rgba(255, 255, 255, 0.03)' : 'transparent',
+                    fontWeight: isSubtotal ? 'bold' : 'normal',
+                    color: isSubtotal ? 'var(--text-bright)' : 'var(--text-normal)'
+                  }}>
+                    <td style={{ padding: '8px 10px' }}>{row.category_name || '-'}</td>
+                    <td style={{ padding: '8px 10px' }}>{row.team_name || '-'}</td>
+                    <td style={{ padding: '8px 10px' }}>{row.part_name || '-'}</td>
+                    <td style={{ padding: '8px 10px' }}>{row.shop_name || '-'}</td>
+                    <td style={{ padding: '8px 10px', textAlign: 'right' }}>{formatCurrency(row.weekday_revenue || 0)}</td>
+                    <td style={{ padding: '8px 10px', textAlign: 'right' }}>{formatCurrency(row.weekend_revenue || 0)}</td>
+                    <td style={{ padding: '8px 10px', textAlign: 'right', color: isSubtotal ? 'var(--accent-gold)' : 'inherit' }}>{formatCurrency(row.total_revenue || 0)}</td>
+                  </tr>
+                );
+              })}
+              {(!globalStats?.matrixWeekly || globalStats.matrixWeekly.length === 0) && (
+                <tr>
+                  <td colSpan="7" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                    매트릭스 데이터가 없습니다. (Backend 대기 중)
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
       {/* 0. 부문 선택기 및 월별 필터 */}
       <div className="glass-panel mobile-wrap" style={{padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap'}}>
         <div style={{display: 'flex', alignItems: 'center', gap: '16px'}}>
