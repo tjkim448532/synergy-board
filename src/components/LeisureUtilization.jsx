@@ -21,8 +21,8 @@ export default function LeisureUtilization({ processedData, globalStats, setting
         }
       });
     });
-    const ticketSubtotalRow = (globalStats?.matrixWeekly || []).find(row => row.category_code === '티켓' && row.is_subtotal);
-    const totalTicketsSold = ticketSubtotalRow?.today_actual || 0;
+    const ticketSubtotalRow = (globalStats?.matrixWeekly || []).find(row => row.categoryCode === '티켓' && row.isSubtotal);
+    const totalTicketsSold = ticketSubtotalRow?.todayActual || 0;
 
     const chartData = Object.entries(aggregatedUsage).map(([venue, count]) => {
       return {

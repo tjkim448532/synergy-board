@@ -57,7 +57,7 @@ export default function TeamMappingKanban() {
 
     setItems(prev => prev.map(item => 
       item.facility_name === draggedItem.facility_name
-        ? { ...item, team_name: targetTeam, part_name: targetPart }
+        ? { ...item, teamName: targetTeam, partName: targetPart }
         : item
     ));
     setDraggedItem(null);
@@ -138,7 +138,7 @@ export default function TeamMappingKanban() {
         }}>
           {HARDCODED_COLUMNS.map(col => {
             const [t, p] = col.id.split('|');
-            const colItems = items.filter(item => item.team_name === t && item.part_name === p);
+            const colItems = items.filter(item => item.teamName === t && item.partName === p);
 
             return (
               <div 
@@ -184,7 +184,7 @@ export default function TeamMappingKanban() {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <strong>{item.facility_name}</strong>
                         <span style={{ fontSize: '11px', color: 'var(--accent)', background: 'rgba(56, 189, 248, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
-                          {item.category_code}
+                          {item.categoryCode}
                         </span>
                       </div>
                     </motion.div>

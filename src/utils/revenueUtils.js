@@ -87,7 +87,7 @@ export const calculateGroupedSales = (salesObj, locationGroups = {}, venueCatego
       return;
     }
 
-    // 1.5 백엔드 공식 category_code 최우선 매핑 (V3 규격 반영)
+    // 1.5 백엔드 공식 categoryCode 최우선 매핑 (V3 규격 반영)
     const cat = venueCategories[loc];
     if (cat) {
       if (cat === 'FNB' || cat === 'BANQUET') { fnb += val; return; }

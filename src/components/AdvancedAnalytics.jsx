@@ -741,7 +741,7 @@ const dailyWeatherSalesData = useMemo(() => {
 
     dailyWeatherSalesData.forEach((d, i) => {
       const salesObj = d.locations || {};
-      (globalStats.salesByFacility || []).map(item => [item.sub_group_name || item.category_code, item.total_sales || item.sales]).forEach(([loc, amt]) => {
+      (globalStats.salesByFacility || []).map(item => [item.subGroupName || item.categoryCode, item.totalSales || item.sales]).forEach(([loc, amt]) => {
         const group = locationGroups[loc] || 'leisure';
         if (activeDivision === 'all' || group === activeDivision) {
           const groupedName = mapLocationName(loc);
@@ -824,7 +824,7 @@ const dailyWeatherSalesData = useMemo(() => {
       let pitstopRev = 0;
       if (globalStats.salesByFacility) {
         const salesObj = globalStats.salesByFacility || {};
-        (globalStats.salesByFacility || []).map(item => [item.sub_group_name || item.category_code, item.total_sales || item.sales]).forEach(([loc, amt]) => {
+        (globalStats.salesByFacility || []).map(item => [item.subGroupName || item.categoryCode, item.totalSales || item.sales]).forEach(([loc, amt]) => {
           if (loc.includes('핏스탑')) pitstopRev += (Number(amt) || 0);
         });
       }
@@ -946,7 +946,7 @@ const dailyWeatherSalesData = useMemo(() => {
             </thead>
             <tbody>
               {(globalStats?.matrixWeekly || []).map((row, idx) => {
-                const isSubtotal = row.is_subtotal;
+                const isSubtotal = row.isSubtotal;
                 return (
                   <tr key={idx} style={{ 
                     borderBottom: '1px solid rgba(255,255,255,0.05)',
@@ -954,10 +954,10 @@ const dailyWeatherSalesData = useMemo(() => {
                     fontWeight: isSubtotal ? 'bold' : 'normal',
                     color: isSubtotal ? 'var(--text-bright)' : 'var(--text-normal)'
                   }}>
-                    <td style={{ padding: '8px 10px' }}>{row.category_name || '-'}</td>
-                    <td style={{ padding: '8px 10px' }}>{row.team_name || '-'}</td>
-                    <td style={{ padding: '8px 10px' }}>{row.part_name || '-'}</td>
-                    <td style={{ padding: '8px 10px' }}>{row.shop_name || '-'}</td>
+                    <td style={{ padding: '8px 10px' }}>{row.categoryName || '-'}</td>
+                    <td style={{ padding: '8px 10px' }}>{row.teamName || '-'}</td>
+                    <td style={{ padding: '8px 10px' }}>{row.partName || '-'}</td>
+                    <td style={{ padding: '8px 10px' }}>{row.shopName || '-'}</td>
                     <td style={{ padding: '8px 10px', textAlign: 'right' }}>{formatCurrency(row.weekday_revenue || 0)}</td>
                     <td style={{ padding: '8px 10px', textAlign: 'right' }}>{formatCurrency(row.weekend_revenue || 0)}</td>
                     <td style={{ padding: '8px 10px', textAlign: 'right', color: isSubtotal ? 'var(--accent-gold)' : 'inherit' }}>{formatCurrency(row.total_revenue || 0)}</td>
