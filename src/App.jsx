@@ -48,13 +48,13 @@ function App() {
   // 諛깆뿏??API ?곕룞???꾪븳 ?좎쭨 援ш컙 (?꾩슂 ??UI?먯꽌 ?숈쟻 蹂寃?媛??
     const [apiStartDate, setApiStartDate] = useState(() => {
     const now = new Date();
-    const start = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
     const offset = start.getTimezoneOffset() * 60000;
     return new Date(start.getTime() - offset).toISOString().split('T')[0];
   });
   const [apiEndDate, setApiEndDate] = useState(() => {
     const now = new Date();
-    const end = new Date(now.getFullYear(), now.getMonth(), 0);
+    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const offset = end.getTimezoneOffset() * 60000;
     return new Date(end.getTime() - offset).toISOString().split('T')[0];
   });

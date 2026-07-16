@@ -178,8 +178,8 @@ const dailyWeatherSalesData = useMemo(() => {
       // 만약 글로벌 날짜가 전달되지 않은 경우에만 '지난 2달'로 기본값 세팅
       if (!sDate || !eDate) {
         const now = new Date();
-        const start = new Date(now.getFullYear(), now.getMonth() - 2, 1);
-        const end = new Date(now.getFullYear(), now.getMonth(), 0);
+        const start = new Date(now.getFullYear(), now.getMonth(), 1);
+        const end = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const offset = start.getTimezoneOffset() * 60000;
         sDate = new Date(start.getTime() - offset).toISOString().split('T')[0];
         eDate = new Date(end.getTime() - offset).toISOString().split('T')[0];
