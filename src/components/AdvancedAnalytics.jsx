@@ -186,19 +186,38 @@ const dailyWeatherSalesData = useMemo(() => {
       }
 
       try {
-        const res = await fetch(`https://belleforet-data.vercel.app/api/v5/dashboard/timeseries?startDate=${sDate}&endDate=${eDate}`);
+        const res = await fetch(`https://belleforet-data.vercel.app/api/v5/dashboard/revenue-summary?startDate=${sDate}&endDate=${eDate}`, { headers: { Authorization: 'Bearer belleforet-m2m-secret' } });
         const json = await res.json();
         
-        if (json.status === 'success' && json.data) {
+        if (Array.isArray(json)) {
           const totalPhysicalRooms = settings?.totalRooms ? Number(settings.totalRooms) : 175;
 
-          const mapped = json.data.map(d => {
+          const mapped = json.map(d => {
             const w = d.weather || {};
-            const roomsSold = d.roomsSold || 0;
-            const roomRev = d.revenues?.room || 0;
-            const leisureRev = d.revenues?.ticket || 0;
-            const golfRev = d.revenues?.golf || 0;
-            const totalRev = d.totalRevenue || 0;
+            const summary = d.summary || {};
+            const roomMix = summary.roomMix || {};
+            const roomsSold = summary.totalRooms || 0;
+            
+            const salesCats = d.salesByCategory || [];
+            const getSales = (code) => {
+              const cat = salesCats.find(c => c.categoryCode === code);
+              return cat ? (cat.totalSales || 0) : 0;
+            };
+            
+            const roomRev = getSales('ROOM');
+            const leisureRev = getSales('TICKET');
+            const golfRev = getSales('GOLF');
+            const fnbRev = getSales('FNB');
+            const otherRev = getSales('OTHER');
+            const totalRev = summary.totalRevenue || 0;
+            
+            const venueBreakdown = {};
+            const facilities = d.salesByFacility || [];
+            facilities.forEach(f => {
+              if (f.subGroupName && f.totalSales) {
+                venueBreakdown[f.subGroupName] = f.totalSales;
+              }
+            });
 
             let revenue = 0;
             if (weatherDataType === 'room') revenue = roomRev;
@@ -210,24 +229,24 @@ const dailyWeatherSalesData = useMemo(() => {
               date: d.date,
               roomRevenue: roomRev,
               roomsSold: roomsSold,
-              sold16: d.sold16 || 0,
-              sold35: d.sold35 || 0,
-              sold51: d.sold51 || 0,
+              sold16: roomMix.type16 || 0,
+              sold35: roomMix.type35 || 0,
+              sold51: roomMix.type51 || 0,
               leisureSales: leisureRev,
               golfSales: golfRev,
-              fnbSales: d.revenues?.fnb || 0,
-              motoSales: d.revenues?.venueBreakdown?.['모토아레나'] || 0,
-              otherSales: d.revenues?.other || 0,
+              fnbSales: fnbRev,
+              motoSales: venueBreakdown['모토아레나'] || 0,
+              otherSales: otherRev,
               totalRevenue: totalRev,
-              locations: d.revenues?.venueBreakdown || {},
+              locations: venueBreakdown,
               motoGuestRev: 0,
               motoGeneralRev: 0,
               tempMax: w.tempMax !== undefined && w.tempMax !== null ? Number(w.tempMax) : null,
               tempMin: w.tempMin !== undefined && w.tempMin !== null ? Number(w.tempMin) : null,
-              precipitation: w.precipitation !== undefined && w.precipitation !== null ? Number(w.precipitation) : null,
+              precipitation: w.precip !== undefined && w.precip !== null ? Number(w.precip) : (w.precipitation !== undefined ? Number(w.precipitation) : null),
               windSpeed: w.windSpeed !== undefined && w.windSpeed !== null ? Number(w.windSpeed) : null,
-              code: w.code !== undefined && w.code !== null ? Number(w.code) : null,
-              desc: w.desc || '정보없음',
+              code: w.weatherCode !== undefined && w.weatherCode !== null ? Number(w.weatherCode) : (w.code !== undefined ? Number(w.code) : null),
+              desc: w.description || w.desc || '정보없음',
               revenue,
               occupancyRate: Math.min(100, Math.max(0, (roomsSold / totalPhysicalRooms) * 100))
             };
