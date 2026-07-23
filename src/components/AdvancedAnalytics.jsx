@@ -850,7 +850,7 @@ const dailyWeatherSalesData = useMemo(() => {
     };
   }, [filteredProcessedData, settings]);
 
-  if (processedData.length < 2) {
+  if (rawDailyWeatherSalesData.length < 2) {
     return (
       <div style={{height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)'}}>
         상관관계를 분석하려면 최소 2일 이상의 데이터가 필요합니다. 상단의 조회 기간을 2일 이상으로 설정해주세요.
